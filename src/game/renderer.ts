@@ -1,7 +1,8 @@
-import { GameState, Prop } from './types';
+import { GameState, Prop, LightSource, WindowDef } from './types';
 
 const R = 18;
-const WALL_HEIGHT = 18; // visible wall south-face height for 3/4 perspective
+const WALL_HEIGHT = 18;
+let _lightCanvas: HTMLCanvasElement | null = null;
 
 function drawCuteCharacter(
   ctx: CanvasRenderingContext2D,
@@ -905,6 +906,58 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
+  // ── WINDOWS on walls ──
+  for (const win of state.windows) {
+    // Window frame
+    ctx.fillStyle = 'rgba(140, 180, 220, 0.35)';
+    ctx.fillRect(win.x, win.y, win.w, win.h);
+    // Glass reflection
+    const glassGrad = win.direction === 'north' || win.direction === 'south'
+      ? ctx.createLinearGradient(win.x, win.y, win.x, win.y + win.h)
+      : ctx.createLinearGradient(win.x, win.y, win.x + win.w, win.y);
+    glassGrad.addColorStop(0, 'rgba(180, 210, 255, 0.5)');
+    glassGrad.addColorStop(0.5, 'rgba(200, 230, 255, 0.25)');
+    glassGrad.addColorStop(1, 'rgba(160, 200, 240, 0.4)');
+    ctx.fillStyle = glassGrad;
+    ctx.fillRect(win.x, win.y, win.w, win.h);
+    // Frame border
+    ctx.strokeStyle = '#4a5a6a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(win.x, win.y, win.w, win.h);
+    // Cross bar
+    if (win.w > win.h) {
+      ctx.strokeStyle = '#5a6a7a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(win.x + win.w / 2, win.y);
+      ctx.lineTo(win.x + win.w / 2, win.y + win.h);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#5a6a7a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(win.x, win.y + win.h / 2);
+      ctx.lineTo(win.x + win.w, win.y + win.h / 2);
+      ctx.stroke();
+    }
+    // Light shaft from window
+    ctx.save();
+    const shaftLen = 80;
+    let sx = win.x, sy = win.y, sw = win.w, sh = win.h;
+    if (win.direction === 'north') { sy += win.h; sh = shaftLen; }
+    else if (win.direction === 'south') { sy -= shaftLen; sh = shaftLen; }
+    else if (win.direction === 'west') { sx += win.w; sw = shaftLen; }
+    else if (win.direction === 'east') { sx -= shaftLen; sw = shaftLen; }
+    const shaftGrad = win.direction === 'north' || win.direction === 'south'
+      ? ctx.createLinearGradient(sx, sy, sx, sy + sh)
+      : ctx.createLinearGradient(sx, sy, sx + sw, sy);
+    shaftGrad.addColorStop(0, 'rgba(180, 210, 255, 0.12)');
+    shaftGrad.addColorStop(1, 'rgba(180, 210, 255, 0)');
+    ctx.fillStyle = shaftGrad;
+    ctx.fillRect(sx, sy, sw, sh);
+    ctx.restore();
+  }
+
   // ── WALLS (3D perspective) ──
   const sortedWalls = [...state.walls].sort((a, b) => a.y - b.y);
   for (const wall of sortedWalls) {
@@ -1495,10 +1548,115 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
+  // ── DYNAMIC LIGHTING OVERLAY ──
+  if (!_lightCanvas || _lightCanvas.width !== w || _lightCanvas.height !== h) {
+    _lightCanvas = document.createElement('canvas');
+    _lightCanvas.width = w;
+    _lightCanvas.height = h;
+  }
+  const lightCanvas = _lightCanvas;
+  const lctx = lightCanvas.getContext('2d')!;
+  
+  // Start with darkness
+  lctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  lctx.fillRect(0, 0, w, h);
+  
+  // Cut out light circles using 'destination-out' blending
+  lctx.globalCompositeOperation = 'destination-out';
+  
+  // Player always emits a small light
+  const playerScreenX = state.player.pos.x - cx;
+  const playerScreenY = state.player.pos.y - cy;
+  const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, 70);
+  playerGlow.addColorStop(0, 'rgba(0,0,0,0.8)');
+  playerGlow.addColorStop(0.7, 'rgba(0,0,0,0.3)');
+  playerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  lctx.fillStyle = playerGlow;
+  lctx.fillRect(playerScreenX - 70, playerScreenY - 70, 140, 140);
+  
+  // Render each light source
+  for (const light of state.lights) {
+    const lx = light.pos.x - cx;
+    const ly = light.pos.y - cy;
+    
+    // Skip lights far off screen
+    if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
+    
+    let intensity = light.intensity;
+    if (light.flicker) {
+      intensity *= 0.85 + Math.sin(state.time * 8 + light.pos.x * 0.1) * 0.1 + Math.random() * 0.05;
+    }
+    
+    const r = light.radius;
+    const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
+    grad.addColorStop(0, `rgba(0,0,0,${intensity})`);
+    grad.addColorStop(0.5, `rgba(0,0,0,${intensity * 0.5})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    lctx.fillStyle = grad;
+    lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
+  }
+  
+  // Muzzle flash light (bullets from player)
+  for (const b of state.bullets) {
+    if (b.fromPlayer && b.life > 0.85) {
+      const bx = b.pos.x - cx;
+      const by = b.pos.y - cy;
+      const flashGrad = lctx.createRadialGradient(bx, by, 0, bx, by, 60);
+      flashGrad.addColorStop(0, 'rgba(0,0,0,0.9)');
+      flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      lctx.fillStyle = flashGrad;
+      lctx.fillRect(bx - 60, by - 60, 120, 120);
+    }
+  }
+  
+  // Now add colored light tints
+  lctx.globalCompositeOperation = 'source-atop';
+  for (const light of state.lights) {
+    const lx = light.pos.x - cx;
+    const ly = light.pos.y - cy;
+    if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
+    
+    const r = light.radius;
+    const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
+    // Parse color and apply tint to the dark areas
+    grad.addColorStop(0, light.color + '15');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    lctx.fillStyle = grad;
+    lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
+  }
+  
+  // Draw the light map overlay
+  ctx.drawImage(lightCanvas, 0, 0);
+  
+  // Add colored light halos on top (additive-style)
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  ctx.translate(-cx, -cy);
+  for (const light of state.lights) {
+    const lx = light.pos.x;
+    const ly = light.pos.y;
+    if (lx - cx < -light.radius || lx - cx > w + light.radius || ly - cy < -light.radius || ly - cy > h + light.radius) continue;
+    
+    let intensity = light.intensity * 0.15;
+    if (light.flicker) {
+      intensity *= 0.85 + Math.sin(state.time * 8 + light.pos.x * 0.1) * 0.1;
+    }
+    
+    const r = light.radius * 0.6;
+    const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, r);
+    grad.addColorStop(0, light.color + Math.floor(intensity * 255).toString(16).padStart(2, '0'));
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(lx, ly, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
   // Subtle vignette
   const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.45, w / 2, h / 2, w * 0.85);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.12)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.2)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 

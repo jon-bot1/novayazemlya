@@ -150,6 +150,23 @@ export interface Prop {
   type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf';
 }
 
+export interface LightSource {
+  pos: Vec2;
+  radius: number;       // how far the light reaches
+  color: string;         // e.g. '#ffcc66'
+  intensity: number;     // 0-1
+  flicker?: boolean;     // slight random flicker
+  type: 'ceiling' | 'desk' | 'window' | 'alarm' | 'fire';
+}
+
+export interface WindowDef {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  direction: 'north' | 'south' | 'east' | 'west';
+}
+
 export interface ExtractionPoint {
   pos: Vec2;
   radius: number;
@@ -171,6 +188,8 @@ export interface GameState {
   alarmActive: boolean;
   walls: Wall[];
   extractionPoints: ExtractionPoint[];
+  lights: LightSource[];
+  windows: WindowDef[];
   camera: Vec2;
   mapWidth: number;
   mapHeight: number;

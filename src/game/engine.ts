@@ -95,6 +95,8 @@ export function createGameState(): GameState {
     documentPickups: map.documentPickups,
     walls: map.walls,
     extractionPoints: map.extractionPoints,
+    lights: map.lights,
+    windows: map.windows,
     camera: { x: player.pos.x, y: player.pos.y },
     mapWidth: map.mapWidth,
     mapHeight: map.mapHeight,
