@@ -161,12 +161,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Ground - darker for contrast
-  ctx.fillStyle = '#111410';
+  // Ground
+  ctx.fillStyle = '#2a3025';
   ctx.fillRect(0, 0, state.mapWidth, state.mapHeight);
 
-  // Ground texture - subtle noise pattern
-  ctx.strokeStyle = '#1a1e16';
+  // Ground texture grid
+  ctx.strokeStyle = '#3a4035';
   ctx.lineWidth = 0.5;
   for (let x = 0; x < state.mapWidth; x += 40) {
     ctx.beginPath();
@@ -181,8 +181,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
-  // Ground decorations - grass tufts, cracks
-  ctx.fillStyle = '#1e2418';
+  // Ground decorations
+  ctx.fillStyle = '#4a5a3a';
   for (let i = 0; i < 50; i++) {
     const gx = ((i * 137 + 42) % state.mapWidth);
     const gy = ((i * 251 + 89) % state.mapHeight);
@@ -389,15 +389,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
-  // Player glow (visibility aid)
+  // Player glow (large, bright)
   ctx.save();
-  const glowPulse = 0.3 + Math.sin(state.time * 2) * 0.1;
+  const glowPulse = 0.5 + Math.sin(state.time * 2) * 0.2;
   ctx.beginPath();
-  ctx.arc(state.player.pos.x, state.player.pos.y, R + 12, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(120, 220, 80, ${glowPulse * 0.15})`;
+  ctx.arc(state.player.pos.x, state.player.pos.y, R + 20, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(120, 255, 80, ${glowPulse * 0.3})`;
   ctx.fill();
-  ctx.strokeStyle = `rgba(120, 220, 80, ${glowPulse})`;
-  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(state.player.pos.x, state.player.pos.y, R + 10, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(120, 255, 80, ${glowPulse * 0.5})`;
+  ctx.fill();
+  ctx.strokeStyle = `rgba(150, 255, 100, ${glowPulse})`;
+  ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();
 
@@ -449,10 +453,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera transform
 
-  // Vignette
-  const gradient = ctx.createRadialGradient(w / 2, h / 2, w * 0.3, w / 2, h / 2, w * 0.7);
+  // Vignette (light)
+  const gradient = ctx.createRadialGradient(w / 2, h / 2, w * 0.4, w / 2, h / 2, w * 0.8);
   gradient.addColorStop(0, 'rgba(0,0,0,0)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0.45)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0.2)');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, w, h);
 
@@ -461,12 +465,6 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     const alpha = 0.08 + Math.sin(state.time * 5) * 0.04;
     ctx.fillStyle = `rgba(150, 20, 20, ${alpha})`;
     ctx.fillRect(0, 0, w, h);
-  }
-
-  // Scanlines (subtle)
-  ctx.fillStyle = 'rgba(0,0,0,0.02)';
-  for (let y = 0; y < h; y += 3) {
-    ctx.fillRect(0, y, w, 1);
   }
 }
 
