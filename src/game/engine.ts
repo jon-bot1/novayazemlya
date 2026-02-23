@@ -174,6 +174,8 @@ export function createGameState(): GameState {
     flashbangTimer: 0,
     backpackCapacity: 0,
     mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
+    reinforcementTimer: 45 + Math.random() * 15, // first wave after ~45-60s
+    reinforcementsSpawned: 0,
   };
 }
 
@@ -713,6 +715,38 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Clean up old sound events (older than 2 seconds)
   state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 2);
 
+  // === REINFORCEMENT SPAWNING from forest paths ===
+  state.reinforcementTimer -= dt;
+  if (state.reinforcementTimer <= 0 && state.reinforcementsSpawned < 12) {
+    const spawnExfils = state.extractionPoints.filter(ep => !ep.active);
+    const sp = spawnExfils.length > 0 ? spawnExfils[Math.floor(Math.random() * spawnExfils.length)] : state.extractionPoints[Math.floor(Math.random() * state.extractionPoints.length)];
+    const cnt = 1 + Math.floor(Math.random() * 2);
+    for (let ri = 0; ri < cnt; ri++) {
+      const ox = (Math.random() - 0.5) * 60, oy = (Math.random() - 0.5) * 60;
+      const rp = { x: sp.pos.x + ox, y: sp.pos.y + oy };
+      const rt: Enemy['type'] = Math.random() < 0.3 ? 'heavy' : 'soldier';
+      const re: Enemy = {
+        id: `reinf_${state.reinforcementsSpawned}_${ri}`, pos: rp,
+        hp: rt === 'heavy' ? 120 : 56, maxHp: rt === 'heavy' ? 120 : 56,
+        speed: rt === 'heavy' ? 0.8 : 1.5, damage: rt === 'heavy' ? 25 : 15,
+        alertRange: 200, shootRange: 170, fireRate: rt === 'heavy' ? 1500 : 800,
+        state: 'chase', patrolTarget: { x: state.mapWidth / 2, y: state.mapHeight / 2 },
+        investigateTarget: { ...state.player.pos }, lastShot: 0,
+        angle: Math.atan2(state.player.pos.y - rp.y, state.player.pos.x - rp.x),
+        type: rt, eyeBlink: 3, loot: [], looted: false,
+        lastRadioCall: state.time, radioGroup: 99, radioAlert: 2,
+        tacticalRole: rt === 'heavy' ? 'suppressor' : 'assault',
+        flankTarget: undefined, suppressTimer: 0, callForHelpTimer: 0,
+        lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
+      };
+      state.enemies.push(re);
+      state.reinforcementsSpawned++;
+    }
+    addMessage(state, `\u{1F6A8} Reinforcements from ${sp.name}!`, 'warning');
+    playVoiceShout('alarm', -0.2);
+    state.reinforcementTimer = 30 + Math.random() * 20 - state.reinforcementsSpawned * 1.5;
+  }
+
   // Update enemies
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
@@ -891,7 +925,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       // Call for help — soldiers and heavies yell for reinforcements
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
-        enemy.callForHelpTimer = 8 + Math.random() * 4;
+        enemy.callForHelpTimer = 5 + Math.random() * 3;
         playVoiceShout('alarm', enemy.type === 'heavy' ? -0.3 : 0.1);
         speakCallout('alarm', enemy.type);
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
@@ -900,7 +934,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < 350;
+          const closeEnough = dist(ally.pos, enemy.pos) < 500;
           if (sameGroup || closeEnough) {
             ally.state = 'chase';
             assignTacticalRole(state, ally);
@@ -909,21 +943,27 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
 
-      // Radio call — alert allies in same group or within 400px
-      if (state.time - enemy.lastRadioCall > 4) {
+      // Radio call — alert allies in same group or within range (wider when alarm active)
+      if (state.time - enemy.lastRadioCall > 3) {
         enemy.lastRadioCall = state.time;
         enemy.radioAlert = 1.5;
         playRadio();
+        const radioRange = state.alarmActive ? 800 : 500;
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
-          if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < 400;
-          if (sameGroup || closeEnough) {
-            ally.state = 'investigate';
-            ally.investigateTarget = { ...state.player.pos };
-            ally.radioAlert = 1.5;
-            addMessage(state, `📻 ${enemy.type.toUpperCase()} calls for reinforcements!`, 'warning');
+          const closeEnough = dist(ally.pos, enemy.pos) < radioRange;
+          const alarmWide = state.alarmActive; // alarm = base-wide awareness
+          if (sameGroup || closeEnough || alarmWide) {
+            if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
+              ally.state = 'chase';
+              ally.investigateTarget = { ...state.player.pos };
+              assignTacticalRole(state, ally);
+              ally.radioAlert = 1.5;
+            } else if (ally.state === 'chase' || ally.state === 'flank') {
+              // Update known player position for already-chasing allies
+              ally.investigateTarget = { ...state.player.pos };
+            }
           }
         }
       }

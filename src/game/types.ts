@@ -233,6 +233,8 @@ export interface GameState {
   flashbangTimer: number; // seconds of flashbang blindness remaining
   backpackCapacity: number; // extra inventory slots from backpack
   mineFieldZone: { x: number; y: number; w: number; h: number };
+  reinforcementTimer: number; // countdown to next reinforcement wave
+  reinforcementsSpawned: number; // total reinforcements spawned so far
 }
 
 export interface SoundEvent {
