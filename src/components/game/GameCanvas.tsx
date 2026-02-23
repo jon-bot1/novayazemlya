@@ -281,7 +281,8 @@ export const GameCanvas: React.FC = () => {
       }
 
       hudUpdateCounter++;
-      if (hudUpdateCounter % 6 === 0) {
+      const forceUpdate = state.gameOver || state.extracted;
+      if (forceUpdate || hudUpdateCounter % 6 === 0) {
         // Detect new loot items
         const currentCount = state.player.inventory.length;
         if (currentCount > lastInventoryCountRef.current) {
