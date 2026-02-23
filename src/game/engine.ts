@@ -265,16 +265,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
     const distToPlayer = dist(enemy.pos, state.player.pos);
-    const canSeePlayer = distToPlayer < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos);
+    const los = hasLineOfSight(state, enemy.pos, state.player.pos);
+
+    // Check if player is behind the enemy (>90° from facing direction)
+    const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+    let angleDiff = Math.abs(toPlayerAngle - enemy.angle);
+    if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+    const isBehind = angleDiff > Math.PI * 0.55; // ~100° cone behind
+
+    // Behind = much shorter detection range, in front = full range
+    const effectiveRange = isBehind ? enemy.alertRange * 0.35 : enemy.alertRange;
+    const canSeePlayer = distToPlayer < effectiveRange && los;
 
     if (canSeePlayer) {
-      if (distToPlayer < enemy.shootRange) {
+      if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
       }
     } else if (enemy.state !== 'patrol') {
-      if (distToPlayer > enemy.alertRange * 1.5 || !hasLineOfSight(state, enemy.pos, state.player.pos)) {
+      if (distToPlayer > enemy.alertRange * 1.5 || !los) {
         enemy.state = 'patrol';
         enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
       }
