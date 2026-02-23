@@ -115,7 +115,7 @@ function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   // Mark dead guard as no longer elevated so platform draws independently
   deadGuard.elevated = false;
   // Store platform position for rendering
-  state.props.push({ pos: platformPos, w: 36, h: 40, type: 'watchtower' as any });
+  state.props.push({ pos: platformPos, w: 36, h: 40, type: 'watchtower' as any, blocksPlayer: true });
 }
 
 function generateEnemyLoot(enemy: Enemy) {
@@ -244,7 +244,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
-    state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+    let newPos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+    // Block player from walking onto platform props (enemies can use them)
+    for (const p of state.props) {
+      if (p.blocksPlayer && rectContains(p.pos.x - p.w / 2, p.pos.y - p.h / 2, p.w, p.h, newPos.x, newPos.y, 12)) {
+        newPos = state.player.pos;
+        break;
+      }
+    }
+    state.player.pos = newPos;
     
     // Moving breaks cover
     if (state.player.inCover) {
