@@ -66,10 +66,13 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
 }
 
 function generateEnemyLoot(enemy: Enemy) {
-  if (enemy.type === 'turret') return LOOT_POOLS.military();
+  // Preserve any pre-assigned loot (e.g. keycards from map setup)
+  const existingLoot = [...enemy.loot];
+  
+  if (enemy.type === 'turret') return [...existingLoot, ...LOOT_POOLS.military()];
   if (enemy.type === 'boss') {
-    // Boss drops USB drive (required for extraction) + premium loot
     return [
+      ...existingLoot,
       ...LOOT_POOLS.military(),
       ...LOOT_POOLS.valuable(),
       { id: 'boss_usb', name: 'Volkovs USB-minne', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'KRITISKT UNDERRÄTTELSEDATA — Ta med ut för att klara uppdraget!' },
@@ -77,7 +80,7 @@ function generateEnemyLoot(enemy: Enemy) {
     ];
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
-  return LOOT_POOLS[poolType]();
+  return [...existingLoot, ...LOOT_POOLS[poolType]()];
 }
 
 export function createGameState(): GameState {
@@ -268,18 +271,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.angle = Math.atan2(moveY, moveX);
   }
 
-  // Player shooting
-  if (input.shooting && state.time - state.player.lastShot > state.player.fireRate / 1000) {
+  // Player shooting — weapon-specific stats
+  const wpn = state.player.equippedWeapon;
+  const fireRate = wpn?.weaponFireRate || state.player.fireRate;
+  if (input.shooting && state.time - state.player.lastShot > fireRate / 1000) {
     const spread = (Math.random() - 0.5) * 0.08;
     const angle = state.player.angle + spread;
-    const speed = 8;
+    const bulletSpeed = wpn?.bulletSpeed || 8;
+    const bulletLife = wpn?.weaponRange || 60;
     state.bullets.push({
       pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
-      vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
-      damage: state.player.equippedWeapon?.damage || 10,
+      vel: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
+      damage: wpn?.damage || 10,
       damageType: 'bullet',
       fromPlayer: true,
-      life: 60,
+      life: bulletLife,
     });
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
@@ -363,6 +369,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} skydd utrustat!`, 'info');
           }
+          // Auto-equip better weapon
+          if (item.category === 'weapon' && item.damage && (!state.player.equippedWeapon || item.damage > state.player.equippedWeapon.damage!)) {
+            state.player.equippedWeapon = item;
+            if (item.ammoType) state.player.ammoType = item.ammoType;
+            addMessage(state, `🔫 ${item.name} utrustad!`, 'info');
+          }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
         playPickup();
@@ -413,6 +425,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} skydd!`, 'info');
+          }
+          if (item.category === 'weapon' && item.damage && (!state.player.equippedWeapon || item.damage > state.player.equippedWeapon.damage!)) {
+            state.player.equippedWeapon = item;
+            if (item.ammoType) state.player.ammoType = item.ammoType;
+            addMessage(state, `🔫 ${item.name} utrustad!`, 'info');
           }
           if (item.id === 'boss_usb') {
             addMessage(state, '💾 VOLKOVS USB-MINNE! Ta det till evakueringspunkten!', 'intel');

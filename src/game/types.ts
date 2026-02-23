@@ -23,9 +23,13 @@ export interface Item {
   damage?: number;
   healAmount?: number;
   medicalType?: MedicalType;
-  stopsBleeding?: number; // how much bleed it removes
-  speedBoost?: number; // temporary speed boost duration in seconds
+  stopsBleeding?: number;
+  speedBoost?: number;
   description: string;
+  // Weapon-specific stats
+  bulletSpeed?: number;   // projectile speed (default 8)
+  weaponRange?: number;   // bullet lifetime in frames (default 60)
+  weaponFireRate?: number; // ms between shots (overrides player fireRate)
 }
 
 export interface DocumentPickup {

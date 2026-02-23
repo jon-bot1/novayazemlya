@@ -3,7 +3,10 @@ import { Item, AmmoType, MedicalType } from './types';
 let itemIdCounter = 0;
 const nextId = () => `item_${itemIdCounter++}`;
 
-export const createWeapon = (name: string, ammoType: AmmoType, damage: number, icon: string): Item => ({
+export const createWeapon = (
+  name: string, ammoType: AmmoType, damage: number, icon: string,
+  bulletSpeed: number = 8, weaponRange: number = 60, weaponFireRate: number = 400
+): Item => ({
   id: nextId(),
   name,
   category: 'weapon',
@@ -12,6 +15,9 @@ export const createWeapon = (name: string, ammoType: AmmoType, damage: number, i
   value: Math.floor(damage * 100),
   ammoType,
   damage,
+  bulletSpeed,
+  weaponRange,
+  weaponFireRate,
   description: `${name} — ${ammoType}`,
 });
 
@@ -140,10 +146,11 @@ export const createHelmet = (): Item => ({
 });
 
 export const WEAPON_TEMPLATES = {
-  makarov: () => createWeapon('PM Makarov', '9x18', 12, '🔫'),
-  ak74: () => createWeapon('AK-74', '5.45x39', 25, '🔫'),
-  akm: () => createWeapon('AKM', '7.62x39', 30, '🔫'),
-  toz: () => createWeapon('TOZ-34', '12gauge', 45, '🔫'),
+  //                                name         ammo       dmg  icon  bulletSpd range fireRate
+  makarov: () => createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400),
+  ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   180),
+  akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   250),
+  toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900),
 };
 
 // Weighted random pick helper
