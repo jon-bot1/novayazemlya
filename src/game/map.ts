@@ -269,9 +269,10 @@ export function generateMap() {
     };
   }
 
-  // Give keycard to the lone guard (primary) and one pair guard (backup)
-  enemies[enemies.length - 1].loot = [createKeycard()];
-  enemies[enemies.length - 3].loot = [createKeycard()];
+  // Give keycard to ALL outside patrol guards to guarantee drop
+  for (let i = enemies.length - 5; i < enemies.length; i++) {
+    enemies[i].loot = [createKeycard()];
+  }
 
   // ══════════════════════════════════════
   // LOOT
@@ -308,7 +309,7 @@ export function generateMap() {
       looted: false,
       type: 'archive' as const,
     },
-    // Outdoor loot
+    // Outdoor loot — crates outside fence
     rLoot(ZONE_GATE, 'crate', 'common'),
     rLoot(ZONE_YARD_W, 'crate', 'military'),
     rLoot(ZONE_YARD_W, 'barrel', 'common'),
@@ -317,6 +318,11 @@ export function generateMap() {
     rLoot(ZONE_YARD_N, 'desk', 'desk'),
     rLoot({ x: 450, y: 920, w: 140, h: 60 }, 'crate', 'military'), // motor pool
     rLoot({ x: 2520, y: 620, w: 110, h: 60 }, 'crate', 'military'), // ammo bunker
+    // Outside fence crates (south of base)
+    rLoot({ x: 500, y: 1950, w: 200, h: 100 }, 'crate', 'common'),
+    rLoot({ x: 1200, y: 2050, w: 150, h: 100 }, 'crate', 'military'),
+    rLoot({ x: 2100, y: 1950, w: 200, h: 100 }, 'crate', 'common'),
+    rLoot({ x: 1600, y: 2200, w: 150, h: 100 }, 'barrel', 'common'),
   ];
 
   // ══════════════════════════════════════
