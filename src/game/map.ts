@@ -14,11 +14,12 @@ const WL = '#7a8a78'; // light wall (interior)
 
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
-const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy'): Enemy => {
+const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret', fixedAngle?: number): Enemy => {
   const stats = {
     scav: { hp: 40, speed: 1.2, damage: 8, alertRange: 150, shootRange: 130, fireRate: 1200 },
     soldier: { hp: 70, speed: 1.5, damage: 15, alertRange: 200, shootRange: 180, fireRate: 800 },
     heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 180, shootRange: 160, fireRate: 1500 },
+    turret: { hp: 200, speed: 0, damage: 20, alertRange: 250, shootRange: 230, fireRate: 300 },
   }[type];
   return {
     id: `enemy_${enemyId++}`,
@@ -28,7 +29,7 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy'): En
     state: 'patrol',
     patrolTarget: { x: x + (Math.random() - 0.5) * 150, y: y + (Math.random() - 0.5) * 150 },
     lastShot: 0,
-    angle: Math.random() * Math.PI * 2,
+    angle: fixedAngle ?? Math.random() * Math.PI * 2,
     type,
     eyeBlink: Math.random() * 5,
     loot: [],
@@ -145,6 +146,9 @@ export function generateMap() {
     makeEnemy(820, 650, 'soldier'),
     makeEnemy(1050, 550, 'heavy'),
     makeEnemy(1100, 800, 'heavy'),
+
+    // Mounted machine gun — guards corridor entrance to storage
+    makeEnemy(720, 430, 'turret', Math.PI * 0.5), // faces south
   ];
 
   const lootContainers: LootContainer[] = [

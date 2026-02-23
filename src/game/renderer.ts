@@ -302,6 +302,99 @@ function drawCuteCharacter(
   ctx.restore(); // main translate
 }
 
+// Draw mounted machine gun emplacement
+function drawMountedGun(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number, alert: boolean) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Sandbag base (oval)
+  ctx.fillStyle = '#7a7560';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 22, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#5a5540';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Sandbag texture lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-18, i * 6);
+    ctx.lineTo(18, i * 6);
+    ctx.stroke();
+  }
+
+  // Inner circle (gun mount)
+  ctx.fillStyle = '#5a5a4a';
+  ctx.beginPath();
+  ctx.arc(0, 0, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#3a3a30';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Gun barrel (rotates)
+  ctx.save();
+  ctx.rotate(angle);
+  // Barrel body
+  ctx.fillStyle = '#4a4a42';
+  ctx.beginPath();
+  ctx.roundRect(6, -3.5, 30, 7, 2);
+  ctx.fill();
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Muzzle
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.roundRect(32, -4.5, 8, 9, 1);
+  ctx.fill();
+  // Ammo box
+  ctx.fillStyle = '#6a6a55';
+  ctx.beginPath();
+  ctx.roundRect(-2, 4, 12, 8, 2);
+  ctx.fill();
+  ctx.strokeStyle = '#4a4a3a';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Handle grips
+  ctx.fillStyle = '#8a6a4a';
+  ctx.beginPath();
+  ctx.roundRect(-6, -6, 8, 4, 1);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(-6, 2, 8, 4, 1);
+  ctx.fill();
+
+  // Muzzle flash when alert
+  if (alert) {
+    const flash = Math.sin(Date.now() * 0.02) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(255, 200, 60, ${flash * 0.4})`;
+    ctx.beginPath();
+    ctx.arc(40, 0, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Shield plate (front arc)
+  ctx.save();
+  ctx.rotate(angle);
+  ctx.fillStyle = '#5a6a58';
+  ctx.beginPath();
+  ctx.arc(8, 0, 14, -0.7, 0.7);
+  ctx.lineTo(8, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#3a4a38';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
 // Draw a wall with 3/4 perspective south face
 function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string) {
   // South face (visible depth)
@@ -572,11 +665,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       scav: Math.PI * 0.4,
       soldier: Math.PI * 0.55,
       heavy: Math.PI * 0.75,
+      turret: Math.PI * 0.85,
     }[enemy.type] || Math.PI * 0.55;
     const rearRange = {
       scav: 0.2,
       soldier: 0.35,
       heavy: 0.55,
+      turret: 0,
     }[enemy.type] || 0.35;
 
     // Forward vision cone
@@ -613,18 +708,24 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
 
     const isBlinking = enemy.eyeBlink < 0.15;
-    const configs: Record<string, any> = {
-      scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
-      soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
-      heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
-    };
-    const cfg = configs[enemy.type];
 
-    drawCuteCharacter(
-      ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
-      cfg.body, cfg.outline, cfg.eye, isBlinking,
-      cfg.hat, cfg.hatColor, true, enemy.type === 'heavy' ? R + 4 : R
-    );
+    if (enemy.type === 'turret') {
+      // Draw mounted machine gun — sandbag base + gun barrel
+      drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
+    } else {
+      const configs: Record<string, any> = {
+        scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
+        soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
+        heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
+      };
+      const cfg = configs[enemy.type];
+
+      drawCuteCharacter(
+        ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
+        cfg.body, cfg.outline, cfg.eye, isBlinking,
+        cfg.hat, cfg.hatColor, true, enemy.type === 'heavy' ? R + 4 : R
+      );
+    }
 
     // Status
     if (enemy.state === 'chase') {
@@ -656,7 +757,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = 'rgba(255,200,200,0.5)';
     ctx.font = '7px sans-serif';
     ctx.textAlign = 'center';
-    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT' }[enemy.type];
+    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT', turret: 'KULSPRUTA' }[enemy.type];
     ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
