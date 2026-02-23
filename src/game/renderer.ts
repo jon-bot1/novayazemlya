@@ -1,4 +1,4 @@
-import { GameState, Prop, LightSource, WindowDef, Vec2 } from './types';
+import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 
 const R = 18;
 const WALL_HEIGHT = 18;
@@ -813,12 +813,218 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.strokeRect(left, top, w, h);
       break;
     }
+    case 'tree': {
+      // Deciduous tree — brown trunk + green canopy
+      ctx.fillStyle = '#5a4030';
+      ctx.fillRect(x - 3, y - 4, 6, h * 0.5 + 8);
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + h * 0.3, w * 0.4, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Canopy
+      const cr = w * 0.5;
+      ctx.fillStyle = '#3a6a2a';
+      ctx.beginPath(); ctx.arc(x, y - cr * 0.5, cr, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#4a7a3a';
+      ctx.beginPath(); ctx.arc(x - cr * 0.3, y - cr * 0.3, cr * 0.7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + cr * 0.3, y - cr * 0.2, cr * 0.65, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+    case 'pine_tree': {
+      // Conifer — narrow triangular shape
+      ctx.fillStyle = '#4a3520';
+      ctx.fillRect(x - 2, y, 4, h * 0.4 + 6);
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + h * 0.3, w * 0.3, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Layers
+      const ph = w * 1.2;
+      for (let layer = 0; layer < 3; layer++) {
+        const ly = y - layer * (ph * 0.3);
+        const lw = w * 0.5 * (1 - layer * 0.2);
+        ctx.fillStyle = layer === 0 ? '#2a5a1a' : layer === 1 ? '#336a22' : '#3a7a2a';
+        ctx.beginPath();
+        ctx.moveTo(x - lw, ly);
+        ctx.lineTo(x, ly - ph * 0.35);
+        ctx.lineTo(x + lw, ly);
+        ctx.closePath();
+        ctx.fill();
+      }
+      break;
+    }
+    case 'bush': {
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + 3, w * 0.45, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#4a6a3a';
+      ctx.beginPath();
+      ctx.ellipse(x, y, w * 0.5, h * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#5a7a4a';
+      ctx.beginPath();
+      ctx.ellipse(x - 3, y - 2, w * 0.3, h * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'guard_booth': {
+      // Small guard shack
+      ctx.fillStyle = '#5a5a50';
+      ctx.fillRect(left, top + h, w, 8);
+      ctx.fillStyle = '#6a6a5a';
+      ctx.fillRect(left, top, w, h);
+      // Roof
+      ctx.fillStyle = '#4a5a3a';
+      ctx.fillRect(left - 3, top - 4, w + 6, 6);
+      // Window
+      ctx.fillStyle = 'rgba(140,180,220,0.5)';
+      ctx.fillRect(left + 6, top + 6, w - 12, h * 0.3);
+      // Door
+      ctx.fillStyle = '#4a4a3a';
+      ctx.fillRect(left + w * 0.35, top + h * 0.5, w * 0.3, h * 0.5);
+      ctx.strokeStyle = '#3a3a30';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+    case 'watchtower': {
+      // Tower structure — tall with platform
+      // Legs
+      ctx.fillStyle = '#6a6a5a';
+      ctx.fillRect(left + 2, top + 8, 4, h - 8);
+      ctx.fillRect(left + w - 6, top + 8, 4, h - 8);
+      // Cross braces
+      ctx.strokeStyle = '#5a5a4a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left + 4, top + h); ctx.lineTo(left + w - 4, top + 12);
+      ctx.stroke();
+      // Platform
+      ctx.fillStyle = '#5a6a4a';
+      ctx.fillRect(left - 4, top, w + 8, 10);
+      // Railing
+      ctx.strokeStyle = '#7a7a6a';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(left - 6, top - 12, w + 12, 14);
+      // Roof
+      ctx.fillStyle = '#4a5a3a';
+      ctx.beginPath();
+      ctx.moveTo(x, top - 22);
+      ctx.lineTo(left - 8, top - 10);
+      ctx.lineTo(left + w + 8, top - 10);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'vehicle_wreck': {
+      // Burned out vehicle
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + h * 0.4, w * 0.55, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Body
+      ctx.fillStyle = '#4a4a42';
+      ctx.fillRect(left, top, w, h);
+      ctx.fillStyle = '#3a3a32';
+      ctx.fillRect(left + 4, top + 2, w * 0.4, h - 4);
+      // Windshield (broken)
+      ctx.fillStyle = 'rgba(100,120,140,0.3)';
+      ctx.fillRect(left + w * 0.45, top + 3, w * 0.2, h * 0.6);
+      // Rust streaks
+      ctx.strokeStyle = 'rgba(120,60,20,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(left + 3, top + h * 0.3); ctx.lineTo(left + w * 0.3, top + h * 0.7); ctx.stroke();
+      // Wheels
+      ctx.fillStyle = '#2a2a25';
+      ctx.beginPath(); ctx.arc(left + 8, top + h + 2, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(left + w - 8, top + h + 2, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#3a3a32';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+    case 'gate': {
+      // Metal bar gate
+      ctx.fillStyle = '#7a7a6a';
+      ctx.fillRect(left, top, w, h);
+      // Bars
+      ctx.strokeStyle = '#5a5a4a';
+      ctx.lineWidth = 2;
+      for (let bx = left + 8; bx < left + w; bx += 12) {
+        ctx.beginPath();
+        ctx.moveTo(bx, top); ctx.lineTo(bx, top + h);
+        ctx.stroke();
+      }
+      // Posts
+      ctx.fillStyle = '#5a5a4a';
+      ctx.fillRect(left - 4, top - 4, 6, h + 8);
+      ctx.fillRect(left + w - 2, top - 4, 6, h + 8);
+      break;
+    }
+    case 'road_sign': {
+      // Simple sign post
+      ctx.fillStyle = '#6a6a5a';
+      ctx.fillRect(x - 1, y - 4, 3, h + 8);
+      ctx.fillStyle = '#8a3a2a';
+      ctx.fillRect(x - 8, y - 12, 16, 10);
+      ctx.fillStyle = '#cc4a3a';
+      ctx.font = 'bold 6px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('СТОП', x, y - 5);
+      break;
+    }
+    case 'searchlight': {
+      // Searchlight on post
+      ctx.fillStyle = '#5a5a4a';
+      ctx.fillRect(x - 2, y, 4, 16);
+      ctx.fillStyle = '#7a7a6a';
+      ctx.beginPath();
+      ctx.arc(x, y, w * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ddd';
+      ctx.beginPath();
+      ctx.arc(x, y, w * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'fence_h': case 'fence_v': {
+      ctx.fillStyle = '#8a8a7a';
+      ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = '#6a6a5a';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
   }
   ctx.restore();
 }
 
-// Draw ground tile pattern (Zelda-style)
-function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number) {
+// Get terrain type at a world position
+function getTerrainAt(zones: TerrainZone[], x: number, y: number): TerrainZone['type'] {
+  // Later zones override earlier ones
+  let result: TerrainZone['type'] = 'grass';
+  for (const z of zones) {
+    if (x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) {
+      result = z.type;
+    }
+  }
+  return result;
+}
+
+// Terrain colors
+const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
+  grass: ['#3a4a2e', '#3e4e32'],
+  dirt: ['#5a5040', '#5e5444'],
+  asphalt: ['#3a3a38', '#3e3e3c'],
+  concrete: ['#4e4e44', '#525248'],
+  forest: ['#2a3a1e', '#2e3e22'],
+};
+
+// Draw ground with terrain zones
+function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number, zones: TerrainZone[]) {
   const tileSize = 48;
   const startX = Math.max(0, Math.floor(cx / tileSize) * tileSize);
   const startY = Math.max(0, Math.floor(cy / tileSize) * tileSize);
@@ -827,30 +1033,67 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
   for (let tx = startX; tx < endX; tx += tileSize) {
     for (let ty = startY; ty < endY; ty += tileSize) {
+      const terrain = getTerrainAt(zones, tx + tileSize / 2, ty + tileSize / 2);
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
-      ctx.fillStyle = tileIdx === 0 ? '#4e4e44' : '#525248';
+      const colors = TERRAIN_COLORS[terrain];
+      ctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
       ctx.fillRect(tx, ty, tileSize, tileSize);
 
       // Subtle tile border
-      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
       ctx.lineWidth = 1;
       ctx.strokeRect(tx, ty, tileSize, tileSize);
 
-      // Random floor details (cracks, stains)
       const hash = (tx * 7 + ty * 13) % 100;
-      if (hash < 8) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(tx + 10, ty + 20);
-        ctx.lineTo(tx + 35, ty + 30);
-        ctx.stroke();
-      }
-      if (hash > 90) {
-        ctx.fillStyle = 'rgba(60,50,40,0.1)';
-        ctx.beginPath();
-        ctx.arc(tx + 24, ty + 24, 8, 0, Math.PI * 2);
-        ctx.fill();
+
+      if (terrain === 'grass' || terrain === 'forest') {
+        // Grass tufts
+        if (hash < 15) {
+          ctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
+          ctx.lineWidth = 1;
+          const gx = tx + 10 + (hash % 20);
+          const gy = ty + 15 + (hash % 15);
+          ctx.beginPath();
+          ctx.moveTo(gx, gy + 6); ctx.lineTo(gx - 2, gy); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(gx + 3, gy + 6); ctx.lineTo(gx + 5, gy - 1); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(gx + 6, gy + 5); ctx.lineTo(gx + 8, gy + 1); ctx.stroke();
+        }
+      } else if (terrain === 'asphalt') {
+        // Road markings and cracks
+        if (hash < 5) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(tx + 10, ty + 20);
+          ctx.lineTo(tx + 35, ty + 30);
+          ctx.stroke();
+        }
+      } else if (terrain === 'concrete') {
+        // Floor cracks
+        if (hash < 8) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(tx + 10, ty + 20);
+          ctx.lineTo(tx + 35, ty + 30);
+          ctx.stroke();
+        }
+        if (hash > 90) {
+          ctx.fillStyle = 'rgba(60,50,40,0.1)';
+          ctx.beginPath();
+          ctx.arc(tx + 24, ty + 24, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (terrain === 'dirt') {
+        // Dirt texture — small stones
+        if (hash < 10) {
+          ctx.fillStyle = 'rgba(80,70,55,0.3)';
+          ctx.beginPath();
+          ctx.arc(tx + 15 + hash % 20, ty + 10 + hash % 25, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
   }
@@ -865,25 +1108,28 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Outside area
-  ctx.fillStyle = '#1a1e16';
+  // Outside area (dense forest beyond map)
+  ctx.fillStyle = '#1a2a14';
   ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
 
-  // Hangar floor tiles (Zelda-style checkerboard)
-  drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight);
+  // Ground tiles with terrain zones
+  drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state.terrainZones);
 
-  // Zone labels — styled geographic markers
+  // Zone labels
   const zoneLabels = [
-    { x: 250, y: 250, label: 'HANGAR A', sub: 'Huvudhall', size: 20 },
-    { x: 250, y: 680, label: 'HANGAR B', sub: 'Södra sektionen', size: 16 },
-    { x: 600, y: 255, label: 'KORRIDOR', sub: 'Passage C-1', size: 11 },
-    { x: 780, y: 100, label: 'KONTOR 1', sub: 'Befälsrum', size: 13 },
-    { x: 1060, y: 100, label: 'KONTOR 2', sub: 'Kommunikation', size: 13 },
-    { x: 780, y: 350, label: 'KONTOR 3', sub: 'Arkiv', size: 13 },
-    { x: 1060, y: 350, label: 'KONTOR 4', sub: 'Operationssal', size: 13 },
-    { x: 850, y: 500, label: 'LAGER', sub: 'Förrådsdepå', size: 18 },
-    { x: 1060, y: 720, label: 'DJUPLAGER', sub: 'Hemligt förråd', size: 14 },
-    { x: 60, y: 450, label: 'VÄST', sub: 'Infart', size: 10 },
+    { x: 1600, y: 1100, label: 'HANGAR', sub: 'Huvudbyggnad', size: 22 },
+    { x: 1300, y: 1000, label: 'HANGAR A', sub: 'Hall Väst', size: 14 },
+    { x: 1300, y: 1400, label: 'HANGAR B', sub: 'Hall Syd', size: 12 },
+    { x: 1600, y: 1000, label: 'KORRIDOR', sub: 'C-1', size: 10 },
+    { x: 1800, y: 870, label: 'KONTOR', sub: 'Befälsbyggnad', size: 13 },
+    { x: 1850, y: 1300, label: 'LAGER', sub: 'Förrådsdepå', size: 16 },
+    { x: 1510, y: 1780, label: 'HUVUDGRIND', sub: 'Södra infart', size: 14 },
+    { x: 500, y: 575, label: 'KASERN', sub: 'Baracker', size: 12 },
+    { x: 1500, y: 410, label: 'KOMMANDOPOST', sub: 'Ledningscentral', size: 12 },
+    { x: 2575, y: 650, label: 'AMMOBUNKER', sub: 'Östligt förråd', size: 11 },
+    { x: 530, y: 950, label: 'MOTORPOOL', sub: 'Fordonspark', size: 11 },
+    { x: 350, y: 330, label: 'VAKTTORN NV', sub: '', size: 9 },
+    { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
   ];
   for (const z of zoneLabels) {
     ctx.save();
@@ -892,9 +1138,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = `bold ${z.size}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(z.label, z.x, z.y);
-    ctx.globalAlpha = 0.09;
-    ctx.font = `${Math.max(8, z.size - 6)}px sans-serif`;
-    ctx.fillText(z.sub, z.x, z.y + z.size + 2);
+    if (z.sub) {
+      ctx.globalAlpha = 0.09;
+      ctx.font = `${Math.max(8, z.size - 6)}px sans-serif`;
+      ctx.fillText(z.sub, z.x, z.y + z.size + 2);
+    }
     ctx.restore();
   }
 
