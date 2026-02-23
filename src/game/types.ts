@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee';
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'key';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -41,7 +41,16 @@ export interface LootContainer {
   size: number;
   items: Item[];
   looted: boolean;
-  type: 'crate' | 'body' | 'cabinet' | 'barrel';
+  type: 'crate' | 'body' | 'cabinet' | 'barrel' | 'desk' | 'locker' | 'archive';
+}
+
+export interface AlarmPanel {
+  id: string;
+  pos: Vec2;
+  activated: boolean;
+  hacked: boolean;
+  hackProgress: number; // 0-1, 1 = hacked
+  hackTime: number; // seconds to hack
 }
 
 export interface Bullet {
@@ -147,6 +156,8 @@ export interface GameState {
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
   props: Prop[];
+  alarmPanels: AlarmPanel[];
+  alarmActive: boolean;
   walls: Wall[];
   extractionPoints: ExtractionPoint[];
   camera: Vec2;
