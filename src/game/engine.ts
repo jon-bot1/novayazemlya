@@ -888,7 +888,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
-        speakCallout('alert', enemy.type);
+        // Silent alert — no voice shout
 
         // Elevated wall guards trigger base-wide alarm via radio
         if (enemy.elevated && !state.alarmActive) {
@@ -974,8 +974,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Heard a sound — go investigate
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
-      playVoiceShout('investigate', enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0);
-      speakCallout('investigate', enemy.type);
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // If rushing to a platform, don't get distracted
       if ((enemy as any)._platformTarget) {
@@ -986,8 +984,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
-        playVoiceShout('lost', enemy.type === 'heavy' ? -0.4 : 0);
-        speakCallout('lost', enemy.type);
         // Radio last known position to group
         if (state.time - enemy.lastRadioCall > 4) {
           enemy.lastRadioCall = state.time;
@@ -1317,8 +1313,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (dToFlank < 25) {
             // Arrived at flank position — switch to attack
             enemy.state = 'attack';
-            playVoiceShout('attack', enemy.type === 'heavy' ? -0.4 : 0.1);
-            speakCallout('attack', enemy.type);
           } else {
             const dir = normalize({ x: enemy.flankTarget.x - enemy.pos.x, y: enemy.flankTarget.y - enemy.pos.y });
             enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 1.2, dir.y * speed * 1.2, 10);
