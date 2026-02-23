@@ -1342,7 +1342,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         // Rapid suppressive fire with wide spread — only if player is in arc
         const suppressRate = enemy.fireRate / 1000 * 0.5; // fire twice as fast
-        if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
+        if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange * 1.3) {
           const spread = (Math.random() - 0.5) * 0.35; // wide spread — suppression, not precision
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'heavy' ? 7 : 6;
@@ -1392,7 +1392,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.angle = targetAngle;
           }
         }
-        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
+        // Must be in range AND have LOS to fire
+        if (distToPlayer > enemy.shootRange * 1.2) {
+          // Out of range — chase instead
+          enemy.state = 'chase';
+          break;
+        }
+        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
           const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'sniper' ? 10 : enemy.type === 'turret' ? 8 : 6;
