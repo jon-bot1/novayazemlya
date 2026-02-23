@@ -777,8 +777,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
-        // Silent alert — no sound on detection
         speakCallout('alert', enemy.type);
+
+        // Elevated wall guards trigger base-wide alarm via radio
+        if (enemy.elevated && !state.alarmActive) {
+          state.alarmActive = true;
+          addMessage(state, '🚨 PLATTFORMSVAKT LARMAR BASEN!', 'warning');
+          playVoiceShout('alarm', 0.1);
+          speakCallout('alarm', enemy.type);
+          for (const ally of state.enemies) {
+            if (ally === enemy || ally.state === 'dead') continue;
+            if (ally.state === 'idle' || ally.state === 'patrol') {
+              ally.state = 'investigate';
+              ally.investigateTarget = { ...state.player.pos };
+            }
+          }
+        }
       }
 
       // Apply tactical behavior based on role
