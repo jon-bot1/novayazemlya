@@ -33,7 +33,18 @@ export const HUD: React.FC<HUDProps> = ({
   React.useEffect(() => {
     if ((gameOver || extracted) && playerName && !scoreSubmittedRef.current) {
       scoreSubmittedRef.current = true;
-      const result = gameOver ? 'failed' : hasExtractionCode ? 'success' : 'incomplete';
+      const hasUSB = player.inventory.some(i => i.id === 'boss_usb');
+      const hasCodes = player.inventory.some(i => i.id === 'nuclear_codebook');
+      let result: 'success' | 'almost' | 'mia' | 'kia';
+      if (gameOver) {
+        result = 'kia';
+      } else if (hasUSB && hasCodes) {
+        result = 'success';
+      } else if (hasUSB || hasCodes) {
+        result = 'almost';
+      } else {
+        result = 'mia';
+      }
       const lootValue = player.inventory.reduce((s, i) => s + i.value, 0);
       submitHighscore(playerName, killCount, time, result, lootValue);
     }
