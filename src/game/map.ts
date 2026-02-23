@@ -14,14 +14,15 @@ const WL = '#7a8a78'; // light wall (interior)
 
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
-const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret', fixedAngle?: number): Enemy => {
+const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss', fixedAngle?: number): Enemy => {
   const stats = {
     scav: { hp: 40, speed: 1.2, damage: 8, alertRange: 150, shootRange: 130, fireRate: 1200 },
     soldier: { hp: 70, speed: 1.5, damage: 15, alertRange: 200, shootRange: 180, fireRate: 800 },
     heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 180, shootRange: 160, fireRate: 1500 },
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 250, shootRange: 230, fireRate: 300 },
+    boss: { hp: 350, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
   }[type];
-  return {
+  const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
     ...stats,
@@ -35,9 +36,15 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     loot: [],
     looted: false,
     lastRadioCall: 0,
-    radioGroup: Math.floor(x / 300), // group by map area
+    radioGroup: Math.floor(x / 300),
     radioAlert: 0,
   };
+  if (type === 'boss') {
+    enemy.bossPhase = 0;
+    enemy.bossChargeTimer = 0;
+    enemy.bossSpawnTimer = 0;
+  }
+  return enemy;
 };
 
 type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body';
@@ -154,6 +161,9 @@ export function generateMap() {
 
     // Mounted machine gun — guards corridor entrance to storage
     makeEnemy(720, 430, 'turret', Math.PI * 0.5), // faces south
+
+    // === BOSS: Kommendant Volkov — deep storage ===
+    makeEnemy(1050, 750, 'boss'),
   ];
 
   const lootContainers: LootContainer[] = [
@@ -196,6 +206,7 @@ export function generateMap() {
     makeDocPickup(1100, 150, 'doc_4'),  // Office 2
     makeDocPickup(850, 550, 'doc_3'),   // Storage
     makeDocPickup(1080, 800, 'doc_5'),  // Deep storage
+    makeDocPickup(760, 100, 'doc_7'),   // Office 1 — Volkov's personnel file
   ];
 
   const props: Prop[] = [

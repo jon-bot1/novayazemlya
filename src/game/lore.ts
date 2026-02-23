@@ -179,6 +179,39 @@ P.S. Möss åt upp tre torrskaffningar. Eller inte möss. Fan vet vad som spring
     hasCode: false,
     found: false,
   },
+  {
+    id: 'doc_7',
+    title: 'Personalakt: Kommendant V. Volkov',
+    author: 'GRU Intern Säkerhet',
+    date: '08.02.1993',
+    classification: 'TOPPHEMLIG',
+    content: `PERSONALAKT — TOPPHEMLIG
+Subjekt: Viktor Andrejevitj Volkov
+Grad: Kommendant
+Enhet: Specialgrupp "Vargen"
+Stationering: Objekt Z-14, Underjordisk Sektion
+
+BAKGRUND:
+Volkov rekryterades från Spetsnaz 1987. Utmärkta resultat i strid — 47 bekräftade operationer. Psykologisk profil visar extrem lojalitet till projektet men stigande instabilitet sedan exponeringen.
+
+EXPONERING:
+Under inspektion av laboratorium nr 3 (se "Gryning"-protokollet) utsattes Volkov för okänt ämne från B-seriens containrar. Sedan dess rapporterar underställda om:
+- Onaturlig styrka (böjde en stålregel med bara händerna)
+- Ögon som "lyser" i mörker
+- Sömnlöshet i 23 dagar utan prestationsförlust
+- Samtal med "röster" — uppger att han hör order från undervåningen
+
+BEDÖMNING:
+Trots instabiliteten är Volkov den effektivaste befälhavaren på Z-14. Han har vägrat evakuering och säger att han "vaktar det som finns nedanför". Personal rapporterar att han patrullerar djuplagret nattetid, beväpnad och muttrande.
+
+REKOMMENDATION: Övervaka. Neutralisera INTE utan direkt order. Hans kunskap om B-serien är oersättlig.
+
+VARNING: Om Volkov visar tecken på total regression — aktivera protokoll STORM-3 omedelbart.
+
+— Överste Karpov, GRU`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
