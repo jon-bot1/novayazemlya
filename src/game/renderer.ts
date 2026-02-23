@@ -1291,7 +1291,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
 
     // Interaction prompt
-    if (!panel.hacked && dist2d(state.player.pos, panel.pos) < 50) {
+    if (!panel.hacked && dist2d(state.player.pos, panel.pos) < 70) {
       ctx.fillStyle = 'rgba(80, 255, 180, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
@@ -1792,7 +1792,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── INTERACTION PROMPTS ──
   for (const lc of state.lootContainers) {
-    if (!lc.looted && dist2d(state.player.pos, lc.pos) < 50) {
+    if (!lc.looted && dist2d(state.player.pos, lc.pos) < 70) {
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
@@ -1800,7 +1800,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
   for (const dp of state.documentPickups) {
-    if (!dp.collected && dist2d(state.player.pos, dp.pos) < 50) {
+    if (!dp.collected && dist2d(state.player.pos, dp.pos) < 70) {
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
@@ -1810,7 +1810,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
-  // ── FIXED PIXEL LIGHTING ──
+  // ── FIXED LIGHTING OVERLAY ──
   if (!_lightCanvas || _lightCanvas.width !== w || _lightCanvas.height !== h) {
     _lightCanvas = document.createElement('canvas');
     _lightCanvas.width = w;
@@ -1819,26 +1819,26 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const lightCanvas = _lightCanvas;
   const lctx = lightCanvas.getContext('2d')!;
   
-  // Start with darkness
-  lctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+  // Light ambient darkness — much lighter to avoid black patches
+  lctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   lctx.fillRect(0, 0, w, h);
   
-  // Cut out fixed light circles — no animation, no flicker
+  // Cut out light areas
   lctx.globalCompositeOperation = 'destination-out';
   
-  // Player soft glow
+  // Player glow — larger radius
   const playerScreenX = state.player.pos.x - cx;
   const playerScreenY = state.player.pos.y - cy;
-  const pr = 75;
+  const pr = 120;
   const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, pr);
-  playerGlow.addColorStop(0, 'rgba(0,0,0,0.8)');
-  playerGlow.addColorStop(0.3, 'rgba(0,0,0,0.5)');
-  playerGlow.addColorStop(0.6, 'rgba(0,0,0,0.2)');
+  playerGlow.addColorStop(0, 'rgba(0,0,0,0.7)');
+  playerGlow.addColorStop(0.4, 'rgba(0,0,0,0.35)');
+  playerGlow.addColorStop(0.7, 'rgba(0,0,0,0.1)');
   playerGlow.addColorStop(1, 'rgba(0,0,0,0)');
   lctx.fillStyle = playerGlow;
   lctx.fillRect(playerScreenX - pr, playerScreenY - pr, pr * 2, pr * 2);
   
-  // Fixed light sources — static intensity, smooth fade
+  // Fixed light sources
   for (const light of state.lights) {
     const lx = light.pos.x - cx;
     const ly = light.pos.y - cy;
@@ -1848,70 +1848,36 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     const I = light.intensity;
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
     grad.addColorStop(0, `rgba(0,0,0,${I})`);
-    grad.addColorStop(0.2, `rgba(0,0,0,${I * 0.75})`);
-    grad.addColorStop(0.45, `rgba(0,0,0,${I * 0.4})`);
-    grad.addColorStop(0.7, `rgba(0,0,0,${I * 0.15})`);
-    grad.addColorStop(0.9, `rgba(0,0,0,${I * 0.04})`);
+    grad.addColorStop(0.25, `rgba(0,0,0,${I * 0.6})`);
+    grad.addColorStop(0.5, `rgba(0,0,0,${I * 0.25})`);
+    grad.addColorStop(0.8, `rgba(0,0,0,${I * 0.06})`);
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     lctx.fillStyle = grad;
     lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
   }
   
-  // Muzzle flash light (brief, from player bullets)
+  // Muzzle flash
   for (const b of state.bullets) {
     if (b.fromPlayer && b.life > 0.85) {
       const bx = b.pos.x - cx;
       const by = b.pos.y - cy;
       const flashGrad = lctx.createRadialGradient(bx, by, 0, bx, by, 55);
-      flashGrad.addColorStop(0, 'rgba(0,0,0,0.85)');
-      flashGrad.addColorStop(0.5, 'rgba(0,0,0,0.3)');
+      flashGrad.addColorStop(0, 'rgba(0,0,0,0.8)');
+      flashGrad.addColorStop(0.5, 'rgba(0,0,0,0.25)');
       flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
       lctx.fillStyle = flashGrad;
       lctx.fillRect(bx - 55, by - 55, 110, 110);
     }
   }
   
-  // Subtle color tint from light sources
-  lctx.globalCompositeOperation = 'source-atop';
-  for (const light of state.lights) {
-    const lx = light.pos.x - cx;
-    const ly = light.pos.y - cy;
-    if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
-    const r = light.radius * 0.7;
-    const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
-    grad.addColorStop(0, light.color + '12');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    lctx.fillStyle = grad;
-    lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
-  }
-  
-  // Draw the light overlay
+  // Draw light overlay
+  lctx.globalCompositeOperation = 'source-over';
   ctx.drawImage(lightCanvas, 0, 0);
-  
-  // Static colored halos
-  ctx.save();
-  ctx.globalCompositeOperation = 'screen';
-  ctx.translate(-cx, -cy);
-  for (const light of state.lights) {
-    const lx = light.pos.x;
-    const ly = light.pos.y;
-    if (lx - cx < -light.radius || lx - cx > w + light.radius || ly - cy < -light.radius || ly - cy > h + light.radius) continue;
-    const I = light.intensity * 0.12;
-    const r = light.radius * 0.5;
-    const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, r);
-    grad.addColorStop(0, light.color + Math.floor(I * 255).toString(16).padStart(2, '0'));
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(lx, ly, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
 
   // Subtle vignette
-  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.45, w / 2, h / 2, w * 0.85);
+  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.5, w / 2, h / 2, w * 0.9);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.45)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.3)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 

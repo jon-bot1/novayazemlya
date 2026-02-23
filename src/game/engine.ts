@@ -308,7 +308,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.interact) {
     // Loot containers
     for (const lc of state.lootContainers) {
-      if (!lc.looted && dist(state.player.pos, lc.pos) < 50) {
+      if (!lc.looted && dist(state.player.pos, lc.pos) < 70) {
         lc.looted = true;
         for (const item of lc.items) {
           state.player.inventory.push(item);
@@ -332,7 +332,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Document pickups
     for (const dp of state.documentPickups) {
-      if (!dp.collected && dist(state.player.pos, dp.pos) < 50) {
+      if (!dp.collected && dist(state.player.pos, dp.pos) < 70) {
         dp.collected = true;
         const doc = LORE_DOCUMENTS.find(d => d.id === dp.loreDocId);
         if (doc) {
@@ -351,7 +351,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Dead enemy looting
     for (const enemy of state.enemies) {
       if (enemy.state !== 'dead' || enemy.looted) continue;
-      if (dist(state.player.pos, enemy.pos) < 50) {
+      if (dist(state.player.pos, enemy.pos) < 70) {
         enemy.looted = true;
         for (const item of enemy.loot) {
           state.player.inventory.push(item);
@@ -375,7 +375,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Hack alarm panels
     for (const panel of state.alarmPanels) {
       if (panel.hacked) continue;
-      if (dist(state.player.pos, panel.pos) < 50) {
+      if (dist(state.player.pos, panel.pos) < 70) {
         if (!panel.activated) {
           // Pre-emptively hack before alarm is triggered
           panel.hackProgress += 0.05;
@@ -412,8 +412,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   }
 
-  // Manual healing (H key)
-  if (input.heal) {
+  // Manual healing (H key) OR auto-heal when HP < 40
+  const shouldAutoHeal = state.player.hp < 40 && state.player.hp > 0;
+  if (input.heal || shouldAutoHeal) {
     const player = state.player;
     const needsHeal = player.hp < player.maxHp;
     const isBleeding = player.bleedRate > 0;
@@ -426,8 +427,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (medIdx < 0 && needsHeal) {
       medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'medkit');
     }
-    if (medIdx < 0 && (needsHeal || isBleeding)) {
+    if (medIdx < 0 && needsHeal) {
       medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'morphine');
+    }
+    if (medIdx < 0 && isBleeding) {
+      medIdx = player.inventory.findIndex(i => i.category === 'medical');
     }
 
     if (medIdx >= 0) {
@@ -443,7 +447,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       player.inventory.splice(medIdx, 1);
       addMessage(state, `💊 ${med.name} (+${med.healAmount}HP)`, 'info');
       spawnParticles(state, player.pos.x, player.pos.y, '#44ff66', 5);
-    } else if (needsHeal || isBleeding) {
+    } else if (input.heal && (needsHeal || isBleeding)) {
       addMessage(state, '⚠ Ingen medicin!', 'warning');
     }
     input.heal = false;
