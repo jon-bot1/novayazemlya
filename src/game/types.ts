@@ -227,6 +227,7 @@ export interface GameState {
   codesFound: string[];
   documentsRead: string[];
   hasExtractionCode: boolean;
+  hasNuclearCodes: boolean;
   speedBoostTimer: number;
   soundEvents: SoundEvent[]; // sounds that enemies can react to
   flashbangTimer: number; // seconds of flashbang blindness remaining
