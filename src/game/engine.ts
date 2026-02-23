@@ -947,20 +947,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead') continue;
         const d = dist(g.pos, enemy.pos);
         if (d < g.radius) {
-          const falloff = 1 - (d / g.radius);
-          const dmg = g.damage * falloff;
-          enemy.hp -= dmg;
-          if (enemy.hp <= 0) {
-            enemy.state = 'dead';
-            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-            speakCallout('death', enemy.type);
-            enemy.loot = generateEnemyLoot(enemy);
-            state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
-            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
-          } else {
-            enemy.state = 'chase';
-          }
+          // Grenades are instant kill
+          enemy.hp = 0;
+          enemy.state = 'dead';
+          playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+          speakCallout('death', enemy.type);
+          enemy.loot = generateEnemyLoot(enemy);
+          state.killCount++;
+          addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
         }
       }
 
