@@ -1469,12 +1469,14 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         soldier: Math.PI * 0.45 - DEG15,
         heavy: Math.PI * 0.6 - DEG15,
         turret: Math.PI * 0.5 - DEG15,
+        sniper: Math.PI * 0.25,
       }[enemy.type] || Math.PI * 0.45 - DEG15);
       const rearRange = isBodyguard ? 0.4 : ({
         scav: 0.15,
         soldier: 0.25,
         heavy: 0.4,
         turret: 0,
+        sniper: 0.1,
       }[enemy.type] || 0.25);
 
       // Clip vision cone to walls (non-elevated only)
@@ -1618,7 +1620,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Draw the gun on top
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
     } else if (enemy.type === 'boss') {
-      // Boss: Commandant Osipovitch — larger, glowing, unique appearance
+      // Boss: Commandant Osipovitj — larger, glowing, unique appearance
       const bossSize = R + 8;
       const phase = enemy.bossPhase || 0;
 
@@ -1670,10 +1672,45 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('★ COMMANDANT OSIPOVITCH ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+      ctx.fillText('★ COMMANDANT OSIPOVITJ ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
       if (phase >= 1) {
         ctx.font = 'bold 8px sans-serif';
         ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
+      }
+    } else if (enemy.type === 'sniper') {
+      // Sniper — camouflaged, prone, with scope glint
+      const isAiming = enemy.state === 'attack' || enemy.state === 'chase';
+      ctx.save();
+      ctx.translate(enemy.pos.x, enemy.pos.y);
+      ctx.rotate(enemy.angle);
+      // Ghillie suit body (prone, elongated)
+      ctx.fillStyle = '#4a5a3a';
+      ctx.fillRect(-6, -4, 18, 8); // prone body
+      // Ghillie texture
+      ctx.fillStyle = '#3a4a2a';
+      for (let g = 0; g < 5; g++) {
+        const gx = -4 + g * 4;
+        const gy = -3 + Math.sin(g * 1.5) * 2;
+        ctx.fillRect(gx, gy, 3, 2);
+      }
+      // Rifle barrel
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(12, -1, 10, 2);
+      // Scope glint when aiming
+      if (isAiming) {
+        const glint = 0.5 + Math.sin(state.time * 3) * 0.5;
+        ctx.fillStyle = `rgba(255, 255, 200, ${glint * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(22, 0, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      // "SNIPER" label only when spotted
+      if (isAiming) {
+        ctx.fillStyle = '#ff4444';
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔭 SNIPER', enemy.pos.x, enemy.pos.y - 14);
       }
     } else {
       const isBodyguard = !!(enemy as any)._isBodyguard;

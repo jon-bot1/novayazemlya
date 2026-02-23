@@ -25,13 +25,14 @@ const FENCE = '#8a8a7a';
 
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
-const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss', fixedAngle?: number): Enemy => {
+const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
   const stats = {
     scav: { hp: 32, speed: 1.2, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
     soldier: { hp: 56, speed: 1.5, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
     heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
     boss: { hp: 350, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
+    sniper: { hp: 40, speed: 0.6, damage: 45, alertRange: 400, shootRange: 350, fireRate: 3000 },
   }[type];
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
@@ -49,7 +50,7 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     lastRadioCall: 0,
     radioGroup: Math.floor(x / 400),
     radioAlert: 0,
-    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
+    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'sniper' ? 'none' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
     suppressTimer: 0,
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
@@ -247,8 +248,13 @@ export function generateMap() {
     makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
-     // Boss — Commandant Osipovitch — deep in storage area (far from entrance)
-     makeEnemy(HX + HW - 200, HY + HH - 200, 'boss'),
+     // Boss — Commandant Osipovitj — random spawn inside base
+     (() => {
+       const bossZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_OFFICES_BOT];
+       const bz = bossZones[Math.floor(Math.random() * bossZones.length)];
+       const bp = randIn(bz.x, bz.y, bz.w, bz.h);
+       return makeEnemy(bp.x, bp.y, 'boss');
+     })(),
 
     // === OUTDOOR ENEMIES ===
     // Gate guards
@@ -286,6 +292,11 @@ export function generateMap() {
     makeEnemy(2550, 2100, 'scav'),
     // Lone guard — patrols far south-west (NOT near spawn)
     makeEnemy(900, 2300, 'soldier'),
+
+    // === SNIPERS — camouflaged, outside the base ===
+    makeEnemy(200 + Math.random() * 300, 1950 + Math.random() * 200, 'sniper'),
+    makeEnemy(2700 + Math.random() * 300, 1950 + Math.random() * 200, 'sniper'),
+    makeEnemy(1200 + Math.random() * 800, 2200 + Math.random() * 150, 'sniper'),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)

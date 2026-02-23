@@ -37,7 +37,7 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
         <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
         <p className="text-xs font-mono text-foreground/80 leading-relaxed">
           Infiltrate the abandoned military base <span className="text-accent">Object Z-14</span>. 
-          Locate and eliminate <span className="text-danger">Commandant Osipovitch</span>. 
+          Locate and eliminate <span className="text-danger">Commandant Osipovitj</span>. 
           Recover his <span className="text-loot">USB drive</span> and hack the <span className="text-warning">nuclear codebook terminal</span>. 
           <strong>Both items are required</strong> for full mission success.
           Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.

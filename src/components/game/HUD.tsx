@@ -178,7 +178,7 @@ export const HUD: React.FC<HUDProps> = ({
                 {!player.inventory.some(i => i.id === 'boss_usb') && !player.inventory.some(i => i.id === 'nuclear_codebook')
                   ? 'Missing USB drive and nuclear codes.'
                   : !player.inventory.some(i => i.id === 'boss_usb')
-                  ? 'Missing Osipovitch\'s USB drive.'
+                  ? 'Missing Osipovitj\'s USB drive.'
                   : 'Missing nuclear launch codes.'}
                 <br/>Mission incomplete.
               </p>

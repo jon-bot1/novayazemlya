@@ -78,8 +78,9 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     scav: Math.PI * 0.35 - DEG15,
     soldier: Math.PI * 0.45 - DEG15,
     heavy: Math.PI * 0.6 - DEG15,
-    turret: Math.PI * 0.5 - DEG15, // narrower, fixed position
+    turret: Math.PI * 0.5 - DEG15,
     boss: Math.PI * 0.7,
+    sniper: Math.PI * 0.25, // very narrow, focused
   };
   let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
@@ -128,8 +129,8 @@ function generateEnemyLoot(enemy: Enemy) {
       ...existingLoot,
       ...LOOT_POOLS.military(),
       ...LOOT_POOLS.body(),
-      { id: 'boss_usb', name: 'Osipovitch\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
-      { id: 'boss_dogtag', name: 'Osipovitch\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitch\'s ID tag — extremely rare' },
+      { id: 'boss_usb', name: 'Osipovitj\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
+      { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
     ];
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
@@ -163,7 +164,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'OPERATION STARTED — Eliminate Osipovitch, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
+    messages: [{ text: 'OPERATION STARTED — Eliminate Osipovitj, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
@@ -566,7 +567,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
-            addMessage(state, '💾 OSIPOVITCH\'S USB DRIVE! Get to the extraction point!', 'intel');
+            addMessage(state, '💾 OSIPOVITJ\'S USB DRIVE! Get to the extraction point!', 'intel');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
@@ -750,7 +751,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else enemy.bossPhase = 0;
       
       if (enemy.bossPhase !== oldPhase) {
-        const phaseNames = ['', '⚠ COMMANDANT OSIPOVITCH IS ENRAGED!', '☠ OSIPOVITCH IS DESPERATE — WATCH OUT!'];
+        const phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
           playBossRoar();
@@ -818,6 +819,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           soldier: { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 },
           heavy:   { frontArc: Math.PI * 0.6 - DEG15, rearRange: 0.4 },
           turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
+          sniper:  { frontArc: Math.PI * 0.25, rearRange: 0.1 }, // narrow vision, very focused
         }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -1131,9 +1133,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'chase': {
-        if (enemy.type === 'turret') {
+        if (enemy.type === 'turret' || enemy.type === 'sniper') {
+          // Turrets and snipers don't move — just aim
           if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
-            enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+            const ta = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+            // Snipers turn slowly
+            const turnRate = (enemy.type === 'sniper' ? 2.0 : 99) * dt;
+            let td = ta - enemy.angle;
+            while (td > Math.PI) td -= Math.PI * 2;
+            while (td < -Math.PI) td += Math.PI * 2;
+            enemy.angle += Math.abs(td) > turnRate ? Math.sign(td) * turnRate : td;
+            // Sniper switches to attack when aimed
+            if (enemy.type === 'sniper' && Math.abs(td) < 0.1) {
+              enemy.state = 'attack';
+            }
           } else {
             enemy.state = 'idle';
           }
@@ -1227,16 +1240,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'attack': {
         const targetAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-        if (enemy.type === 'turret') {
+        if (enemy.type === 'turret' || enemy.type === 'sniper') {
           if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
-            enemy.angle = targetAngle;
+            // Slow aim for sniper
+            const ta = targetAngle;
+            const turnRate = (enemy.type === 'sniper' ? 2.0 : 99) * dt;
+            let td = ta - enemy.angle;
+            while (td > Math.PI) td -= Math.PI * 2;
+            while (td < -Math.PI) td += Math.PI * 2;
+            enemy.angle += Math.abs(td) > turnRate ? Math.sign(td) * turnRate : td;
           } else {
             enemy.state = 'idle';
             break;
           }
         } else {
           // Gradual turning — enemies must physically rotate toward player
-          const TURN_SPEED = enemy.type === 'boss' ? 4.5 : enemy.type === 'heavy' ? 3.0 : 4.0; // radians/sec
+          const TURN_SPEED = enemy.type === 'boss' ? 4.5 : enemy.type === 'heavy' ? 3.0 : 4.0;
           let angleDelta = targetAngle - enemy.angle;
           // Normalize to -PI..PI
           while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
@@ -1249,26 +1268,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
-          const spread = enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
+          const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
           const angle = enemy.angle + spread;
-          const bSpeed = enemy.type === 'turret' ? 8 : 6;
+          const bSpeed = enemy.type === 'sniper' ? 10 : enemy.type === 'turret' ? 8 : 6;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
             damage: enemy.damage,
             damageType: 'bullet',
             fromPlayer: false,
-            life: 50,
+            life: enemy.type === 'sniper' ? 80 : 50,
             elevated: enemy.elevated,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
           // Enemy gunshot sound event (alerts other enemies too)
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
-          const gunType = enemy.type === 'boss' ? 'boss' : enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : 'rifle';
+          const gunType = enemy.type === 'boss' ? 'boss' : enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : enemy.type === 'sniper' ? 'rifle' : 'rifle';
           playGunshot(gunType);
         }
-        if (enemy.type !== 'turret' && enemy.type !== 'boss' && distToPlayer < enemy.shootRange * 0.5) {
+        if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
         }
@@ -1289,7 +1308,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 damage: -1, // flashbang marker
                 fromPlayer: false,
               });
-              addMessage(state, '💫 OSIPOVITCH throws FLASHBANG!', 'warning');
+              addMessage(state, '💫 OSIPOVITJ throws FLASHBANG!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
             } else {
               state.grenades.push({
@@ -1300,7 +1319,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 damage: 25,
                 fromPlayer: false,
               });
-              addMessage(state, '💣 OSIPOVITCH throws grenade!', 'warning');
+              addMessage(state, '💣 OSIPOVITJ throws grenade!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
@@ -1333,7 +1352,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
           };
           state.enemies.push(minion);
-          addMessage(state, '📻 Osipovitch calls reinforcements!', 'warning');
+          addMessage(state, '📻 Osipovitj calls reinforcements!', 'warning');
           spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
@@ -1373,22 +1392,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         spawnParticles(state, g.pos.x, g.pos.y, '#ffffff', 20);
         state.soundEvents.push({ pos: { ...g.pos }, radius: 400, time: state.time });
 
-        // Stun enemies in radius
+        // Stun enemies in radius (but NOT boss or his bodyguards if thrown by boss)
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead') continue;
+          // Boss flashbangs don't affect boss or his bodyguards
+          if (!g.fromPlayer) {
+            if (enemy.type === 'boss' || (enemy as any)._isBodyguard) continue;
+          }
           const d = dist(g.pos, enemy.pos);
           if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
-            enemy.stunTimer = 3; // 3 seconds stun
+            enemy.stunTimer = 3;
             enemy.state = 'idle';
             addMessage(state, `💫 ${enemy.type.toUpperCase()} STUNNED!`, 'info');
           }
         }
 
-        // Blind player if in radius
+        // Blind player if in radius (only from player's own flashbangs is optional — boss flashbangs DO affect player)
         const dPlayer = dist(g.pos, state.player.pos);
         if (dPlayer < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const intensity = 1 - (dPlayer / g.radius);
-          state.flashbangTimer = 3; // 3 seconds stun — frozen + dizzy
+          state.flashbangTimer = 3;
           addMessage(state, '💫 STUNNED! Cannot move!', 'damage');
         }
       } else {
@@ -1412,6 +1435,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
               if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
             }
+            // Bodyguards take 50% grenade damage instead of instant kill
+            if ((enemy as any)._isBodyguard) {
+              const dmg = enemy.maxHp * 0.5;
+              enemy.hp -= dmg;
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+              addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
+              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+            }
             enemy.hp = 0;
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
@@ -1419,7 +1450,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITCH IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
         }
@@ -1529,7 +1560,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             if (!isCrit) {
-              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITCH IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
