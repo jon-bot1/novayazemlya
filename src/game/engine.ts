@@ -997,6 +997,55 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         continue; // skip movement switch entirely
       }
     }
+
+    // Sniper teleportation: disappear and reappear at a nearby tree
+    if (enemy.type === 'sniper') {
+      if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 5;
+      (enemy as any)._sniperTeleportTimer -= dt;
+
+      // While invisible, skip everything
+      if ((enemy as any)._sniperInvisible > 0) {
+        (enemy as any)._sniperInvisible -= dt;
+        if ((enemy as any)._sniperInvisible <= 0) {
+          // Reappear at target tree
+          const targetTree = (enemy as any)._sniperTargetTree;
+          if (targetTree) {
+            enemy.pos = { x: targetTree.x, y: targetTree.y };
+          }
+          addMessage(state, '🔭 Sniper repositioned!', 'warning');
+        }
+        continue; // skip all behavior while invisible
+      }
+
+      if ((enemy as any)._sniperTeleportTimer <= 0 && enemy.state !== 'attack') {
+        // Find nearby trees (max 3 trees away, ~400px)
+        const trees = state.props.filter(p =>
+          (p.type === 'tree' || p.type === 'pine_tree') &&
+          dist(enemy.pos, p.pos) > 60 && dist(enemy.pos, p.pos) < 400
+        );
+        if (trees.length > 0) {
+          const targetTree = trees[Math.floor(Math.random() * trees.length)];
+          (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
+          (enemy as any)._sniperInvisible = 3; // invisible for 3 seconds
+          (enemy as any)._sniperTeleportTimer = 8 + Math.random() * 6;
+          // Make sniper "disappear"
+          continue;
+        } else {
+          (enemy as any)._sniperTeleportTimer = 3;
+        }
+      }
+
+      // Snipers don't use normal movement — they stay put and aim
+      if (enemy.state === 'idle' || enemy.state === 'patrol') {
+        enemy.angle += Math.sin(state.time * 0.3 + enemy.pos.x * 0.01) * 0.003;
+        continue;
+      }
+      if (enemy.state === 'chase') {
+        enemy.state = 'attack'; // snipers don't chase, they shoot
+      }
+      // Fall through to attack state in switch
+    }
+
     switch (enemy.state as string) {
       case 'idle': {
         // Bodyguards follow their boss instead of idling
@@ -1198,7 +1247,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'chase';
         }
         // Opportunistic shots while flanking
-        if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+        if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
           const spread = (Math.random() - 0.5) * 0.2;
           const angle = enemy.angle + spread;
           state.bullets.push({
@@ -1217,7 +1266,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         // Rapid suppressive fire with wide spread — only if player is in arc
         const suppressRate = enemy.fireRate / 1000 * 0.5; // fire twice as fast
-        if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+        if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
           const spread = (Math.random() - 0.5) * 0.35; // wide spread — suppression, not precision
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'heavy' ? 7 : 6;
@@ -1267,7 +1316,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.angle = targetAngle;
           }
         }
-        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
           const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'sniper' ? 10 : enemy.type === 'turret' ? 8 : 6;
@@ -1514,6 +1563,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
+            // When hit, elevated guards go to attack and expand their range
+            if (enemy.elevated) {
+              enemy.alertRange = Math.max(enemy.alertRange, 300);
+              enemy.shootRange = Math.max(enemy.shootRange, 250);
+            }
             enemy.state = 'chase';
           }
           return false;
@@ -1564,6 +1618,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
+            // When hit, elevated guards go to attack and expand their range
+            if (enemy.elevated) {
+              enemy.alertRange = Math.max(enemy.alertRange, 300);
+              enemy.shootRange = Math.max(enemy.shootRange, 250);
+            }
             enemy.state = 'chase';
           }
           return false;

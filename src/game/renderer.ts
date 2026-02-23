@@ -1446,6 +1446,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // ── LIVING ENEMIES ──
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
+    // Sniper invisible during teleport
+    if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) continue;
 
     // Only show detection zone if player can see the enemy (not through walls)
     if (rendererLOS(state, state.player.pos, enemy.pos)) {
