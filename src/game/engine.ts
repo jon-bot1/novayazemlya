@@ -2,7 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, 
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
-import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar } from './audio';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar, playVoiceShout } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -512,6 +512,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.alarmActive = true;
           addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
           playAlarm();
+          playVoiceShout('alarm', 0);
           // Alert ALL enemies on the map
           for (const ally of state.enemies) {
             if (ally.state === 'dead') continue;
@@ -552,12 +553,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // State transitions
+    // State transitions with voice shouts
+    const prevState = enemy.state;
     if (canSeePlayer) {
       if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
+      }
+      // Shout when first spotting player
+      if (prevState !== 'chase' && prevState !== 'attack') {
+        const pitchVar = enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0;
+        if (enemy.state === 'attack') {
+          playVoiceShout('attack', pitchVar);
+        } else {
+          playVoiceShout('alert', pitchVar);
+        }
       }
       // Radio call — alert allies in same group or within 400px
       if (state.time - enemy.lastRadioCall > 4) {
@@ -581,12 +592,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Heard a sound — go investigate
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
+      playVoiceShout('investigate', enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0);
     } else if (enemy.state === 'chase' || enemy.state === 'attack') {
       // Lost sight of player
       if (distToPlayer > enemy.alertRange * 1.5 || !los) {
         // Go investigate where they last saw the player
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
+        playVoiceShout('lost', enemy.type === 'heavy' ? -0.4 : 0);
         // Radio last known position to group
         if (state.time - enemy.lastRadioCall > 4) {
           enemy.lastRadioCall = state.time;
@@ -785,6 +798,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.hp -= dmg;
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
+            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
@@ -837,6 +851,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           playHit();
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
+            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');

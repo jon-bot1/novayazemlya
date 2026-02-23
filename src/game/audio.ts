@@ -474,6 +474,105 @@ export function playBossRoar() {
   rumbleSrc.stop(now + 0.45);
 }
 
+// === Voice shouts — procedural "speech" using formant synthesis ===
+
+// Throttle to avoid spam
+let lastShoutTime = 0;
+const SHOUT_COOLDOWN = 800; // ms
+
+type ShoutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
+
+const SHOUT_CONFIGS: Record<ShoutType, { formants: [number, number, number]; duration: number; pitch: number; pitchEnd: number; volume: number; roughness: number }> = {
+  alert:       { formants: [700, 1200, 2600],  duration: 0.35, pitch: 180, pitchEnd: 250, volume: 0.12, roughness: 2 },
+  chase:       { formants: [600, 1000, 2400],  duration: 0.45, pitch: 160, pitchEnd: 200, volume: 0.15, roughness: 3 },
+  investigate: { formants: [400, 900, 2200],   duration: 0.3,  pitch: 140, pitchEnd: 170, volume: 0.08, roughness: 1 },
+  attack:      { formants: [800, 1300, 2800],  duration: 0.25, pitch: 200, pitchEnd: 280, volume: 0.14, roughness: 4 },
+  lost:        { formants: [500, 1100, 2000],  duration: 0.4,  pitch: 150, pitchEnd: 120, volume: 0.09, roughness: 1 },
+  alarm:       { formants: [750, 1400, 2900],  duration: 0.5,  pitch: 190, pitchEnd: 300, volume: 0.16, roughness: 5 },
+  death:       { formants: [350, 800, 1800],   duration: 0.6,  pitch: 200, pitchEnd: 60,  volume: 0.18, roughness: 6 },
+};
+
+export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
+  const now = performance.now();
+  if (now - lastShoutTime < SHOUT_COOLDOWN) return;
+  lastShoutTime = now;
+
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  const master = getMaster(ctx);
+  const c = SHOUT_CONFIGS[type];
+
+  const pitchMult = 1 + pitchVariation * 0.15;
+  const basePitch = c.pitch * pitchMult;
+  const endPitch = c.pitchEnd * pitchMult;
+
+  // Vocal cord — sawtooth oscillator as voice source
+  const voice = ctx.createOscillator();
+  voice.type = 'sawtooth';
+  voice.frequency.setValueAtTime(basePitch, t);
+  voice.frequency.linearRampToValueAtTime(endPitch, t + c.duration * 0.7);
+  voice.frequency.linearRampToValueAtTime(endPitch * 0.8, t + c.duration);
+
+  // Add roughness via waveshaper distortion
+  const distNode = ctx.createWaveShaper();
+  const curve = new Float32Array(256);
+  for (let i = 0; i < 256; i++) {
+    const x = (i / 128) - 1;
+    curve[i] = Math.tanh(x * c.roughness);
+  }
+  distNode.curve = curve;
+
+  // Formant filters (simulate vowel shapes)
+  const formantGain = ctx.createGain();
+  formantGain.gain.setValueAtTime(c.volume, t);
+  formantGain.gain.linearRampToValueAtTime(c.volume * 1.2, t + c.duration * 0.15);
+  formantGain.gain.setValueAtTime(c.volume * 0.9, t + c.duration * 0.5);
+  formantGain.gain.exponentialRampToValueAtTime(0.001, t + c.duration);
+
+  const filters = c.formants.map((freq, idx) => {
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = freq;
+    f.Q.value = 5 + idx * 3;
+    return f;
+  });
+
+  // Mix formants together
+  const merger = ctx.createGain();
+  merger.gain.value = 0.5;
+
+  voice.connect(distNode);
+  for (const f of filters) {
+    distNode.connect(f);
+    f.connect(merger);
+  }
+  merger.connect(formantGain).connect(master);
+
+  // Aspiration noise for consonant texture
+  const noiseDur = Math.min(c.duration * 0.3, 0.12);
+  const noiseBufLen = Math.floor(ctx.sampleRate * noiseDur);
+  const noiseBuf = ctx.createBuffer(1, noiseBufLen, ctx.sampleRate);
+  const noiseData = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseBufLen; i++) {
+    const env = i < noiseBufLen * 0.2 ? i / (noiseBufLen * 0.2) : Math.pow(1 - (i - noiseBufLen * 0.2) / (noiseBufLen * 0.8), 2);
+    noiseData[i] = (Math.random() * 2 - 1) * env;
+  }
+  const noiseSrc = ctx.createBufferSource();
+  noiseSrc.buffer = noiseBuf;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(c.volume * 0.3, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + noiseDur);
+  const noiseHP = ctx.createBiquadFilter();
+  noiseHP.type = 'highpass';
+  noiseHP.frequency.value = 1500;
+  noiseSrc.connect(noiseHP).connect(noiseGain).connect(master);
+
+  voice.start(t);
+  voice.stop(t + c.duration + 0.02);
+  noiseSrc.start(t);
+  noiseSrc.stop(t + noiseDur + 0.02);
+}
+
 let lastFootstepTime = 0;
 
 export function playFootstep(mode: 'sneak' | 'walk' | 'sprint') {
