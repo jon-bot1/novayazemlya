@@ -1140,7 +1140,46 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     b.life--;
 
     if (b.life <= 0) return false;
-    // Elevated enemy bullets fly over walls; player bullets check walls normally
+
+    // Check elevated enemy hits BEFORE wall collision so bullets can reach wall guards
+    if (b.fromPlayer) {
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead' || !enemy.elevated) continue;
+        if (dist(b.pos, enemy.pos) < 18) { // slightly larger hitbox for elevated targets
+          if (Math.random() < 0.4) {
+            spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
+            return false; // concealment miss
+          }
+          const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
+          const isCrit = Math.random() < critChance;
+          if (isCrit) {
+            enemy.hp = 0;
+            spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
+            playHit();
+            addMessage(state, '💀 HEADSHOT!', 'kill');
+          } else {
+            enemy.hp -= b.damage;
+            spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
+            playHit();
+          }
+          if (enemy.hp <= 0) {
+            enemy.state = 'dead';
+            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+            speakCallout('death', enemy.type);
+            sendReinforcementToPlatform(state, enemy);
+            enemy.loot = generateEnemyLoot(enemy);
+            state.killCount++;
+            if (!isCrit) addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+          } else {
+            enemy.state = 'chase';
+          }
+          return false;
+        }
+      }
+    }
+
+    // Wall collision — elevated enemy bullets fly over walls
     if (!b.elevated && collidesWithWalls(state, b.pos.x, b.pos.y, 2)) {
       spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
       return false;
