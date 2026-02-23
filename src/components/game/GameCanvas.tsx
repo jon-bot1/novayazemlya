@@ -14,16 +14,13 @@ import { LootPopup, LootNotification } from './LootPopup';
 
 const TIME_LIMIT = 300; // 5 minutes
 
-const anonCounterRef = { current: 0 };
-
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
   
   const handleStart = React.useCallback(() => {
     if (anonymous) {
-      anonCounterRef.current += 1;
-      onStart(`Anonymous ${anonCounterRef.current}`);
+      onStart('__anonymous__');
     } else if (name.trim().length > 0) {
       onStart(name.trim().slice(0, 20));
     }
@@ -66,7 +63,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             onChange={e => setAnonymous(e.target.checked)}
             className="accent-accent w-3.5 h-3.5"
           />
-          <span className="text-[11px] font-mono text-muted-foreground">🕵️ Top Secret Agent (Identity Unknown)</span>
+          <span className="text-[11px] font-mono text-muted-foreground">🕵️ Top Secret Agent (nothing will be registered)</span>
         </label>
       </div>
 
@@ -334,7 +331,7 @@ export const GameCanvas: React.FC = () => {
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;
-    if (playerName.trim().toLowerCase() === 'test123') return;
+    if (playerName.trim().toLowerCase() === 'test123' || playerName === '__anonymous__') return;
     const handleUnload = () => {
       const state = stateRef.current;
       if (!state || state.gameOver || state.extracted) return;
