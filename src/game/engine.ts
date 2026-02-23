@@ -463,6 +463,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, `🔫 ${item.name} utrustad!`, 'info');
           }
           if (item.id === 'boss_usb') {
+            state.hasExtractionCode = true;
             addMessage(state, '💾 VOLKOVS USB-MINNE! Ta det till evakueringspunkten!', 'intel');
           }
         }
