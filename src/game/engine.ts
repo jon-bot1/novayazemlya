@@ -540,8 +540,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           panel.activated = true;
           state.alarmActive = true;
           addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
-          playAlarm();
-          playVoiceShout('alarm', 0);
+          // No alarm sound effect
           speakCallout('alarm');
           // Alert ALL enemies on the map
           for (const ally of state.enemies) {
@@ -590,8 +589,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
-        const pitchVar = enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0;
-        playVoiceShout('alert', pitchVar);
+        // Silent alert — no sound on detection
         speakCallout('alert', enemy.type);
       }
 
