@@ -102,8 +102,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (d > 8) {
       moveX = dx / d;
       moveY = dy / d;
+      // Auto-interact when close enough to target (for tap-to-interact)
+      if (d < 50) {
+        input.interact = true;
+      }
     } else {
-      // Arrived at target
+      // Arrived at target — trigger interact in case we tapped on something
+      input.interact = true;
       input.moveTarget = null;
       moveX = 0;
       moveY = 0;
@@ -125,7 +130,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   // Player shooting
-  if (input.shooting && state.player.currentAmmo > 0 && state.time - state.player.lastShot > state.player.fireRate / 1000) {
+  if (input.shooting && state.time - state.player.lastShot > state.player.fireRate / 1000) {
     const spread = (Math.random() - 0.5) * 0.08;
     const angle = state.player.angle + spread;
     const speed = 8;
@@ -137,7 +142,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       fromPlayer: true,
       life: 60,
     });
-    state.player.currentAmmo--;
+    // currentAmmo decrement disabled for testing (infinite ammo)
+    // state.player.currentAmmo--;
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
   }
