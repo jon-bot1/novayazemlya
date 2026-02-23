@@ -35,7 +35,7 @@ export const LORE_DOCUMENTS: LoreDocument[] = [
     classification: 'SECRET',
     content: `REPORT — Novaya Zemlya
 
-Object Z-14 confirmed active. Recon team has detected signs of recent activity in the bunker's underground chambers.
+Objekt 47 "Severnyj Vektor" (Объект 47 «Северный Вектор») confirmed active. Recon team has detected signs of recent activity in the bunker's underground chambers.
 
 Facility personnel evacuated in unknown direction. Laboratory equipment partially dismantled, but traces of experimental work with unknown samples have been found.
 
@@ -159,7 +159,7 @@ RUN`,
     date: '01.01.1994',
     classification: 'OPEN',
     content: `INVENTORY LIST
-Storage No. 3, Object Z-14
+Storage No. 3, Objekt 47 "Severnyj Vektor"
 
 ✓ Gas masks GP-7 — 240 pcs (12 decommissioned)
 ✓ RPK-74 — 6 pcs
@@ -189,7 +189,7 @@ P.S. Mice ate three MREs. Or not mice. God knows what runs around here at night.
 Subject: Andrei Pavlovich Osipovitj
 Rank: Commandant
 Unit: Special Group "Wolf"
-Station: Object Z-14, Underground Section
+Station: Objekt 47 "Severnyj Vektor", Underground Section
 
 BACKGROUND:
 Osipovitj was recruited from Spetsnaz in 1987. Outstanding combat record — 47 confirmed operations. Psychological profile shows extreme loyalty to the project but rising instability since the exposure.
@@ -204,7 +204,7 @@ During inspection of Laboratory No. 3 (see "Dawn" protocol), Osipovitj was expos
 - Conversations with "voices" — claims to hear orders from below
 
 ASSESSMENT:
-Despite instability, Osipovitj is the most effective commander at Z-14. He has refused evacuation, stating he "guards what lies beneath". Personnel report he patrols the deep storage at night, armed and muttering. ZAPAD and VOSTOK follow in silence.
+Despite instability, Osipovitj is the most effective commander at Objekt 47. He has refused evacuation, stating he "guards what lies beneath". Personnel report he patrols the deep storage at night, armed and muttering. ZAPAD and VOSTOK follow in silence.
 
 RECOMMENDATION: Monitor. Do NOT neutralize without direct orders. His knowledge of the B-series is irreplaceable.
 
