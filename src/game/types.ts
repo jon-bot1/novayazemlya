@@ -71,7 +71,7 @@ export interface Enemy {
   lastShot: number;
   fireRate: number;
   angle: number;
-  type: 'scav' | 'soldier' | 'heavy';
+  type: 'scav' | 'soldier' | 'heavy' | 'turret';
   eyeBlink: number;
   loot: Item[];
   looted: boolean;

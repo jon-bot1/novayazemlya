@@ -38,6 +38,7 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
 }
 
 function generateEnemyLoot(enemy: Enemy) {
+  if (enemy.type === 'turret') return LOOT_POOLS.military();
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
   return LOOT_POOLS[poolType]();
 }
@@ -291,6 +292,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       scav:    { frontArc: Math.PI * 0.4, rearRange: 0.2 },   // ~144° front, 20% rear
       soldier: { frontArc: Math.PI * 0.55, rearRange: 0.35 }, // ~198° front, 35% rear
       heavy:   { frontArc: Math.PI * 0.75, rearRange: 0.55 }, // ~270° front, 55% rear
+      turret:  { frontArc: Math.PI * 0.85, rearRange: 0.0 },  // ~306° front, no rear (fixed mount)
     }[enemy.type] || { frontArc: Math.PI * 0.55, rearRange: 0.35 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -317,6 +319,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const speed = enemy.speed * dt * 60;
     switch (enemy.state) {
       case 'patrol': {
+        if (enemy.type === 'turret') break; // turrets don't patrol/move
         if (dist(enemy.pos, enemy.patrolTarget) < 20) {
           enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
         }
@@ -326,6 +329,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'chase': {
+        if (enemy.type === 'turret') {
+          // Turret can't move, just aim
+          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          break;
+        }
         const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
         enemy.pos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
         enemy.angle = Math.atan2(dir.y, dir.x);
@@ -334,9 +342,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       case 'attack': {
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
-          const spread = (Math.random() - 0.5) * 0.15;
+          const spread = enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
           const angle = enemy.angle + spread;
-          const bSpeed = 6;
+          const bSpeed = enemy.type === 'turret' ? 8 : 6;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
@@ -348,7 +356,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
         }
-        if (distToPlayer < enemy.shootRange * 0.5) {
+        // Turrets don't retreat
+        if (enemy.type !== 'turret' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
         }
