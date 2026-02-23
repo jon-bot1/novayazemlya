@@ -127,9 +127,9 @@ function generateEnemyLoot(enemy: Enemy) {
     return [
       ...existingLoot,
       ...LOOT_POOLS.military(),
-      ...LOOT_POOLS.valuable(),
-      { id: 'boss_usb', name: 'Volkovs USB-minne', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'KRITISKT UNDERRÄTTELSEDATA — Ta med ut för att klara uppdraget!' },
-      { id: 'boss_dogtag', name: 'Volkovs Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Kommendant Volkovs identitetsbricka — extremt sällsynt' },
+      ...LOOT_POOLS.body(),
+      { id: 'boss_usb', name: 'Volkov\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
+      { id: 'boss_dogtag', name: 'Volkov\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Volkov\'s ID tag — extremely rare' },
     ];
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';

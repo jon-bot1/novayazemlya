@@ -18,14 +18,20 @@ interface HUDProps {
   inCover: boolean;
   peeking: boolean;
   onViewDocuments: () => void;
+  timeLimit?: number;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit 
 }) => {
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
+
+  const timeRemaining = timeLimit ? Math.max(0, timeLimit - time) : null;
+  const minutes = timeRemaining !== null ? Math.floor(timeRemaining / 60) : 0;
+  const seconds = timeRemaining !== null ? Math.floor(timeRemaining % 60) : 0;
+  const timeUrgent = timeRemaining !== null && timeRemaining < 60;
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -36,14 +42,13 @@ export const HUD: React.FC<HUDProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-xs text-foreground/70 font-mono">HP</span>
             <div className="w-28 h-3 bg-secondary rounded-sm overflow-hidden border border-border/40">
-              <div className={`h-full ${hpColor} transition-all duration-200`} style={{ width: `${hpPercent}%` }} />
+              <div className={`h-full ${hpColor} transition-all duration-200`} style={{ width: `${Math.min(100, hpPercent)}%` }} />
             </div>
             <span className="text-xs text-foreground font-mono">{Math.floor(player.hp)}</span>
           </div>
           {player.bleedRate > 0 && (
-            <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 BLÖDNING</span>
+            <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 BLEEDING</span>
           )}
-          {/* Medical inventory summary */}
           <div className="flex items-center gap-2 mt-0.5">
             {(() => {
               const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
@@ -59,11 +64,10 @@ export const HUD: React.FC<HUDProps> = ({
               );
             })()}
           </div>
-          {/* Movement mode indicator */}
           <div className="hidden sm:flex items-center gap-1 mt-0.5">
             {(() => {
               const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
-              const labels = { sneak: 'SMYG', walk: 'GÅ', sprint: 'SPRING' };
+              const labels = { sneak: 'SNEAK', walk: 'WALK', sprint: 'SPRINT' };
               const colors = { sneak: 'text-accent', walk: 'text-foreground/60', sprint: 'text-warning' };
               return (
                 <span className={`text-[10px] font-mono ${colors[movementMode]}`}>
@@ -73,11 +77,21 @@ export const HUD: React.FC<HUDProps> = ({
             })()}
             {inCover && (
               <span className={`text-[10px] font-mono ${peeking ? 'text-warning animate-pulse-glow' : 'text-accent'}`}>
-                | {peeking ? '🔫 PEEK' : '🛡️ SKYDD'}
+                | {peeking ? '🔫 PEEK' : '🛡️ COVER'}
               </span>
             )}
           </div>
         </div>
+
+        {/* Timer */}
+        {timeRemaining !== null && (
+          <div className={`text-center ${timeUrgent ? 'animate-pulse-glow' : ''}`}>
+            <span className={`font-display text-xl ${timeUrgent ? 'text-danger text-glow-red' : 'text-foreground'}`}>
+              {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </span>
+            {timeUrgent && <div className="text-[10px] text-danger font-mono">⚠ REINFORCEMENTS INBOUND</div>}
+          </div>
+        )}
 
         {/* Weapon slots */}
         <div className="flex flex-col items-end gap-0.5">
@@ -109,14 +123,14 @@ export const HUD: React.FC<HUDProps> = ({
             {codesFound.length > 0 && <span className="text-warning">☢{codesFound.length}</span>}
           </button>
           <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
-            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB HITTAD' : 'USB SAKNAS'}
+            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ACQUIRED' : 'USB MISSING'}
           </div>
         </div>
       </div>
       {/* Extraction progress */}
       {extractionProgress > 0 && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-          <span className="text-xs text-loot font-mono text-glow-green animate-pulse-glow">EVAKUERING...</span>
+          <span className="text-xs text-loot font-mono text-glow-green animate-pulse-glow">EXTRACTING...</span>
           <div className="w-40 h-2 bg-secondary rounded-sm overflow-hidden border border-loot/40">
             <div className="h-full bg-loot transition-all duration-100" style={{ width: `${(extractionProgress / 5) * 100}%` }} />
           </div>
@@ -154,48 +168,48 @@ export const HUD: React.FC<HUDProps> = ({
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
           <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4">
             <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : hasExtractionCode ? 'text-loot text-glow-green' : 'text-warning text-glow-amber'}`}>
-              {gameOver ? '☠ DÖD' : hasExtractionCode ? '🚁 UPPDRAG KLART' : '⚠ EVAKUERAD'}
+              {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
             </h1>
             {extracted && !hasExtractionCode && (
               <p className="text-sm font-mono text-warning text-center">
-                Du evakuerades utan Volkovs USB-minne.<br/>Uppdraget misslyckades.
+                You extracted without Volkov's USB drive.<br/>Mission failed.
               </p>
             )}
             {extracted && hasExtractionCode && (
               <p className="text-sm font-mono text-loot text-center">
-                💾 USB-minnet levererat. Fullständig framgång!
+                💾 USB drive delivered. Full success!
               </p>
             )}
             
             <div className="w-full border-t border-border pt-3 flex flex-col gap-2">
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Eliminerade:</span>
+                <span>Eliminated:</span>
                 <span className="text-foreground">{killCount}</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Byte:</span>
-                <span className="text-foreground">{player.inventory.length} föremål</span>
+                <span>Loot:</span>
+                <span className="text-foreground">{player.inventory.length} items</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Värde:</span>
+                <span>Value:</span>
                 <span className="text-foreground">{player.inventory.reduce((s, i) => s + i.value, 0)}₽</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Dokument:</span>
+                <span>Documents:</span>
                 <span className="text-foreground">{documentsFound}/{totalDocuments}</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Resultat:</span>
+                <span>Result:</span>
                 <span className={`font-display ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
-                  {gameOver ? 'MISSLYCKAD' : hasExtractionCode ? 'FRAMGÅNG' : 'OFULLSTÄNDIG'}
+                  {gameOver ? 'FAILED' : hasExtractionCode ? 'SUCCESS' : 'INCOMPLETE'}
                 </span>
               </div>
               {codesFound.length > 0 && (
                 <div className="mt-2 border-t border-border pt-2">
-                  <span className="text-xs font-mono text-warning">☢ UPPTÄCKTA KODER:</span>
+                  <span className="text-xs font-mono text-warning">☢ CODES FOUND:</span>
                   <div className="flex flex-col gap-1 mt-1">
                     {codesFound.map(code => (
-                      <span key={code} className="text-sm font-display text-warning text-glow-amber">{code}</span>
+                      <span key={code} className="text-sm font-display text-warning text-glow-amber tracking-wider">{code}</span>
                     ))}
                   </div>
                 </div>
@@ -206,7 +220,7 @@ export const HUD: React.FC<HUDProps> = ({
               className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
               onClick={() => window.location.reload()}
             >
-              🔄 STARTA OM
+              🔄 RESTART
             </button>
           </div>
         </div>
@@ -224,11 +238,14 @@ const MiniMap: React.FC<{ playerX: number; playerY: number; mapW: number; mapH: 
   const size = 80;
   const px = (playerX / mapW) * size;
   const py = (playerY / mapH) * size;
+
   return (
-    <div className="relative border border-border/40 bg-background/60 backdrop-blur-sm rounded-sm" style={{ width: size, height: size }}>
-      <div className="absolute w-2 h-2 bg-loot rounded-full" style={{ left: px - 4, top: py - 4 }} />
-      <div className="absolute w-1.5 h-1.5 bg-safe rounded-full" style={{ left: (50 / mapW) * size, top: ((mapH - 50) / mapH) * size }} />
-      <div className="absolute w-1.5 h-1.5 bg-safe rounded-full" style={{ left: ((mapW - 50) / mapW) * size, top: (50 / mapH) * size }} />
+    <div className="relative" style={{ width: size, height: size }}>
+      <div className="absolute inset-0 bg-card/70 border border-border/40 rounded-sm" />
+      <div
+        className="absolute w-2 h-2 bg-safe rounded-full animate-pulse-glow"
+        style={{ left: px - 4, top: py - 4 }}
+      />
     </div>
   );
 };

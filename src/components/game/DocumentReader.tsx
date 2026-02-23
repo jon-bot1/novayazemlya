@@ -10,9 +10,9 @@ export const DocumentReader: React.FC<DocumentReaderProps> = ({ document, onClos
   if (!document) return null;
 
   const classColors = {
-    'ÖPPEN': 'text-foreground/60 border-border',
-    'HEMLIG': 'text-warning border-warning/40',
-    'TOPPHEMLIG': 'text-danger border-danger/40',
+    'OPEN': 'text-foreground/60 border-border',
+    'SECRET': 'text-warning border-warning/40',
+    'TOP SECRET': 'text-danger border-danger/40',
   };
 
   return (
@@ -30,7 +30,7 @@ export const DocumentReader: React.FC<DocumentReaderProps> = ({ document, onClos
               {document.title}
             </h2>
             <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-              Författare: {document.author}
+              Author: {document.author}
             </p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xs font-mono ml-3 mt-1">[✕]</button>
@@ -45,7 +45,7 @@ export const DocumentReader: React.FC<DocumentReaderProps> = ({ document, onClos
         {document.hasCode && document.code && (
           <div className="px-4 py-2.5 border-t border-border bg-secondary/20">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-warning font-mono">☢ KOD UPPTÄCKT:</span>
+              <span className="text-[10px] text-warning font-mono">☢ CODE FOUND:</span>
               <span className="text-sm font-display text-warning text-glow-amber tracking-wider">
                 {document.code}
               </span>
