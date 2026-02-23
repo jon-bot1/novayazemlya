@@ -161,12 +161,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Ground - slightly warmer
-  ctx.fillStyle = '#1e2119';
+  // Ground - darker for contrast
+  ctx.fillStyle = '#111410';
   ctx.fillRect(0, 0, state.mapWidth, state.mapHeight);
 
   // Ground texture - subtle noise pattern
-  ctx.strokeStyle = '#262a21';
+  ctx.strokeStyle = '#1a1e16';
   ctx.lineWidth = 0.5;
   for (let x = 0; x < state.mapWidth; x += 40) {
     ctx.beginPath();
@@ -182,7 +182,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
 
   // Ground decorations - grass tufts, cracks
-  ctx.fillStyle = '#2a3022';
+  ctx.fillStyle = '#1e2418';
   for (let i = 0; i < 50; i++) {
     const gx = ((i * 137 + 42) % state.mapWidth);
     const gy = ((i * 251 + 89) % state.mapHeight);
@@ -389,19 +389,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
-  // Player - cute military character
+  // Player glow (visibility aid)
+  ctx.save();
+  const glowPulse = 0.3 + Math.sin(state.time * 2) * 0.1;
+  ctx.beginPath();
+  ctx.arc(state.player.pos.x, state.player.pos.y, R + 12, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(120, 220, 80, ${glowPulse * 0.15})`;
+  ctx.fill();
+  ctx.strokeStyle = `rgba(120, 220, 80, ${glowPulse})`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+
+  // Player - cute military character (brighter for visibility)
   const playerBlink = Math.sin(state.time * 0.8) > 0.95;
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    '#8aaa6a', '#6a8a4a', '#2a3a1a', playerBlink,
-    'beret', '#5a3a2a', true, R + 1
+    '#b0d888', '#88bb66', '#2a3a1a', playerBlink,
+    'beret', '#7a5040', true, R + 2
   );
 
   // Player name tag
-  ctx.fillStyle = 'rgba(140, 200, 100, 0.7)';
-  ctx.font = '8px "Share Tech Mono", monospace';
+  ctx.fillStyle = 'rgba(180, 240, 120, 0.9)';
+  ctx.font = 'bold 10px "Share Tech Mono", monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('DU', state.player.pos.x, state.player.pos.y - R - 10);
+  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 16);
 
   // Bleeding indicator
   if (state.player.bleedRate > 0) {
