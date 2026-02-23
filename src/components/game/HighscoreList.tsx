@@ -37,10 +37,10 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
   }, []);
 
   if (loading) {
-    return <p className="text-xs font-mono text-muted-foreground text-center mt-3">Laddar highscores...</p>;
+    return <p className="text-xs font-mono text-muted-foreground text-center mt-3">Loading highscores...</p>;
   }
   if (scores.length === 0) {
-    return <p className="text-xs font-mono text-muted-foreground text-center mt-3">Inga highscores ännu.</p>;
+    return <p className="text-xs font-mono text-muted-foreground text-center mt-3">No highscores yet.</p>;
   }
 
   const formatTime = (s: number) => {
@@ -60,7 +60,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
       <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏆 Highscores</h3>
       <div className="space-y-0.5">
         <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_1.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
-          <span>#</span><span>Namn</span><span>Kills</span><span>Tid</span><span></span>
+          <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span></span>
         </div>
         {scores.map((s, i) => {
           const isMe = currentName && s.player_name === currentName;

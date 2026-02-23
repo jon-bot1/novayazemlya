@@ -26,14 +26,14 @@ export const FeedbackWidget: React.FC = () => {
   if (submitted) {
     return (
       <div className="mt-4 p-3 border border-border rounded bg-card/80 text-center">
-        <p className="text-sm font-mono text-accent">✓ Tack för din feedback!</p>
+        <p className="text-sm font-mono text-accent">✓ Thanks for your feedback!</p>
       </div>
     );
   }
 
   return (
     <div className="mt-4 p-3 border border-border rounded bg-card/80">
-      <p className="text-xs font-mono text-muted-foreground mb-2 uppercase tracking-wider">Betygsätt spelet</p>
+      <p className="text-xs font-mono text-muted-foreground mb-2 uppercase tracking-wider">Rate the game</p>
       <div className="flex gap-1 justify-center mb-2">
         {[1, 2, 3, 4, 5].map(star => (
           <button
@@ -51,7 +51,7 @@ export const FeedbackWidget: React.FC = () => {
         className="w-full bg-background border border-border rounded p-2 text-xs font-mono text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
         rows={2}
         maxLength={500}
-        placeholder="Valfri kommentar..."
+        placeholder="Optional comment..."
         value={comment}
         onChange={e => setComment(e.target.value)}
       />
@@ -60,7 +60,7 @@ export const FeedbackWidget: React.FC = () => {
         onClick={handleSubmit}
         disabled={rating === 0 || submitting}
       >
-        {submitting ? 'Skickar...' : 'Skicka feedback'}
+        {submitting ? 'Submitting...' : 'Submit Feedback'}
       </button>
     </div>
   );

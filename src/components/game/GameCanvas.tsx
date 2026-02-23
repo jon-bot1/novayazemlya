@@ -40,12 +40,12 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </div>
 
       <div className="border-t border-border pt-4">
-        <label className="text-xs font-display text-accent uppercase tracking-wider mb-2 block">Ditt callsign</label>
+        <label className="text-xs font-display text-accent uppercase tracking-wider mb-2 block">Your Callsign</label>
         <input
           type="text"
           maxLength={20}
           className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          placeholder="Ange namn..."
+          placeholder="Enter name..."
           value={name}
           onChange={e => setName(e.target.value)}
           autoFocus
