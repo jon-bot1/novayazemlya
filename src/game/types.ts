@@ -130,6 +130,9 @@ export interface Player {
   angle: number;
   inventory: Item[];
   equippedWeapon: Item | null;
+  sidearm: Item | null;
+  primaryWeapon: Item | null;
+  activeSlot: 1 | 2;
   currentAmmo: number;
   maxAmmo: number;
   ammoType: AmmoType;
@@ -138,8 +141,8 @@ export interface Player {
   lastShot: number;
   fireRate: number;
   inCover: boolean;
-  coverObject: Vec2 | null; // position of the cover object
-  peeking: boolean; // actively peeking to fire
+  coverObject: Vec2 | null;
+  peeking: boolean;
 }
 
 export interface Wall {
@@ -254,4 +257,5 @@ export interface InputState {
   movementMode: MovementMode;
   moveTarget?: Vec2 | null;
   takeCover: boolean;
+  switchWeapon?: 1 | 2;
 }

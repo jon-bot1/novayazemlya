@@ -54,6 +54,8 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'h') inputRef.current.heal = true;
       if (e.key === 'g') inputRef.current.throwGrenade = true;
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
+      if (e.key === '1') inputRef.current.switchWeapon = 1;
+      if (e.key === '2') inputRef.current.switchWeapon = 2;
       if (e.key === 'Shift') inputRef.current.movementMode = 'sprint';
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'sneak';
       if (e.key === 'Tab' || e.key === 'i') {

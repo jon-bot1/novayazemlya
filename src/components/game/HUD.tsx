@@ -79,8 +79,16 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         </div>
 
-        {/* Ammo + Grenades + Intel */}
+        {/* Weapon slots */}
         <div className="flex flex-col items-end gap-0.5">
+          <div className="flex items-center gap-1">
+            <span className={`text-[10px] font-mono px-1 rounded ${player.activeSlot === 1 ? 'bg-accent/30 text-accent' : 'text-foreground/30'}`}>
+              [1] {player.sidearm?.name || '—'}
+            </span>
+            <span className={`text-[10px] font-mono px-1 rounded ${player.activeSlot === 2 ? 'bg-accent/30 text-accent' : 'text-foreground/30'}`}>
+              [2] {player.primaryWeapon?.name || '—'}
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-foreground font-display text-lg text-glow-amber">{player.currentAmmo}</span>
             <span className="text-muted-foreground text-xs font-mono">{player.ammoType}</span>
