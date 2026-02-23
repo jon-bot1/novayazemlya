@@ -5,7 +5,8 @@ const nextId = () => `item_${itemIdCounter++}`;
 
 export const createWeapon = (
   name: string, ammoType: AmmoType, damage: number, icon: string,
-  bulletSpeed: number = 8, weaponRange: number = 60, weaponFireRate: number = 400
+  bulletSpeed: number = 8, weaponRange: number = 60, weaponFireRate: number = 400,
+  fireMode: 'single' | 'auto' = 'single'
 ): Item => ({
   id: nextId(),
   name,
@@ -18,6 +19,7 @@ export const createWeapon = (
   bulletSpeed,
   weaponRange,
   weaponFireRate,
+  fireMode,
   description: `${name} — ${ammoType}`,
 });
 
@@ -146,12 +148,13 @@ export const createHelmet = (): Item => ({
 });
 
 export const WEAPON_TEMPLATES = {
-  //                                name         ammo       dmg  icon  bulletSpd range fireRate
-  makarov: () => createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400),
-  ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   180),
-  akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   250),
-  toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900),
-  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  2000),
+  //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
+  makarov: () => createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'),
+  ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   180,   'auto'),
+  akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   250,   'auto'),
+  toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'),
+  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  2000,  'single'),
+  ppsh:    () => createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'),
 };
 
 // Weighted random pick helper

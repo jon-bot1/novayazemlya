@@ -108,7 +108,7 @@ function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
     (bestAlly as any)._platformTarget = platformPos;
     // Boost speed so they rush there
     bestAlly.speed = Math.max(bestAlly.speed, 2.0);
-    addMessage(state, '📻 Vakt rusar till ställningen!', 'warning');
+    addMessage(state, '📻 Guard rushes to the platform!', 'warning');
   } else {
     // No nearby ally — keep the platform prop so it stays visible
   }
@@ -163,7 +163,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'RÄDEN HAR BÖRJAT — Döda Kommendant Volkov och ta hans USB-minne!', time: 0, type: 'info' }],
+    messages: [{ text: 'OPERATION STARTED — Eliminate Commandant Volkov and recover his USB drive!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
@@ -171,6 +171,7 @@ export function createGameState(): GameState {
     soundEvents: [],
     flashbangTimer: 0,
     backpackCapacity: 0,
+    mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
   };
 }
 
@@ -203,6 +204,21 @@ function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number)
   if (!collidesWithWalls(state, nx, pos.y, r)) return { x: nx, y: pos.y };
   if (!collidesWithWalls(state, pos.x, ny, r)) return { x: pos.x, y: ny };
   return pos;
+}
+
+// Check if position is inside minefield
+function isInMinefield(state: GameState, x: number, y: number, margin: number = 20): boolean {
+  const mz = state.mineFieldZone;
+  if (!mz) return false;
+  return x > mz.x - margin && x < mz.x + mz.w + margin && y > mz.y - margin && y < mz.y + mz.h + margin;
+}
+
+// Enemy-safe move: avoids minefield
+function tryMoveEnemy(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
+  const newPos = tryMove(state, pos, dx, dy, r);
+  // Don't walk into minefield
+  if (isInMinefield(state, newPos.x, newPos.y)) return pos;
+  return newPos;
 }
 
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
@@ -252,6 +268,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
     }
+    // MINEFIELD CHECK — instant death
+    const mz = state.mineFieldZone;
+    if (mz && rectContains(mz.x, mz.y, mz.w, mz.h, newPos.x, newPos.y, 6)) {
+      state.player.hp = 0;
+      state.gameOver = true;
+      addMessage(state, '💥 MINE! You stepped on a landmine!', 'damage');
+      playExplosion();
+      spawnParticles(state, newPos.x, newPos.y, '#ff4400', 25);
+      spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
+      state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
+    }
     state.player.pos = newPos;
     
     // Moving breaks cover
@@ -277,7 +304,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.player.inCover = false;
       state.player.coverObject = null;
       state.player.peeking = false;
-      addMessage(state, '🧍 Lämnar skydd', 'info');
+      addMessage(state, '🧍 Leaving cover', 'info');
     } else {
       // Find nearest cover object (props or walls within 40px)
       let bestDist = 40;
@@ -303,9 +330,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.inCover = true;
         state.player.coverObject = bestPos;
         state.player.peeking = false;
-        addMessage(state, '🛡️ I skydd! Skjut för att kika fram', 'info');
+        addMessage(state, '🛡️ In cover! Shoot to peek', 'info');
       } else {
-        addMessage(state, '⚠ Inget skydd i närheten!', 'warning');
+        addMessage(state, '⚠ No cover nearby!', 'warning');
       }
     }
   }
@@ -335,7 +362,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (wpnForSlot.ammoType) state.player.ammoType = wpnForSlot.ammoType;
       addMessage(state, `🔫 ${wpnForSlot.name} [${slot}]`, 'info');
     } else if (slot === 2) {
-      addMessage(state, '⚠ Inget primärvapen!', 'warning');
+      addMessage(state, '⚠ No primary weapon!', 'warning');
     }
     input.switchWeapon = undefined;
   }
@@ -347,10 +374,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.angle = Math.atan2(moveY, moveX);
   }
 
-  // Player shooting — weapon-specific stats
+  // Player shooting — weapon-specific stats + fire modes
   const wpn = state.player.equippedWeapon;
   const fireRate = wpn?.weaponFireRate || state.player.fireRate;
-  if (input.shooting && state.time - state.player.lastShot > fireRate / 1000) {
+  const isAutoFire = wpn?.fireMode === 'auto';
+  const canFire = isAutoFire ? input.shooting : input.shootPressed;
+  if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
     const spread = (Math.random() - 0.5) * 0.08;
     const angle = state.player.angle + spread;
     const bulletSpeed = wpn?.bulletSpeed || 8;
@@ -394,10 +423,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         fromPlayer: true,
       });
       state.player.inventory.splice(grenadeIdx, 1);
-      addMessage(state, isFlashbang ? '💫 BLÄNDGRANAT KASTAD!' : '💣 GRANAT KASTAD!', 'warning');
+      addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : '💣 GRENADE THROWN!', 'warning');
       spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
     } else {
-      addMessage(state, '⚠ Inga granater!', 'warning');
+      addMessage(state, '⚠ No grenades!', 'warning');
     }
     input.throwGrenade = false;
   }
@@ -414,10 +443,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const keycardIdx = state.player.inventory.findIndex(i => i.id === 'gate_keycard');
         if (keycardIdx >= 0) {
           state.walls.splice(gateWallIdx, 1);
-          addMessage(state, '💳 GRIND ÖPPNAD med passerkort!', 'intel');
+          addMessage(state, '💳 GATE OPENED with access card!', 'intel');
           spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
         } else {
-          addMessage(state, '🔒 Grinden är låst — du behöver ett passerkort!', 'warning');
+          addMessage(state, '🔒 Gate is locked — you need an access card!', 'warning');
         }
       }
     }
@@ -430,7 +459,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.player.inventory.push(item);
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
-            addMessage(state, '🔑 EXFILTRERINGSKOD HITTAD! Gå till evakueringspunkten!', 'intel');
+            addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
@@ -438,12 +467,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Auto-equip backpack
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
-            addMessage(state, '🎒 Ryggsäck utrustad — mer plats för loot!', 'intel');
+            addMessage(state, '🎒 Backpack equipped — more room for loot!', 'intel');
           }
           // Auto-equip armor
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
-            addMessage(state, `🛡️ +${item.damage} skydd utrustat!`, 'info');
+            addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
           }
           // Auto-equip weapon to primary slot (sidearm stays as pistol)
           if (item.category === 'weapon' && item.damage) {
@@ -453,19 +482,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               state.player.activeSlot = 2;
               state.player.equippedWeapon = item;
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} utrustad [2]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [2]!`, 'info');
             } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
               state.player.sidearm = item;
-              addMessage(state, `🔫 ${item.name} som sidearm [1]!`, 'info');
+              addMessage(state, `🔫 ${item.name} as sidearm [1]!`, 'info');
             }
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
         playPickup();
         if (lc.items.length > 0) {
-          addMessage(state, `Byte: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
+          addMessage(state, `Loot: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
         } else {
-          addMessage(state, `Tomt...`, 'info');
+          addMessage(state, `Empty...`, 'info');
         }
       }
     }
@@ -480,9 +509,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.documentsRead.push(doc.id);
           if (doc.hasCode && doc.code && !state.codesFound.includes(doc.code)) {
             state.codesFound.push(doc.code);
-            addMessage(state, `☢ HEMLIG KOD: ${doc.code}`, 'intel');
+            addMessage(state, `☢ SECRET CODE: ${doc.code}`, 'intel');
           }
-          addMessage(state, `📄 DOKUMENT: "${doc.title}"`, 'intel');
+          addMessage(state, `📄 DOCUMENT: "${doc.title}"`, 'intel');
           spawnParticles(state, dp.pos.x, dp.pos.y, '#44aaff', 8);
         }
       }
@@ -497,18 +526,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.player.inventory.push(item);
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
-            addMessage(state, '🔑 EXFILTRERINGSKOD HITTAD! Gå till evakueringspunkten!', 'intel');
+            addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
           }
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
-            addMessage(state, '🎒 Ryggsäck utrustad!', 'intel');
+            addMessage(state, '🎒 Backpack equipped!', 'intel');
           }
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
-            addMessage(state, `🛡️ +${item.damage} skydd!`, 'info');
+            addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
           }
           if (item.category === 'weapon' && item.damage) {
             if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
@@ -516,22 +545,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               state.player.activeSlot = 2;
               state.player.equippedWeapon = item;
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} utrustad [2]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [2]!`, 'info');
             } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
               state.player.sidearm = item;
-              addMessage(state, `🔫 ${item.name} som sidearm [1]!`, 'info');
+              addMessage(state, `🔫 ${item.name} as sidearm [1]!`, 'info');
             }
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
-            addMessage(state, '💾 VOLKOVS USB-MINNE! Ta det till evakueringspunkten!', 'intel');
+            addMessage(state, '💾 VOLKOV\'S USB DRIVE! Get to the extraction point!', 'intel');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
         if (enemy.loot.length > 0) {
-          addMessage(state, `Byte: ${enemy.loot.map(i => i.name).join(', ')}`, 'loot');
+          addMessage(state, `Loot: ${enemy.loot.map(i => i.name).join(', ')}`, 'loot');
         } else {
-          addMessage(state, `Inget av värde...`, 'info');
+          addMessage(state, `Nothing of value...`, 'info');
         }
       }
     }
@@ -549,10 +578,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             
             if (panel.id === 'alarm_gate') {
               // Gate panel: reset all inside enemies to idle
-              addMessage(state, '💻 GRINDPANEL HACKAD! Fiender återgår till patrull.', 'intel');
+              addMessage(state, '💻 GATE PANEL HACKED! Enemies return to patrol.', 'intel');
               for (const e of state.enemies) {
                 if (e.state !== 'dead' && e.type !== 'turret' && !e.elevated) {
-                  // Only reset enemies inside the base (y < gate y)
                   if (e.pos.y < 1750) {
                     e.state = 'patrol';
                     e.tacticalRole = 'none';
@@ -561,35 +589,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               }
               state.alarmActive = false;
             } else {
-              // Inside panel: reveal active extraction point
-              addMessage(state, '💻 KONTROLLPANEL HACKAD!', 'intel');
+              addMessage(state, '💻 CONTROL PANEL HACKED!', 'intel');
               const activeExfil = state.extractionPoints.find(ep => ep.active);
               if (activeExfil) {
-                addMessage(state, `📡 INTEL: Exfiltration öppen vid ${activeExfil.name}`, 'intel');
+                addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}`, 'intel');
               }
             }
-            // Check if all panels hacked — disable alarm
             if (state.alarmPanels.every(p => p.hacked)) {
               state.alarmActive = false;
-              addMessage(state, '🔇 ALLA ALARM AVAKTIVERADE!', 'intel');
+              addMessage(state, '🔇 ALL ALARMS DISABLED!', 'intel');
             }
           } else {
-            addMessage(state, `💻 Hackar... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
+            addMessage(state, `💻 Hacking... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
           }
         } else {
-          // Alarm is active — hack to disable
           panel.hackProgress += 0.04;
           if (panel.hackProgress >= 1) {
             panel.hacked = true;
             panel.activated = false;
-            addMessage(state, '💻 ALARM AVAKTIVERAT!', 'intel');
+            addMessage(state, '💻 ALARM DISABLED!', 'intel');
             spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
             if (state.alarmPanels.every(p => p.hacked || !p.activated)) {
               state.alarmActive = false;
-              addMessage(state, '🔇 ALARM TYSTNAT!', 'intel');
+              addMessage(state, '🔇 ALARM SILENCED!', 'intel');
             }
           } else {
-            addMessage(state, `💻 Hackar alarm... ${Math.floor(panel.hackProgress * 100)}%`, 'warning');
+            addMessage(state, `💻 Hacking alarm... ${Math.floor(panel.hackProgress * 100)}%`, 'warning');
           }
         }
       }
@@ -629,13 +654,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       if (med.speedBoost && med.speedBoost > 0) {
         state.speedBoostTimer = med.speedBoost;
-        addMessage(state, `⚡ ADRENALINKICK! Hastighet ökad i ${med.speedBoost}s`, 'info');
+        addMessage(state, `⚡ ADRENALINE RUSH! Speed boost for ${med.speedBoost}s`, 'info');
       }
       player.inventory.splice(medIdx, 1);
       addMessage(state, `💊 ${med.name} (+${med.healAmount}HP)`, 'info');
       spawnParticles(state, player.pos.x, player.pos.y, '#44ff66', 5);
     } else if (input.heal && (needsHeal || isBleeding)) {
-      addMessage(state, '⚠ Ingen medicin!', 'warning');
+      addMessage(state, '⚠ No medicine!', 'warning');
     }
     input.heal = false;
   }
@@ -654,16 +679,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
       if (!hasUSB && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
-        addMessage(state, '⚠ USB-minne saknas — du kan evakuera men uppdraget misslyckas!', 'warning');
+        addMessage(state, '⚠ USB drive missing — you can extract but mission fails!', 'warning');
       }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        state.hasExtractionCode = hasUSB; // reuse field to track mission success
+        state.hasExtractionCode = hasUSB;
         addMessage(state, hasUSB
-          ? `💾 UPPDRAG KLART — EVAKUERING: ${ep.name}!`
-          : `⚠ EVAKUERAD utan USB — UPPDRAG MISSLYCKAT`, hasUSB ? 'info' : 'warning');
+          ? `💾 MISSION COMPLETE — EXTRACTED: ${ep.name}!`
+          : `⚠ EXTRACTED without USB — MISSION FAILED`, hasUSB ? 'info' : 'warning');
       }
     }
   }
@@ -700,7 +725,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Remove the temp prop (watchtower) since guard is now on it
       const propIdx = state.props.findIndex(p => p.type === 'watchtower' && dist(p.pos, platformTarget) < 10);
       if (propIdx >= 0) state.props.splice(propIdx, 1);
-      addMessage(state, '⚠ Ny vakt på ställningen!', 'warning');
+      addMessage(state, '⚠ New guard on the platform!', 'warning');
     }
 
     // Boss phase transitions based on HP
@@ -712,7 +737,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else enemy.bossPhase = 0;
       
       if (enemy.bossPhase !== oldPhase) {
-        const phaseNames = ['', '⚠ KOMMENDANT VOLKOV ÄR RASANDE!', '☠ VOLKOV ÄR DESPERAT — AKTA DIG!'];
+        const phaseNames = ['', '⚠ COMMANDANT VOLKOV IS ENRAGED!', '☠ VOLKOV IS DESPERATE — WATCH OUT!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
           playBossRoar();
@@ -753,7 +778,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (dToPanel < 40) {
           panel.activated = true;
           state.alarmActive = true;
-          addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
+          addMessage(state, '🚨 ALARM TRIGGERED! All enemies alerted!', 'warning');
           // No alarm sound effect
           speakCallout('alarm');
           // Alert ALL enemies on the map
@@ -812,7 +837,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Elevated wall guards trigger base-wide alarm via radio
         if (enemy.elevated && !state.alarmActive) {
           state.alarmActive = true;
-          addMessage(state, '🚨 PLATTFORMSVAKT LARMAR BASEN!', 'warning');
+          addMessage(state, '🚨 PLATFORM GUARD ALERTS THE BASE!', 'warning');
           playVoiceShout('alarm', 0.1);
           speakCallout('alarm', enemy.type);
           for (const ally of state.enemies) {
@@ -854,7 +879,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.callForHelpTimer = 8 + Math.random() * 4;
         playVoiceShout('alarm', enemy.type === 'heavy' ? -0.3 : 0.1);
         speakCallout('alarm', enemy.type);
-        addMessage(state, `🗣️ ${enemy.type.toUpperCase()} ropar på hjälp!`, 'warning');
+        addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
         // Alert all allies in group + nearby
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
@@ -883,7 +908,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             ally.state = 'investigate';
             ally.investigateTarget = { ...state.player.pos };
             ally.radioAlert = 1.5;
-            addMessage(state, `📻 ${enemy.type.toUpperCase()} anropar förstärkning!`, 'warning');
+            addMessage(state, `📻 ${enemy.type.toUpperCase()} calls for reinforcements!`, 'warning');
           }
         }
       }
@@ -896,11 +921,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // If rushing to a platform, don't get distracted
       if ((enemy as any)._platformTarget) {
-        // Keep moving toward platform
         enemy.state = 'chase';
         enemy.investigateTarget = (enemy as any)._platformTarget;
       } else if (distToPlayer > enemy.alertRange * 1.5 || !los) {
-        // Lost sight of player
+        // Lost sight of player — investigate last known position
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
@@ -922,8 +946,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
       }
-      enemy.state = 'patrol';
-      enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+      // NOTE: removed unconditional patrol fallback (was a bug overriding investigate)
     }
 
     // Decay timers
@@ -957,7 +980,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const dBoss = dist(enemy.pos, boss.pos);
             if (dBoss > 50) {
               const dir = normalize({ x: boss.pos.x - enemy.pos.x, y: boss.pos.y - enemy.pos.y });
-              enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.8, dir.y * speed * 0.8, 10);
+              enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.8, dir.y * speed * 0.8, 10);
               enemy.angle = Math.atan2(dir.y, dir.x);
             } else {
               enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
@@ -983,7 +1006,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const dBoss = dist(enemy.pos, boss.pos);
             if (dBoss > 50) {
               const dir = normalize({ x: boss.pos.x - enemy.pos.x, y: boss.pos.y - enemy.pos.y });
-              enemy.pos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+              enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
               enemy.angle = Math.atan2(dir.y, dir.x);
             } else {
               // Face outward from boss for protection
@@ -1006,7 +1029,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'idle';
         } else {
           const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
-          const newPos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
+          const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
           // Wall-stuck detection: if barely moved, pick new direction
           if (dist(newPos, enemy.pos) < 0.1) {
             if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
@@ -1052,7 +1075,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
-            const newPos = tryMove(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
+            const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
             if (dist(newPos, enemy.pos) < 0.1) {
               if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
               (enemy as any)._stuckCounter++;
@@ -1094,14 +1117,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-        const newPos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+        const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
         if (dist(newPos, enemy.pos) < 0.1) {
           if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
           (enemy as any)._stuckCounter++;
           if ((enemy as any)._stuckCounter > 15) {
             // Try to go around the wall
             const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-            const sidePos = tryMove(state, enemy.pos, Math.cos(perpAngle) * speed, Math.sin(perpAngle) * speed, 10);
+            const sidePos = tryMoveEnemy(state, enemy.pos, Math.cos(perpAngle) * speed, Math.sin(perpAngle) * speed, 10);
             enemy.pos = sidePos;
             (enemy as any)._stuckCounter = 0;
           }
@@ -1124,7 +1147,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             speakCallout('attack', enemy.type);
           } else {
             const dir = normalize({ x: enemy.flankTarget.x - enemy.pos.x, y: enemy.flankTarget.y - enemy.pos.y });
-            enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 1.2, dir.y * speed * 1.2, 10);
+            enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 1.2, dir.y * speed * 1.2, 10);
           }
         } else {
           enemy.state = 'chase';
@@ -1208,7 +1231,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         if (enemy.type !== 'turret' && enemy.type !== 'boss' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
-          enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
+          enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
         }
         // Boss: tactical — throw grenades, retreat to cover, shoot from distance
         if (enemy.type === 'boss') {
@@ -1226,13 +1249,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               damage: 25,
               fromPlayer: false,
             });
-            addMessage(state, '💣 VOLKOV kastar granat!', 'warning');
+            addMessage(state, '💣 VOLKOV throws grenade!', 'warning');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
           }
           // Retreat to cover if too close
           if (distToPlayer < enemy.shootRange * 0.6) {
             const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
-            enemy.pos = tryMove(state, enemy.pos, retreatDir.x * speed * 1.2, retreatDir.y * speed * 1.2, 12);
+            enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.2, retreatDir.y * speed * 1.2, 12);
           }
         }
         // Boss: spawn reinforcements in phase 1+
@@ -1254,7 +1277,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
           };
           state.enemies.push(minion);
-          addMessage(state, '📻 Volkov kallar förstärkning!', 'warning');
+          addMessage(state, '📻 Volkov calls reinforcements!', 'warning');
           spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
@@ -1289,7 +1312,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       if (isFlashbang) {
         // FLASHBANG — stun enemies, blind player
-        addMessage(state, '💫 BLÄNDGRANAT!', 'warning');
+        addMessage(state, '💫 FLASHBANG!', 'warning');
         spawnParticles(state, g.pos.x, g.pos.y, '#ffffcc', 25);
         spawnParticles(state, g.pos.x, g.pos.y, '#ffffff', 20);
         state.soundEvents.push({ pos: { ...g.pos }, radius: 400, time: state.time });
@@ -1301,7 +1324,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             enemy.stunTimer = 3; // 3 seconds stun
             enemy.state = 'idle';
-            addMessage(state, `💫 ${enemy.type.toUpperCase()} bländad!`, 'info');
+            addMessage(state, `💫 ${enemy.type.toUpperCase()} STUNNED!`, 'info');
           }
         }
 
@@ -1310,7 +1333,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (dPlayer < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const intensity = 1 - (dPlayer / g.radius);
           state.flashbangTimer = 2 * intensity + 0.5; // 0.5 - 2.5 seconds based on distance
-          addMessage(state, '💫 BLÄNDAD!', 'damage');
+          addMessage(state, '💫 BLINDED!', 'damage');
         }
       } else {
         // REGULAR GRENADE — instant kill
@@ -1330,7 +1353,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               const dmg = enemy.maxHp * 0.33;
               enemy.hp -= dmg;
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
-              addMessage(state, `💥 Bossen tar ${Math.floor(dmg)} skada!`, 'damage');
+              addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
               if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
             }
             enemy.hp = 0;
@@ -1340,7 +1363,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT VOLKOV IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
         }
@@ -1352,10 +1375,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const dmg = g.damage * falloff * 0.5;
           state.player.hp -= dmg;
           spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
-          addMessage(state, `💥 Splitterskada! -${Math.floor(dmg)}HP`, 'damage');
+          addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
             state.gameOver = true;
-            addMessage(state, '☠ DÖD', 'damage');
+            addMessage(state, '☠ DEAD', 'damage');
           }
         }
       }
@@ -1450,7 +1473,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             if (!isCrit) {
-              addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT VOLKOV IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
@@ -1467,22 +1490,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (Math.random() < missChance) {
             // Bullet deflected by cover
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 3);
-            addMessage(state, '🛡️ Skyddat!', 'info');
+            addMessage(state, '🛡️ Deflected!', 'info');
             return false;
           }
         }
-        const dmg = b.damage * (1 - state.player.armor);
+        const armorReduction = Math.min(0.8, state.player.armor / 100);
+        const dmg = b.damage * Math.max(0.05, 1 - armorReduction);
         state.player.hp -= dmg;
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
         playHit();
         if (Math.random() > 0.7) {
           state.player.bleedRate += 0.5;
-          addMessage(state, '🩸 BLÖDNING!', 'damage');
+          addMessage(state, '🩸 BLEEDING!', 'damage');
         }
-        addMessage(state, `Träff! -${Math.floor(dmg)}HP`, 'damage');
+        addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
           state.gameOver = true;
-          addMessage(state, '☠ DÖD', 'damage');
+          addMessage(state, '☠ DEAD', 'damage');
         }
         return false;
       }

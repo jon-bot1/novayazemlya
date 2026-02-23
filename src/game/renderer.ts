@@ -992,6 +992,38 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.fill();
       break;
     }
+    case 'mine': {
+      // Small landmine
+      ctx.fillStyle = '#5a5a4a';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      break;
+    }
+    case 'mine_sign': {
+      // Warning sign ⚠ MINES
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.moveTo(x, y - 10);
+      ctx.lineTo(x + 8, y + 6);
+      ctx.lineTo(x - 8, y + 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#aa0000';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#aa0000';
+      ctx.font = 'bold 7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('☠', x, y + 4);
+      // Post
+      ctx.fillStyle = '#5a5a4a';
+      ctx.fillRect(x - 1, y + 6, 2, 10);
+      break;
+    }
     case 'fence_h': case 'fence_v': {
       ctx.fillStyle = '#8a8a7a';
       ctx.fillRect(left, top, w, h);
@@ -1746,7 +1778,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = 'rgba(255,200,200,0.5)';
     ctx.font = '7px sans-serif';
     ctx.textAlign = 'center';
-    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT', turret: 'KULSPRUTA', boss: '' }[enemy.type];
+    const typeLabel = { scav: 'SCAV', soldier: 'SOLDIER', heavy: 'HEAVY', turret: 'TURRET', boss: '' }[enemy.type];
     ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
