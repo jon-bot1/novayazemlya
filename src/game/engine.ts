@@ -118,7 +118,8 @@ export function createGameState(): GameState {
   };
 }
 
-function hasLineOfSight(state: GameState, a: Vec2, b: Vec2): boolean {
+function hasLineOfSight(state: GameState, a: Vec2, b: Vec2, elevated: boolean = false): boolean {
+  if (elevated) return true; // elevated enemies can see over all walls
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.sqrt(dx * dx + dy * dy);
@@ -595,7 +596,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const alarmBoost = state.alarmActive ? 1.5 : 1.0;
 
     const distToPlayer = dist(enemy.pos, state.player.pos);
-    const los = hasLineOfSight(state, enemy.pos, state.player.pos);
+    const los = hasLineOfSight(state, enemy.pos, state.player.pos, enemy.elevated);
 
     // Enemy tries to activate alarm panel when in chase/attack and near one
     if ((enemy.state === 'chase' || enemy.state === 'attack') && enemy.type !== 'turret') {
@@ -766,6 +767,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     const speed = enemy.speed * dt * 60;
+    // Elevated enemies don't move — they stay on their platform
+    if (enemy.elevated && enemy.state !== 'attack' && enemy.state !== 'suppress') {
+      // Just rotate to face threats
+      if (enemy.state === 'chase' || enemy.state === 'investigate') {
+        enemy.state = 'attack'; // can't chase, switch to shooting
+      }
+    }
+    if (enemy.elevated && (enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'flank')) {
+      // Override: elevated guards don't leave their post
+      enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
+      // Skip movement switch
+    } else
     switch (enemy.state as string) {
       case 'idle': {
         // Standing still, looking around slowly
@@ -858,7 +871,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
-            damage: enemy.damage * 0.7, damageType: 'bullet', fromPlayer: false, life: 50,
+            damage: enemy.damage * 0.7, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
           });
           enemy.lastShot = state.time;
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
@@ -878,7 +891,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
-            damage: enemy.damage * 0.6, damageType: 'bullet', fromPlayer: false, life: 50,
+            damage: enemy.damage * 0.6, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
@@ -905,6 +918,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             damageType: 'bullet',
             fromPlayer: false,
             life: 50,
+            elevated: enemy.elevated,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
@@ -952,7 +966,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             lastShot: 0, angle: Math.random() * Math.PI * 2,
             type: 'scav', eyeBlink: 3, loot: [], looted: false,
             lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
-            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0,
+            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
           };
           state.enemies.push(minion);
           addMessage(state, '📻 Volkov kallar förstärkning!', 'warning');
@@ -1054,7 +1068,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     b.life--;
 
     if (b.life <= 0) return false;
-    if (collidesWithWalls(state, b.pos.x, b.pos.y, 2)) {
+    // Elevated enemy bullets fly over walls; player bullets check walls normally
+    if (!b.elevated && collidesWithWalls(state, b.pos.x, b.pos.y, 2)) {
       spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
       return false;
     }
@@ -1063,6 +1078,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
         if (dist(b.pos, enemy.pos) < 14) {
+          // Elevated enemies have concealment bonus — 40% miss chance
+          if (enemy.elevated && Math.random() < 0.4) {
+            spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
+            return false; // bullet missed due to concealment
+          }
+
           // Critical hit / headshot — chance scales with kill count (skill)
           const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
           const isCrit = enemy.type !== 'boss' && Math.random() < critChance;

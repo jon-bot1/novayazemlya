@@ -60,6 +60,7 @@ export interface Bullet {
   damageType: DamageType;
   fromPlayer: boolean;
   life: number;
+  elevated?: boolean; // bullet from elevated enemy, ignores walls
 }
 
 export interface Particle {
@@ -114,6 +115,7 @@ export interface Enemy {
   callForHelpTimer: number; // cooldown for calling help
   lastTacticalSwitch: number; // prevent rapid role switching
   stunTimer: number; // flashbang stun duration remaining
+  elevated: boolean; // on raised platform, can shoot over walls
 }
 
 export interface Player {
