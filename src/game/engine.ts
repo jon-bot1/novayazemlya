@@ -515,22 +515,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Extraction check — requires USB drive from boss
+  // Extraction check — works without USB but mission incomplete
   const hasUSB = state.player.inventory.some(i => i.id === 'boss_usb');
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
-      if (!hasUSB) {
-        if (Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
-          addMessage(state, '⚠ DU BEHÖVER VOLKOVS USB-MINNE FÖR ATT EVAKUERA!', 'warning');
-        }
-        break;
+      if (!hasUSB && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
+        addMessage(state, '⚠ USB-minne saknas — du kan evakuera men uppdraget misslyckas!', 'warning');
       }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        addMessage(state, `💾 UPPDRAG KLART — EVAKUERING: ${ep.name}!`, 'info');
+        state.hasExtractionCode = hasUSB; // reuse field to track mission success
+        addMessage(state, hasUSB
+          ? `💾 UPPDRAG KLART — EVAKUERING: ${ep.name}!`
+          : `⚠ EVAKUERAD utan USB — UPPDRAG MISSLYCKAT`, hasUSB ? 'info' : 'warning');
       }
     }
   }

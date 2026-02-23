@@ -100,8 +100,8 @@ export const HUD: React.FC<HUDProps> = ({
             📄 {documentsFound}/{totalDocuments}
             {codesFound.length > 0 && <span className="text-warning">☢{codesFound.length}</span>}
           </button>
-          <div className={`text-xs font-mono flex items-center gap-1 ${hasExtractionCode ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
-            🔑 {hasExtractionCode ? 'KOD HITTAD' : 'KOD SAKNAS'}
+          <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
+            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB HITTAD' : 'USB SAKNAS'}
           </div>
         </div>
       </div>
@@ -145,9 +145,19 @@ export const HUD: React.FC<HUDProps> = ({
       {(gameOver || extracted) && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
           <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4">
-            <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : 'text-loot text-glow-green'}`}>
-              {gameOver ? '☠ DÖD' : '🚁 EVAKUERAD'}
+            <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : hasExtractionCode ? 'text-loot text-glow-green' : 'text-warning text-glow-amber'}`}>
+              {gameOver ? '☠ DÖD' : hasExtractionCode ? '🚁 UPPDRAG KLART' : '⚠ EVAKUERAD'}
             </h1>
+            {extracted && !hasExtractionCode && (
+              <p className="text-sm font-mono text-warning text-center">
+                Du evakuerades utan Volkovs USB-minne.<br/>Uppdraget misslyckades.
+              </p>
+            )}
+            {extracted && hasExtractionCode && (
+              <p className="text-sm font-mono text-loot text-center">
+                💾 USB-minnet levererat. Fullständig framgång!
+              </p>
+            )}
             
             <div className="w-full border-t border-border pt-3 flex flex-col gap-2">
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
@@ -166,6 +176,12 @@ export const HUD: React.FC<HUDProps> = ({
                 <span>Dokument:</span>
                 <span className="text-foreground">{documentsFound}/{totalDocuments}</span>
               </div>
+              <div className="flex justify-between text-sm font-mono text-muted-foreground">
+                <span>Resultat:</span>
+                <span className={`font-display ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
+                  {gameOver ? 'MISSLYCKAD' : hasExtractionCode ? 'FRAMGÅNG' : 'OFULLSTÄNDIG'}
+                </span>
+              </div>
               {codesFound.length > 0 && (
                 <div className="mt-2 border-t border-border pt-2">
                   <span className="text-xs font-mono text-warning">☢ UPPTÄCKTA KODER:</span>
@@ -182,7 +198,7 @@ export const HUD: React.FC<HUDProps> = ({
               className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
               onClick={() => window.location.reload()}
             >
-              NY RÄID
+              🔄 STARTA OM
             </button>
           </div>
         </div>
