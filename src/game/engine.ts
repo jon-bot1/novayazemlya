@@ -83,9 +83,12 @@ function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   if (bestAlly) {
     bestAlly.state = 'chase';
     bestAlly.investigateTarget = platformPos;
-    // The ally will be elevated once they arrive (checked in update loop)
     (bestAlly as any)._platformTarget = platformPos;
+    // Boost speed so they rush there
+    bestAlly.speed = Math.max(bestAlly.speed, 2.0);
     addMessage(state, '📻 Vakt rusar till ställningen!', 'warning');
+  } else {
+    // No nearby ally — keep the platform prop so it stays visible
   }
   // Mark dead guard as no longer elevated so platform draws independently
   deadGuard.elevated = false;
@@ -790,8 +793,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       playVoiceShout('investigate', enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0);
       speakCallout('investigate', enemy.type);
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
-      // Lost sight of player
-      if (distToPlayer > enemy.alertRange * 1.5 || !los) {
+      // If rushing to a platform, don't get distracted
+      if ((enemy as any)._platformTarget) {
+        // Keep moving toward platform
+        enemy.state = 'chase';
+        enemy.investigateTarget = (enemy as any)._platformTarget;
+      } else if (distToPlayer > enemy.alertRange * 1.5 || !los) {
+        // Lost sight of player
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
@@ -813,7 +821,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
       }
-    } else if (enemy.state === 'alert') {
       enemy.state = 'patrol';
       enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
     }

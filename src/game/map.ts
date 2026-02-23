@@ -308,9 +308,17 @@ export function generateMap() {
     };
   }
 
-  // Give keycard to ALL outside patrol guards to guarantee drop
-  for (let i = enemies.length - 5; i < enemies.length; i++) {
-    enemies[i].loot = [createKeycard()];
+  // Randomize keycard: 1-2 outside patrol guards carry one
+  const outsideIndices = [];
+  for (let i = enemies.length - 5; i < enemies.length; i++) outsideIndices.push(i);
+  // Shuffle and pick 1-2
+  for (let i = outsideIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [outsideIndices[i], outsideIndices[j]] = [outsideIndices[j], outsideIndices[i]];
+  }
+  const keycardCount = 1 + Math.floor(Math.random() * 2); // 1 or 2
+  for (let k = 0; k < keycardCount; k++) {
+    enemies[outsideIndices[k]].loot = [createKeycard()];
   }
 
   // ══════════════════════════════════════
