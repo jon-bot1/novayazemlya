@@ -133,8 +133,8 @@ export function generateMap() {
   ];
 
   const extractionPoints: ExtractionPoint[] = [
-    { pos: { x: 50, y: MAP_H - 50 }, radius: 60, timer: 5, active: true, name: 'ЮГО-ЗАПАД ВЫХОД' },
-    { pos: { x: MAP_W - 50, y: 50 }, radius: 60, timer: 5, active: true, name: 'СЕВЕРО-ВОСТОК ВЫХОД' },
+    { pos: { x: 50, y: MAP_H - 50 }, radius: 60, timer: 5, active: true, name: 'SYDVÄST UTGÅNG' },
+    { pos: { x: MAP_W - 50, y: 50 }, radius: 60, timer: 5, active: true, name: 'NORDOST UTGÅNG' },
   ];
 
   return { walls, enemies, lootContainers, documentPickups, extractionPoints, mapWidth: MAP_W, mapHeight: MAP_H };

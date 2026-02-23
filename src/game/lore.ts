@@ -4,7 +4,7 @@ export interface LoreDocument {
   content: string;
   author: string;
   date: string;
-  classification: 'ОТКРЫТО' | 'СЕКРЕТНО' | 'СОВ.СЕКРЕТНО';
+  classification: 'ÖPPEN' | 'HEMLIG' | 'TOPPHEMLIG';
   hasCode: boolean;
   code?: string;
   codeHint?: string;
@@ -20,162 +20,162 @@ export interface IntelEntry {
 }
 
 export const SECRET_CODES: Record<string, string> = {
-  'ВОЛК-7': 'Unlocks weapons cache location',
-  'ЗАРЯ-12': 'Reveals hidden extraction point',
-  'БУРАН-3': 'Identifies the mole in Unit 9',
-  'КЕДР-88': 'Coordinates to underground lab',
+  'VARG-7': 'Låser upp vapengömmans plats',
+  'GRYNING-12': 'Avslöjar dold evakueringspunkt',
+  'STORM-3': 'Identifierar förrädaren i Enhet 9',
+  'CEDER-88': 'Koordinater till underjordiskt labb',
 };
 
 export const LORE_DOCUMENTS: LoreDocument[] = [
   {
     id: 'doc_1',
-    title: 'Операция "Серый Волк"',
-    author: 'Полковник Зорин',
+    title: 'Operation "Grå Varg"',
+    author: 'Överste Zorin',
     date: '14.03.1993',
-    classification: 'СЕКРЕТНО',
-    content: `РАПОРТ — Операция "Серый Волк"
+    classification: 'HEMLIG',
+    content: `RAPPORT — Operation "Grå Varg"
 
-Объект Z-14 подтверждён как активный. Группа разведки обнаружила следы недавней деятельности в подземных помещениях бункера.
+Objekt Z-14 bekräftat som aktivt. Spaningsgruppen har upptäckt spår av nylig aktivitet i bunkerns underjordiska utrymmen.
 
-Персонал объекта эвакуирован в неизвестном направлении. Оборудование лаборатории частично демонтировано, но обнаружены следы экспериментальных работ с неизвестными образцами.
+Objektets personal har evakuerats i okänd riktning. Laboratorieutrustningen är delvis demonterad, men spår av experimentella arbeten med okända prover har hittats.
 
-ВНИМАНИЕ: При обнаружении контейнеров с маркировкой "Б-серия" — НЕ ВСКРЫВАТЬ. Передать код ВОЛК-7 в штаб для получения инструкций.
+VARNING: Vid upptäckt av containrar märkta "B-serien" — ÖPPNA INTE. Överlämna kod VARG-7 till högkvarteret för instruktioner.
 
-Группа "Кедр" переведена на усиление периметра. Связь через частоту 147.300.
+Grupp "Ceder" har omgrupperats för att förstärka perimetern. Kommunikation via frekvens 147.300.
 
-— Зорин`,
+— Zorin`,
     hasCode: true,
-    code: 'ВОЛК-7',
-    codeHint: 'Код упоминается в контексте контейнеров Б-серии',
+    code: 'VARG-7',
+    codeHint: 'Koden nämns i samband med B-seriens containrar',
     found: false,
   },
   {
     id: 'doc_2',
-    title: 'Дневник неизвестного солдата',
-    author: 'Рядовой ???',
+    title: 'Okänd soldats dagbok',
+    author: 'Menig ???',
     date: '22.11.1994',
-    classification: 'ОТКРЫТО',
-    content: `День 47.
+    classification: 'ÖPPEN',
+    content: `Dag 47.
 
-Снова дождь. Крыша казармы протекает уже третью неделю. Ротный обещал починить, но ему не до нас — всё начальство помешалось на этих подземных лабораториях.
+Regn igen. Kasernens tak har läckt i tre veckor nu. Kompanibefälet lovade att fixa det, men han har inte tid för oss — hela ledningen är besatta av de underjordiska laboratorierna.
 
-Вчера видел, как со стороны бункера шли люди в костюмах химзащиты. Нести вахту рядом с этим местом жутко. По ночам из вентиляции доносятся странные звуки.
+Igår såg jag folk i kemskyddsdräkter komma från bunkern. Att stå vakt nära det stället är skrämmande. På nätterna hörs konstiga ljud från ventilationen.
 
-Серёга из второго взвода говорит, что видел каких-то тварей за периметром. Я думаю, он просто перепил, но... кто знает.
+Serjoha från andra plutonen säger att han sett varelser utanför perimetern. Jag tror han bara druckit för mycket, men... vem vet.
 
-Если кто найдёт эту записку — код ЗАРЯ-12 передайте Наташе. Она поймёт.
+Om någon hittar den här lappen — överlämna kod GRYNING-12 till Natasja. Hon förstår.
 
-Хочу домой.`,
+Vill bara hem.`,
     hasCode: true,
-    code: 'ЗАРЯ-12',
-    codeHint: 'Личная просьба солдата в конце записки',
+    code: 'GRYNING-12',
+    codeHint: 'Soldatens personliga begäran i slutet av anteckningen',
     found: false,
   },
   {
     id: 'doc_3',
-    title: 'Протокол допроса №847',
-    author: 'Майор Петренко',
+    title: 'Förhörsprotokoll nr 847',
+    author: 'Major Petrenko',
     date: '03.06.1995',
-    classification: 'СОВ.СЕКРЕТНО',
-    content: `ПРОТОКОЛ ДОПРОСА
-Субъект: [ДАННЫЕ УДАЛЕНЫ]
-Допрашивающий: Майор Петренко, ОСБ
+    classification: 'TOPPHEMLIG',
+    content: `FÖRHÖRSPROTOKOLL
+Subjekt: [DATA RADERAD]
+Förhörsledare: Major Petrenko, Intern Säkerhet
 
-П: Расскажите о событиях 28 мая.
-С: Я уже говорил... Мы спустились на нижний уровень. Свет не работал. Фонари начали мигать.
-П: Продолжайте.
-С: Потом мы услышали... скрежет. Из-за двери лаборатории №3. Лейтенант приказал открыть.
-П: Что было за дверью?
-С: [ПАУЗА 40 СЕКУНД] Я не могу... Они... они были похожи на людей, но...
-П: Субъект, отвечайте на вопрос.
-С: Они смотрели на нас. Все разом повернули головы. И улыбались.
+F: Berätta om händelserna den 28 maj.
+S: Jag har redan sagt det... Vi gick ner till nedre nivån. Ljuset fungerade inte. Ficklampornas sken flackade.
+F: Fortsätt.
+S: Sen hörde vi... skrapande. Bakom dörren till laboratorium nr 3. Löjtnanten beordrade att öppna.
+F: Vad fanns bakom dörren?
+S: [PAUS 40 SEKUNDER] Jag kan inte... De... de såg ut som människor, men...
+F: Subjekt, svara på frågan.
+S: De stirrade på oss. Alla vred huvudena samtidigt. Och log.
 
-[ЗАПИСЬ ПРЕРВАНА]
+[INSPELNING AVBRUTEN]
 
-ПРИМЕЧАНИЕ: Субъект переведён в изолятор. 
-Код доступа к материалам: БУРАН-3
-Уровень допуска: Только глаза командования.`,
+ANMÄRKNING: Subjektet har överförts till isolering.
+Åtkomstkod till materialet: STORM-3
+Behörighetsnivå: Endast för ledningens ögon.`,
     hasCode: true,
-    code: 'БУРАН-3',
-    codeHint: 'Код доступа к материалам допроса',
+    code: 'STORM-3',
+    codeHint: 'Åtkomstkod till förhörsmaterialet',
     found: false,
   },
   {
     id: 'doc_4',
-    title: 'Радиоперехват — Частота 147.300',
-    author: 'Отдел SIGINT',
+    title: 'Radioavlyssning — Frekvens 147.300',
+    author: 'SIGINT-avdelningen',
     date: '11.09.1995',
-    classification: 'СЕКРЕТНО',
-    content: `РАСШИФРОВКА РАДИОПЕРЕХВАТА
-Частота: 147.300 МГц
-Время: 03:47 MSK
+    classification: 'HEMLIG',
+    content: `AVKODNING AV RADIOAVLYSSNING
+Frekvens: 147.300 MHz
+Tid: 03:47 MSK
 
-[СТАТИКА]
-Голос 1: ...подтверждаю, объект Зед-четырнадцать скомпрометирован. Начинаем протокол "Пепел".
-Голос 2: Принято. Какие потери?
-Голос 1: Группа "Кедр" — полная потеря контакта. Девять человек.
-Голос 2: [НЕЦЕНЗУРНАЯ БРАНЬ] Как?!
-Голос 1: Непонятно. Последний сигнал с их маяка — подуровень 4. После этого... тишина.
-Голос 2: Начинайте эвакуацию ценного оборудования. Координаты зоны сброса — КЕДР-88.
-Голос 1: Понял. Кедр-восемьдесят-восемь.
-[СТАТИКА]
-[КОНЕЦ ЗАПИСИ]
+[STATISKT BRUS]
+Röst 1: ...bekräftar, objekt Z-fjorton är komprometterat. Initierar protokoll "Aska".
+Röst 2: Mottaget. Vilka förluster?
+Röst 1: Grupp "Ceder" — total kontaktförlust. Nio personer.
+Röst 2: [SVORDOMAR] Hur?!
+Röst 1: Oklart. Sista signalen från deras fyr — undernivå 4. Efter det... tystnad.
+Röst 2: Påbörja evakuering av värdefull utrustning. Koordinater för avlastningszon — CEDER-88.
+Röst 1: Uppfattat. Ceder-åttioåtta.
+[STATISKT BRUS]
+[INSPELNING SLUT]
 
-АНАЛИТИЧЕСКАЯ СПРАВКА: "Протокол Пепел" — предположительно план уничтожения улик. Рекомендуется немедленная операция по перехвату.`,
+ANALYS: "Protokoll Aska" — sannolikt en plan för bevisförstöring. Omedelbar insats för avlyssning rekommenderas.`,
     hasCode: true,
-    code: 'КЕДР-88',
-    codeHint: 'Координаты зоны сброса оборудования',
+    code: 'CEDER-88',
+    codeHint: 'Koordinater till utrustningens avlastningszon',
     found: false,
   },
   {
     id: 'doc_5',
-    title: 'Записка на стене (карандашом)',
-    author: 'Неизвестно',
+    title: 'Klotter på väggen (blyerts)',
+    author: 'Okänd',
     date: '???',
-    classification: 'ОТКРЫТО',
-    content: `ЕСЛИ ТЫ ЭТО ЧИТАЕШЬ — УХОДИ
+    classification: 'ÖPPEN',
+    content: `OM DU LÄSER DETTA — GÅ HÄRIFRÅN
 
-не спускайся ниже второго уровня
-двери которые закрыты — закрыты не просто так
-не верь тем кто улыбается в темноте
+gå inte ner under andra nivån
+dörrar som är stängda — är stängda av en anledning
+lita inte på de som ler i mörkret
 
-я видел что они сделали с группой Кедр
-это уже не люди
+jag såg vad de gjorde med grupp Ceder
+de är inte människor längre
 
-свет их отпугивает но ненадолго
+ljuset skrämmer bort dem men inte länge
 
-уходи пока можешь
-зюйд-вест выход через канализацию
-норд-ост через забор у вышки
+gå medan du kan
+sydväst utgång genom avloppet
+nordost genom staketet vid tornet
 
-БЕГИ`,
+SPRING`,
     hasCode: false,
     found: false,
   },
   {
     id: 'doc_6',
-    title: 'Инвентарная опись — Склад №3',
-    author: 'Прапорщик Сидоров',
+    title: 'Inventarieförteckning — Förråd nr 3',
+    author: 'Fanjunkare Sidorov',
     date: '01.01.1994',
-    classification: 'ОТКРЫТО',
-    content: `ИНВЕНТАРНАЯ ОПИСЬ
-Склад №3, Объект Z-14
+    classification: 'ÖPPEN',
+    content: `INVENTARIEFÖRTECKNING
+Förråd nr 3, Objekt Z-14
 
-✓ Противогазы ГП-7 — 240 шт (списаны 12 шт)
-✓ РПК-74 — 6 шт 
-✓ Патроны 5.45x39 — 12,000 шт (реально ≈8,000, остальные "потерялись")
-✓ Патроны 9x18 — 8,000 шт
-✓ Сух.пайки — 400 шт (срок годности... ну, формально)
-✓ Аптечки АИ-2 — 80 шт
-✓ Водка "Столичная" — 24 бут. (для "дезинфекции")
-✓ Сигареты "Прима" — 50 пачек
-✗ Контейнер Б-7 — ОТСУТСТВУЕТ (кто взял?!)
-✗ Документация по проекту "Заря" — ОТСУТСТВУЕТ
+✓ Gasmasker GP-7 — 240 st (12 st avskrivna)
+✓ RPK-74 — 6 st
+✓ Patroner 5.45x39 — 12 000 st (egentligen ≈8 000, resten "försvann")
+✓ Patroner 9x18 — 8 000 st
+✓ Torrskaffning — 400 st (bäst före... ja, formellt)
+✓ Sjukvårdskit AI-2 — 80 st
+✓ Vodka "Stolitjnaja" — 24 flaskor (för "desinfektion")
+✓ Cigaretter "Prima" — 50 paket
+✗ Container B-7 — SAKNAS (vem tog den?!)
+✗ Dokumentation för projekt "Gryning" — SAKNAS
 
-ПРИМЕЧАНИЕ: Если кто-то опять тащит водку со склада — буду стрелять. Не шучу.
+ANMÄRKNING: Om någon snor vodka från förrådet igen — skjuter jag. Jag skojar inte.
 
-— Сидоров
-P.S. Мыши сожрали три сухпайка. Или не мыши. Хрен знает что тут бегает по ночам.`,
+— Sidorov
+P.S. Möss åt upp tre torrskaffningar. Eller inte möss. Fan vet vad som springer runt här om nätterna.`,
     hasCode: false,
     found: false,
   },
@@ -195,6 +195,6 @@ export function getIntelSummary(documents: LoreDocument[]): IntelEntry[] {
       title: d.title,
       snippet: d.content.substring(0, 80) + '...',
       type: d.id === 'doc_4' ? 'radio' as const : 'document' as const,
-      icon: d.classification === 'СОВ.СЕКРЕТНО' ? '🔴' : d.classification === 'СЕКРЕТНО' ? '🟡' : '⚪',
+      icon: d.classification === 'TOPPHEMLIG' ? '🔴' : d.classification === 'HEMLIG' ? '🟡' : '⚪',
     }));
 }
