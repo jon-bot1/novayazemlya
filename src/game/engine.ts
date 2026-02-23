@@ -685,6 +685,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // Death check — clamp HP and trigger game over
+  if (state.player.hp <= 0) {
+    state.player.hp = 0;
+    state.gameOver = true;
+    addMessage(state, '☠ DEAD', 'damage');
+    return state;
+  }
+
   // Extraction check — need BOTH USB and nuclear codebook for full success
   const hasUSB = state.player.inventory.some(i => i.id === 'boss_usb');
   const hasCodes = state.hasNuclearCodes;
