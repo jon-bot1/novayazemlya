@@ -1,5 +1,6 @@
-import { GameState, InputState, Vec2, Bullet, Enemy, GameMessage } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle } from './types';
 import { generateMap, createInitialPlayer } from './map';
+import { LORE_DOCUMENTS } from './lore';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -17,7 +18,22 @@ function rectContains(rx: number, ry: number, rw: number, rh: number, px: number
 
 function addMessage(state: GameState, text: string, type: GameMessage['type']) {
   state.messages.push({ text, time: state.time, type });
-  if (state.messages.length > 8) state.messages.shift();
+  if (state.messages.length > 10) state.messages.shift();
+}
+
+function spawnParticles(state: GameState, x: number, y: number, color: string, count: number) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.5 + Math.random() * 2;
+    state.particles.push({
+      pos: { x, y },
+      vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+      life: 30 + Math.random() * 30,
+      maxLife: 60,
+      color,
+      size: 1 + Math.random() * 2,
+    });
+  }
 }
 
 export function createGameState(): GameState {
@@ -27,7 +43,9 @@ export function createGameState(): GameState {
     player,
     enemies: map.enemies,
     bullets: [],
+    particles: [],
     lootContainers: map.lootContainers,
+    documentPickups: map.documentPickups,
     walls: map.walls,
     extractionPoints: map.extractionPoints,
     camera: { x: player.pos.x, y: player.pos.y },
@@ -38,7 +56,9 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'RAID STARTED — Find loot and extract', time: 0, type: 'info' }],
+    messages: [{ text: 'РЕЙД НАЧАЛСЯ — Найди документы и выйди живым', time: 0, type: 'info' }],
+    codesFound: [],
+    documentsRead: [],
   };
 }
 
@@ -52,11 +72,8 @@ function collidesWithWalls(state: GameState, x: number, y: number, r: number): b
 function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
   let nx = pos.x + dx;
   let ny = pos.y + dy;
-  
-  // Clamp to map
   nx = Math.max(r, Math.min(state.mapWidth - r, nx));
   ny = Math.max(r, Math.min(state.mapHeight - r, ny));
-  
   if (!collidesWithWalls(state, nx, ny, r)) return { x: nx, y: ny };
   if (!collidesWithWalls(state, nx, pos.y, r)) return { x: nx, y: pos.y };
   if (!collidesWithWalls(state, pos.x, ny, r)) return { x: pos.x, y: ny };
@@ -98,24 +115,44 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     });
     state.player.currentAmmo--;
     state.player.lastShot = state.time;
+    spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
   }
 
-  // Interact with loot
+  // Interact
   if (input.interact) {
+    // Loot containers
     for (const lc of state.lootContainers) {
       if (!lc.looted && dist(state.player.pos, lc.pos) < 50) {
         lc.looted = true;
         for (const item of lc.items) {
           state.player.inventory.push(item);
-          // Auto-load matching ammo
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
           }
         }
+        spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
         if (lc.items.length > 0) {
-          addMessage(state, `Looted ${lc.type}: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
+          addMessage(state, `Лут: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
         } else {
-          addMessage(state, `${lc.type} is empty`, 'info');
+          addMessage(state, `Пусто...`, 'info');
+        }
+      }
+    }
+
+    // Document pickups
+    for (const dp of state.documentPickups) {
+      if (!dp.collected && dist(state.player.pos, dp.pos) < 50) {
+        dp.collected = true;
+        const doc = LORE_DOCUMENTS.find(d => d.id === dp.loreDocId);
+        if (doc) {
+          doc.found = true;
+          state.documentsRead.push(doc.id);
+          if (doc.hasCode && doc.code && !state.codesFound.includes(doc.code)) {
+            state.codesFound.push(doc.code);
+            addMessage(state, `☢ СЕКРЕТНЫЙ КОД: ${doc.code}`, 'intel');
+          }
+          addMessage(state, `📄 ДОКУМЕНТ: "${doc.title}"`, 'intel');
+          spawnParticles(state, dp.pos.x, dp.pos.y, '#44aaff', 8);
         }
       }
     }
@@ -128,7 +165,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + (med.healAmount || 0));
         state.player.inventory.splice(medIdx, 1);
         state.player.bleedRate = Math.max(0, state.player.bleedRate - 2);
-        addMessage(state, `Used ${med.name} (+${med.healAmount}HP)`, 'info');
+        addMessage(state, `Использовал ${med.name} (+${med.healAmount}HP)`, 'info');
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ff66', 5);
       }
     }
   }
@@ -136,6 +174,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Bleeding
   if (state.player.bleedRate > 0) {
     state.player.hp -= state.player.bleedRate * dt;
+    if (Math.random() < 0.1) {
+      spawnParticles(state, state.player.pos.x + (Math.random()-0.5)*10, state.player.pos.y + (Math.random()-0.5)*10, '#cc3333', 1);
+    }
   }
 
   // Extraction check
@@ -146,7 +187,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        addMessage(state, `EXTRACTED at ${ep.name}!`, 'info');
+        addMessage(state, `ЭВАКУАЦИЯ: ${ep.name}!`, 'info');
       }
     }
   }
@@ -158,36 +199,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
+    // Blink timer
+    enemy.eyeBlink -= dt;
+    if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
+
     const distToPlayer = dist(enemy.pos, state.player.pos);
 
-    // State transitions
     if (distToPlayer < enemy.alertRange) {
-      // Check line of sight (simplified - no wall check for perf)
       if (distToPlayer < enemy.shootRange) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
       }
     } else if (enemy.state !== 'patrol') {
-      // Lost player, go back to patrol
       if (distToPlayer > enemy.alertRange * 1.5) {
         enemy.state = 'patrol';
-        enemy.patrolTarget = { 
-          x: enemy.pos.x + (Math.random() - 0.5) * 300, 
-          y: enemy.pos.y + (Math.random() - 0.5) * 300 
-        };
+        enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
       }
     }
 
-    // Enemy behavior
     const speed = enemy.speed * dt * 60;
     switch (enemy.state) {
       case 'patrol': {
         if (dist(enemy.pos, enemy.patrolTarget) < 20) {
-          enemy.patrolTarget = {
-            x: enemy.pos.x + (Math.random() - 0.5) * 300,
-            y: enemy.pos.y + (Math.random() - 0.5) * 300,
-          };
+          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
         }
         const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
         enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
@@ -215,8 +250,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             life: 50,
           });
           enemy.lastShot = state.time;
+          spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
         }
-        // Slight movement during combat
         if (distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
@@ -233,17 +268,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     b.life--;
 
     if (b.life <= 0) return false;
-    if (collidesWithWalls(state, b.pos.x, b.pos.y, 2)) return false;
+    if (collidesWithWalls(state, b.pos.x, b.pos.y, 2)) {
+      spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
+      return false;
+    }
 
     if (b.fromPlayer) {
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
         if (dist(b.pos, enemy.pos) < 14) {
           enemy.hp -= b.damage;
+          spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             state.killCount++;
-            addMessage(state, `Killed ${enemy.type.toUpperCase()}`, 'kill');
+            addMessage(state, `Ликвидирован: ${enemy.type.toUpperCase()}`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';
           }
@@ -254,20 +294,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (dist(b.pos, state.player.pos) < 12) {
         const dmg = b.damage * (1 - state.player.armor);
         state.player.hp -= dmg;
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
         if (Math.random() > 0.7) {
           state.player.bleedRate += 0.5;
-          addMessage(state, 'BLEEDING!', 'damage');
+          addMessage(state, '🩸 КРОВОТЕЧЕНИЕ!', 'damage');
         }
-        addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
+        addMessage(state, `Попадание! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
           state.gameOver = true;
-          addMessage(state, 'K.I.A.', 'damage');
+          addMessage(state, '☠ УБИТ', 'damage');
         }
         return false;
       }
     }
 
     return true;
+  });
+
+  // Update particles
+  state.particles = state.particles.filter(p => {
+    p.pos.x += p.vel.x;
+    p.pos.y += p.vel.y;
+    p.vel.x *= 0.96;
+    p.vel.y *= 0.96;
+    p.life--;
+    return p.life > 0;
   });
 
   // Camera follow

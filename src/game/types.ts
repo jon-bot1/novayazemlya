@@ -13,7 +13,7 @@ export interface Item {
   id: string;
   name: string;
   category: ItemCategory;
-  icon: string; // emoji for now
+  icon: string;
   weight: number;
   value: number;
   ammoType?: AmmoType;
@@ -21,6 +21,13 @@ export interface Item {
   damage?: number;
   healAmount?: number;
   description: string;
+}
+
+export interface DocumentPickup {
+  id: string;
+  pos: Vec2;
+  loreDocId: string;
+  collected: boolean;
 }
 
 export interface LootContainer {
@@ -41,6 +48,15 @@ export interface Bullet {
   life: number;
 }
 
+export interface Particle {
+  pos: Vec2;
+  vel: Vec2;
+  life: number;
+  maxLife: number;
+  color: string;
+  size: number;
+}
+
 export interface Enemy {
   id: string;
   pos: Vec2;
@@ -53,9 +69,10 @@ export interface Enemy {
   state: 'patrol' | 'alert' | 'chase' | 'attack' | 'dead';
   patrolTarget: Vec2;
   lastShot: number;
-  fireRate: number; // ms between shots
+  fireRate: number;
   angle: number;
   type: 'scav' | 'soldier' | 'heavy';
+  eyeBlink: number;
 }
 
 export interface Player {
@@ -69,8 +86,8 @@ export interface Player {
   currentAmmo: number;
   maxAmmo: number;
   ammoType: AmmoType;
-  bleedRate: number; // hp/s lost to bleeding
-  armor: number; // damage reduction 0-1
+  bleedRate: number;
+  armor: number;
   lastShot: number;
   fireRate: number;
 }
@@ -86,7 +103,7 @@ export interface Wall {
 export interface ExtractionPoint {
   pos: Vec2;
   radius: number;
-  timer: number; // seconds to extract
+  timer: number;
   active: boolean;
   name: string;
 }
@@ -95,7 +112,9 @@ export interface GameState {
   player: Player;
   enemies: Enemy[];
   bullets: Bullet[];
+  particles: Particle[];
   lootContainers: LootContainer[];
+  documentPickups: DocumentPickup[];
   walls: Wall[];
   extractionPoints: ExtractionPoint[];
   camera: Vec2;
@@ -107,12 +126,14 @@ export interface GameState {
   killCount: number;
   time: number;
   messages: GameMessage[];
+  codesFound: string[];
+  documentsRead: string[];
 }
 
 export interface GameMessage {
   text: string;
   time: number;
-  type: 'info' | 'warning' | 'loot' | 'damage' | 'kill';
+  type: 'info' | 'warning' | 'loot' | 'damage' | 'kill' | 'intel';
 }
 
 export interface InputState {
