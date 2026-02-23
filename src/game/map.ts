@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable } from './items';
 
 // Full outdoor military base: 3200x2400
 // The hangar building sits at offset HX, HY within the larger map
@@ -28,7 +28,7 @@ const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall =
 const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss', fixedAngle?: number): Enemy => {
   const stats = {
     scav: { hp: 32, speed: 1.2, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
-    soldier: { hp: 56, speed: 1.5, damage: 15, alertRange: 160, shootRange: 140, fireRate: 800 },
+    soldier: { hp: 56, speed: 1.5, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
     heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
     boss: { hp: 350, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
@@ -288,12 +288,36 @@ export function generateMap() {
     makeEnemy(900, 2300, 'soldier'),
   ];
 
-  // Mark watchtower turrets as elevated
-  enemies[enemies.length - 5 - 9 - 2].elevated = true; // NW turret
-  enemies[enemies.length - 5 - 9 - 1].elevated = true; // NE turret
+  // Save base enemy count before adding officers (index math depends on this)
+  const baseEnemyCount = enemies.length;
 
-  // Mark wall guards as elevated (last 9 before outside patrol guards)
-  for (let i = enemies.length - 5 - 9; i < enemies.length - 5; i++) {
+  // === INDOOR OFFICERS — spawn 2-3 inside the base with good loot ===
+  const officerZones = [ZONE_HANGAR_A, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_CORRIDOR];
+  const numOfficers = 2 + Math.floor(Math.random() * 2); // 2-3
+  for (let i = 0; i < numOfficers; i++) {
+    const zone = officerZones[Math.floor(Math.random() * officerZones.length)];
+    const p = randIn(zone.x, zone.y, zone.w, zone.h);
+    const officer = makeEnemy(p.x, p.y, 'soldier');
+    (officer as any)._isOfficer = true;
+    officer.alertRange = Math.round(officer.alertRange * 1.4);
+    officer.shootRange = Math.round(officer.shootRange * 1.4);
+    officer.hp = 70; // officers are tougher than regular soldiers
+    // Good loot: grenades, valuables, weapons
+    officer.loot = [
+      createGrenade(),
+      ...(Math.random() < 0.5 ? [createArmor()] : []),
+      ...(Math.random() < 0.4 ? [WEAPON_TEMPLATES.ak74()] : []),
+      createValuable('Dogtags', 200, '🏷️'),
+    ];
+    enemies.push(officer);
+  }
+
+  // Mark watchtower turrets as elevated (use baseEnemyCount for stable indexing)
+  enemies[baseEnemyCount - 5 - 9 - 2].elevated = true; // NW turret
+  enemies[baseEnemyCount - 5 - 9 - 1].elevated = true; // NE turret
+
+  // Mark wall guards as elevated (9 guards before the 5 outside patrol guards in the base array)
+  for (let i = baseEnemyCount - 5 - 9; i < baseEnemyCount - 5; i++) {
     enemies[i].elevated = true;
     enemies[i].state = 'idle'; // wall guards don't patrol, they stand on platforms
     enemies[i].alertRange = 180; // limited range from elevation
@@ -340,9 +364,8 @@ export function generateMap() {
   }
 
   // Spread patrol ranges wider for outside guards so they don't clump
-  const outsideStart = bossIdx >= 0 ? enemies.length - 7 : enemies.length - 5; // 5 outside + 2 bodyguards at end
-  for (let i = outsideStart; i < outsideStart + 5; i++) {
-    if (i < 0 || i >= enemies.length) continue;
+  // Outside guards are at indices baseEnemyCount-5 to baseEnemyCount-1
+  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) {
     enemies[i].patrolTarget = {
       x: enemies[i].pos.x + (Math.random() - 0.5) * 400,
       y: enemies[i].pos.y + (Math.random() - 0.5) * 300,
@@ -350,8 +373,8 @@ export function generateMap() {
   }
 
   // Randomize keycard: 1-2 outside patrol guards carry one
-  const outsideIndices = [];
-  for (let i = enemies.length - 5; i < enemies.length; i++) outsideIndices.push(i);
+  const outsideIndices: number[] = [];
+  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) outsideIndices.push(i);
   // Shuffle and pick 1-2
   for (let i = outsideIndices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -361,6 +384,8 @@ export function generateMap() {
   for (let k = 0; k < keycardCount; k++) {
     enemies[outsideIndices[k]].loot = [createKeycard()];
     (enemies[outsideIndices[k]] as any)._isOfficer = true;
+    enemies[outsideIndices[k]].alertRange = Math.round(enemies[outsideIndices[k]].alertRange * 1.4);
+    enemies[outsideIndices[k]].shootRange = Math.round(enemies[outsideIndices[k]].shootRange * 1.4);
   }
 
   // ══════════════════════════════════════
