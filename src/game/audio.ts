@@ -483,13 +483,13 @@ const SHOUT_COOLDOWN = 800; // ms
 type ShoutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
 const SHOUT_CONFIGS: Record<ShoutType, { formants: [number, number, number]; duration: number; pitch: number; pitchEnd: number; volume: number; roughness: number }> = {
-  alert:       { formants: [800, 1400, 2800],  duration: 0.5,  pitch: 250, pitchEnd: 350, volume: 0.04, roughness: 5 },
-  chase:       { formants: [700, 1200, 2600],  duration: 0.55, pitch: 220, pitchEnd: 300, volume: 0.04, roughness: 6 },
-  investigate: { formants: [500, 1000, 2400],  duration: 0.4,  pitch: 180, pitchEnd: 220, volume: 0.03, roughness: 3 },
-  attack:      { formants: [900, 1500, 3000],  duration: 0.4,  pitch: 280, pitchEnd: 400, volume: 0.04, roughness: 8 },
-  lost:        { formants: [600, 1200, 2200],  duration: 0.5,  pitch: 200, pitchEnd: 160, volume: 0.03, roughness: 4 },
-  alarm:       { formants: [850, 1500, 3100],  duration: 0.6,  pitch: 260, pitchEnd: 400, volume: 0.04, roughness: 8 },
-  death:       { formants: [400, 900, 2000],   duration: 0.8,  pitch: 300, pitchEnd: 80,  volume: 0.04, roughness: 10 },
+  alert:       { formants: [800, 1400, 2800],  duration: 0.5,  pitch: 250, pitchEnd: 350, volume: 0.012, roughness: 5 },
+  chase:       { formants: [700, 1200, 2600],  duration: 0.55, pitch: 220, pitchEnd: 300, volume: 0.012, roughness: 6 },
+  investigate: { formants: [500, 1000, 2400],  duration: 0.4,  pitch: 180, pitchEnd: 220, volume: 0.01, roughness: 3 },
+  attack:      { formants: [900, 1500, 3000],  duration: 0.4,  pitch: 280, pitchEnd: 400, volume: 0.012, roughness: 8 },
+  lost:        { formants: [600, 1200, 2200],  duration: 0.5,  pitch: 200, pitchEnd: 160, volume: 0.01, roughness: 4 },
+  alarm:       { formants: [850, 1500, 3100],  duration: 0.6,  pitch: 260, pitchEnd: 400, volume: 0.012, roughness: 8 },
+  death:       { formants: [400, 900, 2000],   duration: 0.8,  pitch: 300, pitchEnd: 80,  volume: 0.01, roughness: 10 },
 };
 
 export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
@@ -539,7 +539,7 @@ export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
 
   // Mix formants together — higher gain
   const merger = ctx.createGain();
-  merger.gain.value = 2.5; // louder formant mix
+  merger.gain.value = 1.0; // reduced formant mix
 
   voice.connect(distNode);
   for (const f of filters) {
