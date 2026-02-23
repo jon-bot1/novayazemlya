@@ -150,7 +150,7 @@ export function createGameState(): GameState {
 }
 
 function hasLineOfSight(state: GameState, a: Vec2, b: Vec2, elevated: boolean = false): boolean {
-  if (elevated) return true; // elevated enemies can see over all walls
+  if (elevated) return true; // elevated enemies can see over walls (but limited range)
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.sqrt(dx * dx + dy * dy);
@@ -607,8 +607,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.elevated = true;
       enemy.pos = { ...platformTarget };
       enemy.state = 'idle';
-      enemy.alertRange = 250;
-      enemy.shootRange = 220;
+      enemy.alertRange = 180;
+      enemy.shootRange = 150;
       delete (enemy as any)._platformTarget;
       // Remove the temp prop (watchtower) since guard is now on it
       const propIdx = state.props.findIndex(p => p.type === 'watchtower' && dist(p.pos, platformTarget) < 10);
@@ -1074,7 +1074,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead') continue;
           const d = dist(g.pos, enemy.pos);
-          if (d < g.radius) {
+          if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             enemy.stunTimer = 3; // 3 seconds stun
             enemy.state = 'idle';
             addMessage(state, `💫 ${enemy.type.toUpperCase()} bländad!`, 'info');
@@ -1083,7 +1083,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
         // Blind player if in radius
         const dPlayer = dist(g.pos, state.player.pos);
-        if (dPlayer < g.radius) {
+        if (dPlayer < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const intensity = 1 - (dPlayer / g.radius);
           state.flashbangTimer = 2 * intensity + 0.5; // 0.5 - 2.5 seconds based on distance
           addMessage(state, '💫 BLÄNDAD!', 'damage');
@@ -1100,7 +1100,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead') continue;
           const d = dist(g.pos, enemy.pos);
-          if (d < g.radius) {
+          if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             enemy.hp = 0;
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
@@ -1113,9 +1113,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
 
-        // Damage player if in radius
+        // Damage player if in radius AND line of sight
         const d = dist(g.pos, state.player.pos);
-        if (d < g.radius) {
+        if (d < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const falloff = 1 - (d / g.radius);
           const dmg = g.damage * falloff * 0.5;
           state.player.hp -= dmg;
