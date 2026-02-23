@@ -27,10 +27,10 @@ const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall =
 
 const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss', fixedAngle?: number): Enemy => {
   const stats = {
-    scav: { hp: 40, speed: 1.2, damage: 8, alertRange: 150, shootRange: 130, fireRate: 1200 },
-    soldier: { hp: 70, speed: 1.5, damage: 15, alertRange: 200, shootRange: 180, fireRate: 800 },
-    heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 180, shootRange: 160, fireRate: 1500 },
-    turret: { hp: 200, speed: 0, damage: 20, alertRange: 250, shootRange: 230, fireRate: 800 },
+    scav: { hp: 40, speed: 1.2, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
+    soldier: { hp: 70, speed: 1.5, damage: 15, alertRange: 160, shootRange: 140, fireRate: 800 },
+    heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
+    turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
     boss: { hp: 350, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
   }[type];
   const enemy: Enemy = {
@@ -328,8 +328,8 @@ export function generateMap() {
       bg.hp = 100;
       bg.maxHp = 100;
       bg.damage = 20;
-      bg.alertRange = 220;
-      bg.shootRange = 190;
+      bg.alertRange = 320;
+      bg.shootRange = 280;
       bg.fireRate = 700;
       bg.radioGroup = boss.radioGroup;
       bg.tacticalRole = 'assault';
