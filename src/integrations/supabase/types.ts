@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      highscores: {
+        Row: {
+          created_at: string
+          id: string
+          kills: number
+          loot_value: number
+          player_name: string
+          result: string
+          time_seconds: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kills?: number
+          loot_value?: number
+          player_name: string
+          result?: string
+          time_seconds?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kills?: number
+          loot_value?: number
+          player_name?: string
+          result?: string
+          time_seconds?: number
+        }
+        Relationships: []
+      }
       tester_feedback: {
         Row: {
           comment: string | null
