@@ -254,13 +254,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
-      if (!state.hasExtractionCode) {
-        // Show warning once per second
-        if (Math.floor(state.time) !== Math.floor(state.time - dt)) {
-          addMessage(state, '⚠ EXFILTRERINGSKOD KRÄVS — Sök igenom kartan!', 'warning');
-        }
-        break;
-      }
+      // TODO: Re-enable extraction code requirement after testing
+      // if (!state.hasExtractionCode) {
+      //   if (Math.floor(state.time) !== Math.floor(state.time - dt)) {
+      //     addMessage(state, '⚠ EXFILTRERINGSKOD KRÄVS — Sök igenom kartan!', 'warning');
+      //   }
+      //   break;
+      // }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
