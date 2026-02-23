@@ -1,5 +1,5 @@
 // Real speech synthesis for enemy callouts using Web Speech API
-// Aggressive, varied voices that always play to completion
+// Forces English voices and aggressive delivery
 
 let lastCalloutTime = 0;
 const CALLOUT_COOLDOWN = 2500;
@@ -9,26 +9,18 @@ let isSpeaking = false;
 
 type CalloutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
-// Aggressive military callouts
+// Short, punchy phrases that sound good shouted
 const CALLOUTS: Record<CalloutType, string[]> = {
-  alert:       ['CONTACT! CONTACT!', 'HE IS RIGHT THERE!', 'HOSTILE! HOSTILE!', 'ENEMY! I SEE HIM!', 'TARGET SPOTTED!'],
-  chase:       ['HE IS RUNNING! GO GO GO!', 'AFTER HIM! NOW!', 'MOVE! MOVE! MOVE!', 'DON\'T LET HIM ESCAPE!', 'CUT HIM OFF!'],
-  investigate: ['What the hell was that?!', 'Something moved! Check it!', 'Did you hear that?! GO!', 'Over there!'],
-  attack:      ['OPEN FIRE! OPEN FIRE!', 'TAKE HIM DOWN NOW!', 'SHOOT! SHOOT!', 'LIGHT HIM UP!', 'KILL HIM!'],
-  lost:        ['WHERE DID HE GO?!', 'I LOST HIM! SHIT!', 'HE DISAPPEARED!', 'FIND HIM!'],
-  alarm:       ['ALL UNITS! ALL UNITS!', 'WE NEED BACKUP NOW!', 'SEND EVERYONE!', 'CODE RED! CODE RED!'],
-  death:       ['AAAARGH!', 'NOOO!', 'HELP ME!', 'I\'M HIT!', 'MEDIC!', 'OH GOD!'],
+  alert:       ['CONTACT!!', 'HOSTILE!!', 'ENEMY!!', 'OVER THERE!!', 'I SEE HIM!!'],
+  chase:       ['GO GO GO!!', 'AFTER HIM!!', 'MOVE MOVE!!', 'GET HIM!!', 'DON\'T STOP!!'],
+  investigate: ['What was that!', 'Check it out!', 'Something moved!', 'Over there!'],
+  attack:      ['FIRE!!', 'SHOOT!!', 'TAKE HIM DOWN!!', 'KILL!!', 'ENGAGING!!'],
+  lost:        ['WHERE!!', 'LOST HIM!!', 'HE\'S GONE!!', 'FIND HIM!!'],
+  alarm:       ['BACKUP!!', 'ALL UNITS!!', 'CODE RED!!', 'HELP!!'],
+  death:       ['AAARGH!!', 'NOOO!!', 'AAGH!!', 'HELP!!', 'UURGH!!'],
 };
 
-// Deeper, more aggressive pitch ranges per enemy type
-const PITCH_BY_ENEMY: Record<string, number> = {
-  heavy: 0.35,
-  soldier: 0.65,
-  scav: 0.9,
-  turret: 1.1,
-};
-
-let allVoices: SpeechSynthesisVoice[] = [];
+let englishVoices: SpeechSynthesisVoice[] = [];
 let voicesLoaded = false;
 
 function loadVoices() {
@@ -37,14 +29,28 @@ function loadVoices() {
   if (voices.length === 0) return;
   voicesLoaded = true;
   
-  // Collect all English voices for variety
-  const english = voices.filter(v => v.lang.startsWith('en'));
-  allVoices = english.length > 0 ? english : voices;
+  // ONLY use English voices — never fall back to Swedish/local
+  englishVoices = voices.filter(v => v.lang.startsWith('en'));
+  
+  // If no English voices at all, try any voice with "english" in name
+  if (englishVoices.length === 0) {
+    englishVoices = voices.filter(v => /english/i.test(v.name));
+  }
+  
+  console.log('[voice] English voices found:', englishVoices.map(v => `${v.name} (${v.lang})`));
 }
 
-function pickRandomVoice(): SpeechSynthesisVoice | null {
-  if (allVoices.length === 0) return null;
-  return allVoices[Math.floor(Math.random() * allVoices.length)];
+function pickVoice(): SpeechSynthesisVoice | null {
+  if (englishVoices.length === 0) return null;
+  
+  // Prefer male-sounding English voices for military feel
+  const preferred = englishVoices.filter(v => 
+    /daniel|david|james|george|alex|tom|male|guy|english.*male/i.test(v.name) ||
+    v.lang === 'en-US' || v.lang === 'en-GB'
+  );
+  
+  const pool = preferred.length > 0 ? preferred : englishVoices;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 if (speechAvailable) {
@@ -60,17 +66,16 @@ export function unlockSpeech() {
   try {
     loadVoices();
     
-    // Minimal utterance to unlock audio policy
     const utt = new SpeechSynthesisUtterance('Go');
     utt.volume = 0.01;
     utt.rate = 5;
-    utt.pitch = 1;
-    const voice = pickRandomVoice();
+    utt.lang = 'en-US'; // Force English language
+    const voice = pickVoice();
     if (voice) utt.voice = voice;
     
     speechSynthesis.speak(utt);
     unlocked = true;
-    console.log('[voice] Unlock OK. Voices:', allVoices.length);
+    console.log('[voice] Unlock OK. English voices:', englishVoices.length);
     
     setTimeout(() => { speechSynthesis.cancel(); }, 500);
   } catch (e) {
@@ -81,9 +86,12 @@ export function unlockSpeech() {
 
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   if (!speechAvailable || !unlocked) return;
-
-  // Never interrupt — let current voice finish
   if (isSpeaking) return;
+  // Don't speak if no English voices — better silent than Swedish robot
+  if (englishVoices.length === 0) {
+    loadVoices();
+    return;
+  }
 
   const now = performance.now();
   if (now - lastCalloutTime < CALLOUT_COOLDOWN) return;
@@ -95,14 +103,22 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
 
     const utt = new SpeechSynthesisUtterance(text);
     
-    // Pick a random voice each time for variety
-    const voice = pickRandomVoice();
+    // CRITICAL: Force English language so it doesn't use Swedish pronunciation
+    utt.lang = 'en-US';
+    
+    const voice = pickVoice();
     if (voice) utt.voice = voice;
 
-    // Aggressive: deeper pitch, urgent rate
-    const basePitch = PITCH_BY_ENEMY[enemyType] ?? 0.7;
-    utt.pitch = Math.max(0.1, basePitch + (Math.random() * 0.3 - 0.15));
-    utt.rate = type === 'death' ? 0.9 : 1.1 + Math.random() * 0.3;
+    // Shouting parameters: low pitch = deep aggressive, fast rate = urgent
+    const pitchMap: Record<string, number> = {
+      heavy: 0.3,    // deep growl
+      soldier: 0.5,  // stern bark
+      scav: 0.7,     // higher panic
+      turret: 0.6,
+    };
+    
+    utt.pitch = (pitchMap[enemyType] ?? 0.5) + Math.random() * 0.2;
+    utt.rate = type === 'death' ? 0.8 : 1.3 + Math.random() * 0.5; // fast = urgent shouting
     utt.volume = 1.0;
 
     isSpeaking = true;
