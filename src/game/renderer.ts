@@ -1578,45 +1578,51 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cut out light circles using 'destination-out' blending
   lctx.globalCompositeOperation = 'destination-out';
   
-  // Player emits a small flashlight-like glow
+  // Player emits a soft glow
   const playerScreenX = state.player.pos.x - cx;
   const playerScreenY = state.player.pos.y - cy;
-  const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, 50);
-  playerGlow.addColorStop(0, 'rgba(0,0,0,0.9)');
-  playerGlow.addColorStop(0.5, 'rgba(0,0,0,0.4)');
+  const pr = 80;
+  const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, pr);
+  playerGlow.addColorStop(0, 'rgba(0,0,0,0.85)');
+  playerGlow.addColorStop(0.25, 'rgba(0,0,0,0.6)');
+  playerGlow.addColorStop(0.5, 'rgba(0,0,0,0.3)');
+  playerGlow.addColorStop(0.75, 'rgba(0,0,0,0.1)');
   playerGlow.addColorStop(1, 'rgba(0,0,0,0)');
   lctx.fillStyle = playerGlow;
-  lctx.fillRect(playerScreenX - 50, playerScreenY - 50, 100, 100);
+  lctx.fillRect(playerScreenX - pr, playerScreenY - pr, pr * 2, pr * 2);
   
-  // Render each light source with dynamic animation
+  // Render each light source — soft gradient so lights blend together
   for (const light of state.lights) {
     const lx = light.pos.x - cx;
     const ly = light.pos.y - cy;
     
-    // Skip lights far off screen
     if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
     
     let intensity = light.intensity;
-    // All lights pulse gently from their fixed position
     const uniqueSeed = light.pos.x * 7.3 + light.pos.y * 13.7;
     const slowPulse = Math.sin(state.time * 0.8 + uniqueSeed) * 0.05;
     intensity *= (0.95 + slowPulse);
     
     if (light.flicker) {
-      // Dramatic flicker — irregular on/off pattern
       const flickerA = Math.sin(state.time * 12 + uniqueSeed) * 0.2;
       const flickerB = Math.sin(state.time * 7.3 + uniqueSeed * 0.5) * 0.15;
       const flickerC = Math.random() * 0.08;
       intensity *= Math.max(0.15, 0.7 + flickerA + flickerB + flickerC);
     }
     
-    const r = light.radius * 0.55;
+    // Use full radius with smooth multi-stop falloff
+    const r = light.radius;
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
     grad.addColorStop(0, `rgba(0,0,0,${intensity})`);
-    grad.addColorStop(0.35, `rgba(0,0,0,${intensity * 0.5})`);
+    grad.addColorStop(0.15, `rgba(0,0,0,${intensity * 0.85})`);
+    grad.addColorStop(0.35, `rgba(0,0,0,${intensity * 0.55})`);
+    grad.addColorStop(0.55, `rgba(0,0,0,${intensity * 0.3})`);
+    grad.addColorStop(0.75, `rgba(0,0,0,${intensity * 0.12})`);
+    grad.addColorStop(0.9, `rgba(0,0,0,${intensity * 0.04})`);
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     lctx.fillStyle = grad;
     lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
+  }
   }
   
   // Muzzle flash light (bullets from player)
