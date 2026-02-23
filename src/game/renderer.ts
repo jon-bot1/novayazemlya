@@ -1,6 +1,7 @@
 import { GameState } from './types';
 
 const R = 14;
+const WALL_HEIGHT = 18; // visible wall south-face height for 3/4 perspective
 
 function drawCuteCharacter(
   ctx: CanvasRenderingContext2D,
@@ -15,43 +16,48 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  // Drop shadow (elongated south for perspective)
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
-  ctx.ellipse(0, size * 0.6, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
+  ctx.ellipse(2, size * 0.7, size * 0.9, size * 0.35, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Gun
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
+    ctx.fillStyle = '#999';
+    ctx.fillRect(size * 0.3, -2.5, size * 1.2, 5);
     ctx.fillStyle = '#888';
-    ctx.beginPath();
-    ctx.roundRect(size * 0.3, -2.5, size * 1.2, 5, 2);
-    ctx.fill();
-    ctx.fillStyle = '#777';
-    ctx.beginPath();
-    ctx.roundRect(size * 1.1, -3.5, 5, 7, 1);
-    ctx.fill();
+    ctx.fillRect(size * 1.1, -3.5, 5, 7);
     ctx.restore();
   }
 
   // Body
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
-  ctx.arc(0, 0, size, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, size, size * 0.85, 0, 0, Math.PI * 2); // slightly squished for perspective
   ctx.fill();
   ctx.strokeStyle = outlineColor;
   ctx.lineWidth = 2;
   ctx.stroke();
 
+  // Body highlight (top-lit)
+  const bodyGrad = ctx.createLinearGradient(0, -size, 0, size);
+  bodyGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  bodyGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, size, size * 0.85, 0, 0, Math.PI * 2);
+  ctx.fill();
+
   // Cheeks
   ctx.fillStyle = 'rgba(200, 100, 100, 0.2)';
   ctx.beginPath();
-  ctx.arc(-size * 0.5, size * 0.2, size * 0.3, 0, Math.PI * 2);
+  ctx.arc(-size * 0.45, size * 0.15, size * 0.25, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(size * 0.5, size * 0.2, size * 0.3, 0, Math.PI * 2);
+  ctx.arc(size * 0.45, size * 0.15, size * 0.25, 0, Math.PI * 2);
   ctx.fill();
 
   // Face
@@ -69,24 +75,24 @@ function drawCuteCharacter(
   } else {
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(size * 0.25, -size * 0.2, 3.5, 0, Math.PI * 2);
+    ctx.arc(size * 0.3, -size * 0.18, 3.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.25, size * 0.2, 3.5, 0, Math.PI * 2);
+    ctx.arc(size * 0.3, size * 0.18, 3.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = eyeColor;
     ctx.beginPath();
-    ctx.arc(size * 0.32, -size * 0.2, 2, 0, Math.PI * 2);
+    ctx.arc(size * 0.36, -size * 0.18, 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.32, size * 0.2, 2, 0, Math.PI * 2);
+    ctx.arc(size * 0.36, size * 0.18, 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(size * 0.35, -size * 0.25, 1, 0, Math.PI * 2);
+    ctx.arc(size * 0.38, -size * 0.23, 1, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.35, size * 0.15, 1, 0, Math.PI * 2);
+    ctx.arc(size * 0.38, size * 0.13, 1, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
@@ -118,7 +124,7 @@ function drawCuteCharacter(
     case 'beret':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.ellipse(size * -0.1, -size * 0.6, size * 0.7, size * 0.35, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(size * -0.1, -size * 0.55, size * 0.7, size * 0.3, -0.2, 0, Math.PI * 2);
       ctx.fill();
       break;
     case 'bandana':
@@ -136,7 +142,97 @@ function drawCuteCharacter(
       break;
   }
   ctx.restore();
-  ctx.restore(); // main translate
+  ctx.restore();
+}
+
+// Draw a wall with 3/4 perspective south face
+function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string) {
+  // South face (visible depth)
+  const faceColor = shadeColor(color, -30);
+  ctx.fillStyle = faceColor;
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x + w, y + h + WALL_HEIGHT);
+  ctx.lineTo(x, y + h + WALL_HEIGHT);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right face (small depth hint)
+  if (w > 14) {
+    const rightFace = shadeColor(color, -45);
+    ctx.fillStyle = rightFace;
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w, y + h + WALL_HEIGHT);
+    ctx.lineTo(x + w, y + WALL_HEIGHT);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Top face
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+
+  // Top highlight
+  const topGrad = ctx.createLinearGradient(x, y, x, y + h);
+  topGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+  topGrad.addColorStop(1, 'rgba(0,0,0,0.05)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(x, y, w, h);
+
+  // Edge line
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+}
+
+function shadeColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + percent));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + percent));
+  const b = Math.min(255, Math.max(0, (num & 0x0000FF) + percent));
+  return `rgb(${r},${g},${b})`;
+}
+
+// Draw ground tile pattern (Zelda-style)
+function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number) {
+  const tileSize = 48;
+  const startX = Math.max(0, Math.floor(cx / tileSize) * tileSize);
+  const startY = Math.max(0, Math.floor(cy / tileSize) * tileSize);
+  const endX = Math.min(mapW, cx + w + tileSize);
+  const endY = Math.min(mapH, cy + h + tileSize);
+
+  for (let tx = startX; tx < endX; tx += tileSize) {
+    for (let ty = startY; ty < endY; ty += tileSize) {
+      const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
+      ctx.fillStyle = tileIdx === 0 ? '#4e4e44' : '#525248';
+      ctx.fillRect(tx, ty, tileSize, tileSize);
+
+      // Subtle tile border
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tx, ty, tileSize, tileSize);
+
+      // Random floor details (cracks, stains)
+      const hash = (tx * 7 + ty * 13) % 100;
+      if (hash < 8) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(tx + 10, ty + 20);
+        ctx.lineTo(tx + 35, ty + 30);
+        ctx.stroke();
+      }
+      if (hash > 90) {
+        ctx.fillStyle = 'rgba(60,50,40,0.1)';
+        ctx.beginPath();
+        ctx.arc(tx + 24, ty + 24, 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
@@ -148,41 +244,21 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // ── GROUND ──
-  // Outside area (dark)
-  ctx.fillStyle = '#1a2018';
+  // Outside area
+  ctx.fillStyle = '#1a1e16';
   ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
 
-  // Hangar floor (concrete, bright)
-  ctx.fillStyle = '#4a4a42';
-  ctx.fillRect(0, 0, state.mapWidth, state.mapHeight);
-
-  // Floor tile grid
-  ctx.strokeStyle = '#5a5a52';
-  ctx.lineWidth = 0.5;
-  const startX = Math.max(0, Math.floor(cx / 50) * 50);
-  const startY = Math.max(0, Math.floor(cy / 50) * 50);
-  for (let x = startX; x < Math.min(state.mapWidth, cx + w + 50); x += 50) {
-    ctx.beginPath();
-    ctx.moveTo(x, Math.max(0, cy));
-    ctx.lineTo(x, Math.min(state.mapHeight, cy + h));
-    ctx.stroke();
-  }
-  for (let y = startY; y < Math.min(state.mapHeight, cy + h + 50); y += 50) {
-    ctx.beginPath();
-    ctx.moveTo(Math.max(0, cx), y);
-    ctx.lineTo(Math.min(state.mapWidth, cx + w), y);
-    ctx.stroke();
-  }
+  // Hangar floor tiles (Zelda-style checkerboard)
+  drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight);
 
   // Zone labels
-  ctx.fillStyle = 'rgba(200, 200, 180, 0.15)';
-  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = 'rgba(200, 200, 180, 0.12)';
+  ctx.font = 'bold 22px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('HANGAR', 250, 400);
-  ctx.fillText('KONTOR', 900, 200);
-  ctx.fillText('LAGER', 950, 650);
-  ctx.font = '12px sans-serif';
+  ctx.fillText('HANGAR', 250, 420);
+  ctx.fillText('KONTOR', 900, 220);
+  ctx.fillText('LAGER', 950, 670);
+  ctx.font = '11px sans-serif';
   ctx.fillText('KORRIDOR', 600, 260);
 
   // ── EXTRACTION ZONES ──
@@ -210,15 +286,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── WALLS ──
-  for (const wall of state.walls) {
-    ctx.fillStyle = wall.color;
-    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-    // Highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.fillRect(wall.x, wall.y, wall.w, Math.min(3, wall.h));
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-    ctx.fillRect(wall.x, wall.y + wall.h - 2, wall.w, 2);
+  // ── WALLS (3D perspective) ──
+  // Sort walls by Y so south faces overlap correctly
+  const sortedWalls = [...state.walls].sort((a, b) => a.y - b.y);
+  for (const wall of sortedWalls) {
+    drawWall3D(ctx, wall.x, wall.y, wall.w, wall.h, wall.color);
   }
 
   // ── DOCUMENT PICKUPS ──
@@ -226,6 +298,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (dp.collected) continue;
     const bob = Math.sin(state.time * 3 + dp.pos.x) * 3;
     const glow = 0.4 + Math.sin(state.time * 2) * 0.2;
+
+    // Shadow on ground
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(dp.pos.x, dp.pos.y + 8, 12, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.beginPath();
     ctx.arc(dp.pos.x, dp.pos.y + bob, 20, 0, Math.PI * 2);
@@ -243,6 +321,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── LOOT ──
   for (const lc of state.lootContainers) {
+    // Ground shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(lc.pos.x, lc.pos.y + 10, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     if (lc.looted) {
       ctx.fillStyle = '#3a3a32';
       ctx.fillRect(lc.pos.x - lc.size / 2, lc.pos.y - lc.size / 2, lc.size, lc.size);
@@ -289,9 +373,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
     const isBlinking = enemy.eyeBlink < 0.15;
     const configs: Record<string, any> = {
-      scav: { body: '#aa9a7a', outline: '#8a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
-      soldier: { body: '#7a9a5a', outline: '#5a7a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
-      heavy: { body: '#aa6a5a', outline: '#8a4a3a', eye: '#211', hat: 'ushanka', hatColor: '#8a5a4a' },
+      scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
+      soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
+      heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
     };
     const cfg = configs[enemy.type];
 
@@ -301,15 +385,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       cfg.hat, cfg.hatColor, true, enemy.type === 'heavy' ? R + 4 : R
     );
 
-    // Status indicator
+    // Status
     if (enemy.state === 'chase') {
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 10);
+      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 12);
     } else if (enemy.state === 'attack') {
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 10);
+      ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 12);
     } else if (enemy.state === 'patrol') {
       ctx.globalAlpha = 0.4 + Math.sin(state.time * 2) * 0.2;
       ctx.font = '10px sans-serif';
@@ -322,17 +406,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const barW = 28;
       const ratio = enemy.hp / enemy.maxHp;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y - R - 22, barW + 2, 6);
+      ctx.fillRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y - R - 24, barW + 2, 6);
       ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#cc3a3a';
-      ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 21, barW * ratio, 4);
+      ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 23, barW * ratio, 4);
     }
 
-    // Enemy type label
+    // Type label
     ctx.fillStyle = 'rgba(255,200,200,0.5)';
     ctx.font = '7px sans-serif';
     ctx.textAlign = 'center';
     const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT' }[enemy.type];
-    ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 14);
+    ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
   // ── PARTICLES ──
@@ -348,6 +432,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── BULLETS ──
   for (const b of state.bullets) {
+    // Bullet shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(b.pos.x, b.pos.y + 4, 3, 1.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.fillStyle = b.fromPlayer ? '#ffdd44' : '#ff5544';
     ctx.beginPath();
     ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
@@ -365,20 +455,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
 
   // ── PLAYER ──
-  // Outer glow - very visible
   ctx.save();
   const pulse = 0.6 + Math.sin(state.time * 2) * 0.2;
 
-  // Large soft glow
+  // Radial glow
   const grad = ctx.createRadialGradient(
     state.player.pos.x, state.player.pos.y, 0,
-    state.player.pos.x, state.player.pos.y, 40
+    state.player.pos.x, state.player.pos.y, 45
   );
-  grad.addColorStop(0, `rgba(100, 255, 80, ${pulse * 0.4})`);
-  grad.addColorStop(0.5, `rgba(100, 255, 80, ${pulse * 0.15})`);
+  grad.addColorStop(0, `rgba(100, 255, 80, ${pulse * 0.35})`);
+  grad.addColorStop(0.5, `rgba(100, 255, 80, ${pulse * 0.12})`);
   grad.addColorStop(1, 'rgba(100, 255, 80, 0)');
   ctx.fillStyle = grad;
-  ctx.fillRect(state.player.pos.x - 40, state.player.pos.y - 40, 80, 80);
+  ctx.fillRect(state.player.pos.x - 45, state.player.pos.y - 45, 90, 90);
 
   // Ring
   ctx.beginPath();
@@ -396,13 +485,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     'beret', '#8a5545', true, R + 2
   );
 
-  // Name tag (always visible)
+  // Name tag
   ctx.fillStyle = '#88ff44';
   ctx.font = 'bold 12px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 20);
+  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 22);
 
-  // Bleeding indicator
+  // Bleeding
   if (state.player.bleedRate > 0) {
     ctx.save();
     ctx.beginPath();
@@ -422,7 +511,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size + 4);
+      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size + 6);
     }
   }
   for (const dp of state.documentPickups) {
@@ -430,20 +519,20 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 24);
+      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 26);
     }
   }
 
   ctx.restore(); // camera
 
-  // Minimal vignette
-  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.5, w / 2, h / 2, w * 0.9);
+  // Subtle vignette
+  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.45, w / 2, h / 2, w * 0.85);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.15)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.12)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 
-  // Damage flash
+  // Low HP flash
   if (state.player.hp < 30) {
     const alpha = 0.08 + Math.sin(state.time * 5) * 0.04;
     ctx.fillStyle = `rgba(150, 20, 20, ${alpha})`;

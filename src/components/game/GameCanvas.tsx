@@ -93,16 +93,27 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Game loop
+  // Prevent default touch behaviors & game loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Prevent scrolling on canvas
+    const preventTouch = (e: TouchEvent) => e.preventDefault();
+    canvas.addEventListener('touchstart', preventTouch, { passive: false });
+    canvas.addEventListener('touchmove', preventTouch, { passive: false });
+
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener('resize', resize);
@@ -116,11 +127,14 @@ export const GameCanvas: React.FC = () => {
       const dt = Math.min(rawDt, 0.05);
       lastTimeRef.current = timestamp;
 
-      const state = updateGame(stateRef.current, inputRef.current, dt, canvas.width, canvas.height);
+      // Use CSS pixel dimensions (not canvas pixel dimensions which include DPR)
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
       stateRef.current = state;
       inputRef.current.interact = false;
 
-      renderGame(ctx, state, canvas.width, canvas.height);
+      renderGame(ctx, state, cssW, cssH);
 
       // Check for new documents to auto-open reader
       const docKey = state.documentsRead.join(',');
@@ -155,6 +169,8 @@ export const GameCanvas: React.FC = () => {
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
+      canvas.removeEventListener('touchstart', preventTouch);
+      canvas.removeEventListener('touchmove', preventTouch);
     };
   }, []);
 
