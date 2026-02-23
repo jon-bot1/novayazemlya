@@ -73,6 +73,8 @@ export interface Enemy {
   angle: number;
   type: 'scav' | 'soldier' | 'heavy';
   eyeBlink: number;
+  loot: Item[];
+  looted: boolean;
 }
 
 export interface Player {

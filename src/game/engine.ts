@@ -1,6 +1,7 @@
-import { GameState, InputState, Vec2, GameMessage, Particle } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
+import { LOOT_POOLS } from './items';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -34,6 +35,11 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
       size: 1 + Math.random() * 2,
     });
   }
+}
+
+function generateEnemyLoot(enemy: Enemy) {
+  const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
+  return LOOT_POOLS[poolType]();
 }
 
 export function createGameState(): GameState {
@@ -175,6 +181,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
+    // Dead enemy looting
+    for (const enemy of state.enemies) {
+      if (enemy.state !== 'dead' || enemy.looted) continue;
+      if (dist(state.player.pos, enemy.pos) < 50) {
+        enemy.looted = true;
+        for (const item of enemy.loot) {
+          state.player.inventory.push(item);
+          if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
+            state.player.currentAmmo += item.ammoCount;
+          }
+        }
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
+        if (enemy.loot.length > 0) {
+          addMessage(state, `Byte: ${enemy.loot.map(i => i.name).join(', ')}`, 'loot');
+        } else {
+          addMessage(state, `Inget av värde...`, 'info');
+        }
+      }
+    }
+
     // Use medical items
     if (state.player.hp < state.player.maxHp) {
       const medIdx = state.player.inventory.findIndex(i => i.category === 'medical');
@@ -298,6 +324,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
+            enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);

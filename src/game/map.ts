@@ -31,6 +31,8 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy'): En
     angle: Math.random() * Math.PI * 2,
     type,
     eyeBlink: Math.random() * 5,
+    loot: [],
+    looted: false,
   };
 };
 
