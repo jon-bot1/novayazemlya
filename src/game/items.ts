@@ -151,6 +151,7 @@ export const WEAPON_TEMPLATES = {
   ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   180),
   akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   250),
   toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900),
+  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  2000),
 };
 
 // Weighted random pick helper

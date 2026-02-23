@@ -5,7 +5,7 @@ export interface Vec2 {
 
 export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee';
 
-export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge';
+export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
 export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'key' | 'backpack';
 

@@ -301,12 +301,14 @@ export function generateMap() {
     (officer as any)._isOfficer = true;
     officer.alertRange = Math.round(officer.alertRange * 1.4);
     officer.shootRange = Math.round(officer.shootRange * 1.4);
-    officer.hp = 70; // officers are tougher than regular soldiers
-    // Good loot: grenades, valuables, weapons
+    officer.hp = 70;
+    officer.damage = 50; // Mosin hits hard
+    officer.fireRate = 2000; // bolt action — slow fire rate
+    // Good loot: Mosin, grenades, valuables
     officer.loot = [
+      WEAPON_TEMPLATES.mosin(),
       createGrenade(),
       ...(Math.random() < 0.5 ? [createArmor()] : []),
-      ...(Math.random() < 0.4 ? [WEAPON_TEMPLATES.ak74()] : []),
       createValuable('Dogtags', 200, '🏷️'),
     ];
     enemies.push(officer);
@@ -392,6 +394,8 @@ export function generateMap() {
     (enemies[outsideIndices[k]] as any)._isOfficer = true;
     enemies[outsideIndices[k]].alertRange = Math.round(enemies[outsideIndices[k]].alertRange * 1.4);
     enemies[outsideIndices[k]].shootRange = Math.round(enemies[outsideIndices[k]].shootRange * 1.4);
+    enemies[outsideIndices[k]].damage = 50; // Mosin
+    enemies[outsideIndices[k]].fireRate = 2000; // bolt action
   }
 
   // ══════════════════════════════════════
