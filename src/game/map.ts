@@ -293,10 +293,8 @@ export function generateMap() {
     // Lone guard — patrols far south-west (NOT near spawn)
     makeEnemy(900, 2300, 'soldier'),
 
-    // === SNIPERS — camouflaged, outside the base ===
-    makeEnemy(200 + Math.random() * 300, 1950 + Math.random() * 200, 'sniper'),
-    makeEnemy(2700 + Math.random() * 300, 1950 + Math.random() * 200, 'sniper'),
-    makeEnemy(1200 + Math.random() * 800, 2200 + Math.random() * 150, 'sniper'),
+    // === SNIPER — single camouflaged sniper outside the base ===
+    makeEnemy(1200 + Math.random() * 800, 2100 + Math.random() * 150, 'sniper'),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)

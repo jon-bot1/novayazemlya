@@ -42,10 +42,6 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           <strong>Both items are required</strong> for full mission success.
           Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
         </p>
-        <p className="text-xs font-mono text-muted-foreground mt-2 italic">
-          Inside the base you'll find 3 terminals: intel (exfil location), alarm disable, and nuclear codes. 
-          An officer outside carries an access card for the main gate.
-        </p>
       </div>
 
       <div className="border-t border-border pt-4">
