@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const FeedbackWidget: React.FC = () => {
+interface FeedbackWidgetProps {
+  playerName?: string;
+}
+
+export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ playerName }) => {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [comment, setComment] = useState('');
@@ -15,6 +19,7 @@ export const FeedbackWidget: React.FC = () => {
       await (supabase as any).from('tester_feedback').insert({
         rating,
         comment: comment.trim() || null,
+        player_name: playerName || null,
       });
       setSubmitted(true);
     } catch {

@@ -1,0 +1,1 @@
+ALTER TABLE public.tester_feedback ADD COLUMN player_name text;
