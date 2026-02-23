@@ -283,14 +283,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const distToPlayer = dist(enemy.pos, state.player.pos);
     const los = hasLineOfSight(state, enemy.pos, state.player.pos);
 
-    // Check if player is behind the enemy (>90° from facing direction)
+    // Vision cone varies by enemy type/skill
+    // scav: narrow vision, very poor rear awareness
+    // soldier: decent vision, moderate rear awareness  
+    // heavy: wide vision, good rear awareness (experienced)
+    const visionConfig = {
+      scav:    { frontArc: Math.PI * 0.4, rearRange: 0.2 },   // ~144° front, 20% rear
+      soldier: { frontArc: Math.PI * 0.55, rearRange: 0.35 }, // ~198° front, 35% rear
+      heavy:   { frontArc: Math.PI * 0.75, rearRange: 0.55 }, // ~270° front, 55% rear
+    }[enemy.type] || { frontArc: Math.PI * 0.55, rearRange: 0.35 };
+
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
     let angleDiff = Math.abs(toPlayerAngle - enemy.angle);
     if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
-    const isBehind = angleDiff > Math.PI * 0.55; // ~100° cone behind
+    const isBehind = angleDiff > visionConfig.frontArc;
 
-    // Behind = much shorter detection range, in front = full range
-    const effectiveRange = isBehind ? enemy.alertRange * 0.35 : enemy.alertRange;
+    const effectiveRange = isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange;
     const canSeePlayer = distToPlayer < effectiveRange && los;
 
     if (canSeePlayer) {

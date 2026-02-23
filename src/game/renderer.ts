@@ -567,11 +567,22 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ? `rgba(255, 200, 80, ${alertPulse * 3})`
       : `rgba(255, 80, 40, ${alertPulse * 4})`;
 
-    // Forward vision cone (~200° arc)
-    const coneHalf = Math.PI * 0.55;
+    // Vision cone per enemy type
+    const visionArc = {
+      scav: Math.PI * 0.4,
+      soldier: Math.PI * 0.55,
+      heavy: Math.PI * 0.75,
+    }[enemy.type] || Math.PI * 0.55;
+    const rearRange = {
+      scav: 0.2,
+      soldier: 0.35,
+      heavy: 0.55,
+    }[enemy.type] || 0.35;
+
+    // Forward vision cone
     ctx.beginPath();
     ctx.moveTo(enemy.pos.x, enemy.pos.y);
-    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - coneHalf, enemy.angle + coneHalf);
+    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - visionArc, enemy.angle + visionArc);
     ctx.closePath();
     ctx.fillStyle = fieldColor;
     ctx.fill();
@@ -581,9 +592,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Rear awareness (small circle, 35% range)
+    // Rear awareness circle (size varies by type)
     ctx.beginPath();
-    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * 0.35, 0, Math.PI * 2);
+    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * rearRange, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(255, 200, 80, ${alertPulse * 0.5})`;
     ctx.fill();
 
@@ -591,7 +602,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (enemy.state !== 'patrol') {
       ctx.beginPath();
       ctx.moveTo(enemy.pos.x, enemy.pos.y);
-      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - coneHalf, enemy.angle + coneHalf);
+      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - visionArc, enemy.angle + visionArc);
       ctx.closePath();
       ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
       ctx.lineWidth = 1;
