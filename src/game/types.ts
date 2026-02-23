@@ -120,6 +120,13 @@ export interface Wall {
   color: string;
 }
 
+export interface Prop {
+  pos: Vec2;
+  w: number;
+  h: number;
+  type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf';
+}
+
 export interface ExtractionPoint {
   pos: Vec2;
   radius: number;
@@ -136,6 +143,7 @@ export interface GameState {
   particles: Particle[];
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
+  props: Prop[];
   walls: Wall[];
   extractionPoints: ExtractionPoint[];
   camera: Vec2;

@@ -1,4 +1,4 @@
-import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup } from './types';
+import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop } from './types';
 import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade } from './items';
 
 // Hangar complex: 1200x900 - tighter for mobile visibility
@@ -192,12 +192,47 @@ export function generateMap() {
     makeDocPickup(1080, 800, 'doc_5'),  // Deep storage
   ];
 
+  const props: Prop[] = [
+    // Hangar A — wooden crates and barrel stacks
+    { pos: { x: 80, y: 180 }, w: 28, h: 28, type: 'wood_crate' },
+    { pos: { x: 115, y: 180 }, w: 24, h: 24, type: 'wood_crate' },
+    { pos: { x: 95, y: 155 }, w: 20, h: 20, type: 'wood_crate' },
+    { pos: { x: 320, y: 200 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 440, y: 300 }, w: 26, h: 26, type: 'wood_crate' },
+
+    // Hangar B — sandbags and crates
+    { pos: { x: 80, y: 560 }, w: 40, h: 14, type: 'sandbags' },
+    { pos: { x: 300, y: 700 }, w: 24, h: 24, type: 'wood_crate' },
+    { pos: { x: 330, y: 700 }, w: 24, h: 24, type: 'wood_crate' },
+    { pos: { x: 450, y: 600 }, w: 20, h: 20, type: 'barrel_stack' },
+
+    // Corridor — concrete barriers
+    { pos: { x: 540, y: 230 }, w: 36, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 650, y: 270 }, w: 36, h: 16, type: 'concrete_barrier' },
+
+    // Offices — equipment tables
+    { pos: { x: 750, y: 120 }, w: 50, h: 20, type: 'equipment_table' },
+    { pos: { x: 1020, y: 120 }, w: 50, h: 20, type: 'equipment_table' },
+    { pos: { x: 750, y: 360 }, w: 50, h: 20, type: 'equipment_table' },
+    { pos: { x: 1020, y: 360 }, w: 50, h: 20, type: 'equipment_table' },
+    { pos: { x: 1100, y: 250 }, w: 30, h: 60, type: 'metal_shelf' },
+
+    // Storage — mixed props
+    { pos: { x: 730, y: 530 }, w: 28, h: 28, type: 'wood_crate' },
+    { pos: { x: 730, y: 630 }, w: 28, h: 28, type: 'wood_crate' },
+    { pos: { x: 900, y: 500 }, w: 40, h: 14, type: 'sandbags' },
+    { pos: { x: 980, y: 600 }, w: 30, h: 60, type: 'metal_shelf' },
+    { pos: { x: 1000, y: 800 }, w: 50, h: 20, type: 'equipment_table' },
+    { pos: { x: 1050, y: 860 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 730, y: 780 }, w: 36, h: 16, type: 'concrete_barrier' },
+  ];
+
   const extractionPoints: ExtractionPoint[] = [
     { pos: { x: 250, y: MAP_H - 40 }, radius: 50, timer: 5, active: true, name: 'HANGAR SYD' },
     { pos: { x: MAP_W - 40, y: 600 }, radius: 50, timer: 5, active: true, name: 'LAGER ÖST' },
   ];
 
-  return { walls, enemies, lootContainers, documentPickups, extractionPoints, mapWidth: MAP_W, mapHeight: MAP_H };
+  return { walls, enemies, lootContainers, documentPickups, extractionPoints, props, mapWidth: MAP_W, mapHeight: MAP_H };
 }
 
 export function createInitialPlayer() {
