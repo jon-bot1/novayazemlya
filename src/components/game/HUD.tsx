@@ -31,7 +31,7 @@ export const HUD: React.FC<HUDProps> = ({
   const scoreSubmittedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if ((gameOver || extracted) && playerName && !scoreSubmittedRef.current) {
+    if ((gameOver || extracted) && playerName && playerName.trim().toLowerCase() !== 'test123' && !scoreSubmittedRef.current) {
       scoreSubmittedRef.current = true;
       const hasUSB = player.inventory.some(i => i.id === 'boss_usb');
       const hasCodes = player.inventory.some(i => i.id === 'nuclear_codebook');
