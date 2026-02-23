@@ -398,6 +398,40 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
+    // Detection radius field
+    ctx.save();
+    const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
+    const fieldColor = enemy.state === 'patrol'
+      ? `rgba(255, 200, 80, ${alertPulse})`
+      : enemy.state === 'chase'
+      ? `rgba(255, 120, 40, ${alertPulse * 2})`
+      : `rgba(255, 50, 30, ${alertPulse * 2.5})`;
+    
+    // Outer alert range
+    ctx.beginPath();
+    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, 0, Math.PI * 2);
+    ctx.fillStyle = fieldColor;
+    ctx.fill();
+    ctx.strokeStyle = enemy.state === 'patrol'
+      ? `rgba(255, 200, 80, ${alertPulse * 3})`
+      : `rgba(255, 80, 40, ${alertPulse * 4})`;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Inner shoot range
+    if (enemy.state !== 'patrol') {
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+
     const isBlinking = enemy.eyeBlink < 0.15;
     const configs: Record<string, any> = {
       scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
