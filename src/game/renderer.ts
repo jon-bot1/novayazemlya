@@ -1562,7 +1562,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
-  // ── DYNAMIC LIGHTING OVERLAY ──
+  // ── FIXED PIXEL LIGHTING ──
   if (!_lightCanvas || _lightCanvas.width !== w || _lightCanvas.height !== h) {
     _lightCanvas = document.createElement('canvas');
     _lightCanvas.width = w;
@@ -1571,93 +1571,76 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const lightCanvas = _lightCanvas;
   const lctx = lightCanvas.getContext('2d')!;
   
-  // Start with darkness — heavier for more shadow contrast
-  lctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+  // Start with darkness
+  lctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
   lctx.fillRect(0, 0, w, h);
   
-  // Cut out light circles using 'destination-out' blending
+  // Cut out fixed light circles — no animation, no flicker
   lctx.globalCompositeOperation = 'destination-out';
   
-  // Player emits a soft glow
+  // Player soft glow
   const playerScreenX = state.player.pos.x - cx;
   const playerScreenY = state.player.pos.y - cy;
-  const pr = 80;
+  const pr = 75;
   const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, pr);
-  playerGlow.addColorStop(0, 'rgba(0,0,0,0.85)');
-  playerGlow.addColorStop(0.25, 'rgba(0,0,0,0.6)');
-  playerGlow.addColorStop(0.5, 'rgba(0,0,0,0.3)');
-  playerGlow.addColorStop(0.75, 'rgba(0,0,0,0.1)');
+  playerGlow.addColorStop(0, 'rgba(0,0,0,0.8)');
+  playerGlow.addColorStop(0.3, 'rgba(0,0,0,0.5)');
+  playerGlow.addColorStop(0.6, 'rgba(0,0,0,0.2)');
   playerGlow.addColorStop(1, 'rgba(0,0,0,0)');
   lctx.fillStyle = playerGlow;
   lctx.fillRect(playerScreenX - pr, playerScreenY - pr, pr * 2, pr * 2);
   
-  // Render each light source — soft gradient so lights blend together
+  // Fixed light sources — static intensity, smooth fade
   for (const light of state.lights) {
     const lx = light.pos.x - cx;
     const ly = light.pos.y - cy;
-    
     if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
     
-    let intensity = light.intensity;
-    const uniqueSeed = light.pos.x * 7.3 + light.pos.y * 13.7;
-    const slowPulse = Math.sin(state.time * 0.8 + uniqueSeed) * 0.05;
-    intensity *= (0.95 + slowPulse);
-    
-    if (light.flicker) {
-      const flickerA = Math.sin(state.time * 12 + uniqueSeed) * 0.2;
-      const flickerB = Math.sin(state.time * 7.3 + uniqueSeed * 0.5) * 0.15;
-      const flickerC = Math.random() * 0.08;
-      intensity *= Math.max(0.15, 0.7 + flickerA + flickerB + flickerC);
-    }
-    
-    // Use full radius with smooth multi-stop falloff
     const r = light.radius;
+    const I = light.intensity;
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
-    grad.addColorStop(0, `rgba(0,0,0,${intensity})`);
-    grad.addColorStop(0.15, `rgba(0,0,0,${intensity * 0.85})`);
-    grad.addColorStop(0.35, `rgba(0,0,0,${intensity * 0.55})`);
-    grad.addColorStop(0.55, `rgba(0,0,0,${intensity * 0.3})`);
-    grad.addColorStop(0.75, `rgba(0,0,0,${intensity * 0.12})`);
-    grad.addColorStop(0.9, `rgba(0,0,0,${intensity * 0.04})`);
+    grad.addColorStop(0, `rgba(0,0,0,${I})`);
+    grad.addColorStop(0.2, `rgba(0,0,0,${I * 0.75})`);
+    grad.addColorStop(0.45, `rgba(0,0,0,${I * 0.4})`);
+    grad.addColorStop(0.7, `rgba(0,0,0,${I * 0.15})`);
+    grad.addColorStop(0.9, `rgba(0,0,0,${I * 0.04})`);
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     lctx.fillStyle = grad;
     lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
   }
-  }
   
-  // Muzzle flash light (bullets from player)
+  // Muzzle flash light (brief, from player bullets)
   for (const b of state.bullets) {
     if (b.fromPlayer && b.life > 0.85) {
       const bx = b.pos.x - cx;
       const by = b.pos.y - cy;
-      const flashGrad = lctx.createRadialGradient(bx, by, 0, bx, by, 60);
-      flashGrad.addColorStop(0, 'rgba(0,0,0,0.9)');
+      const flashGrad = lctx.createRadialGradient(bx, by, 0, bx, by, 55);
+      flashGrad.addColorStop(0, 'rgba(0,0,0,0.85)');
+      flashGrad.addColorStop(0.5, 'rgba(0,0,0,0.3)');
       flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
       lctx.fillStyle = flashGrad;
-      lctx.fillRect(bx - 60, by - 60, 120, 120);
+      lctx.fillRect(bx - 55, by - 55, 110, 110);
     }
   }
   
-  // Now add colored light tints
+  // Subtle color tint from light sources
   lctx.globalCompositeOperation = 'source-atop';
   for (const light of state.lights) {
     const lx = light.pos.x - cx;
     const ly = light.pos.y - cy;
     if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
-    
-    const r = light.radius;
+    const r = light.radius * 0.7;
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
-    // Parse color and apply tint to the dark areas
-    grad.addColorStop(0, light.color + '15');
+    grad.addColorStop(0, light.color + '12');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     lctx.fillStyle = grad;
     lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
   }
   
-  // Draw the light map overlay
+  // Draw the light overlay
   ctx.drawImage(lightCanvas, 0, 0);
   
-  // Add colored light halos on top (additive-style)
+  // Static colored halos
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
   ctx.translate(-cx, -cy);
@@ -1665,18 +1648,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     const lx = light.pos.x;
     const ly = light.pos.y;
     if (lx - cx < -light.radius || lx - cx > w + light.radius || ly - cy < -light.radius || ly - cy > h + light.radius) continue;
-    
-    let intensity = light.intensity * 0.15;
-    const uniqueSeed = light.pos.x * 7.3 + light.pos.y * 13.7;
-    const slowPulse = Math.sin(state.time * 0.8 + uniqueSeed) * 0.05;
-    intensity *= (0.95 + slowPulse);
-    if (light.flicker) {
-      intensity *= Math.max(0.15, 0.7 + Math.sin(state.time * 12 + uniqueSeed) * 0.2 + Math.sin(state.time * 7.3 + uniqueSeed * 0.5) * 0.15);
-    }
-    
-    const r = light.radius * 0.6;
+    const I = light.intensity * 0.12;
+    const r = light.radius * 0.5;
     const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, r);
-    grad.addColorStop(0, light.color + Math.floor(intensity * 255).toString(16).padStart(2, '0'));
+    grad.addColorStop(0, light.color + Math.floor(I * 255).toString(16).padStart(2, '0'));
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
