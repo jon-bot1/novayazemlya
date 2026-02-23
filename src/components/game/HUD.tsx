@@ -1,6 +1,7 @@
 import React from 'react';
 import { Player, GameMessage } from '../../game/types';
 import { LoreDocument } from '../../game/lore';
+import { FeedbackWidget } from './FeedbackWidget';
 
 interface HUDProps {
   player: Player;
@@ -223,6 +224,8 @@ export const HUD: React.FC<HUDProps> = ({
                 </div>
               )}
             </div>
+
+            <FeedbackWidget />
 
             <button
               className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
