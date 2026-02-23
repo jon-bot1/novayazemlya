@@ -56,7 +56,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'РЕЙД НАЧАЛСЯ — Найди документы и выйди живым', time: 0, type: 'info' }],
+    messages: [{ text: 'RÄDEN HAR BÖRJAT — Hitta dokumenten och kom ut levande', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
   };
@@ -132,9 +132,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
         if (lc.items.length > 0) {
-          addMessage(state, `Лут: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
+          addMessage(state, `Byte: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
         } else {
-          addMessage(state, `Пусто...`, 'info');
+          addMessage(state, `Tomt...`, 'info');
         }
       }
     }
@@ -149,9 +149,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.documentsRead.push(doc.id);
           if (doc.hasCode && doc.code && !state.codesFound.includes(doc.code)) {
             state.codesFound.push(doc.code);
-            addMessage(state, `☢ СЕКРЕТНЫЙ КОД: ${doc.code}`, 'intel');
+            addMessage(state, `☢ HEMLIG KOD: ${doc.code}`, 'intel');
           }
-          addMessage(state, `📄 ДОКУМЕНТ: "${doc.title}"`, 'intel');
+          addMessage(state, `📄 DOKUMENT: "${doc.title}"`, 'intel');
           spawnParticles(state, dp.pos.x, dp.pos.y, '#44aaff', 8);
         }
       }
@@ -165,7 +165,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + (med.healAmount || 0));
         state.player.inventory.splice(medIdx, 1);
         state.player.bleedRate = Math.max(0, state.player.bleedRate - 2);
-        addMessage(state, `Использовал ${med.name} (+${med.healAmount}HP)`, 'info');
+        addMessage(state, `Använde ${med.name} (+${med.healAmount}HP)`, 'info');
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ff66', 5);
       }
     }
@@ -187,7 +187,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        addMessage(state, `ЭВАКУАЦИЯ: ${ep.name}!`, 'info');
+        addMessage(state, `EVAKUERING: ${ep.name}!`, 'info');
       }
     }
   }
@@ -199,7 +199,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
-    // Blink timer
     enemy.eyeBlink -= dt;
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
@@ -282,7 +281,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             state.killCount++;
-            addMessage(state, `Ликвидирован: ${enemy.type.toUpperCase()}`, 'kill');
+            addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';
@@ -297,12 +296,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
         if (Math.random() > 0.7) {
           state.player.bleedRate += 0.5;
-          addMessage(state, '🩸 КРОВОТЕЧЕНИЕ!', 'damage');
+          addMessage(state, '🩸 BLÖDNING!', 'damage');
         }
-        addMessage(state, `Попадание! -${Math.floor(dmg)}HP`, 'damage');
+        addMessage(state, `Träff! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
           state.gameOver = true;
-          addMessage(state, '☠ УБИТ', 'damage');
+          addMessage(state, '☠ DÖD', 'damage');
         }
         return false;
       }

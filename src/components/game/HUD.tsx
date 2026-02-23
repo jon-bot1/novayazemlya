@@ -37,7 +37,7 @@ export const HUD: React.FC<HUDProps> = ({
             <span className="text-xs text-foreground font-mono">{Math.floor(player.hp)}</span>
           </div>
           {player.bleedRate > 0 && (
-            <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 КРОВОТЕЧЕНИЕ</span>
+            <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 BLÖDNING</span>
           )}
         </div>
 
@@ -61,7 +61,7 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Extraction progress */}
       {extractionProgress > 0 && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-          <span className="text-xs text-loot font-mono text-glow-green animate-pulse-glow">ЭВАКУАЦИЯ...</span>
+          <span className="text-xs text-loot font-mono text-glow-green animate-pulse-glow">EVAKUERING...</span>
           <div className="w-40 h-2 bg-secondary rounded-sm overflow-hidden border border-loot/40">
             <div className="h-full bg-loot transition-all duration-100" style={{ width: `${(extractionProgress / 5) * 100}%` }} />
           </div>
@@ -99,29 +99,29 @@ export const HUD: React.FC<HUDProps> = ({
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
           <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4">
             <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : 'text-loot text-glow-green'}`}>
-              {gameOver ? '☠ УБИТ' : '🚁 ЭВАКУАЦИЯ'}
+              {gameOver ? '☠ DÖD' : '🚁 EVAKUERAD'}
             </h1>
             
             <div className="w-full border-t border-border pt-3 flex flex-col gap-2">
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Ликвидировано:</span>
+                <span>Eliminerade:</span>
                 <span className="text-foreground">{killCount}</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Лут:</span>
-                <span className="text-foreground">{player.inventory.length} предметов</span>
+                <span>Byte:</span>
+                <span className="text-foreground">{player.inventory.length} föremål</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Стоимость:</span>
+                <span>Värde:</span>
                 <span className="text-foreground">{player.inventory.reduce((s, i) => s + i.value, 0)}₽</span>
               </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Документы:</span>
+                <span>Dokument:</span>
                 <span className="text-foreground">{documentsFound}/{totalDocuments}</span>
               </div>
               {codesFound.length > 0 && (
                 <div className="mt-2 border-t border-border pt-2">
-                  <span className="text-xs font-mono text-warning">☢ ОБНАРУЖЕННЫЕ КОДЫ:</span>
+                  <span className="text-xs font-mono text-warning">☢ UPPTÄCKTA KODER:</span>
                   <div className="flex flex-col gap-1 mt-1">
                     {codesFound.map(code => (
                       <span key={code} className="text-sm font-display text-warning text-glow-amber">{code}</span>
@@ -135,7 +135,7 @@ export const HUD: React.FC<HUDProps> = ({
               className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
               onClick={() => window.location.reload()}
             >
-              НОВЫЙ РЕЙД
+              NY RÄID
             </button>
           </div>
         </div>

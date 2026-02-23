@@ -193,9 +193,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.fillStyle = 'rgba(160, 150, 120, 0.3)';
   ctx.font = '14px "Oswald", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('КАЗАРМА', 290, 90);
-  ctx.fillText('СКЛАД', 940, 390);
-  ctx.fillText('БУНКЕР', 1790, 1490);
+  ctx.fillText('KASERN', 290, 90);
+  ctx.fillText('FÖRRÅD', 940, 390);
+  ctx.fillText('BUNKER', 1790, 1490);
 
   // Extraction zones
   for (const ep of state.extractionPoints) {
@@ -259,7 +259,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Label
     ctx.fillStyle = `rgba(100, 180, 255, ${glow + 0.3})`;
     ctx.font = '8px "Share Tech Mono", monospace';
-    ctx.fillText('ДОКУМЕНТ', dp.pos.x, dp.pos.y + bob - 14);
+    ctx.fillText('DOKUMENT', dp.pos.x, dp.pos.y + bob - 14);
   }
 
   // Loot containers with cute style
@@ -401,7 +401,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.fillStyle = 'rgba(140, 200, 100, 0.7)';
   ctx.font = '8px "Share Tech Mono", monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('ТЫ', state.player.pos.x, state.player.pos.y - R - 10);
+  ctx.fillText('DU', state.player.pos.x, state.player.pos.y - R - 10);
 
   // Bleeding indicator
   if (state.player.bleedRate > 0) {
@@ -423,7 +423,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(200, 180, 60, 0.8)';
       ctx.font = '9px "Share Tech Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] ОБЫСКАТЬ', lc.pos.x, lc.pos.y + lc.size);
+      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size);
     }
   }
   for (const dp of state.documentPickups) {
@@ -431,7 +431,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(100, 180, 255, 0.8)';
       ctx.font = '9px "Share Tech Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] ПРОЧИТАТЬ', dp.pos.x, dp.pos.y + 22);
+      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 22);
     }
   }
 

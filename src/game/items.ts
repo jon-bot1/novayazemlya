@@ -24,7 +24,7 @@ export const createAmmo = (type: AmmoType, count: number): Item => ({
   value: count * 5,
   ammoType: type,
   ammoCount: count,
-  description: `${count} rounds of ${type}`,
+  description: `${count} patroner ${type}`,
 });
 
 export const createMedical = (name: string, heal: number, icon: string): Item => ({
@@ -35,7 +35,7 @@ export const createMedical = (name: string, heal: number, icon: string): Item =>
   weight: 0.5,
   value: heal * 10,
   healAmount: heal,
-  description: `Restores ${heal} HP`,
+  description: `Återställer ${heal} HP`,
 });
 
 export const createValuable = (name: string, value: number, icon: string): Item => ({
@@ -45,7 +45,7 @@ export const createValuable = (name: string, value: number, icon: string): Item 
   icon,
   weight: 1,
   value,
-  description: `Worth ${value}₽`,
+  description: `Värt ${value}₽`,
 });
 
 export const WEAPON_TEMPLATES = {
@@ -60,7 +60,7 @@ export const LOOT_POOLS = {
     const pool: Item[] = [];
     if (Math.random() > 0.4) pool.push(createAmmo('9x18', 8 + Math.floor(Math.random() * 8)));
     if (Math.random() > 0.6) pool.push(createMedical('Bandage', 15, '🩹'));
-    if (Math.random() > 0.7) pool.push(createValuable('Cigarettes', 50, '🚬'));
+    if (Math.random() > 0.7) pool.push(createValuable('Cigaretter', 50, '🚬'));
     if (Math.random() > 0.85) pool.push(createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)));
     return pool;
   },
@@ -68,16 +68,16 @@ export const LOOT_POOLS = {
     const pool: Item[] = [];
     if (Math.random() > 0.5) pool.push(createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)));
     if (Math.random() > 0.6) pool.push(createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)));
-    if (Math.random() > 0.7) pool.push(createMedical('First Aid Kit', 40, '🏥'));
+    if (Math.random() > 0.7) pool.push(createMedical('Sjukvårdskit', 40, '🏥'));
     if (Math.random() > 0.85) pool.push(WEAPON_TEMPLATES.ak74());
-    if (Math.random() > 0.9) pool.push(createValuable('Dog Tags', 200, '🏷️'));
+    if (Math.random() > 0.9) pool.push(createValuable('Dogtags', 200, '🏷️'));
     return pool;
   },
   valuable: (): Item[] => {
     const pool: Item[] = [];
-    pool.push(createValuable('Gold Chain', 350, '📿'));
-    if (Math.random() > 0.5) pool.push(createValuable('Electronics', 250, '📻'));
-    if (Math.random() > 0.7) pool.push(createValuable('Documents', 500, '📜'));
+    pool.push(createValuable('Guldkedja', 350, '📿'));
+    if (Math.random() > 0.5) pool.push(createValuable('Elektronik', 250, '📻'));
+    if (Math.random() > 0.7) pool.push(createValuable('Dokument', 500, '📜'));
     return pool;
   },
 };

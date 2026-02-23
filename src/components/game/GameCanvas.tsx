@@ -198,7 +198,7 @@ export const GameCanvas: React.FC = () => {
 
       {/* Desktop hint */}
       <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-        WASD движение | Мышь прицел+огонь | E обыскать/лечить | Tab инвентарь | J разведданные
+        WASD rörelse | Mus sikta+skjut | E leta/läka | Tab inventarium | J underrättelser
       </div>
 
       <InventoryPanel items={hudState.player.inventory} open={showInventory} onClose={() => setShowInventory(false)} />
