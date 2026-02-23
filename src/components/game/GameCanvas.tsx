@@ -95,7 +95,7 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch input: tap to walk to world position, right side to aim & shoot
+  // Touch input: tap on enemy to shoot, tap on empty space to walk
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -110,16 +110,39 @@ export const GameCanvas: React.FC = () => {
       };
     };
 
+    const findEnemyAtWorld = (wx: number, wy: number) => {
+      const hitRadius = 30; // generous tap target
+      for (const enemy of stateRef.current.enemies) {
+        if (enemy.state === 'dead') continue;
+        const dx = enemy.pos.x - wx;
+        const dy = enemy.pos.y - wy;
+        if (Math.sqrt(dx * dx + dy * dy) < hitRadius) return enemy;
+      }
+      return null;
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
-        // Any tap → walk to that world position
-        moveTouchRef.current = t.identifier;
         const world = screenToWorld(t.clientX, t.clientY);
-        inputRef.current.moveTarget = world;
-        inputRef.current.moveX = 0;
-        inputRef.current.moveY = 0;
+        const enemy = findEnemyAtWorld(world.x, world.y);
+
+        if (enemy) {
+          // Tap on enemy → aim and shoot at them
+          aimTouchRef.current = t.identifier;
+          const dx = world.x - stateRef.current.player.pos.x;
+          const dy = world.y - stateRef.current.player.pos.y;
+          inputRef.current.aimX = dx;
+          inputRef.current.aimY = dy;
+          inputRef.current.shooting = true;
+        } else {
+          // Tap on empty space → walk there
+          moveTouchRef.current = t.identifier;
+          inputRef.current.moveTarget = world;
+          inputRef.current.moveX = 0;
+          inputRef.current.moveY = 0;
+        }
       }
     };
 
@@ -131,6 +154,14 @@ export const GameCanvas: React.FC = () => {
           const world = screenToWorld(t.clientX, t.clientY);
           inputRef.current.moveTarget = world;
         }
+        if (t.identifier === aimTouchRef.current) {
+          const world = screenToWorld(t.clientX, t.clientY);
+          const dx = world.x - stateRef.current.player.pos.x;
+          const dy = world.y - stateRef.current.player.pos.y;
+          inputRef.current.aimX = dx;
+          inputRef.current.aimY = dy;
+          inputRef.current.shooting = true;
+        }
       }
     };
 
@@ -140,6 +171,10 @@ export const GameCanvas: React.FC = () => {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
           moveTouchRef.current = null;
+        }
+        if (t.identifier === aimTouchRef.current) {
+          aimTouchRef.current = null;
+          inputRef.current.shooting = false;
         }
       }
     };
@@ -257,7 +292,7 @@ export const GameCanvas: React.FC = () => {
 
       {/* Mobile control hint */}
       <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
-        Tryck dit du vill gå · Skjuter automatiskt mot fiender
+        Tryck dit du vill gå · Tryck på fiende för att skjuta
       </div>
 
       {/* Desktop hint */}
