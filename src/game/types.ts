@@ -90,6 +90,9 @@ export interface Enemy {
   eyeBlink: number;
   loot: Item[];
   looted: boolean;
+  lastRadioCall: number; // timestamp of last radio call
+  radioGroup: number; // enemies in same group can communicate
+  radioAlert: number; // visual timer for radio icon (seconds remaining)
 }
 
 export interface Player {

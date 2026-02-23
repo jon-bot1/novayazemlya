@@ -774,6 +774,27 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.globalAlpha = 1;
     }
 
+    // Radio call indicator
+    if (enemy.radioAlert > 0) {
+      const ra = Math.min(1, enemy.radioAlert);
+      ctx.save();
+      // Pulsing radio waves
+      ctx.strokeStyle = `rgba(80, 200, 255, ${ra * 0.6})`;
+      ctx.lineWidth = 1.5;
+      for (let i = 1; i <= 3; i++) {
+        const waveR = 8 + i * 6 * (1 - ra * 0.3);
+        ctx.globalAlpha = ra * (1 - i * 0.25);
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x + R + 4, enemy.pos.y - R - 8, waveR, -Math.PI * 0.4, Math.PI * 0.4);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = ra;
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('📻', enemy.pos.x + R + 4, enemy.pos.y - R - 2);
+      ctx.restore();
+    }
+
     // HP bar
     if (enemy.hp < enemy.maxHp) {
       const barW = 28;

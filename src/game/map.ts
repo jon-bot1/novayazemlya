@@ -34,6 +34,9 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     eyeBlink: Math.random() * 5,
     loot: [],
     looted: false,
+    lastRadioCall: 0,
+    radioGroup: Math.floor(x / 300), // group by map area
+    radioAlert: 0,
   };
 };
 
