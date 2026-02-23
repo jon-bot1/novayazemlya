@@ -63,8 +63,8 @@ export function unlockSpeech() {
   try {
     ensureVoices();
     
-    const utt = new SpeechSynthesisUtterance('Go');
-    utt.volume = 0.01;
+    const utt = new SpeechSynthesisUtterance('.');
+    utt.volume = 0.001;
     utt.rate = 5;
     utt.pitch = 1;
     const voice = ensureVoices();
