@@ -1,7 +1,7 @@
 // Real speech synthesis for enemy callouts using Web Speech API
 
 let lastCalloutTime = 0;
-const CALLOUT_COOLDOWN = 1200; // ms between callouts
+const CALLOUT_COOLDOWN = 1200;
 
 type CalloutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
@@ -15,60 +15,74 @@ const CALLOUTS: Record<CalloutType, string[]> = {
   death:       ['Aaaargh!', 'Urgh...', 'No...', 'Gah!'],
 };
 
-// pitch: lower = deeper voice, higher = lighter
 const PITCH_BY_ENEMY: Record<string, number> = {
-  heavy: 0.6,
-  soldier: 0.85,
+  heavy: 0.5,
+  soldier: 0.8,
   scav: 1.1,
   turret: 1.3,
 };
 
-function getVoices(): SpeechSynthesisVoice[] {
-  return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+// Voice loading state
+let voicesReady = false;
+let englishVoices: SpeechSynthesisVoice[] = [];
+
+function loadVoices() {
+  if (typeof speechSynthesis === 'undefined') return;
+  const all = speechSynthesis.getVoices();
+  englishVoices = all.filter(v => v.lang.startsWith('en'));
+  if (englishVoices.length === 0) {
+    // Some browsers return all voices as fallback
+    englishVoices = all;
+  }
+  voicesReady = englishVoices.length > 0;
 }
 
-let cachedVoice: SpeechSynthesisVoice | null = null;
+// Eagerly load voices
+if (typeof speechSynthesis !== 'undefined') {
+  loadVoices();
+  speechSynthesis.addEventListener('voiceschanged', loadVoices);
+}
 
 function pickVoice(): SpeechSynthesisVoice | null {
-  if (cachedVoice) return cachedVoice;
-  const voices = getVoices();
-  // Prefer a male-sounding English voice
-  const preferred = voices.find(v => /male|guy|david|james|daniel|george/i.test(v.name))
-    || voices.find(v => v.lang === 'en-US')
-    || voices[0];
-  cachedVoice = preferred || null;
-  return cachedVoice;
-}
-
-// Preload voices (they load async in some browsers)
-if (typeof speechSynthesis !== 'undefined') {
-  speechSynthesis.getVoices();
-  speechSynthesis.onvoiceschanged = () => {
-    cachedVoice = null;
-    pickVoice();
-  };
+  if (!voicesReady) loadVoices(); // retry
+  if (englishVoices.length === 0) return null;
+  const preferred = englishVoices.find(v => /david|james|daniel|george|male/i.test(v.name))
+    || englishVoices.find(v => v.lang === 'en-US')
+    || englishVoices[0];
+  return preferred || null;
 }
 
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
-  if (typeof speechSynthesis === 'undefined') return;
+  if (typeof speechSynthesis === 'undefined') {
+    console.warn('SpeechSynthesis not available');
+    return;
+  }
 
   const now = performance.now();
   if (now - lastCalloutTime < CALLOUT_COOLDOWN) return;
   lastCalloutTime = now;
 
-  // Cancel any ongoing speech to avoid queue buildup
+  // Cancel queued speech to prevent buildup
   speechSynthesis.cancel();
 
   const lines = CALLOUTS[type];
   const text = lines[Math.floor(Math.random() * lines.length)];
 
   const utt = new SpeechSynthesisUtterance(text);
+
   const voice = pickVoice();
   if (voice) utt.voice = voice;
 
   utt.pitch = PITCH_BY_ENEMY[enemyType] ?? 0.9;
   utt.rate = type === 'death' ? 0.7 : 1.1 + Math.random() * 0.3;
-  utt.volume = type === 'death' ? 0.9 : 0.7;
+  utt.volume = 1.0;
 
+  utt.onerror = (e) => {
+    console.error('Speech error:', e.error);
+  };
+
+  // Chrome bug workaround: speechSynthesis can get stuck after ~15s of inactivity
+  // Calling resume() before speak() prevents this
+  speechSynthesis.resume();
   speechSynthesis.speak(utt);
 }
