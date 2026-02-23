@@ -1,7 +1,8 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
+import { playGunshot, playExplosion, playHit, playPickup } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -69,6 +70,7 @@ export function createGameState(): GameState {
     documentsRead: [],
     hasExtractionCode: false,
     speedBoostTimer: 0,
+    soundEvents: [],
   };
 }
 
@@ -164,10 +166,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       fromPlayer: true,
       life: 60,
     });
-    // currentAmmo decrement disabled for testing (infinite ammo)
-    // state.player.currentAmmo--;
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
+    
+    // Sound event — gunshots alert enemies
+    state.soundEvents.push({ pos: { ...state.player.pos }, radius: 300, time: state.time });
+    playGunshot('pistol');
   }
 
   // Throw grenade (G key)
@@ -211,6 +215,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
+        playPickup();
         if (lc.items.length > 0) {
           addMessage(state, `Byte: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
         } else {
@@ -331,6 +336,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.extractionProgress = Math.max(0, state.extractionProgress - dt * 2);
   }
 
+  // Clean up old sound events (older than 2 seconds)
+  state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 2);
+
   // Update enemies
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
@@ -342,14 +350,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const los = hasLineOfSight(state, enemy.pos, state.player.pos);
 
     // Vision cone varies by enemy type/skill
-    // scav: narrow vision, very poor rear awareness
-    // soldier: decent vision, moderate rear awareness  
-    // heavy: wide vision, good rear awareness (experienced)
     const visionConfig = {
-      scav:    { frontArc: Math.PI * 0.4, rearRange: 0.2 },   // ~144° front, 20% rear
-      soldier: { frontArc: Math.PI * 0.55, rearRange: 0.35 }, // ~198° front, 35% rear
-      heavy:   { frontArc: Math.PI * 0.75, rearRange: 0.55 }, // ~270° front, 55% rear
-      turret:  { frontArc: Math.PI * 0.85, rearRange: 0.0 },  // ~306° front, no rear (fixed mount)
+      scav:    { frontArc: Math.PI * 0.4, rearRange: 0.2 },
+      soldier: { frontArc: Math.PI * 0.55, rearRange: 0.35 },
+      heavy:   { frontArc: Math.PI * 0.75, rearRange: 0.55 },
+      turret:  { frontArc: Math.PI * 0.85, rearRange: 0.0 },
     }[enemy.type] || { frontArc: Math.PI * 0.55, rearRange: 0.35 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -360,34 +365,101 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const effectiveRange = isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange;
     const canSeePlayer = distToPlayer < effectiveRange && los;
 
+    // Check for nearby sound events (gunshots, explosions)
+    let heardSound: Vec2 | null = null;
+    for (const se of state.soundEvents) {
+      const dToSound = dist(enemy.pos, se.pos);
+      if (dToSound < se.radius && state.time - se.time < 0.5) {
+        heardSound = { ...se.pos };
+        break;
+      }
+    }
+
+    // State transitions
     if (canSeePlayer) {
       if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
       }
-    } else if (enemy.state !== 'patrol') {
+    } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol')) {
+      // Heard a sound — go investigate
+      enemy.state = 'investigate';
+      enemy.investigateTarget = heardSound;
+    } else if (enemy.state === 'chase' || enemy.state === 'attack') {
+      // Lost sight of player
       if (distToPlayer > enemy.alertRange * 1.5 || !los) {
-        enemy.state = 'patrol';
-        enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
+        // Go investigate where they last saw the player
+        enemy.state = 'investigate';
+        enemy.investigateTarget = { ...state.player.pos };
       }
+    } else if (enemy.state === 'alert') {
+      // Alert cooldown — transition to patrol after a moment
+      enemy.state = 'patrol';
+      enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
     }
 
     const speed = enemy.speed * dt * 60;
-    switch (enemy.state) {
+    switch (enemy.state as string) {
+      case 'idle': {
+        // Standing still, looking around slowly
+        enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
+        // Occasionally start patrolling
+        if (Math.random() < 0.002) {
+          enemy.state = 'patrol';
+          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+        }
+        break;
+      }
       case 'patrol': {
-        if (enemy.type === 'turret') break; // turrets don't patrol/move
+        if (enemy.type === 'turret') break;
         if (dist(enemy.pos, enemy.patrolTarget) < 20) {
+          // Reached patrol point — go idle for a bit
+          enemy.state = 'idle';
+        } else {
+          const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
+          enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
+          enemy.angle = Math.atan2(dir.y, dir.x);
+        }
+        break;
+      }
+      case 'investigate': {
+        if (enemy.type === 'turret') {
+          // Turret just aims toward sound
+          if (enemy.investigateTarget) {
+            enemy.angle = Math.atan2(enemy.investigateTarget.y - enemy.pos.y, enemy.investigateTarget.x - enemy.pos.x);
+          }
+          // After a moment, go back to idle
+          if (Math.random() < 0.01) enemy.state = 'idle';
+          break;
+        }
+        if (enemy.investigateTarget) {
+          const dToTarget = dist(enemy.pos, enemy.investigateTarget);
+          if (dToTarget < 30) {
+            // Arrived at sound location — look around (alert state)
+            enemy.state = 'alert';
+          } else {
+            const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
+            enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
+            enemy.angle = Math.atan2(dir.y, dir.x);
+          }
+        } else {
+          enemy.state = 'patrol';
+        }
+        break;
+      }
+      case 'alert': {
+        // Looking around nervously at investigate location
+        enemy.angle += Math.sin(state.time * 3 + enemy.pos.x) * 0.03;
+        // After some time go back to patrol
+        if (Math.random() < 0.008) {
+          enemy.state = 'patrol';
           enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
         }
-        const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
-        enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
-        enemy.angle = Math.atan2(dir.y, dir.x);
         break;
       }
       case 'chase': {
         if (enemy.type === 'turret') {
-          // Turret can't move, just aim
           enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           break;
         }
@@ -412,8 +484,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
+          // Enemy gunshot sound event (alerts other enemies too)
+          state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+          const gunType = enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : 'rifle';
+          playGunshot(gunType);
         }
-        // Turrets don't retreat
         if (enemy.type !== 'turret' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
@@ -441,6 +516,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, g.pos.x, g.pos.y, '#ff8833', 20);
       spawnParticles(state, g.pos.x, g.pos.y, '#ffcc44', 15);
       spawnParticles(state, g.pos.x, g.pos.y, '#444', 10);
+      playExplosion();
+      // Explosion sound event — very loud, alerts all nearby enemies
+      state.soundEvents.push({ pos: { ...g.pos }, radius: 500, time: state.time });
 
       // Damage enemies in radius
       for (const enemy of state.enemies) {
@@ -501,6 +579,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (dist(b.pos, enemy.pos) < 14) {
           enemy.hp -= b.damage;
           spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
+          playHit();
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             enemy.loot = generateEnemyLoot(enemy);
@@ -518,6 +597,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const dmg = b.damage * (1 - state.player.armor);
         state.player.hp -= dmg;
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
+        playHit();
         if (Math.random() > 0.7) {
           state.player.bleedRate += 0.5;
           addMessage(state, '🩸 BLÖDNING!', 'damage');

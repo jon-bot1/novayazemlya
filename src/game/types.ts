@@ -80,8 +80,9 @@ export interface Enemy {
   damage: number;
   alertRange: number;
   shootRange: number;
-  state: 'patrol' | 'alert' | 'chase' | 'attack' | 'dead';
+  state: 'idle' | 'patrol' | 'alert' | 'investigate' | 'chase' | 'attack' | 'dead';
   patrolTarget: Vec2;
+  investigateTarget?: Vec2; // where a sound was heard
   lastShot: number;
   fireRate: number;
   angle: number;
@@ -146,7 +147,14 @@ export interface GameState {
   codesFound: string[];
   documentsRead: string[];
   hasExtractionCode: boolean;
-  speedBoostTimer: number; // remaining speed boost time
+  speedBoostTimer: number;
+  soundEvents: SoundEvent[]; // sounds that enemies can react to
+}
+
+export interface SoundEvent {
+  pos: Vec2;
+  radius: number; // how far the sound carries
+  time: number;
 }
 
 export interface GameMessage {
