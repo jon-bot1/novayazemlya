@@ -978,16 +978,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
         if (dist(b.pos, enemy.pos) < 14) {
-          enemy.hp -= b.damage;
-          spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
-          playHit();
+          // Critical hit / headshot — chance scales with kill count (skill)
+          const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
+          const isCrit = enemy.type !== 'boss' && Math.random() < critChance;
+          
+          if (isCrit) {
+            enemy.hp = 0;
+            spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
+            playHit();
+            addMessage(state, '💀 HEADSHOT!', 'kill');
+          } else {
+            enemy.hp -= b.damage;
+            spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
+            playHit();
+          }
+          
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
             speakCallout('death', enemy.type);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+            if (!isCrit) {
+              addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+            }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';

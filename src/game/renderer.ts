@@ -1,8 +1,25 @@
-import { GameState, Prop, LightSource, WindowDef } from './types';
+import { GameState, Prop, LightSource, WindowDef, Vec2 } from './types';
 
 const R = 18;
 const WALL_HEIGHT = 18;
 let _lightCanvas: HTMLCanvasElement | null = null;
+
+// Simple LOS check for renderer — skip detection zones behind walls
+function rendererLOS(state: GameState, a: Vec2, b: Vec2): boolean {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.ceil(d / 15);
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const px = a.x + dx * t;
+    const py = a.y + dy * t;
+    for (const w of state.walls) {
+      if (px >= w.x && px <= w.x + w.w && py >= w.y && py <= w.y + w.h) return false;
+    }
+  }
+  return true;
+}
 
 function drawCuteCharacter(
   ctx: CanvasRenderingContext2D,
@@ -1146,67 +1163,64 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
-    // Detection field — forward cone (wide) + small rear circle
-    ctx.save();
-    const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
-    const fieldColor = enemy.state === 'patrol' || enemy.state === 'idle'
-      ? `rgba(255, 200, 80, ${alertPulse})`
-      : enemy.state === 'investigate' || enemy.state === 'alert'
-      ? `rgba(255, 180, 40, ${alertPulse * 2})`
-      : enemy.state === 'chase'
-      ? `rgba(255, 120, 40, ${alertPulse * 2.5})`
-      : `rgba(255, 50, 30, ${alertPulse * 3})`;
-    const strokeColor = enemy.state === 'patrol' || enemy.state === 'idle'
-      ? `rgba(255, 200, 80, ${alertPulse * 3})`
-      : `rgba(255, 80, 40, ${alertPulse * 4})`;
+    // Only show detection zone if player can see the enemy (not through walls)
+    if (rendererLOS(state, state.player.pos, enemy.pos)) {
+      ctx.save();
+      const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
+      const fieldColor = enemy.state === 'patrol' || enemy.state === 'idle'
+        ? `rgba(255, 200, 80, ${alertPulse})`
+        : enemy.state === 'investigate' || enemy.state === 'alert'
+        ? `rgba(255, 180, 40, ${alertPulse * 2})`
+        : enemy.state === 'chase'
+        ? `rgba(255, 120, 40, ${alertPulse * 2.5})`
+        : `rgba(255, 50, 30, ${alertPulse * 3})`;
+      const strokeColor = enemy.state === 'patrol' || enemy.state === 'idle'
+        ? `rgba(255, 200, 80, ${alertPulse * 3})`
+        : `rgba(255, 80, 40, ${alertPulse * 4})`;
 
-    // Vision cone per enemy type
-    const visionArc = {
-      scav: Math.PI * 0.4,
-      soldier: Math.PI * 0.55,
-      heavy: Math.PI * 0.75,
-      turret: Math.PI * 0.85,
-    }[enemy.type] || Math.PI * 0.55;
-    const rearRange = {
-      scav: 0.2,
-      soldier: 0.35,
-      heavy: 0.55,
-      turret: 0,
-    }[enemy.type] || 0.35;
+      const visionArc = {
+        scav: Math.PI * 0.4,
+        soldier: Math.PI * 0.55,
+        heavy: Math.PI * 0.75,
+        turret: Math.PI * 0.85,
+      }[enemy.type] || Math.PI * 0.55;
+      const rearRange = {
+        scav: 0.2,
+        soldier: 0.35,
+        heavy: 0.55,
+        turret: 0,
+      }[enemy.type] || 0.35;
 
-    // Forward vision cone
-    ctx.beginPath();
-    ctx.moveTo(enemy.pos.x, enemy.pos.y);
-    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - visionArc, enemy.angle + visionArc);
-    ctx.closePath();
-    ctx.fillStyle = fieldColor;
-    ctx.fill();
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 6]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Rear awareness circle (size varies by type)
-    ctx.beginPath();
-    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * rearRange, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 200, 80, ${alertPulse * 0.5})`;
-    ctx.fill();
-
-    // Inner shoot range (forward only)
-    if (enemy.state !== 'patrol' && enemy.state !== 'idle') {
       ctx.beginPath();
       ctx.moveTo(enemy.pos.x, enemy.pos.y);
-      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - visionArc, enemy.angle + visionArc);
+      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - visionArc, enemy.angle + visionArc);
       ctx.closePath();
-      ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
+      ctx.fillStyle = fieldColor;
+      ctx.fill();
+      ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 1;
-      ctx.setLineDash([3, 5]);
+      ctx.setLineDash([4, 6]);
       ctx.stroke();
       ctx.setLineDash([]);
-    }
-    ctx.restore();
 
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * rearRange, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 200, 80, ${alertPulse * 0.5})`;
+      ctx.fill();
+
+      if (enemy.state !== 'patrol' && enemy.state !== 'idle') {
+        ctx.beginPath();
+        ctx.moveTo(enemy.pos.x, enemy.pos.y);
+        ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - visionArc, enemy.angle + visionArc);
+        ctx.closePath();
+        ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
     const isBlinking = enemy.eyeBlink < 0.15;
 
     if (enemy.type === 'turret') {
