@@ -1108,6 +1108,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.state === 'dead') continue;
           const d = dist(g.pos, enemy.pos);
           if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+            if (enemy.type === 'boss') {
+              // Boss takes 33% grenade damage instead of instant kill
+              const dmg = enemy.maxHp * 0.33;
+              enemy.hp -= dmg;
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
+              addMessage(state, `💥 Bossen tar ${Math.floor(dmg)} skada!`, 'damage');
+              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+            }
             enemy.hp = 0;
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
