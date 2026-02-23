@@ -66,9 +66,9 @@ export function generateMap() {
     // Hangar south wall with gap (door)
     makeWall(T, 500, 300, T),
     makeWall(380, 500, 120, T),
-    // Hangar east wall partial
-    makeWall(500, 200, T, 150),
-    makeWall(500, 420, T, 80 + T),
+    // Hangar east wall — gap at y=200-300 for corridor entrance
+    makeWall(500, T, T, 188),              // above corridor
+    makeWall(500, 312, T, 188),            // below corridor
 
     // === CORRIDOR (connecting hangar to offices) ===
     // Top corridor wall
@@ -78,34 +78,37 @@ export function generateMap() {
     // Corridor is 500-700 x, 200-300 y (100px wide corridor)
 
     // === OFFICE BLOCK (right side, top) ===
-    // Office block outer
-    makeWall(700, T, T, 400),              // west wall
-    makeWall(700, 400, 200, T),            // south wall partial
-    makeWall(960, 400, MAP_W - 960 - T, T), // south wall rest
+    // Office block west wall — gap at y=200-300 for corridor exit
+    makeWall(700, T, T, 188),              // above corridor
+    makeWall(700, 312, T, 88),             // below corridor
+    // Office block south wall — gap at x=900-960 for storage access
+    makeWall(700, 400, 200, T),            // south wall left
+    makeWall(960, 400, MAP_W - 960 - T, T), // south wall right
     
-    // Office 1 (top-left office)
+    // Office 1 (top-left office) — gap at y=140-180 for door
     makeWall(700, 180, 130, T, WL),        // divider
-    makeWall(830, T, T, 180, WL),          // east wall (with gap south)
+    makeWall(830, T, T, 120, WL),          // east wall top
+    makeWall(830, 160, T, 32, WL),         // east wall bottom (gap ~140-160)
     
-    // Office 2 (top-right office)  
+    // Office 2 (top-right office) — gap at x=910-960
     makeWall(960, T, T, 180, WL),          // divider
-    makeWall(830, 180, 70, T, WL),         // south wall with gap
+    makeWall(830, 180, 80, T, WL),         // south wall with gap
     makeWall(960, 180, MAP_W - 960 - T, T, WL),
 
-    // Office 3 (bottom-left office)
-    makeWall(830, 220, T, 180, WL),        // divider
-    makeWall(700, 300, 60, T, WL),         // partial wall (corridor exit)
+    // Office 3 (bottom-left office) — gap at y=300-340 for corridor access
+    makeWall(830, 340, T, 60, WL),         // divider (starts below gap)
 
-    // Office 4 (bottom-right office)
-    makeWall(960, 220, T, 180, WL),        // divider
+    // Office 4 (bottom-right office) — gap at y=300-340
+    makeWall(960, 340, T, 60, WL),         // divider (starts below gap)
 
     // === STORAGE AREA (right side, bottom) ===
-    makeWall(700, 400, T, MAP_H - 400 - T), // west wall
+    // West wall — gap at y=400-460 for entry from offices
+    makeWall(700, 460, T, MAP_H - 460 - T),
     // Interior shelving
     makeWall(780, 500, 80, T, WL),
     makeWall(780, 600, 80, T, WL),
     makeWall(780, 700, 80, T, WL),
-    // East storage room
+    // East storage room — gap at y=680-750
     makeWall(950, 480, T, 200, WL),
     makeWall(950, 750, T, MAP_H - 750 - T, WL),
 
