@@ -1442,17 +1442,56 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         turret: 0,
       }[enemy.type] || 0.25);
 
-      ctx.beginPath();
-      ctx.moveTo(enemy.pos.x, enemy.pos.y);
-      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - visionArc, enemy.angle + visionArc);
-      ctx.closePath();
-      ctx.fillStyle = fieldColor;
-      ctx.fill();
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 6]);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      // Clip vision cone to walls (non-elevated only)
+      if (!enemy.elevated) {
+        // Cast rays along the arc and clip at wall hits
+        const rayCount = 20;
+        const startAngle = enemy.angle - visionArc;
+        const endAngle = enemy.angle + visionArc;
+        ctx.beginPath();
+        ctx.moveTo(enemy.pos.x, enemy.pos.y);
+        for (let r = 0; r <= rayCount; r++) {
+          const a = startAngle + (endAngle - startAngle) * (r / rayCount);
+          const dx = Math.cos(a);
+          const dy = Math.sin(a);
+          let rayLen = enemy.alertRange;
+          // Step along ray to find wall hit
+          for (let s = 10; s <= enemy.alertRange; s += 10) {
+            const px = enemy.pos.x + dx * s;
+            const py = enemy.pos.y + dy * s;
+            let hitWall = false;
+            for (const w of state.walls) {
+              if (px >= w.x && px <= w.x + w.w && py >= w.y && py <= w.y + w.h) {
+                hitWall = true;
+                break;
+              }
+            }
+            if (hitWall) { rayLen = s; break; }
+          }
+          ctx.lineTo(enemy.pos.x + dx * rayLen, enemy.pos.y + dy * rayLen);
+        }
+        ctx.closePath();
+        ctx.fillStyle = fieldColor;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        // Elevated: draw normal arc (sees over walls)
+        ctx.beginPath();
+        ctx.moveTo(enemy.pos.x, enemy.pos.y);
+        ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - visionArc, enemy.angle + visionArc);
+        ctx.closePath();
+        ctx.fillStyle = fieldColor;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
       ctx.beginPath();
       ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * rearRange, 0, Math.PI * 2);
