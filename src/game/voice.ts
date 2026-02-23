@@ -75,12 +75,14 @@ export function unlockSpeech() {
     const voice = ensureVoices();
     if (voice) utt.voice = voice;
     
-    // Some browsers need cancel before speak
-    speechSynthesis.cancel();
+    // Don't cancel before speak — let the utterance actually play to unlock
     speechSynthesis.speak(utt);
     
     unlocked = true;
     console.log('[voice] Unlock attempted. Voices loaded:', voicesLoaded, 'Voice:', voice?.name || 'default');
+    
+    // Cancel after a short delay so the unlock registers
+    setTimeout(() => { speechSynthesis.cancel(); }, 500);
   } catch (e) {
     console.error('[voice] Unlock failed:', e);
     speechAvailable = false;
