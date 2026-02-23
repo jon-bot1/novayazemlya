@@ -143,4 +143,5 @@ export interface InputState {
   aimY: number;
   shooting: boolean;
   interact: boolean;
+  moveTarget?: Vec2 | null; // world position to walk toward
 }
