@@ -667,12 +667,14 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Detection field — forward cone (wide) + small rear circle
     ctx.save();
     const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
-    const fieldColor = enemy.state === 'patrol'
+    const fieldColor = enemy.state === 'patrol' || enemy.state === 'idle'
       ? `rgba(255, 200, 80, ${alertPulse})`
+      : enemy.state === 'investigate' || enemy.state === 'alert'
+      ? `rgba(255, 180, 40, ${alertPulse * 2})`
       : enemy.state === 'chase'
-      ? `rgba(255, 120, 40, ${alertPulse * 2})`
-      : `rgba(255, 50, 30, ${alertPulse * 2.5})`;
-    const strokeColor = enemy.state === 'patrol'
+      ? `rgba(255, 120, 40, ${alertPulse * 2.5})`
+      : `rgba(255, 50, 30, ${alertPulse * 3})`;
+    const strokeColor = enemy.state === 'patrol' || enemy.state === 'idle'
       ? `rgba(255, 200, 80, ${alertPulse * 3})`
       : `rgba(255, 80, 40, ${alertPulse * 4})`;
 
@@ -710,7 +712,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fill();
 
     // Inner shoot range (forward only)
-    if (enemy.state !== 'patrol') {
+    if (enemy.state !== 'patrol' && enemy.state !== 'idle') {
       ctx.beginPath();
       ctx.moveTo(enemy.pos.x, enemy.pos.y);
       ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - visionArc, enemy.angle + visionArc);
@@ -743,15 +745,28 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       );
     }
 
-    // Status
-    if (enemy.state === 'chase') {
-      ctx.font = '14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 12);
-    } else if (enemy.state === 'attack') {
-      ctx.font = '14px sans-serif';
-      ctx.textAlign = 'center';
+    // Status icons
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    if (enemy.state === 'attack') {
       ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 12);
+    } else if (enemy.state === 'chase') {
+      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 12);
+    } else if (enemy.state === 'investigate') {
+      const pulse = 0.6 + Math.sin(state.time * 4) * 0.4;
+      ctx.globalAlpha = pulse;
+      ctx.fillText('❓', enemy.pos.x, enemy.pos.y - R - 12);
+      ctx.globalAlpha = 1;
+    } else if (enemy.state === 'alert') {
+      const pulse = 0.5 + Math.sin(state.time * 6) * 0.5;
+      ctx.globalAlpha = pulse;
+      ctx.fillText('⚠️', enemy.pos.x, enemy.pos.y - R - 12);
+      ctx.globalAlpha = 1;
+    } else if (enemy.state === 'idle') {
+      ctx.globalAlpha = 0.3 + Math.sin(state.time * 1.5) * 0.15;
+      ctx.font = '10px sans-serif';
+      ctx.fillText('😴', enemy.pos.x + R, enemy.pos.y - R - 6);
+      ctx.globalAlpha = 1;
     } else if (enemy.state === 'patrol') {
       ctx.globalAlpha = 0.4 + Math.sin(state.time * 2) * 0.2;
       ctx.font = '10px sans-serif';
