@@ -727,6 +727,77 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     drawProp(ctx, prop);
   }
 
+  // ── ALARM PANELS ──
+  for (const panel of state.alarmPanels) {
+    const px = panel.pos.x;
+    const py = panel.pos.y;
+
+    // Panel base
+    ctx.save();
+    ctx.fillStyle = panel.hacked ? '#3a5a3a' : panel.activated ? '#8a2a2a' : '#4a4a55';
+    ctx.fillRect(px - 14, py - 18, 28, 36);
+    ctx.strokeStyle = panel.hacked ? '#5a8a5a' : panel.activated ? '#cc4444' : '#6a6a75';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(px - 14, py - 18, 28, 36);
+
+    // Screen
+    if (panel.activated && !panel.hacked) {
+      const flash = Math.sin(state.time * 8) * 0.5 + 0.5;
+      ctx.fillStyle = `rgba(255, 40, 40, ${0.4 + flash * 0.4})`;
+      ctx.fillRect(px - 10, py - 14, 20, 16);
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = `rgba(255, 200, 200, ${0.6 + flash * 0.4})`;
+      ctx.fillText('🚨', px, py - 3);
+    } else if (panel.hacked) {
+      ctx.fillStyle = 'rgba(60, 200, 80, 0.3)';
+      ctx.fillRect(px - 10, py - 14, 20, 16);
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✅', px, py - 3);
+    } else {
+      ctx.fillStyle = 'rgba(80, 120, 180, 0.2)';
+      ctx.fillRect(px - 10, py - 14, 20, 16);
+      // Blinking standby dot
+      const blink = Math.sin(state.time * 2) > 0 ? 1 : 0.2;
+      ctx.fillStyle = `rgba(80, 180, 255, ${blink})`;
+      ctx.beginPath();
+      ctx.arc(px, py - 6, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Hack progress bar
+    if (panel.hackProgress > 0 && !panel.hacked) {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(px - 12, py + 20, 24, 4);
+      ctx.fillStyle = '#44ffaa';
+      ctx.fillRect(px - 12, py + 20, 24 * panel.hackProgress, 4);
+    }
+
+    // Label
+    ctx.fillStyle = panel.hacked ? 'rgba(80,200,100,0.6)' : panel.activated ? 'rgba(255,80,80,0.8)' : 'rgba(200,200,220,0.5)';
+    ctx.font = 'bold 7px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(panel.hacked ? 'HACKAD' : panel.activated ? 'ALARM!' : 'PANEL', px, py + 30);
+
+    ctx.restore();
+
+    // Interaction prompt
+    if (!panel.hacked && dist2d(state.player.pos, panel.pos) < 50) {
+      ctx.fillStyle = 'rgba(80, 255, 180, 0.9)';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('[E] HACKA', px, py - 24);
+    }
+  }
+
+  // Alarm overlay effect
+  if (state.alarmActive) {
+    const flash = Math.sin(state.time * 6) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(200, 30, 30, ${flash * 0.03})`;
+    ctx.fillRect(cx, cy, w, h);
+  }
+
   // ── DOCUMENT PICKUPS ──
   for (const dp of state.documentPickups) {
     if (dp.collected) continue;
@@ -769,7 +840,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('📦', lc.pos.x, lc.pos.y + 5);
     } else {
       const bob = Math.sin(state.time * 2 + lc.pos.x) * 2;
-      const icons: Record<string, string> = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️' };
+      const icons: Record<string, string> = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️', desk: '🖥️', locker: '🔒', archive: '📁' };
 
       ctx.beginPath();
       ctx.arc(lc.pos.x, lc.pos.y + bob, lc.size * 0.8, 0, Math.PI * 2);

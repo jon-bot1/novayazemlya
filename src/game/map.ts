@@ -1,5 +1,5 @@
-import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade } from './items';
+import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel } from './types';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey } from './items';
 
 // Hangar complex: 1200x900 - tighter for mobile visibility
 const MAP_W = 1200;
@@ -40,11 +40,13 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
   };
 };
 
-const makeLoot = (x: number, y: number, type: LootContainer['type'], pool: 'common' | 'military' | 'valuable'): LootContainer => ({
+type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body';
+
+const makeLoot = (x: number, y: number, type: LootContainer['type'], pool: LootPoolType): LootContainer => ({
   id: `loot_${containerId++}`,
   pos: { x, y },
   size: 24,
-  items: LOOT_POOLS[pool](),
+  items: LOOT_POOLS[pool] ? LOOT_POOLS[pool]() : LOOT_POOLS.common(),
   looted: false,
   type,
 });
@@ -155,31 +157,35 @@ export function generateMap() {
   ];
 
   const lootContainers: LootContainer[] = [
-    // Hangar
+    // Hangar — crates and barrels (common stuff)
     makeLoot(130, 280, 'crate', 'common'),
     makeLoot(280, 380, 'barrel', 'common'),
     makeLoot(420, 470, 'crate', 'common'),
     makeLoot(180, 630, 'barrel', 'common'),
 
-    // Offices
-    makeLoot(770, 80, 'cabinet', 'military'),
-    makeLoot(1100, 80, 'cabinet', 'valuable'),
-    makeLoot(770, 350, 'cabinet', 'military'),
-    makeLoot(1100, 350, 'cabinet', 'valuable'),
+    // Offices — desks with documents/keys, lockers with gear
+    makeLoot(770, 80, 'desk', 'desk'),
+    makeLoot(1100, 80, 'desk', 'desk'),
+    makeLoot(770, 350, 'desk', 'desk'),
+    makeLoot(1100, 350, 'archive', 'archive'),
+    makeLoot(850, 140, 'locker', 'locker'),
+    makeLoot(1000, 140, 'locker', 'locker'),
+    makeLoot(850, 380, 'cabinet', 'military'),
 
-    // Storage
+    // Storage — military crates, bodies
     makeLoot(820, 530, 'crate', 'military'),
     makeLoot(820, 730, 'barrel', 'common'),
     makeLoot(1050, 650, 'crate', 'military'),
-    makeLoot(1100, 850, 'body', 'valuable'),
-    // Extraction code — hidden in a locked cabinet in deep storage
+    makeLoot(1100, 850, 'body', 'body'),
+    makeLoot(900, 800, 'locker', 'locker'),
+    // Extraction code — hidden in deep storage archive
     {
       id: `loot_${containerId++}`,
       pos: { x: 1050, y: 780 },
       size: 24,
       items: [createExtractionCode()],
       looted: false,
-      type: 'cabinet' as const,
+      type: 'archive' as const,
     },
   ];
 
@@ -227,12 +233,17 @@ export function generateMap() {
     { pos: { x: 730, y: 780 }, w: 36, h: 16, type: 'concrete_barrier' },
   ];
 
+  const alarmPanels: AlarmPanel[] = [
+    { id: 'alarm_corridor', pos: { x: 705, y: 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
+    { id: 'alarm_office', pos: { x: 965, y: 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
+  ];
+
   const extractionPoints: ExtractionPoint[] = [
     { pos: { x: 250, y: MAP_H - 40 }, radius: 50, timer: 5, active: true, name: 'HANGAR SYD' },
     { pos: { x: MAP_W - 40, y: 600 }, radius: 50, timer: 5, active: true, name: 'LAGER ÖST' },
   ];
 
-  return { walls, enemies, lootContainers, documentPickups, extractionPoints, props, mapWidth: MAP_W, mapHeight: MAP_H };
+  return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, mapWidth: MAP_W, mapHeight: MAP_H };
 }
 
 export function createInitialPlayer() {

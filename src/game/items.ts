@@ -55,6 +55,16 @@ export const createValuable = (name: string, value: number, icon: string): Item 
   description: `Värt ${value}₽`,
 });
 
+export const createKey = (name: string, keyId: string): Item => ({
+  id: keyId,
+  name,
+  category: 'key',
+  icon: '🔑',
+  weight: 0.1,
+  value: 0,
+  description: `Nyckel: ${name}`,
+});
+
 export const createExtractionCode = (): Item => ({
   id: 'extraction_code',
   name: 'Exfiltreringskod',
@@ -83,32 +93,93 @@ export const WEAPON_TEMPLATES = {
   toz: () => createWeapon('TOZ-34', '12gauge', 45, '🔫'),
 };
 
+// Weighted random pick helper
+function pick<T>(items: [T, number][]): T | null {
+  for (const [item, chance] of items) {
+    if (Math.random() < chance) return item;
+  }
+  return null;
+}
+
+function pickMany<T>(items: [T, number][]): T[] {
+  const result: T[] = [];
+  for (const [item, chance] of items) {
+    if (Math.random() < chance) result.push(item);
+  }
+  return result;
+}
+
+// Context-aware loot pools based on container type
 export const LOOT_POOLS = {
   common: (): Item[] => {
-    const pool: Item[] = [];
-    if (Math.random() > 0.4) pool.push(createAmmo('9x18', 8 + Math.floor(Math.random() * 8)));
-    if (Math.random() > 0.6) pool.push(createMedical('Bandage', 10, '🩹', 'bandage', 3));
-    if (Math.random() > 0.7) pool.push(createValuable('Cigaretter', 50, '🚬'));
-    if (Math.random() > 0.85) pool.push(createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)));
-    if (Math.random() > 0.9) pool.push(createGrenade());
-    return pool;
+    return pickMany<Item>([
+      [createAmmo('9x18', 8 + Math.floor(Math.random() * 8)), 0.6],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
+      [createValuable('Cigaretter', 50, '🚬'), 0.3],
+      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.15],
+      [createGrenade(), 0.1],
+    ]);
   },
   military: (): Item[] => {
-    const pool: Item[] = [];
-    if (Math.random() > 0.5) pool.push(createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)));
-    if (Math.random() > 0.6) pool.push(createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)));
-    if (Math.random() > 0.7) pool.push(createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1));
-    if (Math.random() > 0.92) pool.push(createMedical('Morfin', 100, '💉', 'morphine', 5, 8));
-    if (Math.random() > 0.85) pool.push(WEAPON_TEMPLATES.ak74());
-    if (Math.random() > 0.9) pool.push(createValuable('Dogtags', 200, '🏷️'));
-    if (Math.random() > 0.7) pool.push(createGrenade());
-    return pool;
+    return pickMany<Item>([
+      [createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)), 0.5],
+      [createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)), 0.4],
+      [createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1), 0.3],
+      [createMedical('Morfin', 100, '💉', 'morphine', 5, 8), 0.08],
+      [WEAPON_TEMPLATES.ak74(), 0.15],
+      [createValuable('Dogtags', 200, '🏷️'), 0.1],
+      [createGrenade(), 0.3],
+    ]);
   },
   valuable: (): Item[] => {
-    const pool: Item[] = [];
-    pool.push(createValuable('Guldkedja', 350, '📿'));
+    const pool: Item[] = [createValuable('Guldkedja', 350, '📿')];
     if (Math.random() > 0.5) pool.push(createValuable('Elektronik', 250, '📻'));
-    if (Math.random() > 0.7) pool.push(createValuable('Dokument', 500, '📜'));
+    if (Math.random() > 0.7) pool.push(createValuable('Hemligt Dokument', 500, '📜'));
     return pool;
+  },
+
+  // Context-aware pools for specific container types
+  desk: (): Item[] => {
+    return pickMany<Item>([
+      [createValuable('Anteckningar', 80, '📝'), 0.6],
+      [createValuable('Hemligt Dokument', 500, '📜'), 0.2],
+      [createKey('Skåpnyckel', 'key_cabinet'), 0.15],
+      [createKey('Lagernyckel', 'key_storage'), 0.1],
+      [createAmmo('9x18', 6), 0.2],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.15],
+      [createValuable('Cigaretter', 50, '🚬'), 0.3],
+    ]);
+  },
+  archive: (): Item[] => {
+    return pickMany<Item>([
+      [createValuable('Hemligt Dokument', 500, '📜'), 0.5],
+      [createValuable('Anteckningar', 80, '📝'), 0.7],
+      [createValuable('Karta', 300, '🗺️'), 0.15],
+      [createKey('Lagernyckel', 'key_storage'), 0.12],
+      [createKey('Säkerhetsnyckel', 'key_security'), 0.08],
+    ]);
+  },
+  locker: (): Item[] => {
+    return pickMany<Item>([
+      [createAmmo('9x18', 12 + Math.floor(Math.random() * 8)), 0.4],
+      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.25],
+      [createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1), 0.3],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
+      [createValuable('Dogtags', 200, '🏷️'), 0.15],
+      [createGrenade(), 0.2],
+      [createKey('Skåpnyckel', 'key_cabinet'), 0.1],
+      [WEAPON_TEMPLATES.makarov(), 0.1],
+    ]);
+  },
+  body: (): Item[] => {
+    return pickMany<Item>([
+      [createAmmo('9x18', 4 + Math.floor(Math.random() * 6)), 0.5],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.3],
+      [createValuable('Cigaretter', 50, '🚬'), 0.4],
+      [createKey('Skåpnyckel', 'key_cabinet'), 0.08],
+      [createKey('Lagernyckel', 'key_storage'), 0.05],
+      [createValuable('Dogtags', 200, '🏷️'), 0.2],
+      [createValuable('Anteckningar', 80, '📝'), 0.15],
+    ]);
   },
 };

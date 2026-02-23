@@ -55,6 +55,8 @@ export function createGameState(): GameState {
     particles: [],
     lootContainers: map.lootContainers,
     props: map.props,
+    alarmPanels: map.alarmPanels,
+    alarmActive: false,
     documentPickups: map.documentPickups,
     walls: map.walls,
     extractionPoints: map.extractionPoints,
@@ -332,6 +334,44 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
+    // Hack alarm panels
+    for (const panel of state.alarmPanels) {
+      if (panel.hacked) continue;
+      if (dist(state.player.pos, panel.pos) < 50) {
+        if (!panel.activated) {
+          // Pre-emptively hack before alarm is triggered
+          panel.hackProgress += 0.05;
+          if (panel.hackProgress >= 1) {
+            panel.hacked = true;
+            addMessage(state, '💻 KONTROLLPANEL HACKAD! Alarm avaktiverat.', 'intel');
+            spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
+            // Check if all panels hacked — disable alarm
+            if (state.alarmPanels.every(p => p.hacked)) {
+              state.alarmActive = false;
+              addMessage(state, '🔇 ALLA ALARM AVAKTIVERADE!', 'intel');
+            }
+          } else {
+            addMessage(state, `💻 Hackar... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
+          }
+        } else {
+          // Alarm is active — hack to disable
+          panel.hackProgress += 0.04;
+          if (panel.hackProgress >= 1) {
+            panel.hacked = true;
+            panel.activated = false;
+            addMessage(state, '💻 ALARM AVAKTIVERAT!', 'intel');
+            spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
+            if (state.alarmPanels.every(p => p.hacked || !p.activated)) {
+              state.alarmActive = false;
+              addMessage(state, '🔇 ALARM TYSTNAT!', 'intel');
+            }
+          } else {
+            addMessage(state, `💻 Hackar alarm... ${Math.floor(panel.hackProgress * 100)}%`, 'warning');
+          }
+        }
+      }
+    }
+
   }
 
   // Manual healing (H key)
@@ -412,8 +452,35 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     enemy.eyeBlink -= dt;
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
+    // Alarm boost — increases alert range and makes enemies aggressive
+    const alarmBoost = state.alarmActive ? 1.5 : 1.0;
+
     const distToPlayer = dist(enemy.pos, state.player.pos);
     const los = hasLineOfSight(state, enemy.pos, state.player.pos);
+
+    // Enemy tries to activate alarm panel when in chase/attack and near one
+    if ((enemy.state === 'chase' || enemy.state === 'attack') && enemy.type !== 'turret') {
+      for (const panel of state.alarmPanels) {
+        if (panel.activated || panel.hacked) continue;
+        const dToPanel = dist(enemy.pos, panel.pos);
+        if (dToPanel < 40) {
+          panel.activated = true;
+          state.alarmActive = true;
+          addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
+          playRadio();
+          // Alert ALL enemies on the map
+          for (const ally of state.enemies) {
+            if (ally.state === 'dead') continue;
+            if (ally.state !== 'chase' && ally.state !== 'attack') {
+              ally.state = 'investigate';
+              ally.investigateTarget = { ...state.player.pos };
+              ally.radioAlert = 2;
+            }
+          }
+          state.soundEvents.push({ pos: { ...panel.pos }, radius: 600, time: state.time });
+        }
+      }
+    }
 
     // Vision cone varies by enemy type/skill
     const visionConfig = {
@@ -428,7 +495,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
     const isBehind = angleDiff > visionConfig.frontArc;
 
-    const effectiveRange = isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange;
+    const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
     const canSeePlayer = distToPlayer < effectiveRange && los;
 
     // Check for nearby sound events (gunshots, explosions)
