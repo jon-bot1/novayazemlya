@@ -8,6 +8,12 @@ const MAP_H = 900;
 let enemyId = 0;
 let containerId = 0;
 
+// Random position within a rectangular zone
+function randIn(zx: number, zy: number, zw: number, zh: number, m = 25): { x: number; y: number } {
+  return { x: zx + m + Math.random() * Math.max(1, zw - m * 2), y: zy + m + Math.random() * Math.max(1, zh - m * 2) };
+}
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
 const W = '#6a7a68'; // wall color
 const WD = '#5a6a58'; // dark wall
 const WL = '#7a8a78'; // light wall (interior)
@@ -143,59 +149,75 @@ export function generateMap() {
     makeWall(400, 400, 15, 15, '#9a9a80'),
   ];
 
+  // === ZONES for randomization ===
+  const ZONE_HANGAR_A = { x: 20, y: 20, w: 480, h: 480 };
+  const ZONE_HANGAR_B = { x: 20, y: 510, w: 480, h: 370 };
+  const ZONE_CORRIDOR = { x: 510, y: 210, w: 180, h: 80 };
+  const ZONE_OFFICES_TOP = { x: 710, y: 20, w: 470, h: 170 };
+  const ZONE_OFFICES_BOT = { x: 710, y: 200, w: 470, h: 190 };
+  const ZONE_STORAGE_A = { x: 710, y: 420, w: 230, h: 460 };
+  const ZONE_STORAGE_B = { x: 960, y: 420, w: 220, h: 460 };
+
+  // Randomized enemy spawns (types per zone, positions random)
+  const rHA1 = randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h);
+  const rHA2 = randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h);
+  const rHB1 = randIn(ZONE_HANGAR_B.x, ZONE_HANGAR_B.y, ZONE_HANGAR_B.w, ZONE_HANGAR_B.h);
+  const rCor = randIn(ZONE_CORRIDOR.x, ZONE_CORRIDOR.y, ZONE_CORRIDOR.w, ZONE_CORRIDOR.h);
+  const rOT1 = randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h);
+  const rOT2 = randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h);
+  const rOB1 = randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h);
+  const rOB2 = randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h);
+  const rSA1 = randIn(ZONE_STORAGE_A.x, ZONE_STORAGE_A.y, ZONE_STORAGE_A.w, ZONE_STORAGE_A.h);
+  const rSB1 = randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h);
+  const rSB2 = randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h);
+  const rBoss = randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h);
+
   const enemies: Enemy[] = [
-    // Hangar - easy enemies (scavs)
-    makeEnemy(180, 300, 'scav'),
-    makeEnemy(350, 450, 'scav'),
-    makeEnemy(100, 700, 'scav'),
-
-    // Corridor - medium
-    makeEnemy(600, 250, 'soldier'),
-
-    // Offices - medium enemies
-    makeEnemy(800, 100, 'soldier'),
-    makeEnemy(1050, 100, 'scav'),
-    makeEnemy(800, 340, 'soldier'),
-    makeEnemy(1050, 340, 'soldier'),
-
-    // Storage - hard enemies
-    makeEnemy(820, 650, 'soldier'),
-    makeEnemy(1050, 550, 'heavy'),
-    makeEnemy(1100, 800, 'heavy'),
-
-    // Mounted machine gun — guards corridor entrance to storage
-    makeEnemy(720, 430, 'turret', Math.PI * 0.5), // faces south
-
-    // === BOSS: Kommendant Volkov — deep storage ===
-    makeEnemy(1050, 750, 'boss'),
+    makeEnemy(rHA1.x, rHA1.y, 'scav'),
+    makeEnemy(rHA2.x, rHA2.y, 'scav'),
+    makeEnemy(rHB1.x, rHB1.y, 'scav'),
+    makeEnemy(rCor.x, rCor.y, 'soldier'),
+    makeEnemy(rOT1.x, rOT1.y, 'soldier'),
+    makeEnemy(rOT2.x, rOT2.y, 'scav'),
+    makeEnemy(rOB1.x, rOB1.y, 'soldier'),
+    makeEnemy(rOB2.x, rOB2.y, 'soldier'),
+    makeEnemy(rSA1.x, rSA1.y, 'soldier'),
+    makeEnemy(rSB1.x, rSB1.y, 'heavy'),
+    makeEnemy(rSB2.x, rSB2.y, 'heavy'),
+    // Turret — guards corridor to storage (fixed position)
+    makeEnemy(720, 430, 'turret', Math.PI * 0.5),
+    // Boss — deep storage
+    makeEnemy(rBoss.x, rBoss.y, 'boss'),
   ];
 
+  // Helper to make loot at random zone position
+  const rLoot = (zone: typeof ZONE_HANGAR_A, type: LootContainer['type'], pool: LootPoolType) => {
+    const p = randIn(zone.x, zone.y, zone.w, zone.h);
+    return makeLoot(p.x, p.y, type, pool);
+  };
+
+  // Randomized loot positions
   const lootContainers: LootContainer[] = [
-    // Hangar — crates and barrels (common stuff)
-    makeLoot(130, 280, 'crate', 'common'),
-    makeLoot(280, 380, 'barrel', 'common'),
-    makeLoot(420, 470, 'crate', 'common'),
-    makeLoot(180, 630, 'barrel', 'common'),
-
-    // Offices — desks with documents/keys, lockers with gear
-    makeLoot(770, 80, 'desk', 'desk'),
-    makeLoot(1100, 80, 'desk', 'desk'),
-    makeLoot(770, 350, 'desk', 'desk'),
-    makeLoot(1100, 350, 'archive', 'archive'),
-    makeLoot(850, 140, 'locker', 'locker'),
-    makeLoot(1000, 140, 'locker', 'locker'),
-    makeLoot(850, 380, 'cabinet', 'military'),
-
-    // Storage — military crates, bodies
-    makeLoot(820, 530, 'crate', 'military'),
-    makeLoot(820, 730, 'barrel', 'common'),
-    makeLoot(1050, 650, 'crate', 'military'),
-    makeLoot(1100, 850, 'body', 'body'),
-    makeLoot(900, 800, 'locker', 'locker'),
-    // Extraction code — hidden in deep storage archive
+    rLoot(ZONE_HANGAR_A, pick(['crate', 'barrel'] as const), 'common'),
+    rLoot(ZONE_HANGAR_A, pick(['crate', 'barrel'] as const), 'common'),
+    rLoot(ZONE_HANGAR_B, pick(['crate', 'barrel'] as const), 'common'),
+    rLoot(ZONE_HANGAR_B, pick(['crate', 'barrel'] as const), 'common'),
+    rLoot(ZONE_OFFICES_TOP, 'desk', 'desk'),
+    rLoot(ZONE_OFFICES_TOP, 'locker', 'locker'),
+    rLoot(ZONE_OFFICES_TOP, 'desk', 'desk'),
+    rLoot(ZONE_OFFICES_BOT, 'desk', 'desk'),
+    rLoot(ZONE_OFFICES_BOT, 'archive', 'archive'),
+    rLoot(ZONE_OFFICES_BOT, 'locker', 'locker'),
+    rLoot(ZONE_OFFICES_BOT, 'cabinet', 'military'),
+    rLoot(ZONE_STORAGE_A, 'crate', 'military'),
+    rLoot(ZONE_STORAGE_A, 'barrel', 'common'),
+    rLoot(ZONE_STORAGE_A, 'locker', 'locker'),
+    rLoot(ZONE_STORAGE_B, 'crate', 'military'),
+    rLoot(ZONE_STORAGE_B, 'body', 'body'),
+    // Extraction code — random spot in deep storage
     {
       id: `loot_${containerId++}`,
-      pos: { x: 1050, y: 780 },
+      pos: randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h),
       size: 24,
       items: [createExtractionCode()],
       looted: false,
@@ -203,15 +225,14 @@ export function generateMap() {
     },
   ];
 
-  const documentPickups: DocumentPickup[] = [
-    makeDocPickup(300, 250, 'doc_1'),   // Hangar floor
-    makeDocPickup(450, 460, 'doc_2'),   // Hangar near corridor
-    makeDocPickup(770, 150, 'doc_6'),   // Office 1
-    makeDocPickup(1100, 150, 'doc_4'),  // Office 2
-    makeDocPickup(850, 550, 'doc_3'),   // Storage
-    makeDocPickup(1080, 800, 'doc_5'),  // Deep storage
-    makeDocPickup(760, 100, 'doc_7'),   // Office 1 — Volkov's personnel file
-  ];
+  // Randomized document pickup positions
+  const docZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B];
+  const docIds = ['doc_1', 'doc_2', 'doc_6', 'doc_4', 'doc_3', 'doc_5', 'doc_7'];
+  const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
+    const z = docZones[i];
+    const p = randIn(z.x, z.y, z.w, z.h);
+    return makeDocPickup(p.x, p.y, id);
+  });
 
   const props: Prop[] = [
     // Hangar A — wooden crates and barrel stacks
