@@ -111,7 +111,7 @@ export const GameCanvas: React.FC = () => {
     };
 
     const findEnemyAtWorld = (wx: number, wy: number) => {
-      const hitRadius = 30; // generous tap target
+      const hitRadius = 30;
       for (const enemy of stateRef.current.enemies) {
         if (enemy.state === 'dead') continue;
         const dx = enemy.pos.x - wx;
@@ -119,6 +119,21 @@ export const GameCanvas: React.FC = () => {
         if (Math.sqrt(dx * dx + dy * dy) < hitRadius) return enemy;
       }
       return null;
+    };
+
+    const findInteractableAtWorld = (wx: number, wy: number) => {
+      const radius = 40;
+      const st = stateRef.current;
+      for (const lc of st.lootContainers) {
+        if (!lc.looted && Math.sqrt((lc.pos.x - wx) ** 2 + (lc.pos.y - wy) ** 2) < radius) return true;
+      }
+      for (const dp of st.documentPickups) {
+        if (!dp.collected && Math.sqrt((dp.pos.x - wx) ** 2 + (dp.pos.y - wy) ** 2) < radius) return true;
+      }
+      for (const enemy of st.enemies) {
+        if (enemy.state === 'dead' && !enemy.looted && Math.sqrt((enemy.pos.x - wx) ** 2 + (enemy.pos.y - wy) ** 2) < radius) return true;
+      }
+      return false;
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -136,6 +151,13 @@ export const GameCanvas: React.FC = () => {
           inputRef.current.aimX = dx;
           inputRef.current.aimY = dy;
           inputRef.current.shooting = true;
+        } else if (findInteractableAtWorld(world.x, world.y)) {
+          // Tap on interactable → walk there and auto-interact
+          moveTouchRef.current = t.identifier;
+          inputRef.current.moveTarget = world;
+          inputRef.current.moveX = 0;
+          inputRef.current.moveY = 0;
+          inputRef.current.interact = true;
         } else {
           // Tap on empty space → walk there
           moveTouchRef.current = t.identifier;
