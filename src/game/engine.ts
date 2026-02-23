@@ -1,8 +1,8 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
-import { playGunshot, playExplosion, playHit, playPickup } from './audio';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -134,11 +134,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
-  const playerSpeed = state.speedBoostTimer > 0 ? state.player.speed * 1.5 : state.player.speed;
+  
+  // Movement speed based on mode
+  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.4, walk: 1.0, sprint: 1.7 };
+  const baseSpeed = state.player.speed * speedMultipliers[input.movementMode];
+  const playerSpeed = state.speedBoostTimer > 0 ? baseSpeed * 1.5 : baseSpeed;
+  
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
     state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+    
+    // Footstep sounds + sound propagation
+    playFootstep(input.movementMode);
+    const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
+    // Only emit sound events periodically (not every frame)
+    if (Math.random() < (input.movementMode === 'sprint' ? 0.15 : input.movementMode === 'walk' ? 0.05 : 0.01)) {
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[input.movementMode], time: state.time });
+    }
   }
 
   // Speed boost countdown

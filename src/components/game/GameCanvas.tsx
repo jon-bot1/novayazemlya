@@ -14,7 +14,7 @@ import { LootPopup, LootNotification } from './LootPopup';
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, throwGrenade: false, moveTarget: null });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -31,6 +31,7 @@ export const GameCanvas: React.FC = () => {
     documentsRead: [] as string[],
     codesFound: [] as string[],
     hasExtractionCode: false,
+    movementMode: 'walk' as 'sneak' | 'walk' | 'sprint',
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -47,6 +48,8 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'e') inputRef.current.interact = true;
       if (e.key === 'h') inputRef.current.heal = true;
       if (e.key === 'g') inputRef.current.throwGrenade = true;
+      if (e.key === 'Shift') inputRef.current.movementMode = 'sprint';
+      if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'sneak';
       if (e.key === 'Tab' || e.key === 'i') {
         e.preventDefault();
         setShowInventory(v => !v);
@@ -62,6 +65,8 @@ export const GameCanvas: React.FC = () => {
     const onKeyUp = (e: KeyboardEvent) => {
       keys.delete(e.key.toLowerCase());
       if (e.key === 'e') inputRef.current.interact = false;
+      if (e.key === 'Shift') inputRef.current.movementMode = 'walk';
+      if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
     };
 
     const onMouseDown = () => { if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
@@ -298,6 +303,7 @@ export const GameCanvas: React.FC = () => {
           documentsRead: [...state.documentsRead],
           codesFound: [...state.codesFound],
           hasExtractionCode: state.hasExtractionCode,
+          movementMode: inputRef.current.movementMode,
         });
       }
 
@@ -328,6 +334,7 @@ export const GameCanvas: React.FC = () => {
           totalDocuments={LORE_DOCUMENTS.length}
           codesFound={hudState.codesFound}
           hasExtractionCode={hudState.hasExtractionCode}
+          movementMode={hudState.movementMode}
           onViewDocuments={() => { setShowIntel(true); }}
         />
 
@@ -339,16 +346,38 @@ export const GameCanvas: React.FC = () => {
           <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
           <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
           <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
+          {/* Movement mode toggle */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
+            {(['sneak', 'walk', 'sprint'] as const).map(mode => {
+              const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
+              const labels = { sneak: 'SMYG', walk: 'GÅ', sprint: 'SPRING' };
+              const isActive = inputRef.current.movementMode === mode;
+              return (
+                <button
+                  key={mode}
+                  className={`px-2 py-1 rounded text-[10px] font-mono border transition-colors touch-none select-none
+                    ${isActive
+                      ? 'bg-primary/60 border-primary text-primary-foreground'
+                      : 'bg-secondary/30 border-border/40 text-muted-foreground'
+                    }`}
+                  onTouchStart={(e) => { e.preventDefault(); inputRef.current.movementMode = mode; }}
+                  onMouseDown={() => { inputRef.current.movementMode = mode; }}
+                >
+                  {icons[mode]} {labels[mode]}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Mobile control hint */}
-        <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
+        <div className="sm:hidden absolute bottom-1 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
           Tryck dit du vill gå · Tryck på fiende för att skjuta
         </div>
 
         {/* Desktop hint */}
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD rörelse | Mus sikta+skjut | E leta | H läka | G granat | J underrättelser
+          WASD rörelse | Shift sprint | Ctrl smyg | Mus sikta+skjut | E leta | H läka | G granat
         </div>
       </div>
 

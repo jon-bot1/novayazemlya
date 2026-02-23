@@ -120,3 +120,40 @@ export function playPickup() {
   osc.start(now);
   osc.stop(now + 0.13);
 }
+
+let lastFootstepTime = 0;
+
+export function playFootstep(mode: 'sneak' | 'walk' | 'sprint') {
+  const now = performance.now();
+  const intervals = { sneak: 500, walk: 320, sprint: 200 };
+  if (now - lastFootstepTime < intervals[mode]) return;
+  lastFootstepTime = now;
+
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+
+  const volumes = { sneak: 0.02, walk: 0.06, sprint: 0.12 };
+  const pitches = { sneak: 200, walk: 150, sprint: 120 };
+
+  // Short noise burst for footstep
+  const bufLen = Math.floor(ctx.sampleRate * 0.04);
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(volumes[mode], t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = pitches[mode];
+
+  src.connect(lp).connect(gain).connect(ctx.destination);
+  src.start(t);
+  src.stop(t + 0.05);
+}

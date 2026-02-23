@@ -163,6 +163,8 @@ export interface GameMessage {
   type: 'info' | 'warning' | 'loot' | 'damage' | 'kill' | 'intel';
 }
 
+export type MovementMode = 'sneak' | 'walk' | 'sprint';
+
 export interface InputState {
   moveX: number;
   moveY: number;
@@ -171,6 +173,7 @@ export interface InputState {
   shooting: boolean;
   interact: boolean;
   heal: boolean;
-  throwGrenade: boolean; // G key
+  throwGrenade: boolean;
+  movementMode: MovementMode;
   moveTarget?: Vec2 | null;
 }
