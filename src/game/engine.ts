@@ -1038,64 +1038,58 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Sniper teleportation: disappear and reappear at a nearby tree
+    // Sniper: hides in trees, teleports between them toward the player
     if (enemy.type === 'sniper') {
-      if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 5;
+      if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 4 + Math.random() * 4;
       (enemy as any)._sniperTeleportTimer -= dt;
 
       // While invisible, skip everything
       if ((enemy as any)._sniperInvisible > 0) {
         (enemy as any)._sniperInvisible -= dt;
         if ((enemy as any)._sniperInvisible <= 0) {
-          // Reappear at target tree
           const targetTree = (enemy as any)._sniperTargetTree;
-          if (targetTree) {
-            enemy.pos = { x: targetTree.x, y: targetTree.y };
-          }
+          if (targetTree) enemy.pos = { x: targetTree.x, y: targetTree.y };
           addMessage(state, '🔭 Sniper repositioned!', 'warning');
         }
-        continue; // skip all behavior while invisible
+        continue;
       }
 
-      if ((enemy as any)._sniperTeleportTimer <= 0 && enemy.state !== 'attack') {
-        // Find nearby trees (max 3 trees away, ~400px)
+      // Teleport to a tree closer to the player
+      if ((enemy as any)._sniperTeleportTimer <= 0) {
+        const playerDist = dist(enemy.pos, state.player.pos);
+        // Find trees within 500px that are closer to player than current position
         const trees = state.props.filter(p =>
           (p.type === 'tree' || p.type === 'pine_tree') &&
-          dist(enemy.pos, p.pos) > 60 && dist(enemy.pos, p.pos) < 400
+          dist(enemy.pos, p.pos) > 40 && dist(enemy.pos, p.pos) < 500 &&
+          dist(p.pos, state.player.pos) < playerDist // must be closer to player
         );
         if (trees.length > 0) {
-          const targetTree = trees[Math.floor(Math.random() * trees.length)];
+          // Pick the tree closest to the player
+          trees.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
+          const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)]; // one of 3 closest
           (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
-          (enemy as any)._sniperInvisible = 3; // invisible for 3 seconds
-          (enemy as any)._sniperTeleportTimer = 8 + Math.random() * 6;
-          // Make sniper "disappear"
+          (enemy as any)._sniperInvisible = 2.5;
+          (enemy as any)._sniperTeleportTimer = 6 + Math.random() * 4;
           continue;
         } else {
+          // No good trees — just reset timer and walk
           (enemy as any)._sniperTeleportTimer = 3;
         }
       }
 
-      // Sniper behavior: move toward player until in LOS + range, then stop and shoot
-      if (enemy.state === 'idle' || enemy.state === 'patrol') {
-        // Slowly scan
-        enemy.angle += Math.sin(state.time * 0.3 + enemy.pos.x * 0.01) * 0.003;
+      // Between teleports: slowly advance toward player
+      const dtp = dist(enemy.pos, state.player.pos);
+      const sniperLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
+      if (dtp <= enemy.shootRange && sniperLos) {
+        enemy.state = 'attack';
+      } else {
+        enemy.state = 'chase';
+        const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * enemy.speed * dt * 60, toPlayer.y * enemy.speed * dt * 60, 8);
+        enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
         continue;
       }
-      if (enemy.state === 'chase' || enemy.state === 'investigate') {
-        // Move toward player until within shootRange and has LOS
-        const dtp = dist(enemy.pos, state.player.pos);
-        const sniperLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
-        if (dtp <= enemy.shootRange && sniperLos) {
-          enemy.state = 'attack'; // in position — start shooting
-        } else {
-          // Advance toward player, tree-hopping style (slow, deliberate)
-          const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-          enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * enemy.speed * dt * 60, toPlayer.y * enemy.speed * dt * 60, 8);
-          enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
-        }
-        continue;
-      }
-      // Fall through to attack state in switch
+      // Fall through to attack state
     }
 
     switch (enemy.state as string) {
