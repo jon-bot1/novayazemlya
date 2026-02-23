@@ -2,6 +2,7 @@ import React from 'react';
 import { Player, GameMessage } from '../../game/types';
 import { LoreDocument } from '../../game/lore';
 import { FeedbackWidget } from './FeedbackWidget';
+import { HighscoreList, submitHighscore } from './HighscoreList';
 
 interface HUDProps {
   player: Player;
@@ -20,12 +21,23 @@ interface HUDProps {
   peeking: boolean;
   onViewDocuments: () => void;
   timeLimit?: number;
+  playerName?: string;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit, playerName 
 }) => {
+  const scoreSubmittedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if ((gameOver || extracted) && playerName && !scoreSubmittedRef.current) {
+      scoreSubmittedRef.current = true;
+      const result = gameOver ? 'failed' : hasExtractionCode ? 'success' : 'incomplete';
+      const lootValue = player.inventory.reduce((s, i) => s + i.value, 0);
+      submitHighscore(playerName, killCount, time, result, lootValue);
+    }
+  }, [gameOver, extracted, playerName, hasExtractionCode, killCount, time, player.inventory]);
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
 
@@ -170,7 +182,7 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Game Over / Extracted overlay */}
       {(gameOver || extracted) && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
-          <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4">
+          <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : hasExtractionCode ? 'text-loot text-glow-green' : 'text-warning text-glow-amber'}`}>
               {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
             </h1>
@@ -224,6 +236,8 @@ export const HUD: React.FC<HUDProps> = ({
                 </div>
               )}
             </div>
+
+            <HighscoreList currentName={playerName} />
 
             <FeedbackWidget />
 

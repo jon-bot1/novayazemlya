@@ -14,16 +14,22 @@ import { LootPopup, LootNotification } from './LootPopup';
 
 const TIME_LIMIT = 300; // 5 minutes
 
-const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
+  const [name, setName] = React.useState('');
+  
+  const handleStart = React.useCallback(() => {
+    if (name.trim().length > 0) onStart(name.trim().slice(0, 20));
+  }, [name, onStart]);
+
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())) {
-        onStart();
+      if (e.key === 'Enter' && name.trim().length > 0) {
+        handleStart();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onStart]);
+  }, [handleStart]);
 
   return (
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
@@ -31,6 +37,19 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
       <div className="text-center">
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
         <p className="text-xs font-mono text-muted-foreground mt-2">CLASSIFIED — EYES ONLY</p>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <label className="text-xs font-display text-accent uppercase tracking-wider mb-2 block">Ditt callsign</label>
+        <input
+          type="text"
+          maxLength={20}
+          className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Ange namn..."
+          value={name}
+          onChange={e => setName(e.target.value)}
+          autoFocus
+        />
       </div>
 
       <div className="border-t border-border pt-4">
@@ -74,10 +93,11 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
       </div>
 
       <button
-        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
-        onClick={onStart}
+        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
+        onClick={handleStart}
+        disabled={name.trim().length === 0}
       >
-        ▶ BEGIN OPERATION (or press WASD)
+        ▶ BEGIN OPERATION
       </button>
     </div>
   </div>
@@ -92,6 +112,7 @@ export const GameCanvas: React.FC = () => {
   const moveTouchRef = useRef<number | null>(null);
   const aimTouchRef = useRef<number | null>(null);
   const [started, setStarted] = useState(false);
+  const [playerName, setPlayerName] = useState('');
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -393,7 +414,7 @@ export const GameCanvas: React.FC = () => {
   if (!started) {
     return (
       <div className="relative w-screen h-screen overflow-hidden bg-background">
-        <IntroScreen onStart={() => setStarted(true)} />
+        <IntroScreen onStart={(name) => { setPlayerName(name); setStarted(true); }} />
       </div>
     );
   }
@@ -420,6 +441,7 @@ export const GameCanvas: React.FC = () => {
           peeking={hudState.peeking}
           onViewDocuments={() => { setShowIntel(true); }}
           timeLimit={TIME_LIMIT}
+          playerName={playerName}
         />
 
         <LootPopup notifications={lootNotifications} />
