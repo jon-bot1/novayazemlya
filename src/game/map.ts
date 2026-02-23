@@ -233,68 +233,90 @@ export function generateMap() {
   const ZONE_YARD_E = { x: 2400, y: 400, w: 500, h: 500 };
   const ZONE_YARD_N = { x: 1300, y: 300, w: 400, h: 200 };
 
+  const PLAYER_SPAWN = { x: 1510, y: MAP_H - 150 };
+  const MIN_SPAWN_DIST = 400; // minimum distance from player spawn
+
+  const randInFarFromPlayer = (zone: { x: number; y: number; w: number; h: number }) => {
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const p = randIn(zone.x, zone.y, zone.w, zone.h);
+      const dx = p.x - PLAYER_SPAWN.x;
+      const dy = p.y - PLAYER_SPAWN.y;
+      if (Math.sqrt(dx * dx + dy * dy) >= MIN_SPAWN_DIST) return p;
+    }
+    return randIn(zone.x, zone.y, zone.w, zone.h); // fallback
+  };
+
+  const rz = (zone: { x: number; y: number; w: number; h: number }, type: Enemy['type'], angle?: number) => {
+    const p = randInFarFromPlayer(zone);
+    return makeEnemy(p.x, p.y, type, angle);
+  };
+
+  // === OUTSIDE ZONES for random spawns ===
+  const ZONE_OUTSIDE_SW = { x: 300, y: 1900, w: 500, h: 400 };
+  const ZONE_OUTSIDE_SE = { x: 2200, y: 1900, w: 500, h: 400 };
+  const ZONE_OUTSIDE_S  = { x: 800, y: 2000, w: 600, h: 300 };
+  const ZONE_OUTSIDE_NW = { x: 200, y: 1500, w: 400, h: 300 };
+
+  const allInsideZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_CORRIDOR, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B];
+  const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW];
+
   const enemies: Enemy[] = [
-    // Hangar interior
-    makeEnemy(randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h).x, randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h).y, 'scav'),
-    makeEnemy(randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h).x, randIn(ZONE_HANGAR_A.x, ZONE_HANGAR_A.y, ZONE_HANGAR_A.w, ZONE_HANGAR_A.h).y, 'scav'),
-    makeEnemy(randIn(ZONE_HANGAR_B.x, ZONE_HANGAR_B.y, ZONE_HANGAR_B.w, ZONE_HANGAR_B.h).x, randIn(ZONE_HANGAR_B.x, ZONE_HANGAR_B.y, ZONE_HANGAR_B.w, ZONE_HANGAR_B.h).y, 'scav'),
-    makeEnemy(randIn(ZONE_CORRIDOR.x, ZONE_CORRIDOR.y, ZONE_CORRIDOR.w, ZONE_CORRIDOR.h).x, randIn(ZONE_CORRIDOR.x, ZONE_CORRIDOR.y, ZONE_CORRIDOR.w, ZONE_CORRIDOR.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h).x, randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h).x, randIn(ZONE_OFFICES_TOP.x, ZONE_OFFICES_TOP.y, ZONE_OFFICES_TOP.w, ZONE_OFFICES_TOP.h).y, 'scav'),
-    makeEnemy(randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h).x, randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h).x, randIn(ZONE_OFFICES_BOT.x, ZONE_OFFICES_BOT.y, ZONE_OFFICES_BOT.w, ZONE_OFFICES_BOT.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_STORAGE_A.x, ZONE_STORAGE_A.y, ZONE_STORAGE_A.w, ZONE_STORAGE_A.h).x, randIn(ZONE_STORAGE_A.x, ZONE_STORAGE_A.y, ZONE_STORAGE_A.w, ZONE_STORAGE_A.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
-    makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
+    // Inside base — random zone spawns
+    rz(ZONE_HANGAR_A, 'scav'),
+    rz(ZONE_HANGAR_A, 'scav'),
+    rz(ZONE_HANGAR_B, 'scav'),
+    rz(ZONE_CORRIDOR, 'soldier'),
+    rz(ZONE_OFFICES_TOP, 'soldier'),
+    rz(ZONE_OFFICES_TOP, 'scav'),
+    rz(ZONE_OFFICES_BOT, 'soldier'),
+    rz(ZONE_OFFICES_BOT, 'soldier'),
+    rz(ZONE_STORAGE_A, 'soldier'),
+    rz(ZONE_STORAGE_B, 'heavy'),
+    rz(ZONE_STORAGE_B, 'heavy'),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
-     // Boss — Commandant Osipovitj — random spawn inside base
-     (() => {
-       const bossZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_OFFICES_BOT];
-       const bz = bossZones[Math.floor(Math.random() * bossZones.length)];
-       const bp = randIn(bz.x, bz.y, bz.w, bz.h);
-       return makeEnemy(bp.x, bp.y, 'boss');
-     })(),
+    // Boss — Commandant Osipovitj — random spawn inside base
+    (() => {
+      const bossZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_OFFICES_BOT];
+      const bz = bossZones[Math.floor(Math.random() * bossZones.length)];
+      const bp = randIn(bz.x, bz.y, bz.w, bz.h);
+      return makeEnemy(bp.x, bp.y, 'boss');
+    })(),
 
-    // === OUTDOOR ENEMIES ===
+    // === OUTDOOR ENEMIES — all randomized ===
     // Gate guards
-    makeEnemy(randIn(ZONE_GATE.x, ZONE_GATE.y, ZONE_GATE.w, ZONE_GATE.h).x, randIn(ZONE_GATE.x, ZONE_GATE.y, ZONE_GATE.w, ZONE_GATE.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_GATE.x, ZONE_GATE.y, ZONE_GATE.w, ZONE_GATE.h).x, randIn(ZONE_GATE.x, ZONE_GATE.y, ZONE_GATE.w, ZONE_GATE.h).y, 'soldier'),
-    // West yard patrol
-    makeEnemy(randIn(ZONE_YARD_W.x, ZONE_YARD_W.y, ZONE_YARD_W.w, ZONE_YARD_W.h).x, randIn(ZONE_YARD_W.x, ZONE_YARD_W.y, ZONE_YARD_W.w, ZONE_YARD_W.h).y, 'scav'),
-    makeEnemy(randIn(ZONE_YARD_W.x, ZONE_YARD_W.y, ZONE_YARD_W.w, ZONE_YARD_W.h).x, randIn(ZONE_YARD_W.x, ZONE_YARD_W.y, ZONE_YARD_W.w, ZONE_YARD_W.h).y, 'soldier'),
-    // East yard patrol
-    makeEnemy(randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).x, randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).y, 'soldier'),
-    makeEnemy(randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).x, randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).y, 'heavy'),
-    // North command area
-    makeEnemy(randIn(ZONE_YARD_N.x, ZONE_YARD_N.y, ZONE_YARD_N.w, ZONE_YARD_N.h).x, randIn(ZONE_YARD_N.x, ZONE_YARD_N.y, ZONE_YARD_N.w, ZONE_YARD_N.h).y, 'soldier'),
-    // Watchtower turrets (elevated)
+    rz(ZONE_GATE, 'soldier'),
+    rz(ZONE_GATE, 'soldier'),
+    // Yard patrols — random inside/outside zones
+    rz(ZONE_YARD_W, 'scav'),
+    rz(ZONE_YARD_W, 'soldier'),
+    rz(ZONE_YARD_E, 'soldier'),
+    rz(ZONE_YARD_E, 'heavy'),
+    rz(ZONE_YARD_N, 'soldier'),
+    // Watchtower turrets (elevated, fixed positions on structures)
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
-    makeEnemy(2880, 330, 'turret', Math.PI * 0.5),  // NE
+    makeEnemy(2880, 330, 'turret', Math.PI * 0.5),   // NE
 
-    // === WALL GUARDS on elevated platforms (can shoot over fence) ===
-    makeEnemy(800, 290, 'soldier', Math.PI * 0.5),   // North fence west
-    makeEnemy(1600, 290, 'soldier', Math.PI * 0.5),  // North fence center
-    makeEnemy(2400, 290, 'soldier', Math.PI * 0.5),  // North fence east
-    makeEnemy(310, 800, 'soldier', Math.PI),          // West fence
-    makeEnemy(310, 1400, 'soldier', Math.PI),         // West fence south
-    makeEnemy(2910, 800, 'soldier', 0),               // East fence
-    makeEnemy(2910, 1400, 'soldier', 0),              // East fence south
-    makeEnemy(1000, 1860, 'soldier', -Math.PI * 0.5), // South fence west
-    makeEnemy(2000, 1860, 'soldier', -Math.PI * 0.5), // South fence east
+    // === WALL GUARDS on elevated platforms (fixed positions on wall) ===
+    makeEnemy(800, 290, 'soldier', Math.PI * 0.5),
+    makeEnemy(1600, 290, 'soldier', Math.PI * 0.5),
+    makeEnemy(2400, 290, 'soldier', Math.PI * 0.5),
+    makeEnemy(310, 800, 'soldier', Math.PI),
+    makeEnemy(310, 1400, 'soldier', Math.PI),
+    makeEnemy(2910, 800, 'soldier', 0),
+    makeEnemy(2910, 1400, 'soldier', 0),
+    makeEnemy(1000, 1860, 'soldier', -Math.PI * 0.5),
+    makeEnemy(2000, 1860, 'soldier', -Math.PI * 0.5),
 
-    // === OUTSIDE PATROL GUARDS (south of fence, widely spread, away from player spawn ~1510,2250) ===
-    // Pair 1 — far west, near forest edge
-    makeEnemy(500, 2000, 'soldier'),
-    makeEnemy(650, 2100, 'soldier'),
-    // Pair 2 — far east
-    makeEnemy(2400, 2000, 'soldier'),
-    makeEnemy(2550, 2100, 'scav'),
-    // Lone guard — patrols far south-west (NOT near spawn)
-    makeEnemy(900, 2300, 'soldier'),
+    // === OUTSIDE PATROL GUARDS — randomized in outside zones ===
+    rz(ZONE_OUTSIDE_SW, 'soldier'),
+    rz(ZONE_OUTSIDE_SW, 'soldier'),
+    rz(ZONE_OUTSIDE_SE, 'soldier'),
+    rz(ZONE_OUTSIDE_SE, 'scav'),
+    rz(ZONE_OUTSIDE_S, 'soldier'),
 
-    // === SNIPER — single camouflaged sniper, spawns far from player (1510,2650) ===
-    makeEnemy(400 + Math.random() * 600, 1600 + Math.random() * 200, 'sniper'),
+    // === SNIPER — random spawn, far from player ===
+    rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper'),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)
