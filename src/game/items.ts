@@ -65,6 +65,17 @@ export const createExtractionCode = (): Item => ({
   description: 'Kod som krävs för att aktivera evakueringspunkten',
 });
 
+export const createGrenade = (name: string = 'RGD-5', damage: number = 60, radius: number = 80): Item => ({
+  id: nextId(),
+  name,
+  category: 'grenade',
+  icon: '💣',
+  weight: 0.6,
+  value: 150,
+  damage,
+  description: `Granat — ${damage} skada i ${radius}px radie`,
+});
+
 export const WEAPON_TEMPLATES = {
   makarov: () => createWeapon('PM Makarov', '9x18', 12, '🔫'),
   ak74: () => createWeapon('AK-74', '5.45x39', 25, '🔫'),
@@ -79,6 +90,7 @@ export const LOOT_POOLS = {
     if (Math.random() > 0.6) pool.push(createMedical('Bandage', 10, '🩹', 'bandage', 3));
     if (Math.random() > 0.7) pool.push(createValuable('Cigaretter', 50, '🚬'));
     if (Math.random() > 0.85) pool.push(createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)));
+    if (Math.random() > 0.9) pool.push(createGrenade());
     return pool;
   },
   military: (): Item[] => {
@@ -89,6 +101,7 @@ export const LOOT_POOLS = {
     if (Math.random() > 0.92) pool.push(createMedical('Morfin', 100, '💉', 'morphine', 5, 8));
     if (Math.random() > 0.85) pool.push(WEAPON_TEMPLATES.ak74());
     if (Math.random() > 0.9) pool.push(createValuable('Dogtags', 200, '🏷️'));
+    if (Math.random() > 0.7) pool.push(createGrenade());
     return pool;
   },
   valuable: (): Item[] => {

@@ -50,6 +50,7 @@ export function createGameState(): GameState {
     player,
     enemies: map.enemies,
     bullets: [],
+    grenades: [],
     particles: [],
     lootContainers: map.lootContainers,
     documentPickups: map.documentPickups,
@@ -167,6 +168,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // state.player.currentAmmo--;
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
+  }
+
+  // Throw grenade (G key)
+  if (input.throwGrenade) {
+    const grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
+    if (grenadeIdx >= 0) {
+      const grenadeItem = state.player.inventory[grenadeIdx];
+      const angle = state.player.angle;
+      const throwSpeed = 4;
+      state.grenades.push({
+        pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
+        vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
+        timer: 1.5,
+        damage: grenadeItem.damage || 60,
+        radius: 80,
+        fromPlayer: true,
+      });
+      state.player.inventory.splice(grenadeIdx, 1);
+      addMessage(state, '💣 GRANAT KASTAD!', 'warning');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#886644', 3);
+    } else {
+      addMessage(state, '⚠ Inga granater!', 'warning');
+    }
+    input.throwGrenade = false;
   }
 
   // Interact
@@ -397,6 +422,66 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
   }
+
+  // Update grenades
+  state.grenades = state.grenades.filter(g => {
+    g.pos.x += g.vel.x;
+    g.pos.y += g.vel.y;
+    g.vel.x *= 0.97; // friction
+    g.vel.y *= 0.97;
+    g.timer -= dt;
+
+    // Bounce off walls
+    if (collidesWithWalls(state, g.pos.x + g.vel.x, g.pos.y, 4)) g.vel.x *= -0.5;
+    if (collidesWithWalls(state, g.pos.x, g.pos.y + g.vel.y, 4)) g.vel.y *= -0.5;
+
+    if (g.timer <= 0) {
+      // EXPLOSION
+      addMessage(state, '💥 EXPLOSION!', 'damage');
+      spawnParticles(state, g.pos.x, g.pos.y, '#ff8833', 20);
+      spawnParticles(state, g.pos.x, g.pos.y, '#ffcc44', 15);
+      spawnParticles(state, g.pos.x, g.pos.y, '#444', 10);
+
+      // Damage enemies in radius
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead') continue;
+        const d = dist(g.pos, enemy.pos);
+        if (d < g.radius) {
+          const falloff = 1 - (d / g.radius);
+          const dmg = g.damage * falloff;
+          enemy.hp -= dmg;
+          if (enemy.hp <= 0) {
+            enemy.state = 'dead';
+            enemy.loot = generateEnemyLoot(enemy);
+            state.killCount++;
+            addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+          } else {
+            enemy.state = 'chase';
+          }
+        }
+      }
+
+      // Damage player if in radius
+      if (g.fromPlayer || true) {
+        const d = dist(g.pos, state.player.pos);
+        if (d < g.radius) {
+          const falloff = 1 - (d / g.radius);
+          const dmg = g.damage * falloff * 0.5; // reduced self-damage
+          state.player.hp -= dmg;
+          spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
+          addMessage(state, `💥 Splitterskada! -${Math.floor(dmg)}HP`, 'damage');
+          if (state.player.hp <= 0) {
+            state.gameOver = true;
+            addMessage(state, '☠ DÖD', 'damage');
+          }
+        }
+      }
+
+      return false;
+    }
+    return true;
+  });
 
   // Update bullets
   state.bullets = state.bullets.filter(b => {
