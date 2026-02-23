@@ -1,10 +1,10 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { createGameState, updateGame } from '../../game/engine';
 import { renderGame } from '../../game/renderer';
 import { GameState, InputState } from '../../game/types';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
-import { VirtualJoystick, ActionButton } from './TouchControls';
+import { ActionButton } from './TouchControls';
 import { HUD } from './HUD';
 import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
@@ -16,6 +16,8 @@ export const GameCanvas: React.FC = () => {
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const moveTouchRef = useRef<number | null>(null);
+  const aimTouchRef = useRef<number | null>(null);
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -32,7 +34,7 @@ export const GameCanvas: React.FC = () => {
   const [showIntel, setShowIntel] = useState(false);
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
 
-  // Keyboard input
+  // Keyboard input (desktop)
   useEffect(() => {
     const keys = new Set<string>();
 
@@ -93,17 +95,100 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Prevent default touch behaviors & game loop
+  // Touch input: tap-to-move (left half) and tap-to-aim/shoot (right half)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const screenW = () => window.innerWidth;
+    const screenH = () => window.innerHeight;
+
+    const updateMoveFromTouch = (clientX: number, clientY: number) => {
+      // Direction from screen center to touch point
+      const dx = clientX - screenW() / 2;
+      const dy = clientY - screenH() / 2;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d > 5) {
+        inputRef.current.moveX = dx / d;
+        inputRef.current.moveY = dy / d;
+      }
+    };
+
+    const updateAimFromTouch = (clientX: number, clientY: number) => {
+      // Aim direction from screen center
+      const dx = clientX - screenW() / 2;
+      const dy = clientY - screenH() / 2;
+      inputRef.current.aimX = dx;
+      inputRef.current.aimY = dy;
+      inputRef.current.shooting = true;
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        const halfW = screenW() / 2;
+        
+        if (t.clientX < halfW) {
+          // Left side → move
+          moveTouchRef.current = t.identifier;
+          updateMoveFromTouch(t.clientX, t.clientY);
+        } else {
+          // Right side → aim & shoot
+          aimTouchRef.current = t.identifier;
+          updateAimFromTouch(t.clientX, t.clientY);
+        }
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === moveTouchRef.current) {
+          updateMoveFromTouch(t.clientX, t.clientY);
+        }
+        if (t.identifier === aimTouchRef.current) {
+          updateAimFromTouch(t.clientX, t.clientY);
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === moveTouchRef.current) {
+          moveTouchRef.current = null;
+          inputRef.current.moveX = 0;
+          inputRef.current.moveY = 0;
+        }
+        if (t.identifier === aimTouchRef.current) {
+          aimTouchRef.current = null;
+          inputRef.current.shooting = false;
+        }
+      }
+    };
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+    canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      canvas.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, []);
+
+  // Game loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    // Prevent scrolling on canvas
-    const preventTouch = (e: TouchEvent) => e.preventDefault();
-    canvas.addEventListener('touchstart', preventTouch, { passive: false });
-    canvas.addEventListener('touchmove', preventTouch, { passive: false });
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -127,7 +212,6 @@ export const GameCanvas: React.FC = () => {
       const dt = Math.min(rawDt, 0.05);
       lastTimeRef.current = timestamp;
 
-      // Use CSS pixel dimensions (not canvas pixel dimensions which include DPR)
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
@@ -169,25 +253,12 @@ export const GameCanvas: React.FC = () => {
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
-      canvas.removeEventListener('touchstart', preventTouch);
-      canvas.removeEventListener('touchmove', preventTouch);
     };
   }, []);
 
-  const handleMoveJoystick = useCallback((x: number, y: number) => {
-    inputRef.current.moveX = x;
-    inputRef.current.moveY = y;
-  }, []);
-
-  const handleAimJoystick = useCallback((x: number, y: number) => {
-    inputRef.current.aimX = x;
-    inputRef.current.aimY = y;
-    inputRef.current.shooting = Math.sqrt(x * x + y * y) > 0.3;
-  }, []);
-
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-background">
-      <canvas ref={canvasRef} className="block w-full h-full" />
+    <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
+      <canvas ref={canvasRef} className="block w-full h-full touch-none" />
       
       <HUD
         player={hudState.player}
@@ -203,13 +274,16 @@ export const GameCanvas: React.FC = () => {
         onViewDocuments={() => { setShowIntel(true); setShowInventory(false); }}
       />
 
-      {/* Mobile controls */}
+      {/* Mobile action buttons */}
       <div className="sm:hidden">
-        <VirtualJoystick onMove={handleMoveJoystick} side="left" />
-        <VirtualJoystick onMove={handleAimJoystick} side="right" />
-        <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-36 right-10" />
+        <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
         <ActionButton label="📦" onPress={() => setShowInventory(v => !v)} className="absolute top-14 right-3" variant="action" />
         <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-20" variant="action" />
+      </div>
+
+      {/* Mobile control hint */}
+      <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
+        VÄNSTER sida = gå · HÖGER sida = sikta & skjut
       </div>
 
       {/* Desktop hint */}
