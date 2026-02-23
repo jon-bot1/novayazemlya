@@ -246,7 +246,14 @@ export function generateMap() {
     return randIn(zone.x, zone.y, zone.w, zone.h); // fallback
   };
 
-  const rz = (zone: { x: number; y: number; w: number; h: number }, type: Enemy['type'], angle?: number) => {
+  const rz = (zone: { x: number; y: number; w: number; h: number }, type: Enemy['type'], angle?: number, minDist?: number) => {
+    const dist = minDist || MIN_SPAWN_DIST;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const p = randIn(zone.x, zone.y, zone.w, zone.h);
+      const dx = p.x - PLAYER_SPAWN.x;
+      const dy = p.y - PLAYER_SPAWN.y;
+      if (Math.sqrt(dx * dx + dy * dy) >= dist) return makeEnemy(p.x, p.y, type, angle);
+    }
     const p = randInFarFromPlayer(zone);
     return makeEnemy(p.x, p.y, type, angle);
   };
@@ -315,8 +322,8 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_SE, 'scav'),
     rz(ZONE_OUTSIDE_S, 'soldier'),
 
-    // === SNIPER — random spawn, far from player ===
-    rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper'),
+    // === SNIPER — random spawn, minimum 1200px from player ===
+    rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper', undefined, 1200),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)
