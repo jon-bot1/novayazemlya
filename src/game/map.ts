@@ -7,7 +7,7 @@ const MAP_H = 2400;
 let enemyId = 0;
 let containerId = 0;
 
-const makeWall = (x: number, y: number, w: number, h: number, color = '#2a2f28'): Wall => ({ x, y, w, h, color });
+const makeWall = (x: number, y: number, w: number, h: number, color = '#3a4438'): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy'): Enemy => {
   const stats = {
@@ -48,10 +48,10 @@ const makeDocPickup = (x: number, y: number, loreDocId: string): DocumentPickup 
 export function generateMap() {
   const walls: Wall[] = [
     // Outer walls
-    makeWall(0, 0, MAP_W, 20, '#1a1e18'),
-    makeWall(0, MAP_H - 20, MAP_W, 20, '#1a1e18'),
-    makeWall(0, 0, 20, MAP_H, '#1a1e18'),
-    makeWall(MAP_W - 20, 0, 20, MAP_H, '#1a1e18'),
+    makeWall(0, 0, MAP_W, 20, '#2a3028'),
+    makeWall(0, MAP_H - 20, MAP_W, 20, '#2a3028'),
+    makeWall(0, 0, 20, MAP_H, '#2a3028'),
+    makeWall(MAP_W - 20, 0, 20, MAP_H, '#2a3028'),
 
     // Building 1 - top left barracks (КАЗАРМА)
     makeWall(100, 100, 400, 20),
@@ -59,7 +59,7 @@ export function generateMap() {
     makeWall(100, 380, 180, 20),
     makeWall(320, 380, 180, 20),
     makeWall(480, 100, 20, 300),
-    makeWall(200, 200, 120, 15, '#363b33'),
+    makeWall(200, 200, 120, 15, '#4a5248'),
     
     // Building 2 - warehouse center (СКЛАД)
     makeWall(700, 400, 500, 20),
@@ -67,27 +67,27 @@ export function generateMap() {
     makeWall(700, 780, 220, 20),
     makeWall(980, 780, 220, 20),
     makeWall(1180, 400, 20, 400),
-    makeWall(900, 500, 15, 200, '#363b33'),
-    makeWall(1000, 550, 100, 15, '#363b33'),
+    makeWall(900, 500, 15, 200, '#4a5248'),
+    makeWall(1000, 550, 100, 15, '#4a5248'),
 
     // Building 3 - bottom right bunker (БУНКЕР)
-    makeWall(1500, 1500, 600, 25, '#1a1e18'),
+    makeWall(1500, 1500, 600, 25, '#2a3028'),
     makeWall(1500, 1500, 25, 500),
     makeWall(1500, 1975, 250, 25),
     makeWall(1850, 1975, 250, 25),
     makeWall(2075, 1500, 25, 500),
-    makeWall(1650, 1650, 200, 20, '#363b33'),
-    makeWall(1800, 1750, 20, 150, '#363b33'),
+    makeWall(1650, 1650, 200, 20, '#4a5248'),
+    makeWall(1800, 1750, 20, 150, '#4a5248'),
 
     // Scattered debris
-    makeWall(300, 700, 80, 15, '#4a4535'),
-    makeWall(500, 900, 15, 100, '#4a4535'),
-    makeWall(1300, 200, 120, 15, '#4a4535'),
-    makeWall(1800, 400, 15, 80, '#4a4535'),
-    makeWall(400, 1400, 150, 15, '#4a4535'),
-    makeWall(1000, 1200, 15, 120, '#4a4535'),
-    makeWall(2000, 800, 100, 15, '#4a4535'),
-    makeWall(600, 1800, 15, 100, '#4a4535'),
+    makeWall(300, 700, 80, 15, '#5a5545'),
+    makeWall(500, 900, 15, 100, '#5a5545'),
+    makeWall(1300, 200, 120, 15, '#5a5545'),
+    makeWall(1800, 400, 15, 80, '#5a5545'),
+    makeWall(400, 1400, 150, 15, '#5a5545'),
+    makeWall(1000, 1200, 15, 120, '#5a5545'),
+    makeWall(2000, 800, 100, 15, '#5a5545'),
+    makeWall(600, 1800, 15, 100, '#5a5545'),
   ];
 
   const enemies: Enemy[] = [
