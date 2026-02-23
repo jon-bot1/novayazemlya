@@ -127,11 +127,18 @@ export function generateMap() {
     makeWall(2900, 280, FT, 1570, FENCE),
 
     // === HANGAR BUILDING (offset by HX, HY) ===
-    // Outer walls
-    makeWall(HX, HY, HW, T, WD),              // top
-    makeWall(HX, HY + HH - T, HW, T, WD),     // bottom — gap for entrance at 300-380 relative
-    makeWall(HX, HY, T, HH, WD),              // left
-    makeWall(HX + HW - T, HY, T, HH, WD),     // right
+    // Outer walls with door gaps
+    // Top wall — door gap at HX+500 to HX+560
+    makeWall(HX, HY, 500, T, WD),
+    makeWall(HX + 560, HY, HW - 560, T, WD),
+    // Bottom wall — door gap at HX+300 to HX+380
+    makeWall(HX, HY + HH - T, 300, T, WD),
+    makeWall(HX + 380, HY + HH - T, HW - 380, T, WD),
+    // Left wall — door gap at HY+400 to HY+470
+    makeWall(HX, HY, T, 400, WD),
+    makeWall(HX, HY + 470, T, HH - 470, WD),
+    // Right wall — solid
+    makeWall(HX + HW - T, HY, T, HH, WD),
 
     // Hangar south wall gaps (entrance doors)
     // Gap at HX+300 to HX+380
@@ -183,10 +190,18 @@ export function generateMap() {
     makeWall(HX + 400, HY + 400, 15, 15, '#9a9a80'),
 
     // === OUTDOOR BUILDINGS ===
-    // Guard booth 1 (south gate, left)
-    makeWall(1350, 1700, 50, 80, '#7a7a70'),
-    // Guard booth 2 (south gate, right)
-    makeWall(1620, 1700, 50, 80, '#7a7a70'),
+    // Guard booth 1 (south gate, left) — proper room with door gap on east side
+    makeWall(1350, 1700, 50, FT, '#7a7a70'),  // north
+    makeWall(1350, 1772, 50, FT, '#7a7a70'),  // south
+    makeWall(1350, 1700, FT, 80, '#7a7a70'),  // west
+    makeWall(1392, 1700, FT, 30, '#7a7a70'),  // east top (gap 1730-1760 = door)
+    makeWall(1392, 1760, FT, 20, '#7a7a70'),  // east bottom
+    // Guard booth 2 (south gate, right) — proper room with door gap on west side
+    makeWall(1620, 1700, 50, FT, '#7a7a70'),  // north
+    makeWall(1620, 1772, 50, FT, '#7a7a70'),  // south
+    makeWall(1662, 1700, FT, 80, '#7a7a70'),  // east
+    makeWall(1620, 1700, FT, 30, '#7a7a70'),  // west top (gap 1730-1760 = door)
+    makeWall(1620, 1760, FT, 20, '#7a7a70'),  // west bottom
     // Barracks (west side of compound)
     makeWall(400, 500, 200, 150, '#6a6a60'),
     // Motor pool shelter (west)
@@ -333,6 +348,11 @@ export function generateMap() {
       looted: false,
       type: 'archive' as const,
     },
+    // Guard booth loot
+    rLoot({ x: 1355, y: 1710, w: 30, h: 55 }, 'desk', 'desk'),
+    rLoot({ x: 1355, y: 1710, w: 30, h: 55 }, 'locker', 'locker'),
+    rLoot({ x: 1625, y: 1710, w: 30, h: 55 }, 'desk', 'desk'),
+    rLoot({ x: 1625, y: 1710, w: 30, h: 55 }, 'locker', 'military'),
     // Outdoor loot — crates outside fence
     rLoot(ZONE_GATE, 'crate', 'common'),
     rLoot(ZONE_YARD_W, 'crate', 'military'),
