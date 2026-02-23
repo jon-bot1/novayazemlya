@@ -14,7 +14,7 @@ import { LootPopup, LootNotification } from './LootPopup';
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, moveTarget: null });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, moveTarget: null });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -45,6 +45,7 @@ export const GameCanvas: React.FC = () => {
     const onKeyDown = (e: KeyboardEvent) => {
       keys.add(e.key.toLowerCase());
       if (e.key === 'e') inputRef.current.interact = true;
+      if (e.key === 'h') inputRef.current.heal = true;
       if (e.key === 'Tab' || e.key === 'i') {
         e.preventDefault();
         setShowInventory(v => !v);
@@ -334,6 +335,7 @@ export const GameCanvas: React.FC = () => {
         {/* Mobile action buttons */}
         <div className="sm:hidden">
           <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
+          <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
           <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
         </div>
 
@@ -344,7 +346,7 @@ export const GameCanvas: React.FC = () => {
 
         {/* Desktop hint */}
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD rörelse | Mus sikta+skjut | E leta/läka | J underrättelser
+          WASD rörelse | Mus sikta+skjut | E leta | H läka | J underrättelser
         </div>
       </div>
 

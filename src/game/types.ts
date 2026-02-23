@@ -9,6 +9,8 @@ export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge';
 
 export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor';
 
+export type MedicalType = 'bandage' | 'medkit' | 'morphine';
+
 export interface Item {
   id: string;
   name: string;
@@ -20,6 +22,9 @@ export interface Item {
   ammoCount?: number;
   damage?: number;
   healAmount?: number;
+  medicalType?: MedicalType;
+  stopsBleeding?: number; // how much bleed it removes
+  speedBoost?: number; // temporary speed boost duration in seconds
   description: string;
 }
 
@@ -131,6 +136,7 @@ export interface GameState {
   codesFound: string[];
   documentsRead: string[];
   hasExtractionCode: boolean;
+  speedBoostTimer: number; // remaining speed boost time
 }
 
 export interface GameMessage {
@@ -146,5 +152,6 @@ export interface InputState {
   aimY: number;
   shooting: boolean;
   interact: boolean;
-  moveTarget?: Vec2 | null; // world position to walk toward
+  heal: boolean; // H key
+  moveTarget?: Vec2 | null;
 }
