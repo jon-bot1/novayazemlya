@@ -304,16 +304,16 @@ export function generateMap() {
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),   // NE
 
-    // === WALL GUARDS on elevated platforms (fixed positions on wall) ===
-    makeEnemy(800, 290, 'soldier', Math.PI * 0.5),
-    makeEnemy(1600, 290, 'soldier', Math.PI * 0.5),
-    makeEnemy(2400, 290, 'soldier', Math.PI * 0.5),
-    makeEnemy(310, 800, 'soldier', Math.PI),
-    makeEnemy(310, 1400, 'soldier', Math.PI),
-    makeEnemy(2910, 800, 'soldier', 0),
-    makeEnemy(2910, 1400, 'soldier', 0),
-    makeEnemy(1000, 1860, 'soldier', -Math.PI * 0.5),
-    makeEnemy(2000, 1860, 'soldier', -Math.PI * 0.5),
+    // === WALL GUARDS on elevated platforms (inside the wall perimeter) ===
+    makeEnemy(800, 320, 'soldier', Math.PI * 0.5),
+    makeEnemy(1600, 320, 'soldier', Math.PI * 0.5),
+    makeEnemy(2400, 320, 'soldier', Math.PI * 0.5),
+    makeEnemy(340, 800, 'soldier', Math.PI),
+    makeEnemy(340, 1400, 'soldier', Math.PI),
+    makeEnemy(2880, 800, 'soldier', 0),
+    makeEnemy(2880, 1400, 'soldier', 0),
+    makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5),
+    makeEnemy(2000, 1830, 'soldier', -Math.PI * 0.5),
 
     // === OUTSIDE PATROL GUARDS — randomized in outside zones ===
     rz(ZONE_OUTSIDE_SW, 'soldier'),
