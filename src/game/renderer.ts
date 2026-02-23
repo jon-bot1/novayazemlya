@@ -1,6 +1,6 @@
 import { GameState } from './types';
 
-const R = 14;
+const R = 18;
 const WALL_HEIGHT = 18; // visible wall south-face height for 3/4 perspective
 
 function drawCuteCharacter(
@@ -16,233 +16,282 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  const headR = size * 0.55;
-  const torsoW = size * 0.7;
-  const torsoH = size * 0.6;
-  const legW = size * 0.22;
-  const legH = size * 0.4;
-  const armW = size * 0.18;
-  const armH = size * 0.5;
+  // Chibi proportions: BIG head, tiny body
+  const headR = size * 0.72;
+  const torsoW = size * 0.6;
+  const torsoH = size * 0.45;
+  const legW = size * 0.2;
+  const legH = size * 0.3;
+  const armW = size * 0.16;
 
   // Drop shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
-  ctx.ellipse(2, size * 0.9, size * 0.7, size * 0.25, 0, 0, Math.PI * 2);
+  ctx.ellipse(2, size * 0.75, size * 0.55, size * 0.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Legs (drawn behind body, offset by walk cycle hint)
+  // === LEGS (stubby little legs) ===
   ctx.save();
   ctx.rotate(angle);
-  const walkPhase = (Date.now() % 600) / 600;
-  const legSwing = Math.sin(walkPhase * Math.PI * 2) * 0.15;
-  // Left leg
-  ctx.fillStyle = shadeColor(bodyColor, -25);
-  ctx.save();
-  ctx.translate(-legW * 0.7, torsoH * 0.3);
-  ctx.rotate(legSwing);
-  ctx.beginPath();
-  ctx.roundRect(-legW / 2, 0, legW, legH, 3);
-  ctx.fill();
-  ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  // Boot
-  ctx.fillStyle = '#3a3a32';
-  ctx.beginPath();
-  ctx.roundRect(-legW / 2 - 1, legH - 4, legW + 2, 5, 2);
-  ctx.fill();
-  ctx.restore();
-  // Right leg
-  ctx.save();
-  ctx.translate(legW * 0.7, torsoH * 0.3);
-  ctx.rotate(-legSwing);
-  ctx.fillStyle = shadeColor(bodyColor, -25);
-  ctx.beginPath();
-  ctx.roundRect(-legW / 2, 0, legW, legH, 3);
-  ctx.fill();
-  ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.fillStyle = '#3a3a32';
-  ctx.beginPath();
-  ctx.roundRect(-legW / 2 - 1, legH - 4, legW + 2, 5, 2);
-  ctx.fill();
-  ctx.restore();
+  const walkPhase = (Date.now() % 500) / 500;
+  const legSwing = Math.sin(walkPhase * Math.PI * 2) * 0.2;
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(legW * 0.8 * side, torsoH * 0.35);
+    ctx.rotate(legSwing * side);
+    // Leg
+    ctx.fillStyle = shadeColor(bodyColor, -20);
+    ctx.beginPath();
+    ctx.roundRect(-legW / 2, 0, legW, legH, 4);
+    ctx.fill();
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Round boot
+    ctx.fillStyle = '#3a3832';
+    ctx.beginPath();
+    ctx.ellipse(0, legH, legW * 0.65, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
   ctx.restore();
 
-  // Gun (behind or in front based on angle)
+  // === GUN + ARM ===
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
-    // Arm holding gun
-    ctx.fillStyle = shadeColor(bodyColor, -10);
+    // Gun arm (round stubby)
+    ctx.fillStyle = shadeColor(bodyColor, -8);
     ctx.beginPath();
-    ctx.roundRect(torsoW * 0.15, -armW * 0.8, armH * 0.7, armW, 3);
+    ctx.ellipse(torsoW * 0.25, armW * 0.2, size * 0.28, armW * 0.9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Tiny hand
+    ctx.fillStyle = '#e8d0b0';
+    ctx.beginPath();
+    ctx.arc(size * 0.45, armW * 0.2, 3, 0, Math.PI * 2);
     ctx.fill();
     // Gun
-    ctx.fillStyle = '#777';
-    ctx.fillRect(size * 0.4, -3, size * 1.0, 6);
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.roundRect(size * 0.4, -2.5, size * 0.85, 5, 2);
+    ctx.fill();
     ctx.fillStyle = '#666';
-    ctx.fillRect(size * 1.1, -4, 5, 8);
-    // Muzzle
+    ctx.beginPath();
+    ctx.roundRect(size * 1.0, -3.5, 6, 7, 1);
+    ctx.fill();
     ctx.fillStyle = '#555';
-    ctx.fillRect(size * 1.35, -2, 3, 4);
+    ctx.fillRect(size * 1.2, -1.5, 4, 3);
     ctx.restore();
   }
 
-  // Torso
+  // === TORSO (round puffball body) ===
   ctx.save();
   ctx.rotate(angle);
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
-  ctx.roundRect(-torsoW / 2, -torsoH * 0.3, torsoW, torsoH, 4);
+  ctx.ellipse(0, torsoH * 0.05, torsoW / 2, torsoH / 2, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.stroke();
-  // Torso highlight
-  const torsoGrad = ctx.createLinearGradient(0, -torsoH * 0.3, 0, torsoH * 0.7);
-  torsoGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
-  torsoGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+  // Body highlight
+  const torsoGrad = ctx.createLinearGradient(0, -torsoH / 2, 0, torsoH / 2);
+  torsoGrad.addColorStop(0, 'rgba(255,255,255,0.2)');
+  torsoGrad.addColorStop(1, 'rgba(0,0,0,0.05)');
   ctx.fillStyle = torsoGrad;
   ctx.beginPath();
-  ctx.roundRect(-torsoW / 2, -torsoH * 0.3, torsoW, torsoH, 4);
+  ctx.ellipse(0, torsoH * 0.05, torsoW / 2, torsoH / 2, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Belt
-  ctx.fillStyle = '#4a4a3a';
-  ctx.fillRect(-torsoW / 2 + 2, torsoH * 0.25, torsoW - 4, 3);
-  // Off-arm
-  ctx.fillStyle = shadeColor(bodyColor, -10);
+  // Belt buckle
+  ctx.fillStyle = '#5a5a4a';
   ctx.beginPath();
-  ctx.roundRect(-torsoW / 2 - armW * 0.5, -torsoH * 0.15, armW, armH * 0.65, 3);
+  ctx.roundRect(-4, torsoH * 0.15, 8, 3, 1);
+  ctx.fill();
+  // Off-arm (round stub)
+  ctx.fillStyle = shadeColor(bodyColor, -8);
+  ctx.beginPath();
+  ctx.ellipse(-torsoW * 0.42, torsoH * 0.05, armW * 0.9, size * 0.22, 0.3, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
   ctx.lineWidth = 1;
   ctx.stroke();
+  // Tiny hand
+  ctx.fillStyle = '#e8d0b0';
+  ctx.beginPath();
+  ctx.arc(-torsoW * 0.42 - armW * 0.5, torsoH * 0.15, 2.5, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
-  // Head
+  // === HEAD (BIG cute head) ===
   ctx.save();
-  ctx.translate(0, -torsoH * 0.35);
-  // Neck
-  ctx.fillStyle = '#d4b896';
-  ctx.fillRect(-3, headR * 0.3, 6, 5);
+  ctx.translate(0, -torsoH * 0.4);
 
-  // Head circle
-  ctx.fillStyle = '#e8d0b0';
+  // Neck
+  ctx.fillStyle = '#e0c8a8';
+  ctx.fillRect(-3.5, headR * 0.55, 7, 6);
+
+  // Head shape
+  ctx.fillStyle = '#f0dcc0';
   ctx.beginPath();
   ctx.arc(0, 0, headR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = '#c4a882';
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#d4b896';
+  ctx.lineWidth = 2;
   ctx.stroke();
-  // Head highlight
-  const headGrad = ctx.createRadialGradient(-headR * 0.2, -headR * 0.3, 0, 0, 0, headR);
-  headGrad.addColorStop(0, 'rgba(255,255,255,0.2)');
-  headGrad.addColorStop(1, 'rgba(0,0,0,0.05)');
+
+  // Head shine
+  const headGrad = ctx.createRadialGradient(-headR * 0.25, -headR * 0.35, headR * 0.1, 0, 0, headR);
+  headGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
+  headGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  headGrad.addColorStop(1, 'rgba(0,0,0,0.03)');
   ctx.fillStyle = headGrad;
   ctx.beginPath();
   ctx.arc(0, 0, headR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Cheeks
-  ctx.fillStyle = 'rgba(200, 110, 110, 0.18)';
+  // Big rosy cheeks
+  ctx.fillStyle = 'rgba(230, 120, 120, 0.22)';
   ctx.beginPath();
-  ctx.arc(-headR * 0.5, headR * 0.2, headR * 0.2, 0, Math.PI * 2);
+  ctx.ellipse(-headR * 0.52, headR * 0.22, headR * 0.22, headR * 0.16, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(headR * 0.5, headR * 0.2, headR * 0.2, 0, Math.PI * 2);
+  ctx.ellipse(headR * 0.52, headR * 0.22, headR * 0.22, headR * 0.16, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Face (rotates with aim)
   ctx.save();
   ctx.rotate(angle);
   if (isBlinking) {
+    // Happy closed eyes (curved lines)
     ctx.strokeStyle = eyeColor;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(headR * 0.3, -headR * 0.15, 2, 0, Math.PI);
+    ctx.arc(headR * 0.28, -headR * 0.18, 4, Math.PI * 0.1, Math.PI * 0.9);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(headR * 0.3, headR * 0.15, 2, 0, Math.PI);
+    ctx.arc(headR * 0.28, headR * 0.18, 4, Math.PI * 0.1, Math.PI * 0.9);
     ctx.stroke();
   } else {
-    // Eye whites
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.ellipse(headR * 0.32, -headR * 0.18, 3, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(headR * 0.32, headR * 0.18, 3, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Pupils
-    ctx.fillStyle = eyeColor;
-    ctx.beginPath();
-    ctx.arc(headR * 0.38, -headR * 0.18, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(headR * 0.38, headR * 0.18, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-    // Highlights
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(headR * 0.4, -headR * 0.24, 0.8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(headR * 0.4, headR * 0.12, 0.8, 0, Math.PI * 2);
-    ctx.fill();
+    // BIG sparkly eyes
+    const eyeX = headR * 0.3;
+    const eyeYOff = headR * 0.2;
+    const eyeW = 5;
+    const eyeH = 6;
+    for (const ey of [-eyeYOff, eyeYOff]) {
+      // Eye white
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.ellipse(eyeX, ey, eyeW, eyeH, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      // Iris
+      ctx.fillStyle = eyeColor;
+      ctx.beginPath();
+      ctx.arc(eyeX + 1.5, ey, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      // Pupil
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.arc(eyeX + 2, ey, 2, 0, Math.PI * 2);
+      ctx.fill();
+      // Big sparkle
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(eyeX + 3, ey - 2.5, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      // Small sparkle
+      ctx.beginPath();
+      ctx.arc(eyeX - 0.5, ey + 1.5, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
-  // Small mouth
-  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-  ctx.lineWidth = 1;
+  // Cute little mouth
+  ctx.strokeStyle = 'rgba(180, 100, 80, 0.35)';
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.arc(headR * 0.45, 0, 1.5, -0.5, 0.5);
+  ctx.arc(headR * 0.5, 0, 2.5, -0.6, 0.6);
   ctx.stroke();
+  // Tiny nose dot
+  ctx.fillStyle = 'rgba(200, 150, 120, 0.3)';
+  ctx.beginPath();
+  ctx.arc(headR * 0.55, 0, 1.2, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
-  // Hat
+  // === HAT ===
   ctx.save();
   ctx.rotate(angle);
   switch (hatType) {
     case 'ushanka':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.15, -Math.PI * 0.8, Math.PI * 0.8);
-      ctx.lineTo(0, -headR * 1.15);
+      ctx.arc(0, 0, headR * 1.1, -Math.PI * 0.8, Math.PI * 0.8);
+      ctx.lineTo(0, -headR * 1.1);
       ctx.closePath();
       ctx.fill();
-      ctx.fillRect(-headR * 1.2, -headR * 0.3, headR * 0.35, headR * 0.6);
-      ctx.fillStyle = '#cc3333';
-      ctx.font = `${headR * 0.7}px sans-serif`;
+      ctx.strokeStyle = shadeColor(hatColor, -15);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Ear flaps
+      ctx.fillRect(-headR * 1.15, -headR * 0.3, headR * 0.35, headR * 0.65);
+      // Star
+      ctx.fillStyle = '#dd3333';
+      ctx.font = `bold ${headR * 0.6}px sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('★', headR * 0.05, headR * -0.35);
+      ctx.fillText('★', headR * 0.05, headR * -0.3);
       break;
     case 'helmet':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.2, -Math.PI * 0.85, Math.PI * 0.85);
+      ctx.arc(0, -headR * 0.05, headR * 1.15, -Math.PI * 0.88, Math.PI * 0.88);
       ctx.closePath();
       ctx.fill();
       ctx.strokeStyle = shadeColor(hatColor, -20);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Helmet strap
+      ctx.strokeStyle = '#5a5a4a';
       ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, headR * 0.95, Math.PI * 0.3, Math.PI * 0.7);
       ctx.stroke();
       break;
     case 'beret':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.ellipse(headR * -0.1, -headR * 0.7, headR * 0.8, headR * 0.35, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(-headR * 0.1, -headR * 0.65, headR * 0.85, headR * 0.38, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = shadeColor(hatColor, -15);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Beret nub
+      ctx.fillStyle = hatColor;
+      ctx.beginPath();
+      ctx.arc(-headR * 0.1, -headR * 0.95, 3, 0, Math.PI * 2);
       ctx.fill();
       break;
     case 'bandana':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.05, -Math.PI * 0.7, Math.PI * 0.7);
+      ctx.arc(0, 0, headR * 1.02, -Math.PI * 0.72, Math.PI * 0.72);
+      ctx.closePath();
+      ctx.fill();
+      // Knot tails
+      ctx.beginPath();
+      ctx.moveTo(-headR * 0.65, -headR * 0.35);
+      ctx.quadraticCurveTo(-headR * 1.3, -headR * 0.6, -headR * 1.1, -headR * 0.15);
+      ctx.lineTo(-headR * 0.7, -headR * 0.1);
       ctx.closePath();
       ctx.fill();
       ctx.beginPath();
-      ctx.moveTo(-headR * 0.7, -headR * 0.3);
-      ctx.lineTo(-headR * 1.2, -headR * 0.5);
-      ctx.lineTo(-headR * 0.8, -headR * 0.1);
+      ctx.moveTo(-headR * 0.6, -headR * 0.2);
+      ctx.quadraticCurveTo(-headR * 1.2, -headR * 0.3, -headR * 1.0, 0);
+      ctx.lineTo(-headR * 0.55, -headR * 0.05);
       ctx.closePath();
       ctx.fill();
       break;
