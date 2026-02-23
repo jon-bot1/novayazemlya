@@ -744,7 +744,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.reinforcementsSpawned++;
     }
     addMessage(state, `\u{1F6A8} Reinforcements from ${sp.name}!`, 'warning');
-    playVoiceShout('alarm', -0.2);
     state.reinforcementTimer = 30 + Math.random() * 20 - state.reinforcementsSpawned * 1.5;
   }
 
@@ -828,8 +827,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           panel.activated = true;
           state.alarmActive = true;
           addMessage(state, '🚨 ALARM TRIGGERED! All enemies alerted!', 'warning');
-          // No alarm sound effect
-          speakCallout('alarm');
+          // Alarm is intentionally silent
           // Alert ALL enemies on the map
           for (const ally of state.enemies) {
             if (ally.state === 'dead') continue;
@@ -888,8 +886,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.elevated && !state.alarmActive) {
           state.alarmActive = true;
           addMessage(state, '🚨 PLATFORM GUARD ALERTS THE BASE!', 'warning');
-          playVoiceShout('alarm', 0.1);
-          speakCallout('alarm', enemy.type);
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
             if (ally.state === 'idle' || ally.state === 'patrol') {
@@ -927,8 +923,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Call for help — soldiers and heavies yell for reinforcements
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 5 + Math.random() * 3;
-        playVoiceShout('alarm', enemy.type === 'heavy' ? -0.3 : 0.1);
-        speakCallout('alarm', enemy.type);
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
         // Alert all allies in group + nearby
         for (const ally of state.enemies) {
