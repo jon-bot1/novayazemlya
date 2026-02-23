@@ -288,41 +288,44 @@ export const GameCanvas: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
-      <canvas ref={canvasRef} className="block w-full h-full touch-none" />
-      
-      <HUD
-        player={hudState.player}
-        killCount={hudState.killCount}
-        messages={hudState.messages}
-        extractionProgress={hudState.extractionProgress}
-        time={hudState.time}
-        gameOver={hudState.gameOver}
-        extracted={hudState.extracted}
-        documentsFound={hudState.documentsRead.length}
-        totalDocuments={LORE_DOCUMENTS.length}
-        codesFound={hudState.codesFound}
-        onViewDocuments={() => { setShowIntel(true); setShowInventory(false); }}
-      />
+    <div className="relative w-screen h-screen overflow-hidden bg-background touch-none flex">
+      <div className="relative flex-1 h-full">
+        <canvas ref={canvasRef} className="block w-full h-full touch-none" />
+        
+        <HUD
+          player={hudState.player}
+          killCount={hudState.killCount}
+          messages={hudState.messages}
+          extractionProgress={hudState.extractionProgress}
+          time={hudState.time}
+          gameOver={hudState.gameOver}
+          extracted={hudState.extracted}
+          documentsFound={hudState.documentsRead.length}
+          totalDocuments={LORE_DOCUMENTS.length}
+          codesFound={hudState.codesFound}
+          onViewDocuments={() => { setShowIntel(true); }}
+        />
 
-      {/* Mobile action buttons */}
-      <div className="sm:hidden">
-        <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
-        <ActionButton label="📦" onPress={() => setShowInventory(v => !v)} className="absolute top-14 right-3" variant="action" />
-        <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-20" variant="action" />
+        {/* Mobile action buttons */}
+        <div className="sm:hidden">
+          <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
+          <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
+        </div>
+
+        {/* Mobile control hint */}
+        <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
+          Tryck dit du vill gå · Tryck på fiende för att skjuta
+        </div>
+
+        {/* Desktop hint */}
+        <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
+          WASD rörelse | Mus sikta+skjut | E leta/läka | J underrättelser
+        </div>
       </div>
 
-      {/* Mobile control hint */}
-      <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
-        Tryck dit du vill gå · Tryck på fiende för att skjuta
-      </div>
+      {/* Always-visible inventory sidebar */}
+      <InventoryPanel items={hudState.player.inventory} />
 
-      {/* Desktop hint */}
-      <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-        WASD rörelse | Mus sikta+skjut | E leta/läka | Tab inventarium | J underrättelser
-      </div>
-
-      <InventoryPanel items={hudState.player.inventory} open={showInventory} onClose={() => setShowInventory(false)} />
       <IntelPanel
         open={showIntel}
         onClose={() => setShowIntel(false)}
