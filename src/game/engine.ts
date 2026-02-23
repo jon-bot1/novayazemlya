@@ -1016,25 +1016,55 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const speed = enemy.speed * dt * 60;
     // Elevated enemies don't move — they stay on their platform
     if (enemy.elevated) {
-      if (enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank') {
-        // Can only attack if player is within shoot range
-        if (distToPlayer < enemy.shootRange && canSeePlayer) {
+      // React to sounds — turn toward them
+      if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol')) {
+        const soundAngle = Math.atan2(heardSound.y - enemy.pos.y, heardSound.x - enemy.pos.x);
+        enemy.angle = soundAngle;
+        enemy.state = 'alert' as any;
+        enemy.investigateTarget = heardSound;
+      }
+
+      // Alert state: scan toward last known position, then return to idle
+      if (enemy.state === 'alert' || enemy.state === 'investigate') {
+        if (enemy.investigateTarget) {
+          const targetAngle = Math.atan2(enemy.investigateTarget.y - enemy.pos.y, enemy.investigateTarget.x - enemy.pos.x);
+          let da = targetAngle - enemy.angle;
+          if (da > Math.PI) da -= Math.PI * 2;
+          if (da < -Math.PI) da += Math.PI * 2;
+          enemy.angle += Math.sign(da) * Math.min(Math.abs(da), 3.0 * dt);
+        }
+        // If can see player from alert, attack
+        if (canSeePlayer && distToPlayer < enemy.shootRange) {
           enemy.state = 'attack';
-        } else {
-          enemy.state = 'idle'; // too far or can't see — go back to scanning
         }
       }
-      // Attack state: drop back to idle if player leaves range
+
+      if (enemy.state === 'chase' || enemy.state === 'flank') {
+        if (distToPlayer < enemy.shootRange && canSeePlayer) {
+          enemy.state = 'attack';
+        } else if (enemy.investigateTarget) {
+          // Turn toward last known position
+          const targetAngle = Math.atan2(enemy.investigateTarget.y - enemy.pos.y, enemy.investigateTarget.x - enemy.pos.x);
+          let da = targetAngle - enemy.angle;
+          if (da > Math.PI) da -= Math.PI * 2;
+          if (da < -Math.PI) da += Math.PI * 2;
+          enemy.angle += Math.sign(da) * Math.min(Math.abs(da), 3.0 * dt);
+        } else {
+          enemy.state = 'idle';
+        }
+      }
+      // Attack state: drop back to alert if player leaves range (not idle — stay vigilant)
       if (enemy.state === 'attack' && (distToPlayer > enemy.shootRange * 1.3 || !canSeePlayer)) {
-        enemy.state = 'idle';
+        enemy.state = 'alert' as any;
+        enemy.investigateTarget = { ...state.player.pos };
       }
       if (enemy.state === 'patrol' || enemy.state === 'idle') {
-        // Scan slowly back and forth
-        enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
+        // Scan back and forth
+        enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.008;
       }
-      // Elevated enemies never enter the movement switch (they don't move)
+      // Elevated enemies never enter the movement switch
       if (enemy.state !== 'attack' && enemy.state !== 'suppress') {
-        continue; // skip movement switch entirely
+        continue;
       }
     }
 
