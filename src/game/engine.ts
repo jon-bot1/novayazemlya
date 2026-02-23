@@ -80,7 +80,7 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     heavy: Math.PI * 0.6 - DEG15,
     turret: Math.PI * 0.5 - DEG15,
     boss: Math.PI * 0.7,
-    sniper: Math.PI * 0.25, // very narrow, focused
+    sniper: Math.PI * 0.15, // extremely narrow, laser-focused
   };
   let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
@@ -819,7 +819,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           soldier: { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 },
           heavy:   { frontArc: Math.PI * 0.6 - DEG15, rearRange: 0.4 },
           turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
-          sniper:  { frontArc: Math.PI * 0.25, rearRange: 0.1 }, // narrow vision, very focused
+          sniper:  { frontArc: Math.PI * 0.15, rearRange: 0.05 }, // extremely narrow, laser-focused
         }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
