@@ -313,6 +313,37 @@ export const GameCanvas: React.FC = () => {
     };
   }, []);
 
+  // Save highscore on tab close / navigate away (abandoned)
+  useEffect(() => {
+    if (!started || !playerName) return;
+    const handleUnload = () => {
+      const state = stateRef.current;
+      if (!state || state.gameOver || state.extracted) return;
+      const lootValue = state.player.inventory.reduce((s, i) => s + i.value, 0);
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/highscores`;
+      const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          player_name: playerName.trim().slice(0, 20),
+          kills: state.killCount,
+          time_seconds: Math.round(state.time),
+          result: 'abandoned',
+          loot_value: lootValue,
+        }),
+        keepalive: true,
+      });
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [started, playerName]);
+
   // Game loop
   useEffect(() => {
     if (!started) return;

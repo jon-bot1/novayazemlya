@@ -25,6 +25,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
         const { data } = await (supabase as any)
           .from('highscores')
           .select('*')
+          .neq('result', 'abandoned')
           .order('result', { ascending: false })
           .order('kills', { ascending: false })
           .order('time_seconds', { ascending: true })
