@@ -1201,6 +1201,30 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 8);
       ctx.font = '20px sans-serif';
       ctx.fillText('🚁', ep.pos.x, ep.pos.y + 6);
+
+      // Extraction progress bar
+      if (state.extractionProgress > 0) {
+        const barW = 60;
+        const barH = 6;
+        const barX = ep.pos.x - barW / 2;
+        const barY = ep.pos.y + ep.radius + 10;
+        const progress = Math.min(1, state.extractionProgress / ep.timer);
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        // Fill
+        ctx.fillStyle = `rgba(60, 220, 80, ${0.7 + Math.sin(state.time * 6) * 0.3})`;
+        ctx.fillRect(barX, barY, barW * progress, barH);
+        // Border
+        ctx.strokeStyle = 'rgba(60, 220, 80, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        // Percentage text
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${Math.floor(progress * 100)}%`, ep.pos.x, barY + barH + 12);
+      }
     } else {
       // Unknown / inactive: dim marker
       ctx.beginPath();

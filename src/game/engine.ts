@@ -699,12 +699,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const fullSuccess = hasUSB && hasCodes;
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
-    if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
+    if (!ep.active) continue;
+    const d = dist(state.player.pos, ep.pos);
+    if (d < ep.radius) {
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
         const missing: string[] = [];
         if (!hasUSB) missing.push('USB drive');
         if (!hasCodes) missing.push('nuclear codes');
         addMessage(state, `⚠ Missing: ${missing.join(' & ')} — extract incomplete!`, 'warning');
+      }
+      // Show entering message once
+      if (state.extractionProgress === 0) {
+        addMessage(state, `🚁 EXTRACTING — hold position!`, 'loot');
       }
       inExtraction = true;
       state.extractionProgress += dt;
