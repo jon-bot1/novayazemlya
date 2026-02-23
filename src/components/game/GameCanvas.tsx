@@ -14,7 +14,7 @@ import { LootPopup, LootNotification } from './LootPopup';
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -32,6 +32,8 @@ export const GameCanvas: React.FC = () => {
     codesFound: [] as string[],
     hasExtractionCode: false,
     movementMode: 'walk' as 'sneak' | 'walk' | 'sprint',
+    inCover: false,
+    peeking: false,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -48,6 +50,7 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'e') inputRef.current.interact = true;
       if (e.key === 'h') inputRef.current.heal = true;
       if (e.key === 'g') inputRef.current.throwGrenade = true;
+      if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (e.key === 'Shift') inputRef.current.movementMode = 'sprint';
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'sneak';
       if (e.key === 'Tab' || e.key === 'i') {
@@ -304,6 +307,8 @@ export const GameCanvas: React.FC = () => {
           codesFound: [...state.codesFound],
           hasExtractionCode: state.hasExtractionCode,
           movementMode: inputRef.current.movementMode,
+          inCover: state.player.inCover,
+          peeking: state.player.peeking,
         });
       }
 
@@ -335,6 +340,8 @@ export const GameCanvas: React.FC = () => {
           codesFound={hudState.codesFound}
           hasExtractionCode={hudState.hasExtractionCode}
           movementMode={hudState.movementMode}
+          inCover={hudState.inCover}
+          peeking={hudState.peeking}
           onViewDocuments={() => { setShowIntel(true); }}
         />
 
@@ -345,6 +352,7 @@ export const GameCanvas: React.FC = () => {
           <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
           <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
           <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
+          <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} className="absolute bottom-24 left-1/2 translate-x-20" variant="action" />
           <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
           {/* Movement mode toggle */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
@@ -377,7 +385,7 @@ export const GameCanvas: React.FC = () => {
 
         {/* Desktop hint */}
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD rörelse | Shift sprint | Ctrl smyg | Mus sikta+skjut | E leta | H läka | G granat
+          WASD rörelse | Shift sprint | Ctrl smyg | Q/Space skydd | Mus sikta+skjut | E leta | H läka | G granat
         </div>
       </div>
 
