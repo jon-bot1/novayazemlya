@@ -85,7 +85,7 @@ export const createExtractionCode = (): Item => ({
   description: 'Kod som krävs för att aktivera evakueringspunkten',
 });
 
-export const createGrenade = (name: string = 'RGD-5', damage: number = 60, radius: number = 80): Item => ({
+export const createGrenade = (name: string = 'RGD-5', damage: number = 200, radius: number = 150): Item => ({
   id: nextId(),
   name,
   category: 'grenade',

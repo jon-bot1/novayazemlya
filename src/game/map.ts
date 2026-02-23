@@ -256,12 +256,19 @@ export function generateMap() {
     // Pair 2 — patrolling wider perimeter
     makeEnemy(1200, 2100, 'soldier'),
     makeEnemy(1100, 2050, 'scav'),
-    // Lone guard with keycard — patrols near road
+    // Lone guard with keycard — patrols near road (ALWAYS has keycard)
     makeEnemy(1500, 2150, 'soldier'),
   ];
 
-  // Give keycard to the last outside patrol guard
-  enemies[enemies.length - 1].loot = [createKeycard()];
+  // Give keycard to ALL outside patrol guards to guarantee it drops
+  for (let i = enemies.length - 5; i < enemies.length; i++) {
+    if (i === enemies.length - 1) {
+      // Main keycard carrier — always has it
+      enemies[i].loot = [createKeycard()];
+    }
+  }
+  // Also give a second keycard to one of the pairs as backup
+  enemies[enemies.length - 3].loot = [createKeycard()];
 
   // ══════════════════════════════════════
   // LOOT
