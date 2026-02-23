@@ -65,6 +65,34 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
   }
 }
 
+// When an elevated guard dies, find nearest non-elevated enemy to take over the platform
+function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
+  if (!deadGuard.elevated) return;
+  const platformPos = { ...deadGuard.pos };
+  let bestDist = 500; // max range to rush
+  let bestAlly: Enemy | null = null;
+  for (const ally of state.enemies) {
+    if (ally === deadGuard || ally.state === 'dead' || ally.elevated) continue;
+    if (ally.type === 'turret' || ally.type === 'boss') continue;
+    const d = dist(ally.pos, platformPos);
+    if (d < bestDist) {
+      bestDist = d;
+      bestAlly = ally;
+    }
+  }
+  if (bestAlly) {
+    bestAlly.state = 'chase';
+    bestAlly.investigateTarget = platformPos;
+    // The ally will be elevated once they arrive (checked in update loop)
+    (bestAlly as any)._platformTarget = platformPos;
+    addMessage(state, '📻 Vakt rusar till ställningen!', 'warning');
+  }
+  // Mark dead guard as no longer elevated so platform draws independently
+  deadGuard.elevated = false;
+  // Store platform position for rendering
+  state.props.push({ pos: platformPos, w: 36, h: 40, type: 'watchtower' as any });
+}
+
 function generateEnemyLoot(enemy: Enemy) {
   // Preserve any pre-assigned loot (e.g. keycards from map setup)
   const existingLoot = [...enemy.loot];
@@ -346,9 +374,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Loot containers
+    // Loot containers — require line of sight (no looting through walls)
     for (const lc of state.lootContainers) {
-      if (!lc.looted && dist(state.player.pos, lc.pos) < 70) {
+      if (!lc.looted && dist(state.player.pos, lc.pos) < 70 && hasLineOfSight(state, state.player.pos, lc.pos)) {
         lc.looted = true;
         for (const item of lc.items) {
           state.player.inventory.push(item);
@@ -386,9 +414,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Document pickups
+    // Document pickups — require line of sight
     for (const dp of state.documentPickups) {
-      if (!dp.collected && dist(state.player.pos, dp.pos) < 70) {
+      if (!dp.collected && dist(state.player.pos, dp.pos) < 70 && hasLineOfSight(state, state.player.pos, dp.pos)) {
         dp.collected = true;
         const doc = LORE_DOCUMENTS.find(d => d.id === dp.loreDocId);
         if (doc) {
@@ -404,10 +432,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Dead enemy looting
+    // Dead enemy looting — require line of sight
     for (const enemy of state.enemies) {
       if (enemy.state !== 'dead' || enemy.looted) continue;
-      if (dist(state.player.pos, enemy.pos) < 70) {
+      if (dist(state.player.pos, enemy.pos) < 70 && hasLineOfSight(state, state.player.pos, enemy.pos)) {
         enemy.looted = true;
         for (const item of enemy.loot) {
           state.player.inventory.push(item);
@@ -573,6 +601,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     enemy.eyeBlink -= dt;
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
+    // Check if enemy is rushing to take over a platform
+    const platformTarget = (enemy as any)._platformTarget as Vec2 | undefined;
+    if (platformTarget && dist(enemy.pos, platformTarget) < 20) {
+      enemy.elevated = true;
+      enemy.pos = { ...platformTarget };
+      enemy.state = 'idle';
+      enemy.alertRange = 250;
+      enemy.shootRange = 220;
+      delete (enemy as any)._platformTarget;
+      // Remove the temp prop (watchtower) since guard is now on it
+      const propIdx = state.props.findIndex(p => p.type === 'watchtower' && dist(p.pos, platformTarget) < 10);
+      if (propIdx >= 0) state.props.splice(propIdx, 1);
+      addMessage(state, '⚠ Ny vakt på ställningen!', 'warning');
+    }
+
     // Boss phase transitions based on HP
     if (enemy.type === 'boss') {
       const hpRatio = enemy.hp / enemy.maxHp;
@@ -640,13 +683,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Vision cone varies by enemy type/skill
+    // Vision cone varies by enemy type/skill (reduced by 15° = ~0.26 rad)
+    const DEG15 = Math.PI * (15 / 180);
     const visionConfig = {
-      scav:    { frontArc: Math.PI * 0.4, rearRange: 0.2 },
-      soldier: { frontArc: Math.PI * 0.55, rearRange: 0.35 },
-      heavy:   { frontArc: Math.PI * 0.75, rearRange: 0.55 },
-      turret:  { frontArc: Math.PI * 0.85, rearRange: 0.0 },
-    }[enemy.type] || { frontArc: Math.PI * 0.55, rearRange: 0.35 };
+      scav:    { frontArc: Math.PI * 0.4 - DEG15, rearRange: 0.2 },
+      soldier: { frontArc: Math.PI * 0.55 - DEG15, rearRange: 0.35 },
+      heavy:   { frontArc: Math.PI * 0.75 - DEG15, rearRange: 0.55 },
+      turret:  { frontArc: Math.PI * 0.85 - DEG15, rearRange: 0.0 },
+    }[enemy.type] || { frontArc: Math.PI * 0.55 - DEG15, rearRange: 0.35 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
     let angleDiff = Math.abs(toPlayerAngle - enemy.angle);
@@ -1061,6 +1105,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
             speakCallout('death', enemy.type);
+            sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
@@ -1130,6 +1175,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
             speakCallout('death', enemy.type);
+            sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             if (!isCrit) {

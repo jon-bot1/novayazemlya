@@ -310,9 +310,10 @@ function drawCuteCharacter(
   ctx.ellipse(headR * 0.5, headR * 0.2, headR * 0.18, headR * 0.12, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Face (rotates with aim direction)
+  // Face — stays upright but flips left/right based on aim direction
+  const facingLeft = Math.abs(angle) > Math.PI * 0.5;
   ctx.save();
-  ctx.rotate(angle);
+  if (facingLeft) ctx.scale(-1, 1); // mirror horizontally when facing left
   if (isBlinking) {
     ctx.strokeStyle = eyeColor;
     ctx.lineWidth = 2;
@@ -389,9 +390,9 @@ function drawCuteCharacter(
   ctx.stroke();
   ctx.restore(); // end face rotation
 
-  // === HAT ===
+  // === HAT — stays upright, flips with face ===
   ctx.save();
-  ctx.rotate(angle);
+  if (facingLeft) ctx.scale(-1, 1);
   switch (hatType) {
     case 'ushanka':
       ctx.fillStyle = hatColor;
@@ -1426,12 +1427,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ? `rgba(255, 200, 80, ${alertPulse * 3})`
         : `rgba(255, 80, 40, ${alertPulse * 4})`;
 
+      const DEG15 = Math.PI * (15 / 180);
       const visionArc = {
-        scav: Math.PI * 0.4,
-        soldier: Math.PI * 0.55,
-        heavy: Math.PI * 0.75,
-        turret: Math.PI * 0.85,
-      }[enemy.type] || Math.PI * 0.55;
+        scav: Math.PI * 0.4 - DEG15,
+        soldier: Math.PI * 0.55 - DEG15,
+        heavy: Math.PI * 0.75 - DEG15,
+        turret: Math.PI * 0.85 - DEG15,
+      }[enemy.type] || Math.PI * 0.55 - DEG15;
       const rearRange = {
         scav: 0.2,
         soldier: 0.35,
