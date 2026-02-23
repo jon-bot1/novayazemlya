@@ -85,11 +85,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
-  // Player movement
-  const moveLen = Math.sqrt(input.moveX ** 2 + input.moveY ** 2);
+  // Player movement — support both directional input and tap-to-target
+  let moveX = input.moveX;
+  let moveY = input.moveY;
+
+  if (input.moveTarget) {
+    const dx = input.moveTarget.x - state.player.pos.x;
+    const dy = input.moveTarget.y - state.player.pos.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d > 8) {
+      moveX = dx / d;
+      moveY = dy / d;
+    } else {
+      // Arrived at target
+      input.moveTarget = null;
+      moveX = 0;
+      moveY = 0;
+    }
+  }
+
+  const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
   if (moveLen > 0.1) {
     const speed = state.player.speed * dt * 60;
-    const dir = normalize({ x: input.moveX, y: input.moveY });
+    const dir = normalize({ x: moveX, y: moveY });
     state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
   }
 
@@ -97,7 +115,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.aimX !== 0 || input.aimY !== 0) {
     state.player.angle = Math.atan2(input.aimY, input.aimX);
   } else if (moveLen > 0.1) {
-    state.player.angle = Math.atan2(input.moveY, input.moveX);
+    state.player.angle = Math.atan2(moveY, moveX);
   }
 
   // Player shooting

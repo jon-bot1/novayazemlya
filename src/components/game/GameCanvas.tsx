@@ -13,7 +13,7 @@ import { IntelPanel } from './IntelPanel';
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, moveTarget: null });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -95,48 +95,42 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch input: tap-to-move (left half) and tap-to-aim/shoot (right half)
+  // Touch input: tap to walk to world position, right side to aim & shoot
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const screenW = () => window.innerWidth;
-    const screenH = () => window.innerHeight;
-
-    const updateMoveFromTouch = (clientX: number, clientY: number) => {
-      // Direction from screen center to touch point
-      const dx = clientX - screenW() / 2;
-      const dy = clientY - screenH() / 2;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d > 5) {
-        inputRef.current.moveX = dx / d;
-        inputRef.current.moveY = dy / d;
-      }
-    };
-
-    const updateAimFromTouch = (clientX: number, clientY: number) => {
-      // Aim direction from screen center
-      const dx = clientX - screenW() / 2;
-      const dy = clientY - screenH() / 2;
-      inputRef.current.aimX = dx;
-      inputRef.current.aimY = dy;
-      inputRef.current.shooting = true;
+    const screenToWorld = (clientX: number, clientY: number) => {
+      const cam = stateRef.current.camera;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      return {
+        x: cam.x + (clientX - w / 2),
+        y: cam.y + (clientY - h / 2),
+      };
     };
 
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
-        const halfW = screenW() / 2;
-        
+        const halfW = window.innerWidth / 2;
+
         if (t.clientX < halfW) {
-          // Left side → move
+          // Left side → tap to walk to that world position
           moveTouchRef.current = t.identifier;
-          updateMoveFromTouch(t.clientX, t.clientY);
+          const world = screenToWorld(t.clientX, t.clientY);
+          inputRef.current.moveTarget = world;
+          inputRef.current.moveX = 0;
+          inputRef.current.moveY = 0;
         } else {
-          // Right side → aim & shoot
+          // Right side → aim & shoot toward that point
           aimTouchRef.current = t.identifier;
-          updateAimFromTouch(t.clientX, t.clientY);
+          const dx = t.clientX - halfW;
+          const dy = t.clientY - window.innerHeight / 2;
+          inputRef.current.aimX = dx;
+          inputRef.current.aimY = dy;
+          inputRef.current.shooting = true;
         }
       }
     };
@@ -146,10 +140,16 @@ export const GameCanvas: React.FC = () => {
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
-          updateMoveFromTouch(t.clientX, t.clientY);
+          // Update walk target as finger drags
+          const world = screenToWorld(t.clientX, t.clientY);
+          inputRef.current.moveTarget = world;
         }
         if (t.identifier === aimTouchRef.current) {
-          updateAimFromTouch(t.clientX, t.clientY);
+          const dx = t.clientX - window.innerWidth / 2;
+          const dy = t.clientY - window.innerHeight / 2;
+          inputRef.current.aimX = dx;
+          inputRef.current.aimY = dy;
+          inputRef.current.shooting = true;
         }
       }
     };
@@ -160,8 +160,7 @@ export const GameCanvas: React.FC = () => {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
           moveTouchRef.current = null;
-          inputRef.current.moveX = 0;
-          inputRef.current.moveY = 0;
+          // Keep moveTarget — character walks there then stops
         }
         if (t.identifier === aimTouchRef.current) {
           aimTouchRef.current = null;
