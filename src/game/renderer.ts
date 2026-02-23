@@ -359,11 +359,38 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
     ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.font = '18px sans-serif';
-    ctx.textAlign = 'center';
-    const floatUp = Math.sin(state.time * 2) * 3;
-    ctx.fillText('👻', enemy.pos.x, enemy.pos.y + floatUp + 4);
+    if (!enemy.looted) {
+      // Lootable corpse — pulsing loot indicator
+      const bob = Math.sin(state.time * 2 + enemy.pos.x) * 2;
+      const glow = 0.5 + Math.sin(state.time * 3) * 0.2;
+
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(enemy.pos.x, enemy.pos.y + 8, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y + bob, 20, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220, 200, 60, ${glow * 0.2})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(220, 200, 60, ${glow * 0.6})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = '18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💀', enemy.pos.x, enemy.pos.y + bob + 6);
+
+      ctx.fillStyle = `rgba(220, 200, 60, ${glow + 0.3})`;
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillText('SÖKA', enemy.pos.x, enemy.pos.y + bob - 16);
+    } else {
+      // Already looted
+      ctx.globalAlpha = 0.35;
+      ctx.font = '18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👻', enemy.pos.x, enemy.pos.y + 4);
+    }
     ctx.restore();
   }
 
