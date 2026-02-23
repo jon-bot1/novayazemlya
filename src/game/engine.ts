@@ -1143,23 +1143,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
         }
-        // Boss: charge attack — rush toward player periodically
-        if (enemy.type === 'boss' && (enemy.bossChargeTimer || 0) <= 0 && distToPlayer > 60) {
-          const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-          const chargeSpeed = speed * 3;
-          enemy.pos = tryMove(state, enemy.pos, chargeDir.x * chargeSpeed, chargeDir.y * chargeSpeed, 12);
-          // Melee damage if close
-          if (dist(enemy.pos, state.player.pos) < 30) {
-            const meleeDmg = 25 * (1 - state.player.armor);
-            state.player.hp -= meleeDmg;
-            addMessage(state, `🗡️ VOLKOV SLÅR TILL! -${Math.floor(meleeDmg)}HP`, 'damage');
-            spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff4444', 8);
-            playHit();
-            enemy.bossChargeTimer = 5 + Math.random() * 3;
-            if (state.player.hp <= 0) {
-              state.gameOver = true;
-              addMessage(state, '☠ DÖD', 'damage');
-            }
+        // Boss: tactical — throw grenades, retreat to cover, shoot from distance
+        if (enemy.type === 'boss') {
+          // Throw grenade periodically
+          if ((enemy.bossChargeTimer || 0) <= 0 && distToPlayer < enemy.shootRange * 1.2 && distToPlayer > 80) {
+            enemy.bossChargeTimer = 6 + Math.random() * 4;
+            // Spawn a boss grenade (25% damage)
+            const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+            const gSpeed = 4;
+            state.grenades.push({
+              pos: { x: enemy.pos.x, y: enemy.pos.y },
+              vel: { x: Math.cos(gAngle) * gSpeed, y: Math.sin(gAngle) * gSpeed },
+              timer: 1.5,
+              radius: 80,
+              damage: 25,
+              fromPlayer: false,
+            });
+            addMessage(state, '💣 VOLKOV kastar granat!', 'warning');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
+          }
+          // Retreat to cover if too close
+          if (distToPlayer < enemy.shootRange * 0.6) {
+            const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
+            enemy.pos = tryMove(state, enemy.pos, retreatDir.x * speed * 1.2, retreatDir.y * speed * 1.2, 12);
           }
         }
         // Boss: spawn reinforcements in phase 1+

@@ -29,7 +29,8 @@ function drawCuteCharacter(
   hatType: 'ushanka' | 'helmet' | 'beret' | 'bandana',
   hatColor: string,
   hasGun: boolean,
-  size: number = R
+  size: number = R,
+  isMoving: boolean = true
 ) {
   ctx.save();
   ctx.translate(x, y);
@@ -55,7 +56,7 @@ function drawCuteCharacter(
   ctx.save();
   // NO ctx.rotate(angle) here — legs always point down
   const walkPhase = (Date.now() % 400) / 400;
-  const legSwing = Math.sin(walkPhase * Math.PI * 2) * 0.35;
+  const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.35 : 0;
   for (const side of [-1, 1]) {
     ctx.save();
     const legX = legW * 1.1 * side;
@@ -1658,10 +1659,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         cfg = { body: '#1a1a1a', outline: '#000000', eye: '#444', hat: 'helmet', hatColor: '#111111' };
       }
 
+      const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       drawCuteCharacter(
         ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
         cfg.body, cfg.outline, cfg.eye, isBlinking,
-        cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R)
+        cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R), enemyMoving
       );
     }
 
@@ -1897,10 +1899,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // Character
   const playerBlink = Math.sin(state.time * 0.8) > 0.95;
+  const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
+  (state as any)._prevPx = state.player.pos.x;
+  (state as any)._prevPy = state.player.pos.y;
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
     '#c0ee99', '#88cc55', '#2a3a1a', playerBlink,
-    'beret', '#8a5545', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2
+    'beret', '#8a5545', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
   );
 
   // Name tag
