@@ -1365,7 +1365,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
     ctx.fillStyle = `rgba(100, 180, 255, ${glow + 0.3})`;
     ctx.font = 'bold 9px sans-serif';
-    ctx.fillText('DOKUMENT', dp.pos.x, dp.pos.y + bob - 16);
+    ctx.fillText('DOCUMENT', dp.pos.x, dp.pos.y + bob - 16);
   }
 
   // ── LOOT ──
@@ -1432,7 +1432,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       ctx.fillStyle = `rgba(220, 200, 60, ${glow + 0.3})`;
       ctx.font = 'bold 8px sans-serif';
-      ctx.fillText('SÖKA', enemy.pos.x, enemy.pos.y + bob - 16);
+      ctx.fillText('SEARCH', enemy.pos.x, enemy.pos.y + bob - 16);
     } else {
       // Already looted
       ctx.globalAlpha = 0.35;
