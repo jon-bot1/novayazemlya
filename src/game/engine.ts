@@ -3,6 +3,7 @@ import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar, playVoiceShout } from './audio';
+import { speakCallout } from './voice';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -539,6 +540,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
           playAlarm();
           playVoiceShout('alarm', 0);
+          speakCallout('alarm');
           // Alert ALL enemies on the map
           for (const ally of state.enemies) {
             if (ally.state === 'dead') continue;
@@ -588,6 +590,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         assignTacticalRole(state, enemy);
         const pitchVar = enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0;
         playVoiceShout('alert', pitchVar);
+        speakCallout('alert', enemy.type);
       }
 
       // Apply tactical behavior based on role
@@ -618,6 +621,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 8 + Math.random() * 4;
         playVoiceShout('alarm', enemy.type === 'heavy' ? -0.3 : 0.1);
+        speakCallout('alarm', enemy.type);
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} ropar på hjälp!`, 'warning');
         // Alert all allies in group + nearby
         for (const ally of state.enemies) {
@@ -656,6 +660,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
       playVoiceShout('investigate', enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0);
+      speakCallout('investigate', enemy.type);
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // Lost sight of player
       if (distToPlayer > enemy.alertRange * 1.5 || !los) {
@@ -663,6 +668,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
         playVoiceShout('lost', enemy.type === 'heavy' ? -0.4 : 0);
+        speakCallout('lost', enemy.type);
         // Radio last known position to group
         if (state.time - enemy.lastRadioCall > 4) {
           enemy.lastRadioCall = state.time;
@@ -771,6 +777,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             // Arrived at flank position — switch to attack
             enemy.state = 'attack';
             playVoiceShout('attack', enemy.type === 'heavy' ? -0.4 : 0.1);
+            speakCallout('attack', enemy.type);
           } else {
             const dir = normalize({ x: enemy.flankTarget.x - enemy.pos.x, y: enemy.flankTarget.y - enemy.pos.y });
             enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 1.2, dir.y * speed * 1.2, 10);
@@ -923,6 +930,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+            speakCallout('death', enemy.type);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
@@ -976,6 +984,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+            speakCallout('death', enemy.type);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
