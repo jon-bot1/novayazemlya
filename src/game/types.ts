@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee';
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'key';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'key' | 'backpack';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -113,6 +113,7 @@ export interface Enemy {
   suppressTimer: number; // time remaining in suppression mode
   callForHelpTimer: number; // cooldown for calling help
   lastTacticalSwitch: number; // prevent rapid role switching
+  stunTimer: number; // flashbang stun duration remaining
 }
 
 export interface Player {
@@ -216,6 +217,8 @@ export interface GameState {
   hasExtractionCode: boolean;
   speedBoostTimer: number;
   soundEvents: SoundEvent[]; // sounds that enemies can react to
+  flashbangTimer: number; // seconds of flashbang blindness remaining
+  backpackCapacity: number; // extra inventory slots from backpack
 }
 
 export interface SoundEvent {

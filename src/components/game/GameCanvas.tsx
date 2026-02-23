@@ -390,7 +390,7 @@ export const GameCanvas: React.FC = () => {
 
         {/* Desktop hint */}
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD rörelse | Shift sprint | Ctrl smyg | Q/Space skydd | Mus sikta+skjut | E leta | H läka | G granat
+          WASD rörelse | Shift sprint | Ctrl smyg | Q/Space skydd | Mus sikta+skjut | E leta | H läka | G granat/bländgranat
         </div>
       </div>
 
