@@ -147,7 +147,18 @@ export interface Prop {
   pos: Vec2;
   w: number;
   h: number;
-  type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf';
+  type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf'
+    | 'tree' | 'pine_tree' | 'bush' | 'fence_h' | 'fence_v' | 'guard_booth' | 'watchtower' | 'vehicle_wreck' | 'gate' | 'road_sign' | 'searchlight';
+}
+
+export type TerrainType = 'grass' | 'dirt' | 'asphalt' | 'concrete' | 'forest';
+
+export interface TerrainZone {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  type: TerrainType;
 }
 
 export interface LightSource {
@@ -190,6 +201,7 @@ export interface GameState {
   extractionPoints: ExtractionPoint[];
   lights: LightSource[];
   windows: WindowDef[];
+  terrainZones: TerrainZone[];
   camera: Vec2;
   mapWidth: number;
   mapHeight: number;
