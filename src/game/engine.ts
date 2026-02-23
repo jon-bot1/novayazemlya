@@ -65,7 +65,29 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
   }
 }
 
-// When an elevated guard dies, find nearest non-elevated enemy to take over the platform
+// Check if a target angle is within an enemy's vision/shooting arc
+function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean {
+  const toTargetAngle = Math.atan2(targetY - enemy.pos.y, targetX - enemy.pos.x);
+  let angleDiff = Math.abs(toTargetAngle - enemy.angle);
+  if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+  
+  const DEG15 = Math.PI * (15 / 180);
+  // Bodyguards and boss get wider firing arc
+  const isBodyguard = !!(enemy as any)._isBodyguard;
+  const arcMap: Record<string, number> = {
+    scav: Math.PI * 0.4 - DEG15,
+    soldier: Math.PI * 0.55 - DEG15,
+    heavy: Math.PI * 0.75 - DEG15,
+    turret: Math.PI * 0.85 - DEG15,
+    boss: Math.PI * 0.7,
+  };
+  let arc = arcMap[enemy.type] || Math.PI * 0.55 - DEG15;
+  if (isBodyguard) arc = Math.PI * 0.65; // wider arc for elite bodyguards
+  
+  return angleDiff <= arc;
+}
+
+
 function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   if (!deadGuard.elevated) return;
   const platformPos = { ...deadGuard.pos };
@@ -930,8 +952,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'investigate': {
         if (enemy.type === 'turret') {
-          // Turret just aims toward sound
-          if (enemy.investigateTarget) {
+          // Turret just aims toward sound — only if within its arc
+          if (enemy.investigateTarget && isInFiringArc(enemy, enemy.investigateTarget.x, enemy.investigateTarget.y)) {
             enemy.angle = Math.atan2(enemy.investigateTarget.y - enemy.pos.y, enemy.investigateTarget.x - enemy.pos.x);
           }
           // After a moment, go back to idle
@@ -977,7 +999,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'chase': {
         if (enemy.type === 'turret') {
-          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          // Turret can only aim within its arc
+          if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+            enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          } else {
+            enemy.state = 'idle'; // lost target outside arc
+          }
           break;
         }
         const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
@@ -1017,7 +1044,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'chase';
         }
         // Opportunistic shots while flanking
-        if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2) {
+        if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
           const spread = (Math.random() - 0.5) * 0.2;
           const angle = enemy.angle + spread;
           state.bullets.push({
@@ -1034,9 +1061,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       case 'suppress': {
         // Stay in place, rapid fire toward player to pin them down
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-        // Rapid suppressive fire with wide spread
+        // Rapid suppressive fire with wide spread — only if player is in arc
         const suppressRate = enemy.fireRate / 1000 * 0.5; // fire twice as fast
-        if (state.time - enemy.lastShot > suppressRate) {
+        if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
           const spread = (Math.random() - 0.5) * 0.35; // wide spread — suppression, not precision
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'heavy' ? 7 : 6;
@@ -1058,8 +1085,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'attack': {
-        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-        if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
+        // Turrets: restrict rotation to their fixed arc (can't shoot behind/inward)
+        const targetAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        if (enemy.type === 'turret') {
+          // Only rotate toward player if within turret's arc
+          if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+            enemy.angle = targetAngle;
+          }
+          // If player is outside arc, turret loses target
+          else {
+            enemy.state = 'idle';
+            break;
+          }
+        } else {
+          enemy.angle = targetAngle;
+        }
+        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
           const spread = enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
           const angle = enemy.angle + spread;
           const bSpeed = enemy.type === 'turret' ? 8 : 6;
