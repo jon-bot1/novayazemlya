@@ -103,7 +103,7 @@ export interface Enemy {
   lastShot: number;
   fireRate: number;
   angle: number;
-  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss';
+  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss' | 'sniper';
   bossPhase?: number; // 0=normal, 1=enraged, 2=desperate
   bossChargeTimer?: number; // charge attack cooldown
   bossSpawnTimer?: number; // spawn minion cooldown

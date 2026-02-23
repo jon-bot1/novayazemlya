@@ -181,34 +181,34 @@ P.S. Mice ate three MREs. Or not mice. God knows what runs around here at night.
   },
   {
     id: 'doc_7',
-    title: 'Personnel File: Commandant A. Osipovitch',
+    title: 'Personnel File: Commandant A. Osipovitj',
     author: 'GRU Internal Security',
     date: '08.02.1993',
     classification: 'TOP SECRET',
     content: `PERSONNEL FILE — TOP SECRET
-Subject: Andrei Pavlovich Osipovitch
+Subject: Andrei Pavlovich Osipovitj
 Rank: Commandant
 Unit: Special Group "Wolf"
 Station: Object Z-14, Underground Section
 
 BACKGROUND:
-Osipovitch was recruited from Spetsnaz in 1987. Outstanding combat record — 47 confirmed operations. Psychological profile shows extreme loyalty to the project but rising instability since the exposure.
+Osipovitj was recruited from Spetsnaz in 1987. Outstanding combat record — 47 confirmed operations. Psychological profile shows extreme loyalty to the project but rising instability since the exposure.
 
 His two personal bodyguards, callsigns ZAPAD and VOSTOK, have served with him since 1989. Both are former GRU special operators. They never leave his side.
 
 EXPOSURE:
-During inspection of Laboratory No. 3 (see "Dawn" protocol), Osipovitch was exposed to an unknown substance from B-series containers. Since then, subordinates report:
+During inspection of Laboratory No. 3 (see "Dawn" protocol), Osipovitj was exposed to an unknown substance from B-series containers. Since then, subordinates report:
 - Unnatural strength (bent a steel bar with bare hands)
 - Eyes that "glow" in the dark
 - Insomnia for 23 days without performance degradation
 - Conversations with "voices" — claims to hear orders from below
 
 ASSESSMENT:
-Despite instability, Osipovitch is the most effective commander at Z-14. He has refused evacuation, stating he "guards what lies beneath". Personnel report he patrols the deep storage at night, armed and muttering. ZAPAD and VOSTOK follow in silence.
+Despite instability, Osipovitj is the most effective commander at Z-14. He has refused evacuation, stating he "guards what lies beneath". Personnel report he patrols the deep storage at night, armed and muttering. ZAPAD and VOSTOK follow in silence.
 
 RECOMMENDATION: Monitor. Do NOT neutralize without direct orders. His knowledge of the B-series is irreplaceable.
 
-WARNING: If Osipovitch shows signs of total regression — activate protocol STORM-3 immediately.
+WARNING: If Osipovitj shows signs of total regression — activate protocol STORM-3 immediately.
 
 — Colonel Karpov, GRU`,
     hasCode: false,
