@@ -1180,28 +1180,45 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── EXTRACTION ZONES ──
+  // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
   for (const ep of state.extractionPoints) {
-    if (!ep.active) continue;
     ctx.save();
-    const pulse = 0.5 + Math.sin(state.time * 3) * 0.3;
-
-    ctx.beginPath();
-    ctx.arc(ep.pos.x, ep.pos.y, ep.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(60, 220, 80, ${pulse * 0.15})`;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(60, 220, 80, ${pulse})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = `rgba(60, 220, 80, ${pulse})`;
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 8);
-    ctx.font = '20px sans-serif';
-    ctx.fillText('🚁', ep.pos.x, ep.pos.y + 6);
+    if (ep.active && (state as any)._exfilRevealed) {
+      // Active + revealed: bright green pulsing
+      const pulse = 0.5 + Math.sin(state.time * 3) * 0.3;
+      ctx.beginPath();
+      ctx.arc(ep.pos.x, ep.pos.y, ep.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(60, 220, 80, ${pulse * 0.15})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(60, 220, 80, ${pulse})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = `rgba(60, 220, 80, ${pulse})`;
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 8);
+      ctx.font = '20px sans-serif';
+      ctx.fillText('🚁', ep.pos.x, ep.pos.y + 6);
+    } else {
+      // Unknown / inactive: dim marker
+      ctx.beginPath();
+      ctx.arc(ep.pos.x, ep.pos.y, ep.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(150, 150, 150, 0.06)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(150, 150, 150, 0.4)';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 8);
+      ctx.font = '16px sans-serif';
+      ctx.fillText('❓', ep.pos.x, ep.pos.y + 5);
+    }
     ctx.restore();
   }
 
@@ -1335,10 +1352,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // Alarm overlay effect
+  // Alarm overlay — silent, subtle visual indicator only
   if (state.alarmActive) {
-    const flash = Math.sin(state.time * 6) * 0.5 + 0.5;
-    ctx.fillStyle = `rgba(200, 30, 30, ${flash * 0.03})`;
+    ctx.fillStyle = 'rgba(200, 30, 30, 0.01)';
     ctx.fillRect(cx, cy, w, h);
   }
 
