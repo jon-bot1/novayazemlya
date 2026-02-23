@@ -121,6 +121,44 @@ export function playPickup() {
   osc.stop(now + 0.13);
 }
 
+export function playRadio() {
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+
+  // Static crackle
+  const bufLen = Math.floor(ctx.sampleRate * 0.08);
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen) * 0.5;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.08, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 2000;
+  bp.Q.value = 2;
+  noise.connect(bp).connect(noiseGain).connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.09);
+
+  // Two-tone radio beep
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(1200, now + 0.05);
+  osc.frequency.setValueAtTime(900, now + 0.12);
+  gain.gain.setValueAtTime(0.06, now + 0.05);
+  gain.gain.setValueAtTime(0.06, now + 0.15);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now + 0.05);
+  osc.stop(now + 0.21);
+}
+
 let lastFootstepTime = 0;
 
 export function playFootstep(mode: 'sneak' | 'walk' | 'sprint') {

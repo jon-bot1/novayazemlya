@@ -2,7 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, 
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
-import { playGunshot, playExplosion, playHit, playPickup, playFootstep } from './audio';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -395,6 +395,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         enemy.state = 'chase';
       }
+      // Radio call — alert allies in same group or within 400px
+      if (state.time - enemy.lastRadioCall > 4) {
+        enemy.lastRadioCall = state.time;
+        enemy.radioAlert = 1.5;
+        playRadio();
+        for (const ally of state.enemies) {
+          if (ally === enemy || ally.state === 'dead') continue;
+          if (ally.state === 'chase' || ally.state === 'attack') continue;
+          const sameGroup = ally.radioGroup === enemy.radioGroup;
+          const closeEnough = dist(ally.pos, enemy.pos) < 400;
+          if (sameGroup || closeEnough) {
+            ally.state = 'investigate';
+            ally.investigateTarget = { ...state.player.pos };
+            ally.radioAlert = 1.5;
+            addMessage(state, `📻 ${enemy.type.toUpperCase()} anropar förstärkning!`, 'warning');
+          }
+        }
+      }
     } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol')) {
       // Heard a sound — go investigate
       enemy.state = 'investigate';
@@ -405,11 +423,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Go investigate where they last saw the player
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
+        // Radio last known position to group
+        if (state.time - enemy.lastRadioCall > 4) {
+          enemy.lastRadioCall = state.time;
+          enemy.radioAlert = 1.2;
+          for (const ally of state.enemies) {
+            if (ally === enemy || ally.state === 'dead') continue;
+            const sameGroup = ally.radioGroup === enemy.radioGroup;
+            const closeEnough = dist(ally.pos, enemy.pos) < 400;
+            if ((sameGroup || closeEnough) && (ally.state === 'idle' || ally.state === 'patrol')) {
+              ally.state = 'investigate';
+              ally.investigateTarget = { ...state.player.pos };
+              ally.radioAlert = 1.2;
+            }
+          }
+        }
       }
     } else if (enemy.state === 'alert') {
       // Alert cooldown — transition to patrol after a moment
       enemy.state = 'patrol';
       enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+    }
+
+    // Decay radio alert visual
+    if (enemy.radioAlert > 0) {
+      enemy.radioAlert = Math.max(0, enemy.radioAlert - dt);
     }
 
     const speed = enemy.speed * dt * 60;
