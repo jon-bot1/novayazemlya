@@ -14,16 +14,24 @@ import { LootPopup, LootNotification } from './LootPopup';
 
 const TIME_LIMIT = 300; // 5 minutes
 
+const anonCounterRef = { current: 0 };
+
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
+  const [anonymous, setAnonymous] = React.useState(false);
   
   const handleStart = React.useCallback(() => {
-    if (name.trim().length > 0) onStart(name.trim().slice(0, 20));
-  }, [name, onStart]);
+    if (anonymous) {
+      anonCounterRef.current += 1;
+      onStart(`Anonymous ${anonCounterRef.current}`);
+    } else if (name.trim().length > 0) {
+      onStart(name.trim().slice(0, 20));
+    }
+  }, [name, anonymous, onStart]);
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && name.trim().length > 0) {
+      if (e.key === 'Enter' && (anonymous || name.trim().length > 0)) {
         handleStart();
       }
     };
@@ -44,12 +52,22 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         <input
           type="text"
           maxLength={20}
-          className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
           placeholder="Enter name..."
           value={name}
           onChange={e => setName(e.target.value)}
-          autoFocus
+          autoFocus={!anonymous}
+          disabled={anonymous}
         />
+        <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={anonymous}
+            onChange={e => setAnonymous(e.target.checked)}
+            className="accent-accent w-3.5 h-3.5"
+          />
+          <span className="text-[11px] font-mono text-muted-foreground">🕵️ Top Secret Agent (Identity Unknown)</span>
+        </label>
       </div>
 
       <div className="border-t border-border pt-4">
@@ -95,7 +113,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       <button
         className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
         onClick={handleStart}
-        disabled={name.trim().length === 0}
+        disabled={!anonymous && name.trim().length === 0}
       >
         ▶ BEGIN OPERATION
       </button>
