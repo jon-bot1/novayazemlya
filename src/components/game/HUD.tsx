@@ -13,12 +13,13 @@ interface HUDProps {
   documentsFound: number;
   totalDocuments: number;
   codesFound: string[];
+  hasExtractionCode: boolean;
   onViewDocuments: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, onViewDocuments 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, onViewDocuments 
 }) => {
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
@@ -55,9 +56,11 @@ export const HUD: React.FC<HUDProps> = ({
             📄 {documentsFound}/{totalDocuments}
             {codesFound.length > 0 && <span className="text-warning">☢{codesFound.length}</span>}
           </button>
+          <div className={`text-xs font-mono flex items-center gap-1 ${hasExtractionCode ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
+            🔑 {hasExtractionCode ? 'KOD HITTAD' : 'KOD SAKNAS'}
+          </div>
         </div>
       </div>
-
       {/* Extraction progress */}
       {extractionProgress > 0 && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">

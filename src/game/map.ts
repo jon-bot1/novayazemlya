@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode } from './items';
 
 // Hangar complex: 1200x900 - tighter for mobile visibility
 const MAP_W = 1200;
@@ -165,6 +165,15 @@ export function generateMap() {
     makeLoot(820, 730, 'barrel', 'common'),
     makeLoot(1050, 650, 'crate', 'military'),
     makeLoot(1100, 850, 'body', 'valuable'),
+    // Extraction code — hidden in a locked cabinet in deep storage
+    {
+      id: `loot_${containerId++}`,
+      pos: { x: 1050, y: 780 },
+      size: 24,
+      items: [createExtractionCode()],
+      looted: false,
+      type: 'cabinet' as const,
+    },
   ];
 
   const documentPickups: DocumentPickup[] = [
