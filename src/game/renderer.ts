@@ -16,85 +16,188 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  // Drop shadow (elongated south for perspective)
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  const headR = size * 0.55;
+  const torsoW = size * 0.7;
+  const torsoH = size * 0.6;
+  const legW = size * 0.22;
+  const legH = size * 0.4;
+  const armW = size * 0.18;
+  const armH = size * 0.5;
+
+  // Drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
   ctx.beginPath();
-  ctx.ellipse(2, size * 0.7, size * 0.9, size * 0.35, 0, 0, Math.PI * 2);
+  ctx.ellipse(2, size * 0.9, size * 0.7, size * 0.25, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Gun
+  // Legs (drawn behind body, offset by walk cycle hint)
+  ctx.save();
+  ctx.rotate(angle);
+  const walkPhase = (Date.now() % 600) / 600;
+  const legSwing = Math.sin(walkPhase * Math.PI * 2) * 0.15;
+  // Left leg
+  ctx.fillStyle = shadeColor(bodyColor, -25);
+  ctx.save();
+  ctx.translate(-legW * 0.7, torsoH * 0.3);
+  ctx.rotate(legSwing);
+  ctx.beginPath();
+  ctx.roundRect(-legW / 2, 0, legW, legH, 3);
+  ctx.fill();
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Boot
+  ctx.fillStyle = '#3a3a32';
+  ctx.beginPath();
+  ctx.roundRect(-legW / 2 - 1, legH - 4, legW + 2, 5, 2);
+  ctx.fill();
+  ctx.restore();
+  // Right leg
+  ctx.save();
+  ctx.translate(legW * 0.7, torsoH * 0.3);
+  ctx.rotate(-legSwing);
+  ctx.fillStyle = shadeColor(bodyColor, -25);
+  ctx.beginPath();
+  ctx.roundRect(-legW / 2, 0, legW, legH, 3);
+  ctx.fill();
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = '#3a3a32';
+  ctx.beginPath();
+  ctx.roundRect(-legW / 2 - 1, legH - 4, legW + 2, 5, 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.restore();
+
+  // Gun (behind or in front based on angle)
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
-    ctx.fillStyle = '#999';
-    ctx.fillRect(size * 0.3, -2.5, size * 1.2, 5);
-    ctx.fillStyle = '#888';
-    ctx.fillRect(size * 1.1, -3.5, 5, 7);
+    // Arm holding gun
+    ctx.fillStyle = shadeColor(bodyColor, -10);
+    ctx.beginPath();
+    ctx.roundRect(torsoW * 0.15, -armW * 0.8, armH * 0.7, armW, 3);
+    ctx.fill();
+    // Gun
+    ctx.fillStyle = '#777';
+    ctx.fillRect(size * 0.4, -3, size * 1.0, 6);
+    ctx.fillStyle = '#666';
+    ctx.fillRect(size * 1.1, -4, 5, 8);
+    // Muzzle
+    ctx.fillStyle = '#555';
+    ctx.fillRect(size * 1.35, -2, 3, 4);
     ctx.restore();
   }
 
-  // Body
+  // Torso
+  ctx.save();
+  ctx.rotate(angle);
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
-  ctx.ellipse(0, 0, size, size * 0.85, 0, 0, Math.PI * 2); // slightly squished for perspective
+  ctx.roundRect(-torsoW / 2, -torsoH * 0.3, torsoW, torsoH, 4);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
-
-  // Body highlight (top-lit)
-  const bodyGrad = ctx.createLinearGradient(0, -size, 0, size);
-  bodyGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
-  bodyGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
-  ctx.fillStyle = bodyGrad;
+  // Torso highlight
+  const torsoGrad = ctx.createLinearGradient(0, -torsoH * 0.3, 0, torsoH * 0.7);
+  torsoGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  torsoGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+  ctx.fillStyle = torsoGrad;
   ctx.beginPath();
-  ctx.ellipse(0, 0, size, size * 0.85, 0, 0, Math.PI * 2);
+  ctx.roundRect(-torsoW / 2, -torsoH * 0.3, torsoW, torsoH, 4);
+  ctx.fill();
+  // Belt
+  ctx.fillStyle = '#4a4a3a';
+  ctx.fillRect(-torsoW / 2 + 2, torsoH * 0.25, torsoW - 4, 3);
+  // Off-arm
+  ctx.fillStyle = shadeColor(bodyColor, -10);
+  ctx.beginPath();
+  ctx.roundRect(-torsoW / 2 - armW * 0.5, -torsoH * 0.15, armW, armH * 0.65, 3);
+  ctx.fill();
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+
+  // Head
+  ctx.save();
+  ctx.translate(0, -torsoH * 0.35);
+  // Neck
+  ctx.fillStyle = '#d4b896';
+  ctx.fillRect(-3, headR * 0.3, 6, 5);
+
+  // Head circle
+  ctx.fillStyle = '#e8d0b0';
+  ctx.beginPath();
+  ctx.arc(0, 0, headR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#c4a882';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Head highlight
+  const headGrad = ctx.createRadialGradient(-headR * 0.2, -headR * 0.3, 0, 0, 0, headR);
+  headGrad.addColorStop(0, 'rgba(255,255,255,0.2)');
+  headGrad.addColorStop(1, 'rgba(0,0,0,0.05)');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, headR, 0, Math.PI * 2);
   ctx.fill();
 
   // Cheeks
-  ctx.fillStyle = 'rgba(200, 100, 100, 0.2)';
+  ctx.fillStyle = 'rgba(200, 110, 110, 0.18)';
   ctx.beginPath();
-  ctx.arc(-size * 0.45, size * 0.15, size * 0.25, 0, Math.PI * 2);
+  ctx.arc(-headR * 0.5, headR * 0.2, headR * 0.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(size * 0.45, size * 0.15, size * 0.25, 0, Math.PI * 2);
+  ctx.arc(headR * 0.5, headR * 0.2, headR * 0.2, 0, Math.PI * 2);
   ctx.fill();
 
-  // Face
+  // Face (rotates with aim)
   ctx.save();
   ctx.rotate(angle);
   if (isBlinking) {
     ctx.strokeStyle = eyeColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(size * 0.25, -size * 0.15, 2, 0, Math.PI);
+    ctx.arc(headR * 0.3, -headR * 0.15, 2, 0, Math.PI);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(size * 0.25, size * 0.15, 2, 0, Math.PI);
+    ctx.arc(headR * 0.3, headR * 0.15, 2, 0, Math.PI);
     ctx.stroke();
   } else {
+    // Eye whites
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(size * 0.3, -size * 0.18, 3.5, 0, Math.PI * 2);
+    ctx.ellipse(headR * 0.32, -headR * 0.18, 3, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.3, size * 0.18, 3.5, 0, Math.PI * 2);
+    ctx.ellipse(headR * 0.32, headR * 0.18, 3, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
+    // Pupils
     ctx.fillStyle = eyeColor;
     ctx.beginPath();
-    ctx.arc(size * 0.36, -size * 0.18, 2, 0, Math.PI * 2);
+    ctx.arc(headR * 0.38, -headR * 0.18, 1.8, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.36, size * 0.18, 2, 0, Math.PI * 2);
+    ctx.arc(headR * 0.38, headR * 0.18, 1.8, 0, Math.PI * 2);
     ctx.fill();
+    // Highlights
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(size * 0.38, -size * 0.23, 1, 0, Math.PI * 2);
+    ctx.arc(headR * 0.4, -headR * 0.24, 0.8, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(size * 0.38, size * 0.13, 1, 0, Math.PI * 2);
+    ctx.arc(headR * 0.4, headR * 0.12, 0.8, 0, Math.PI * 2);
     ctx.fill();
   }
+  // Small mouth
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(headR * 0.45, 0, 1.5, -0.5, 0.5);
+  ctx.stroke();
   ctx.restore();
 
   // Hat
@@ -104,45 +207,50 @@ function drawCuteCharacter(
     case 'ushanka':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, size * 0.85, -Math.PI * 0.8, Math.PI * 0.8);
-      ctx.lineTo(0, -size * 0.85);
+      ctx.arc(0, 0, headR * 1.15, -Math.PI * 0.8, Math.PI * 0.8);
+      ctx.lineTo(0, -headR * 1.15);
       ctx.closePath();
       ctx.fill();
-      ctx.fillRect(-size * 0.9, -size * 0.3, size * 0.3, size * 0.6);
+      ctx.fillRect(-headR * 1.2, -headR * 0.3, headR * 0.35, headR * 0.6);
       ctx.fillStyle = '#cc3333';
-      ctx.font = `${size * 0.5}px sans-serif`;
+      ctx.font = `${headR * 0.7}px sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('★', size * 0.05, size * -0.3);
+      ctx.fillText('★', headR * 0.05, headR * -0.35);
       break;
     case 'helmet':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, size * 0.9, -Math.PI * 0.85, Math.PI * 0.85);
+      ctx.arc(0, 0, headR * 1.2, -Math.PI * 0.85, Math.PI * 0.85);
       ctx.closePath();
       ctx.fill();
+      ctx.strokeStyle = shadeColor(hatColor, -20);
+      ctx.lineWidth = 1;
+      ctx.stroke();
       break;
     case 'beret':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.ellipse(size * -0.1, -size * 0.55, size * 0.7, size * 0.3, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(headR * -0.1, -headR * 0.7, headR * 0.8, headR * 0.35, -0.2, 0, Math.PI * 2);
       ctx.fill();
       break;
     case 'bandana':
       ctx.fillStyle = hatColor;
       ctx.beginPath();
-      ctx.arc(0, 0, size * 0.82, -Math.PI * 0.7, Math.PI * 0.7);
+      ctx.arc(0, 0, headR * 1.05, -Math.PI * 0.7, Math.PI * 0.7);
       ctx.closePath();
       ctx.fill();
       ctx.beginPath();
-      ctx.moveTo(-size * 0.6, -size * 0.3);
-      ctx.lineTo(-size * 1.0, -size * 0.5);
-      ctx.lineTo(-size * 0.7, -size * 0.1);
+      ctx.moveTo(-headR * 0.7, -headR * 0.3);
+      ctx.lineTo(-headR * 1.2, -headR * 0.5);
+      ctx.lineTo(-headR * 0.8, -headR * 0.1);
       ctx.closePath();
       ctx.fill();
       break;
   }
   ctx.restore();
-  ctx.restore();
+
+  ctx.restore(); // head translate
+  ctx.restore(); // main translate
 }
 
 // Draw a wall with 3/4 perspective south face
