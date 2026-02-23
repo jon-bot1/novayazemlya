@@ -38,6 +38,10 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     lastRadioCall: 0,
     radioGroup: Math.floor(x / 300),
     radioAlert: 0,
+    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
+    suppressTimer: 0,
+    callForHelpTimer: 0,
+    lastTacticalSwitch: 0,
   };
   if (type === 'boss') {
     enemy.bossPhase = 0;

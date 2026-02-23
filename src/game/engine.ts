@@ -1,4 +1,4 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
@@ -35,6 +35,32 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
       color,
       size: 1 + Math.random() * 2,
     });
+  }
+}
+
+// Assign tactical roles to enemies in combat — distribute flankers and suppressors
+function assignTacticalRole(state: GameState, enemy: Enemy) {
+  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav') {
+    enemy.tacticalRole = enemy.type === 'scav' ? 'assault' : 'none';
+    return;
+  }
+  // Count current roles in radio group
+  let flankers = 0, suppressors = 0;
+  for (const ally of state.enemies) {
+    if (ally === enemy || ally.state === 'dead') continue;
+    if (ally.radioGroup !== enemy.radioGroup && dist(ally.pos, enemy.pos) > 400) continue;
+    if (ally.tacticalRole === 'flanker') flankers++;
+    if (ally.tacticalRole === 'suppressor') suppressors++;
+  }
+  // Heavies prefer suppression, soldiers prefer flanking
+  if (enemy.type === 'heavy') {
+    enemy.tacticalRole = suppressors < 2 ? 'suppressor' : 'assault';
+  } else if (enemy.type === 'soldier') {
+    if (flankers < 2) enemy.tacticalRole = 'flanker';
+    else if (suppressors < 1) enemy.tacticalRole = 'suppressor';
+    else enemy.tacticalRole = 'assault';
+  } else {
+    enemy.tacticalRole = 'assault';
   }
 }
 
@@ -553,23 +579,60 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // State transitions with voice shouts
+    // State transitions with voice shouts + tactical role assignment
     const prevState = enemy.state;
     if (canSeePlayer) {
-      if (distToPlayer < enemy.shootRange && !isBehind) {
+      // Assign tactical roles to engaged enemies
+      if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
+        // Fresh engagement — pick tactical role
+        assignTacticalRole(state, enemy);
+        const pitchVar = enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0;
+        playVoiceShout('alert', pitchVar);
+      }
+
+      // Apply tactical behavior based on role
+      if (enemy.tacticalRole === 'flanker' && enemy.type !== 'turret' && enemy.type !== 'boss') {
+        enemy.state = 'flank';
+        // Calculate flank target — move perpendicular to player direction
+        if (!enemy.flankTarget || dist(enemy.pos, enemy.flankTarget) < 30 || state.time - enemy.lastTacticalSwitch > 4) {
+          const toPlayer = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          const flankSide = (enemy.id.charCodeAt(enemy.id.length - 1) % 2 === 0) ? 1 : -1;
+          const flankAngle = toPlayer + (Math.PI * 0.5 * flankSide);
+          const flankDist = 80 + Math.random() * 60;
+          enemy.flankTarget = {
+            x: state.player.pos.x + Math.cos(flankAngle) * flankDist,
+            y: state.player.pos.y + Math.sin(flankAngle) * flankDist,
+          };
+          enemy.lastTacticalSwitch = state.time;
+        }
+      } else if (enemy.tacticalRole === 'suppressor' && enemy.type !== 'turret') {
+        enemy.state = 'suppress';
+        enemy.suppressTimer = 3; // keep suppressing for 3 seconds
+      } else if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
       }
-      // Shout when first spotting player
-      if (prevState !== 'chase' && prevState !== 'attack') {
-        const pitchVar = enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0;
-        if (enemy.state === 'attack') {
-          playVoiceShout('attack', pitchVar);
-        } else {
-          playVoiceShout('alert', pitchVar);
+
+      // Call for help — soldiers and heavies yell for reinforcements
+      if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
+        enemy.callForHelpTimer = 8 + Math.random() * 4;
+        playVoiceShout('alarm', enemy.type === 'heavy' ? -0.3 : 0.1);
+        addMessage(state, `🗣️ ${enemy.type.toUpperCase()} ropar på hjälp!`, 'warning');
+        // Alert all allies in group + nearby
+        for (const ally of state.enemies) {
+          if (ally === enemy || ally.state === 'dead') continue;
+          if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
+          const sameGroup = ally.radioGroup === enemy.radioGroup;
+          const closeEnough = dist(ally.pos, enemy.pos) < 350;
+          if (sameGroup || closeEnough) {
+            ally.state = 'chase';
+            assignTacticalRole(state, ally);
+            ally.radioAlert = 2;
+          }
         }
       }
+
       // Radio call — alert allies in same group or within 400px
       if (state.time - enemy.lastRadioCall > 4) {
         enemy.lastRadioCall = state.time;
@@ -577,7 +640,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         playRadio();
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
-          if (ally.state === 'chase' || ally.state === 'attack') continue;
+          if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = dist(ally.pos, enemy.pos) < 400;
           if (sameGroup || closeEnough) {
@@ -593,12 +656,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
       playVoiceShout('investigate', enemy.type === 'heavy' ? -0.4 : enemy.type === 'scav' ? 0.3 : 0);
-    } else if (enemy.state === 'chase' || enemy.state === 'attack') {
+    } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // Lost sight of player
       if (distToPlayer > enemy.alertRange * 1.5 || !los) {
-        // Go investigate where they last saw the player
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
+        enemy.tacticalRole = 'none';
         playVoiceShout('lost', enemy.type === 'heavy' ? -0.4 : 0);
         // Radio last known position to group
         if (state.time - enemy.lastRadioCall > 4) {
@@ -617,10 +680,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
     } else if (enemy.state === 'alert') {
-      // Alert cooldown — transition to patrol after a moment
       enemy.state = 'patrol';
       enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
     }
+
+    // Decay timers
+    if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
+    if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
 
     // Decay radio alert visual
     if (enemy.radioAlert > 0) {
@@ -696,6 +762,63 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle = Math.atan2(dir.y, dir.x);
         break;
       }
+      case 'flank': {
+        // Move to flank position while staying aware of player
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        if (enemy.flankTarget) {
+          const dToFlank = dist(enemy.pos, enemy.flankTarget);
+          if (dToFlank < 25) {
+            // Arrived at flank position — switch to attack
+            enemy.state = 'attack';
+            playVoiceShout('attack', enemy.type === 'heavy' ? -0.4 : 0.1);
+          } else {
+            const dir = normalize({ x: enemy.flankTarget.x - enemy.pos.x, y: enemy.flankTarget.y - enemy.pos.y });
+            enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 1.2, dir.y * speed * 1.2, 10);
+          }
+        } else {
+          enemy.state = 'chase';
+        }
+        // Opportunistic shots while flanking
+        if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2) {
+          const spread = (Math.random() - 0.5) * 0.2;
+          const angle = enemy.angle + spread;
+          state.bullets.push({
+            pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+            vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
+            damage: enemy.damage * 0.7, damageType: 'bullet', fromPlayer: false, life: 50,
+          });
+          enemy.lastShot = state.time;
+          state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+          playGunshot('rifle');
+        }
+        break;
+      }
+      case 'suppress': {
+        // Stay in place, rapid fire toward player to pin them down
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        // Rapid suppressive fire with wide spread
+        const suppressRate = enemy.fireRate / 1000 * 0.5; // fire twice as fast
+        if (state.time - enemy.lastShot > suppressRate) {
+          const spread = (Math.random() - 0.5) * 0.35; // wide spread — suppression, not precision
+          const angle = enemy.angle + spread;
+          const bSpeed = enemy.type === 'heavy' ? 7 : 6;
+          state.bullets.push({
+            pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+            vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
+            damage: enemy.damage * 0.6, damageType: 'bullet', fromPlayer: false, life: 50,
+          });
+          enemy.lastShot = state.time;
+          spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
+          state.soundEvents.push({ pos: { ...enemy.pos }, radius: 250, time: state.time });
+          const gunType = enemy.type === 'heavy' ? 'heavy' : 'rifle';
+          playGunshot(gunType);
+        }
+        // Switch back to attack when suppress timer runs out
+        if (enemy.suppressTimer <= 0) {
+          enemy.state = 'attack';
+        }
+        break;
+      }
       case 'attack': {
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
@@ -756,6 +879,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             lastShot: 0, angle: Math.random() * Math.PI * 2,
             type: 'scav', eyeBlink: 3, loot: [], looted: false,
             lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
+            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0,
           };
           state.enemies.push(minion);
           addMessage(state, '📻 Volkov kallar förstärkning!', 'warning');
