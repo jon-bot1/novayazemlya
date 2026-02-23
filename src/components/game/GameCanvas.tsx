@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createGameState, updateGame } from '../../game/engine';
 import { renderGame } from '../../game/renderer';
-import { GameState, InputState } from '../../game/types';
+import { GameState, InputState, Item } from '../../game/types';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
 import { ActionButton } from './TouchControls';
@@ -9,6 +9,7 @@ import { HUD } from './HUD';
 import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
+import { LootPopup, LootNotification } from './LootPopup';
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,6 +35,8 @@ export const GameCanvas: React.FC = () => {
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
+  const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
 
   // Keyboard input (desktop)
   useEffect(() => {
@@ -265,6 +268,23 @@ export const GameCanvas: React.FC = () => {
 
       hudUpdateCounter++;
       if (hudUpdateCounter % 6 === 0) {
+        // Detect new loot items
+        const currentCount = state.player.inventory.length;
+        if (currentCount > lastInventoryCountRef.current) {
+          const newItems = state.player.inventory.slice(lastInventoryCountRef.current);
+          const newNotifs: LootNotification[] = newItems.map((item, i) => ({
+            id: `${Date.now()}_${i}`,
+            item: { ...item },
+            timestamp: Date.now(),
+          }));
+          setLootNotifications(prev => [...prev, ...newNotifs].slice(-5));
+          // Auto-remove after 3 seconds
+          setTimeout(() => {
+            setLootNotifications(prev => prev.filter(n => !newNotifs.find(nn => nn.id === n.id)));
+          }, 3000);
+        }
+        lastInventoryCountRef.current = currentCount;
+
         setHudState({
           player: { ...state.player },
           killCount: state.killCount,
@@ -308,6 +328,8 @@ export const GameCanvas: React.FC = () => {
           hasExtractionCode={hudState.hasExtractionCode}
           onViewDocuments={() => { setShowIntel(true); }}
         />
+
+        <LootPopup notifications={lootNotifications} />
 
         {/* Mobile action buttons */}
         <div className="sm:hidden">
