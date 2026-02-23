@@ -54,6 +54,7 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
     stunTimer: 0,
+    elevated: false,
   };
   if (type === 'boss') {
     enemy.bossPhase = 0;
@@ -246,9 +247,20 @@ export function generateMap() {
     makeEnemy(randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).x, randIn(ZONE_YARD_E.x, ZONE_YARD_E.y, ZONE_YARD_E.w, ZONE_YARD_E.h).y, 'heavy'),
     // North command area
     makeEnemy(randIn(ZONE_YARD_N.x, ZONE_YARD_N.y, ZONE_YARD_N.w, ZONE_YARD_N.h).x, randIn(ZONE_YARD_N.x, ZONE_YARD_N.y, ZONE_YARD_N.w, ZONE_YARD_N.h).y, 'soldier'),
-    // Watchtower turrets
+    // Watchtower turrets (elevated)
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),  // NE
+
+    // === WALL GUARDS on elevated platforms (can shoot over fence) ===
+    makeEnemy(800, 290, 'soldier', Math.PI * 0.5),   // North fence west
+    makeEnemy(1600, 290, 'soldier', Math.PI * 0.5),  // North fence center
+    makeEnemy(2400, 290, 'soldier', Math.PI * 0.5),  // North fence east
+    makeEnemy(310, 800, 'soldier', Math.PI),          // West fence
+    makeEnemy(310, 1400, 'soldier', Math.PI),         // West fence south
+    makeEnemy(2910, 800, 'soldier', 0),               // East fence
+    makeEnemy(2910, 1400, 'soldier', 0),              // East fence south
+    makeEnemy(1000, 1860, 'soldier', -Math.PI * 0.5), // South fence west
+    makeEnemy(2000, 1860, 'soldier', -Math.PI * 0.5), // South fence east
 
     // === OUTSIDE PATROL GUARDS (south of fence, widely spread) ===
     // Pair 1 — far west, near forest edge
@@ -260,6 +272,18 @@ export function generateMap() {
     // Lone guard with keycard — patrols road south (center)
     makeEnemy(1500, 2300, 'soldier'),
   ];
+
+  // Mark watchtower turrets as elevated
+  enemies[enemies.length - 5 - 9 - 2].elevated = true; // NW turret
+  enemies[enemies.length - 5 - 9 - 1].elevated = true; // NE turret
+
+  // Mark wall guards as elevated (last 9 before outside patrol guards)
+  for (let i = enemies.length - 5 - 9; i < enemies.length - 5; i++) {
+    enemies[i].elevated = true;
+    enemies[i].state = 'idle'; // wall guards don't patrol, they stand on platforms
+    enemies[i].alertRange = 250; // better view from elevation
+    enemies[i].shootRange = 220;
+  }
 
   // Spread patrol ranges wider for outside guards so they don't clump
   for (let i = enemies.length - 5; i < enemies.length; i++) {

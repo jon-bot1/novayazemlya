@@ -1471,6 +1471,29 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
     const isBlinking = enemy.eyeBlink < 0.15;
 
+    // Draw elevated platform for wall guards
+    if (enemy.elevated && enemy.type !== 'turret') {
+      ctx.save();
+      // Wooden platform/scaffolding
+      const pw = 36, ph = 40;
+      ctx.fillStyle = '#8a7a5a';
+      ctx.fillRect(enemy.pos.x - pw / 2, enemy.pos.y - ph / 2 + 8, pw, ph);
+      // Platform top
+      ctx.fillStyle = '#a08a60';
+      ctx.fillRect(enemy.pos.x - pw / 2 - 4, enemy.pos.y - ph / 2 + 4, pw + 8, 8);
+      // Railing posts
+      ctx.fillStyle = '#6a5a40';
+      ctx.fillRect(enemy.pos.x - pw / 2 - 2, enemy.pos.y - ph / 2, 4, 12);
+      ctx.fillRect(enemy.pos.x + pw / 2 - 2, enemy.pos.y - ph / 2, 4, 12);
+      // Ladder
+      ctx.fillStyle = '#7a6a4a';
+      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y, 6, 20);
+      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 4, 6, 2);
+      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 10, 6, 2);
+      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 16, 6, 2);
+      ctx.restore();
+    }
+
     if (enemy.type === 'turret') {
       // Draw mounted machine gun — sandbag base + gun barrel
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
