@@ -247,8 +247,8 @@ export function generateMap() {
     makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
-    // Boss — Kommendant Volkov — patrols the whole base
-    makeEnemy(HX + HW / 2, HY + HH / 2, 'boss'),
+    // Boss — Commandant Volkov — deep in storage area (far from entrance)
+    makeEnemy(HX + HW - 200, HY + HH - 200, 'boss'),
 
     // === OUTDOOR ENEMIES ===
     // Gate guards
@@ -586,9 +586,12 @@ export function generateMap() {
   // ALARM PANELS
   // ══════════════════════════════════════
   const alarmPanels: AlarmPanel[] = [
-    { id: 'alarm_corridor', pos: { x: HX + 705, y: HY + 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
-    { id: 'alarm_office', pos: { x: HX + 965, y: HY + 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
-    { id: 'alarm_gate', pos: { x: 1510, y: 1750 }, activated: false, hacked: false, hackProgress: 0, hackTime: 5 },
+    // Terminal 1: Intel — reveals which exfil is open
+    { id: 'alarm_intel', pos: { x: HX + 705, y: HY + 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
+    // Terminal 2: Alarm disable — shuts down base alarm
+    { id: 'alarm_disable', pos: { x: HX + 965, y: HY + 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 5 },
+    // Terminal 3: Nuclear codebook — prints launch codes (required for extraction)
+    { id: 'alarm_codebook', pos: { x: HX + 850, y: HY + 500 }, activated: false, hacked: false, hackProgress: 0, hackTime: 6 },
   ];
 
   // ══════════════════════════════════════

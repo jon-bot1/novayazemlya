@@ -163,10 +163,11 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'OPERATION STARTED — Eliminate Commandant Volkov and recover his USB drive!', time: 0, type: 'info' }],
+    messages: [{ text: 'OPERATION STARTED — Eliminate Volkov, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
+    hasNuclearCodes: false,
     speedBoostTimer: 0,
     soundEvents: [],
     flashbangTimer: 0,
@@ -226,9 +227,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
-  // Player movement — support both directional input and tap-to-target
+  // Player movement — blocked when flashbanged (stunned)
   let moveX = input.moveX;
   let moveY = input.moveY;
+
+  // Flashbang stun: freeze player, dizzy camera
+  if (state.flashbangTimer > 0) {
+    moveX = 0;
+    moveY = 0;
+    input.shooting = false;
+    input.shootPressed = false;
+    input.moveTarget = null;
+    // Camera wobble for dizzy effect
+    state.camera.x += Math.sin(state.time * 12) * 3;
+    state.camera.y += Math.cos(state.time * 9) * 3;
+  }
 
   if (input.moveTarget) {
     const dx = input.moveTarget.x - state.player.pos.x;
@@ -565,57 +578,52 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Hack alarm panels
+    // Hack terminals
     for (const panel of state.alarmPanels) {
       if (panel.hacked) continue;
       if (dist(state.player.pos, panel.pos) < 70) {
-        if (!panel.activated) {
-          // Pre-emptively hack before alarm is triggered
-          panel.hackProgress += 0.05;
-          if (panel.hackProgress >= 1) {
-            panel.hacked = true;
-            spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
-            
-            if (panel.id === 'alarm_gate') {
-              // Gate panel: reset all inside enemies to idle
-              addMessage(state, '💻 GATE PANEL HACKED! Enemies return to patrol.', 'intel');
-              for (const e of state.enemies) {
-                if (e.state !== 'dead' && e.type !== 'turret' && !e.elevated) {
-                  if (e.pos.y < 1750) {
-                    e.state = 'patrol';
-                    e.tacticalRole = 'none';
-                  }
+        panel.hackProgress += 0.04;
+        if (panel.hackProgress >= 1) {
+          panel.hacked = true;
+          spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
+
+          if (panel.id === 'alarm_intel') {
+            // Intel terminal: reveals active exfil
+            const activeExfil = state.extractionPoints.find(ep => ep.active);
+            if (activeExfil) {
+              addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}`, 'intel');
+            } else {
+              addMessage(state, '📡 INTEL: No extraction points available!', 'warning');
+            }
+          } else if (panel.id === 'alarm_disable') {
+            // Alarm disable terminal
+            state.alarmActive = false;
+            addMessage(state, '🔇 BASE ALARM DISABLED! Enemies return to patrol.', 'intel');
+            for (const e of state.enemies) {
+              if (e.state !== 'dead' && e.type !== 'turret' && !e.elevated) {
+                if (e.state === 'chase' || e.state === 'investigate' || e.state === 'alert') {
+                  e.state = 'patrol';
+                  e.tacticalRole = 'none';
                 }
               }
-              state.alarmActive = false;
-            } else {
-              addMessage(state, '💻 CONTROL PANEL HACKED!', 'intel');
-              const activeExfil = state.extractionPoints.find(ep => ep.active);
-              if (activeExfil) {
-                addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}`, 'intel');
-              }
             }
-            if (state.alarmPanels.every(p => p.hacked)) {
-              state.alarmActive = false;
-              addMessage(state, '🔇 ALL ALARMS DISABLED!', 'intel');
-            }
-          } else {
-            addMessage(state, `💻 Hacking... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
+          } else if (panel.id === 'alarm_codebook') {
+            // Nuclear codebook terminal
+            state.hasNuclearCodes = true;
+            addMessage(state, '☢ NUCLEAR LAUNCH CODES ACQUIRED! Extract with USB + codes!', 'intel');
+            state.player.inventory.push({
+              id: 'nuclear_codebook',
+              name: 'Nuclear Codebook',
+              category: 'valuable',
+              icon: '☢',
+              weight: 0.5,
+              value: 10000,
+              description: 'Missile activation codes — CRITICAL INTEL',
+            });
           }
         } else {
-          panel.hackProgress += 0.04;
-          if (panel.hackProgress >= 1) {
-            panel.hacked = true;
-            panel.activated = false;
-            addMessage(state, '💻 ALARM DISABLED!', 'intel');
-            spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
-            if (state.alarmPanels.every(p => p.hacked || !p.activated)) {
-              state.alarmActive = false;
-              addMessage(state, '🔇 ALARM SILENCED!', 'intel');
-            }
-          } else {
-            addMessage(state, `💻 Hacking alarm... ${Math.floor(panel.hackProgress * 100)}%`, 'warning');
-          }
+          const label = panel.id === 'alarm_intel' ? 'intel' : panel.id === 'alarm_disable' ? 'alarm' : 'codebook';
+          addMessage(state, `💻 Hacking ${label}... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
         }
       }
     }
@@ -673,22 +681,27 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Extraction check — works without USB but mission incomplete
+  // Extraction check — need BOTH USB and nuclear codebook for full success
   const hasUSB = state.player.inventory.some(i => i.id === 'boss_usb');
+  const hasCodes = state.hasNuclearCodes;
+  const fullSuccess = hasUSB && hasCodes;
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
-      if (!hasUSB && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
-        addMessage(state, '⚠ USB drive missing — you can extract but mission fails!', 'warning');
+      if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
+        const missing: string[] = [];
+        if (!hasUSB) missing.push('USB drive');
+        if (!hasCodes) missing.push('nuclear codes');
+        addMessage(state, `⚠ Missing: ${missing.join(' & ')} — extract incomplete!`, 'warning');
       }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        state.hasExtractionCode = hasUSB;
-        addMessage(state, hasUSB
-          ? `💾 MISSION COMPLETE — EXTRACTED: ${ep.name}!`
-          : `⚠ EXTRACTED without USB — MISSION FAILED`, hasUSB ? 'info' : 'warning');
+        state.hasExtractionCode = fullSuccess;
+        addMessage(state, fullSuccess
+          ? `💾☢ FULL SUCCESS — EXTRACTED: ${ep.name}!`
+          : `⚠ EXTRACTED — MISSION INCOMPLETE`, fullSuccess ? 'info' : 'warning');
       }
     }
   }
@@ -1233,29 +1246,46 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
         }
-        // Boss: tactical — throw grenades, retreat to cover, shoot from distance
+        // Boss: tactical — throw grenades/flashbangs, retreat, command minions
         if (enemy.type === 'boss') {
-          // Throw grenade periodically
+          // Alternate between frag grenades and flashbangs
           if ((enemy.bossChargeTimer || 0) <= 0 && distToPlayer < enemy.shootRange * 1.2 && distToPlayer > 80) {
-            enemy.bossChargeTimer = 6 + Math.random() * 4;
-            // Spawn a boss grenade (25% damage)
+            const throwFlashbang = Math.random() < 0.4; // 40% chance flashbang
+            enemy.bossChargeTimer = throwFlashbang ? 5 + Math.random() * 3 : 6 + Math.random() * 4;
             const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
             const gSpeed = 4;
-            state.grenades.push({
-              pos: { x: enemy.pos.x, y: enemy.pos.y },
-              vel: { x: Math.cos(gAngle) * gSpeed, y: Math.sin(gAngle) * gSpeed },
-              timer: 1.5,
-              radius: 80,
-              damage: 25,
-              fromPlayer: false,
-            });
-            addMessage(state, '💣 VOLKOV throws grenade!', 'warning');
-            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
+            if (throwFlashbang) {
+              state.grenades.push({
+                pos: { x: enemy.pos.x, y: enemy.pos.y },
+                vel: { x: Math.cos(gAngle) * gSpeed, y: Math.sin(gAngle) * gSpeed },
+                timer: 1.0,
+                radius: 200,
+                damage: -1, // flashbang marker
+                fromPlayer: false,
+              });
+              addMessage(state, '💫 VOLKOV throws FLASHBANG!', 'warning');
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
+            } else {
+              state.grenades.push({
+                pos: { x: enemy.pos.x, y: enemy.pos.y },
+                vel: { x: Math.cos(gAngle) * gSpeed, y: Math.sin(gAngle) * gSpeed },
+                timer: 1.5,
+                radius: 80,
+                damage: 25,
+                fromPlayer: false,
+              });
+              addMessage(state, '💣 VOLKOV throws grenade!', 'warning');
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
+            }
           }
-          // Retreat to cover if too close
-          if (distToPlayer < enemy.shootRange * 0.6) {
+          // Boss retreats if too close, then repositions
+          if (distToPlayer < enemy.shootRange * 0.5) {
             const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
-            enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.2, retreatDir.y * speed * 1.2, 12);
+            enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.5, retreatDir.y * speed * 1.5, 12);
+          } else if (distToPlayer > enemy.shootRange * 0.8) {
+            // Strafe sideways to make harder target
+            const strafeAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + Math.PI * 0.5 * (Math.sin(state.time * 0.5) > 0 ? 1 : -1);
+            enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(strafeAngle) * speed * 0.8, Math.sin(strafeAngle) * speed * 0.8, 12);
           }
         }
         // Boss: spawn reinforcements in phase 1+
@@ -1332,8 +1362,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const dPlayer = dist(g.pos, state.player.pos);
         if (dPlayer < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const intensity = 1 - (dPlayer / g.radius);
-          state.flashbangTimer = 2 * intensity + 0.5; // 0.5 - 2.5 seconds based on distance
-          addMessage(state, '💫 BLINDED!', 'damage');
+          state.flashbangTimer = 3; // 3 seconds stun — frozen + dizzy
+          addMessage(state, '💫 STUNNED! Cannot move!', 'damage');
         }
       } else {
         // REGULAR GRENADE — instant kill
@@ -1424,7 +1454,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            if (!isCrit) addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+            if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';

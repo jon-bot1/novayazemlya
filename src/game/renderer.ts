@@ -1320,7 +1320,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = panel.hacked ? 'rgba(80,200,100,0.6)' : panel.activated ? 'rgba(255,80,80,0.8)' : 'rgba(200,200,220,0.5)';
     ctx.font = 'bold 7px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(panel.hacked ? 'HACKAD' : panel.activated ? 'ALARM!' : 'PANEL', px, py + 30);
+    const panelLabel = panel.hacked ? 'HACKED' : panel.id === 'alarm_intel' ? 'INTEL' : panel.id === 'alarm_disable' ? 'ALARM' : panel.id === 'alarm_codebook' ? 'CODES' : 'PANEL';
+    ctx.fillText(panelLabel, px, py + 30);
 
     ctx.restore();
 
@@ -1329,7 +1330,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(80, 255, 180, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] HACKA', px, py - 24);
+      const hackLabel = panel.id === 'alarm_intel' ? '[E] HACK INTEL' : panel.id === 'alarm_disable' ? '[E] HACK ALARM' : panel.id === 'alarm_codebook' ? '[E] HACK CODES' : '[E] HACK';
+      ctx.fillText(hackLabel, px, py - 24);
     }
   }
 
@@ -1923,7 +1925,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(
-      state.player.peeking ? '🔫 KIKA FRAM' : '🛡️ I SKYDD',
+      state.player.peeking ? '🔫 PEEKING' : '🛡️ IN COVER',
       state.player.pos.x, state.player.pos.y - R - 34
     );
     ctx.restore();
@@ -1962,7 +1964,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size + 6);
+      ctx.fillText('[E] SEARCH', lc.pos.x, lc.pos.y + lc.size + 6);
     }
   }
   for (const dp of state.documentPickups) {
@@ -1970,7 +1972,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 26);
+      ctx.fillText('[E] READ', dp.pos.x, dp.pos.y + 26);
     }
   }
 
@@ -1978,11 +1980,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // No lighting overlay — pure daylight, uniform everywhere
 
-  // Flashbang white screen effect
+  // Flashbang stun effect — white screen + dizzy stars
   if (state.flashbangTimer > 0) {
-    const alpha = Math.min(1, state.flashbangTimer * 0.8);
+    const alpha = Math.min(0.9, state.flashbangTimer * 0.6);
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
     ctx.fillRect(0, 0, w, h);
+    // Spinning stars overlay
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.font = '32px sans-serif';
+    ctx.textAlign = 'center';
+    for (let s = 0; s < 5; s++) {
+      const sa = state.time * 3 + s * (Math.PI * 2 / 5);
+      const sr = 60 + Math.sin(state.time * 2 + s) * 20;
+      const sx = Math.cos(sa) * sr;
+      const sy = Math.sin(sa) * sr;
+      ctx.globalAlpha = Math.min(0.8, state.flashbangTimer * 0.4);
+      ctx.fillText('💫', sx, sy);
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    // "STUNNED" text
+    ctx.fillStyle = `rgba(200, 50, 50, ${Math.min(0.9, state.flashbangTimer * 0.5)})`;
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('💫 STUNNED 💫', w / 2, h / 2 + 80);
   }
 
   // Low HP flash (only visual feedback, not lighting)

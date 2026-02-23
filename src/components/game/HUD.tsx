@@ -125,6 +125,9 @@ export const HUD: React.FC<HUDProps> = ({
           <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
             💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ACQUIRED' : 'USB MISSING'}
           </div>
+          <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'nuclear_codebook') ? 'text-warning animate-pulse-glow' : 'text-muted-foreground/60'}`}>
+            ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ACQUIRED' : 'CODES MISSING'}
+          </div>
         </div>
       </div>
       {/* Extraction progress */}
@@ -172,12 +175,17 @@ export const HUD: React.FC<HUDProps> = ({
             </h1>
             {extracted && !hasExtractionCode && (
               <p className="text-sm font-mono text-warning text-center">
-                You extracted without Volkov's USB drive.<br/>Mission failed.
+                {!player.inventory.some(i => i.id === 'boss_usb') && !player.inventory.some(i => i.id === 'nuclear_codebook')
+                  ? 'Missing USB drive and nuclear codes.'
+                  : !player.inventory.some(i => i.id === 'boss_usb')
+                  ? 'Missing Volkov\'s USB drive.'
+                  : 'Missing nuclear launch codes.'}
+                <br/>Mission incomplete.
               </p>
             )}
             {extracted && hasExtractionCode && (
               <p className="text-sm font-mono text-loot text-center">
-                💾 USB drive delivered. Full success!
+                💾☢ USB drive + nuclear codes delivered. Full success!
               </p>
             )}
             

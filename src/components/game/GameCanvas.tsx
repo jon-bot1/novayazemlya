@@ -38,11 +38,13 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
         <p className="text-xs font-mono text-foreground/80 leading-relaxed">
           Infiltrate the abandoned military base <span className="text-accent">Object Z-14</span>. 
           Locate and eliminate <span className="text-danger">Commandant Volkov</span>. 
-          Recover his <span className="text-loot">USB drive</span> containing critical intelligence. 
+          Recover his <span className="text-loot">USB drive</span> and hack the <span className="text-warning">nuclear codebook terminal</span>. 
+          <strong>Both items are required</strong> for full mission success.
           Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
         </p>
         <p className="text-xs font-mono text-muted-foreground mt-2 italic">
-          An officer outside carries an access card for the main gate. Hack control panels for intel.
+          Inside the base you'll find 3 terminals: intel (exfil location), alarm disable, and nuclear codes. 
+          An officer outside carries an access card for the main gate.
         </p>
       </div>
 
