@@ -850,6 +850,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     } else
     switch (enemy.state as string) {
       case 'idle': {
+        // Bodyguards follow their boss instead of idling
+        if ((enemy as any)._bodyguardOf) {
+          const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
+          if (boss && boss.state !== 'dead') {
+            const dBoss = dist(enemy.pos, boss.pos);
+            if (dBoss > 50) {
+              const dir = normalize({ x: boss.pos.x - enemy.pos.x, y: boss.pos.y - enemy.pos.y });
+              enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.8, dir.y * speed * 0.8, 10);
+              enemy.angle = Math.atan2(dir.y, dir.x);
+            } else {
+              enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
+            }
+            break;
+          }
+        }
         // Standing still, looking around slowly
         enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
         // Occasionally start patrolling
@@ -861,12 +876,54 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'patrol': {
         if (enemy.type === 'turret') break;
+        // Bodyguards follow their boss during patrol
+        if ((enemy as any)._bodyguardOf) {
+          const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
+          if (boss && boss.state !== 'dead') {
+            const dBoss = dist(enemy.pos, boss.pos);
+            if (dBoss > 50) {
+              const dir = normalize({ x: boss.pos.x - enemy.pos.x, y: boss.pos.y - enemy.pos.y });
+              enemy.pos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+              enemy.angle = Math.atan2(dir.y, dir.x);
+            } else {
+              // Face outward from boss for protection
+              enemy.angle = Math.atan2(enemy.pos.y - boss.pos.y, enemy.pos.x - boss.pos.x);
+            }
+            break;
+          }
+        }
+        // Boss waypoint patrol
+        if (enemy.type === 'boss' && (enemy as any)._patrolWaypoints) {
+          const waypoints = (enemy as any)._patrolWaypoints as Vec2[];
+          let wpIdx = (enemy as any)._waypointIdx || 0;
+          if (dist(enemy.pos, waypoints[wpIdx]) < 40) {
+            wpIdx = (wpIdx + 1) % waypoints.length;
+            (enemy as any)._waypointIdx = wpIdx;
+            enemy.patrolTarget = waypoints[wpIdx];
+          }
+        }
         if (dist(enemy.pos, enemy.patrolTarget) < 20) {
-          // Reached patrol point — go idle for a bit
           enemy.state = 'idle';
         } else {
           const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
-          enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
+          const newPos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
+          // Wall-stuck detection: if barely moved, pick new direction
+          if (dist(newPos, enemy.pos) < 0.1) {
+            if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
+            (enemy as any)._stuckCounter++;
+            if ((enemy as any)._stuckCounter > 30) {
+              // Try perpendicular directions
+              const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+              enemy.patrolTarget = {
+                x: enemy.pos.x + Math.cos(perpAngle) * 150,
+                y: enemy.pos.y + Math.sin(perpAngle) * 150,
+              };
+              (enemy as any)._stuckCounter = 0;
+            }
+          } else {
+            (enemy as any)._stuckCounter = 0;
+            enemy.pos = newPos;
+          }
           enemy.angle = Math.atan2(dir.y, dir.x);
         }
         break;
@@ -888,7 +945,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'alert';
           } else {
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
-            enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
+            const newPos = tryMove(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
+            if (dist(newPos, enemy.pos) < 0.1) {
+              if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
+              (enemy as any)._stuckCounter++;
+              if ((enemy as any)._stuckCounter > 20) {
+                const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+                enemy.investigateTarget = { x: enemy.pos.x + Math.cos(perpAngle) * 120, y: enemy.pos.y + Math.sin(perpAngle) * 120 };
+                (enemy as any)._stuckCounter = 0;
+              }
+            } else {
+              (enemy as any)._stuckCounter = 0;
+              enemy.pos = newPos;
+            }
             enemy.angle = Math.atan2(dir.y, dir.x);
           }
         } else {
@@ -912,7 +981,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-        enemy.pos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+        const newPos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+        if (dist(newPos, enemy.pos) < 0.1) {
+          if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
+          (enemy as any)._stuckCounter++;
+          if ((enemy as any)._stuckCounter > 15) {
+            // Try to go around the wall
+            const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+            const sidePos = tryMove(state, enemy.pos, Math.cos(perpAngle) * speed, Math.sin(perpAngle) * speed, 10);
+            enemy.pos = sidePos;
+            (enemy as any)._stuckCounter = 0;
+          }
+        } else {
+          (enemy as any)._stuckCounter = 0;
+          enemy.pos = newPos;
+        }
         enemy.angle = Math.atan2(dir.y, dir.x);
         break;
       }
