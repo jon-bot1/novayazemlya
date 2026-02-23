@@ -30,6 +30,7 @@ export interface Item {
   bulletSpeed?: number;   // projectile speed (default 8)
   weaponRange?: number;   // bullet lifetime in frames (default 60)
   weaponFireRate?: number; // ms between shots (overrides player fireRate)
+  fireMode?: 'single' | 'auto'; // single = one shot per click, auto = hold to fire
 }
 
 export interface DocumentPickup {
@@ -158,7 +159,8 @@ export interface Prop {
   w: number;
   h: number;
   type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf'
-    | 'tree' | 'pine_tree' | 'bush' | 'fence_h' | 'fence_v' | 'guard_booth' | 'watchtower' | 'vehicle_wreck' | 'gate' | 'road_sign' | 'searchlight';
+    | 'tree' | 'pine_tree' | 'bush' | 'fence_h' | 'fence_v' | 'guard_booth' | 'watchtower' | 'vehicle_wreck' | 'gate' | 'road_sign' | 'searchlight'
+    | 'mine' | 'mine_sign';
   blocksPlayer?: boolean;
 }
 
@@ -229,6 +231,7 @@ export interface GameState {
   soundEvents: SoundEvent[]; // sounds that enemies can react to
   flashbangTimer: number; // seconds of flashbang blindness remaining
   backpackCapacity: number; // extra inventory slots from backpack
+  mineFieldZone: { x: number; y: number; w: number; h: number };
 }
 
 export interface SoundEvent {
@@ -251,6 +254,7 @@ export interface InputState {
   aimX: number;
   aimY: number;
   shooting: boolean;
+  shootPressed: boolean; // true only on the frame mouse/touch goes down
   interact: boolean;
   heal: boolean;
   throwGrenade: boolean;

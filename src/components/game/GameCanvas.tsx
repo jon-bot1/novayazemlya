@@ -14,7 +14,18 @@ import { LootPopup, LootNotification } from './LootPopup';
 
 const TIME_LIMIT = 300; // 5 minutes
 
-const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => (
+const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())) {
+        onStart();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onStart]);
+
+  return (
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
     <div className="max-w-lg w-full mx-4 flex flex-col gap-6 p-8 border border-border bg-card rounded">
       <div className="text-center">
@@ -57,6 +68,7 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => (
         <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
           <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
           <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
+          <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
           <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
           <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
           <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
@@ -67,16 +79,16 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => (
         className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
         onClick={onStart}
       >
-        ▶ BEGIN OPERATION
+        ▶ BEGIN OPERATION (or press WASD)
       </button>
     </div>
   </div>
-);
-
+  );
+};
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -137,8 +149,8 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
     };
 
-    const onMouseDown = (e: MouseEvent) => { unlockSpeech(); if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return; if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
-    const onMouseUp = () => { inputRef.current.shooting = false; };
+    const onMouseDown = (e: MouseEvent) => { unlockSpeech(); if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return; if (!showInventory && !showIntel && !readingDoc) { inputRef.current.shooting = true; inputRef.current.shootPressed = true; } };
+    const onMouseUp = () => { inputRef.current.shooting = false; inputRef.current.shootPressed = false; };
     const onMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -315,6 +327,7 @@ export const GameCanvas: React.FC = () => {
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
       stateRef.current = state;
       inputRef.current.interact = false;
+      inputRef.current.shootPressed = false; // clear single-frame flag
 
       // 5-minute timer — game over with reinforcements
       if (state.time >= TIME_LIMIT && !state.gameOver && !state.extracted && !reinforcementsSpawned) {

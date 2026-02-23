@@ -565,6 +565,21 @@ export function generateMap() {
       w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
       type: 'bush' as Prop['type'],
     })),
+    // === MINEFIELD (lower-left of base compound) ===
+    // Warning signs around perimeter
+    { pos: { x: 400, y: 1395 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 550, y: 1395 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 700, y: 1395 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 400, y: 1705 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 550, y: 1705 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 700, y: 1705 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 395, y: 1500 }, w: 16, h: 16, type: 'mine_sign' },
+    { pos: { x: 755, y: 1500 }, w: 16, h: 16, type: 'mine_sign' },
+    // Mines scattered in the zone
+    ...Array.from({ length: 15 }, () => ({
+      pos: { x: 410 + Math.random() * 330, y: 1410 + Math.random() * 280 },
+      w: 8, h: 8, type: 'mine' as Prop['type'],
+    })),
   ];
 
   // ══════════════════════════════════════
