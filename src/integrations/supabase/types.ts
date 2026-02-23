@@ -49,18 +49,21 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          player_name: string | null
           rating: number
         }
         Insert: {
           comment?: string | null
           created_at?: string
           id?: string
+          player_name?: string | null
           rating: number
         }
         Update: {
           comment?: string | null
           created_at?: string
           id?: string
+          player_name?: string | null
           rating?: number
         }
         Relationships: []

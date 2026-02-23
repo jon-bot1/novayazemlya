@@ -250,7 +250,7 @@ export const HUD: React.FC<HUDProps> = ({
 
             <HighscoreList currentName={playerName} />
 
-            <FeedbackWidget />
+            <FeedbackWidget playerName={playerName} />
 
             <button
               className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
