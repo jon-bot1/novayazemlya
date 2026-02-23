@@ -180,11 +180,15 @@ export function createGameState(): GameState {
 }
 
 function hasLineOfSight(state: GameState, a: Vec2, b: Vec2, elevated: boolean = false): boolean {
-  if (elevated) return true; // elevated enemies can see over walls (but limited range)
+  if (elevated) {
+    // Elevated enemies can see over walls BUT only within their limited range
+    // They still need actual distance check (handled elsewhere), just skip wall collision
+    return true;
+  }
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.sqrt(dx * dx + dy * dy);
-  const steps = Math.ceil(d / 10);
+  const steps = Math.ceil(d / 6); // step size ~6px to catch thin walls/fences (8px)
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     if (collidesWithWalls(state, a.x + dx * t, a.y + dy * t, 2)) return false;
@@ -1070,10 +1074,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Scan back and forth
         enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.008;
       }
-      // Elevated enemies never enter the movement switch
-      if (enemy.state !== 'attack' && enemy.state !== 'suppress') {
-        continue;
+      // Elevated enemies: handle shooting in place, then skip movement
+      if (enemy.state === 'attack' || enemy.state === 'suppress') {
+        const targetAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        const TURN_SPEED = 3.5 * dt;
+        let angleDelta = targetAngle - enemy.angle;
+        while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+        while (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+        enemy.angle += Math.abs(angleDelta) > TURN_SPEED ? Math.sign(angleDelta) * TURN_SPEED : angleDelta;
+
+        if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
+          const spread = (Math.random() - 0.5) * 0.15;
+          const angle = enemy.angle + spread;
+          state.bullets.push({
+            pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+            vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
+            damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
+          });
+          enemy.lastShot = state.time;
+          spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
+          state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+          playGunshot('rifle');
+        }
       }
+      continue;
     }
 
     // Sniper: hides in trees, teleports between them toward the player
@@ -1630,7 +1654,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
             return false; // concealment miss (reduced from 40% to 25%)
           }
-          const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
+          const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
+          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus);
           const isCrit = Math.random() < critChance;
           if (isCrit) {
             enemy.hp = 0;
@@ -1695,7 +1720,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
 
           // Critical hit / headshot — chance scales with kill count (skill)
-          const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
+          // Soldiers have +15% headshot chance (weaker helmets)
+          const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
+          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus);
           const isCrit = enemy.type !== 'boss' && Math.random() < critChance;
           
           if (isCrit) {
