@@ -1,4 +1,4 @@
-import { Wall, LootContainer, Enemy, ExtractionPoint } from './types';
+import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup } from './types';
 import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo } from './items';
 
 const MAP_W = 2400;
@@ -25,6 +25,7 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy'): En
     lastShot: 0,
     angle: Math.random() * Math.PI * 2,
     type,
+    eyeBlink: Math.random() * 5,
   };
 };
 
@@ -37,6 +38,13 @@ const makeLoot = (x: number, y: number, type: LootContainer['type'], pool: 'comm
   type,
 });
 
+const makeDocPickup = (x: number, y: number, loreDocId: string): DocumentPickup => ({
+  id: `docpickup_${loreDocId}`,
+  pos: { x, y },
+  loreDocId,
+  collected: false,
+});
+
 export function generateMap() {
   const walls: Wall[] = [
     // Outer walls
@@ -45,7 +53,7 @@ export function generateMap() {
     makeWall(0, 0, 20, MAP_H, '#1a1e18'),
     makeWall(MAP_W - 20, 0, 20, MAP_H, '#1a1e18'),
 
-    // Building 1 - top left barracks
+    // Building 1 - top left barracks (КАЗАРМА)
     makeWall(100, 100, 400, 20),
     makeWall(100, 100, 20, 300),
     makeWall(100, 380, 180, 20),
@@ -53,7 +61,7 @@ export function generateMap() {
     makeWall(480, 100, 20, 300),
     makeWall(200, 200, 120, 15, '#363b33'),
     
-    // Building 2 - warehouse center
+    // Building 2 - warehouse center (СКЛАД)
     makeWall(700, 400, 500, 20),
     makeWall(700, 400, 20, 400),
     makeWall(700, 780, 220, 20),
@@ -62,7 +70,7 @@ export function generateMap() {
     makeWall(900, 500, 15, 200, '#363b33'),
     makeWall(1000, 550, 100, 15, '#363b33'),
 
-    // Building 3 - bottom right bunker
+    // Building 3 - bottom right bunker (БУНКЕР)
     makeWall(1500, 1500, 600, 25, '#1a1e18'),
     makeWall(1500, 1500, 25, 500),
     makeWall(1500, 1975, 250, 25),
@@ -71,7 +79,7 @@ export function generateMap() {
     makeWall(1650, 1650, 200, 20, '#363b33'),
     makeWall(1800, 1750, 20, 150, '#363b33'),
 
-    // Scattered debris / small walls
+    // Scattered debris
     makeWall(300, 700, 80, 15, '#4a4535'),
     makeWall(500, 900, 15, 100, '#4a4535'),
     makeWall(1300, 200, 120, 15, '#4a4535'),
@@ -83,52 +91,53 @@ export function generateMap() {
   ];
 
   const enemies: Enemy[] = [
-    // Barracks guards
     makeEnemy(250, 250, 'scav'),
     makeEnemy(400, 300, 'scav'),
-    // Warehouse
     makeEnemy(850, 550, 'soldier'),
     makeEnemy(1050, 650, 'soldier'),
     makeEnemy(900, 700, 'scav'),
-    // Roaming
     makeEnemy(600, 1200, 'scav'),
     makeEnemy(1300, 900, 'scav'),
     makeEnemy(1800, 300, 'soldier'),
-    // Bunker
     makeEnemy(1700, 1700, 'soldier'),
     makeEnemy(1900, 1800, 'heavy'),
     makeEnemy(1600, 1900, 'soldier'),
-    // More roaming
     makeEnemy(400, 1800, 'scav'),
     makeEnemy(2100, 1200, 'scav'),
   ];
 
   const lootContainers: LootContainer[] = [
-    // Barracks
     makeLoot(150, 150, 'cabinet', 'common'),
     makeLoot(400, 200, 'crate', 'military'),
-    // Warehouse
     makeLoot(750, 500, 'crate', 'common'),
     makeLoot(1100, 600, 'barrel', 'common'),
     makeLoot(850, 700, 'crate', 'military'),
     makeLoot(1050, 450, 'cabinet', 'valuable'),
-    // Bunker
     makeLoot(1600, 1600, 'crate', 'military'),
     makeLoot(1950, 1900, 'cabinet', 'valuable'),
     makeLoot(1700, 1850, 'barrel', 'common'),
-    // Scattered
     makeLoot(300, 900, 'barrel', 'common'),
     makeLoot(1400, 300, 'crate', 'common'),
     makeLoot(2000, 600, 'body', 'military'),
     makeLoot(500, 1600, 'body', 'common'),
   ];
 
-  const extractionPoints: ExtractionPoint[] = [
-    { pos: { x: 50, y: MAP_H - 50 }, radius: 60, timer: 5, active: true, name: 'SOUTH-WEST EXIT' },
-    { pos: { x: MAP_W - 50, y: 50 }, radius: 60, timer: 5, active: true, name: 'NORTH-EAST EXIT' },
+  // Document pickups scattered across the map
+  const documentPickups: DocumentPickup[] = [
+    makeDocPickup(350, 250, 'doc_1'),   // Barracks - military report
+    makeDocPickup(300, 350, 'doc_2'),   // Barracks - soldier diary
+    makeDocPickup(1000, 650, 'doc_6'),  // Warehouse - inventory list
+    makeDocPickup(1100, 500, 'doc_4'),  // Warehouse - radio intercept
+    makeDocPickup(1700, 1750, 'doc_3'), // Bunker - interrogation
+    makeDocPickup(1900, 1950, 'doc_5'), // Bunker - wall note
   ];
 
-  return { walls, enemies, lootContainers, extractionPoints, mapWidth: MAP_W, mapHeight: MAP_H };
+  const extractionPoints: ExtractionPoint[] = [
+    { pos: { x: 50, y: MAP_H - 50 }, radius: 60, timer: 5, active: true, name: 'ЮГО-ЗАПАД ВЫХОД' },
+    { pos: { x: MAP_W - 50, y: 50 }, radius: 60, timer: 5, active: true, name: 'СЕВЕРО-ВОСТОК ВЫХОД' },
+  ];
+
+  return { walls, enemies, lootContainers, documentPickups, extractionPoints, mapWidth: MAP_W, mapHeight: MAP_H };
 }
 
 export function createInitialPlayer() {
