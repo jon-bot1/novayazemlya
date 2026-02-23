@@ -5,6 +5,7 @@ import { GameState, InputState, Item } from '../../game/types';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
 import { ActionButton } from './TouchControls';
+import { unlockSpeech } from '../../game/voice';
 import { HUD } from './HUD';
 import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
@@ -74,7 +75,7 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
     };
 
-    const onMouseDown = () => { if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
+    const onMouseDown = () => { unlockSpeech(); if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
     const onMouseUp = () => { inputRef.current.shooting = false; };
     const onMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
@@ -154,6 +155,7 @@ export const GameCanvas: React.FC = () => {
 
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
+      unlockSpeech();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         const world = screenToWorld(t.clientX, t.clientY);
