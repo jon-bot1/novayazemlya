@@ -10,6 +10,7 @@ import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
+import { ElevatorCutscene } from './ElevatorCutscene';
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,6 +20,7 @@ export const GameCanvas: React.FC = () => {
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
   const aimTouchRef = useRef<number | null>(null);
+  const [cutsceneDone, setCutsceneDone] = useState(false);
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -324,6 +326,7 @@ export const GameCanvas: React.FC = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background touch-none flex">
+      {!cutsceneDone && <ElevatorCutscene onComplete={() => setCutsceneDone(true)} />}
       <div className="relative flex-1 h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
         
