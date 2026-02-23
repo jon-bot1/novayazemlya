@@ -501,15 +501,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Hangar floor tiles (Zelda-style checkerboard)
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight);
 
-  // Zone labels
-  ctx.fillStyle = 'rgba(200, 200, 180, 0.12)';
-  ctx.font = 'bold 22px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('HANGAR', 250, 420);
-  ctx.fillText('KONTOR', 900, 220);
-  ctx.fillText('LAGER', 950, 670);
-  ctx.font = '11px sans-serif';
-  ctx.fillText('KORRIDOR', 600, 260);
+  // Zone labels — styled geographic markers
+  const zoneLabels = [
+    { x: 250, y: 250, label: 'HANGAR A', sub: 'Huvudhall', size: 20 },
+    { x: 250, y: 680, label: 'HANGAR B', sub: 'Södra sektionen', size: 16 },
+    { x: 600, y: 255, label: 'KORRIDOR', sub: 'Passage C-1', size: 11 },
+    { x: 780, y: 100, label: 'KONTOR 1', sub: 'Befälsrum', size: 13 },
+    { x: 1060, y: 100, label: 'KONTOR 2', sub: 'Kommunikation', size: 13 },
+    { x: 780, y: 350, label: 'KONTOR 3', sub: 'Arkiv', size: 13 },
+    { x: 1060, y: 350, label: 'KONTOR 4', sub: 'Operationssal', size: 13 },
+    { x: 850, y: 500, label: 'LAGER', sub: 'Förrådsdepå', size: 18 },
+    { x: 1060, y: 720, label: 'DJUPLAGER', sub: 'Hemligt förråd', size: 14 },
+    { x: 60, y: 450, label: 'VÄST', sub: 'Infart', size: 10 },
+  ];
+  for (const z of zoneLabels) {
+    ctx.save();
+    ctx.globalAlpha = 0.14;
+    ctx.fillStyle = '#c8c8b4';
+    ctx.font = `bold ${z.size}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(z.label, z.x, z.y);
+    ctx.globalAlpha = 0.09;
+    ctx.font = `${Math.max(8, z.size - 6)}px sans-serif`;
+    ctx.fillText(z.sub, z.x, z.y + z.size + 2);
+    ctx.restore();
+  }
 
   // ── EXTRACTION ZONES ──
   for (const ep of state.extractionPoints) {
