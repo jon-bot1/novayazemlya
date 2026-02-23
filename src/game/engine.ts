@@ -966,17 +966,25 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.investigateTarget) {
           const dToTarget = dist(enemy.pos, enemy.investigateTarget);
           if (dToTarget < 30) {
-            // Arrived at sound location — look around (alert state)
             enemy.state = 'alert';
           } else {
+            // Check if target is reachable (LOS to target)
+            const canReach = hasLineOfSight(state, enemy.pos, enemy.investigateTarget, enemy.elevated);
+            if (!canReach) {
+              // Can't reach through wall — give up and patrol instead
+              enemy.state = 'patrol';
+              enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+              break;
+            }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
             const newPos = tryMove(state, enemy.pos, dir.x * speed * 0.7, dir.y * speed * 0.7, 10);
             if (dist(newPos, enemy.pos) < 0.1) {
               if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
               (enemy as any)._stuckCounter++;
-              if ((enemy as any)._stuckCounter > 20) {
-                const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-                enemy.investigateTarget = { x: enemy.pos.x + Math.cos(perpAngle) * 120, y: enemy.pos.y + Math.sin(perpAngle) * 120 };
+              if ((enemy as any)._stuckCounter > 10) {
+                // Stuck at wall — give up investigation
+                enemy.state = 'patrol';
+                enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
                 (enemy as any)._stuckCounter = 0;
               }
             } else {
