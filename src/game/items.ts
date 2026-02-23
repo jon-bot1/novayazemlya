@@ -65,6 +65,16 @@ export const createKey = (name: string, keyId: string): Item => ({
   description: `Nyckel: ${name}`,
 });
 
+export const createKeycard = (): Item => ({
+  id: 'gate_keycard',
+  name: 'Passerkort',
+  category: 'key',
+  icon: '💳',
+  weight: 0.1,
+  value: 100,
+  description: 'Elektroniskt passerkort — öppnar basens huvudgrind',
+});
+
 export const createExtractionCode = (): Item => ({
   id: 'extraction_code',
   name: 'Exfiltreringskod',
