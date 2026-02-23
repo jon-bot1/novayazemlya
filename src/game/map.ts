@@ -252,5 +252,8 @@ export function createInitialPlayer() {
     armor: 0,
     lastShot: 0,
     fireRate: 400,
+    inCover: false,
+    coverObject: null,
+    peeking: false,
   };
 }

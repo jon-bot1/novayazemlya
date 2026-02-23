@@ -146,13 +146,65 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const dir = normalize({ x: moveX, y: moveY });
     state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
     
+    // Moving breaks cover
+    if (state.player.inCover) {
+      state.player.inCover = false;
+      state.player.coverObject = null;
+      state.player.peeking = false;
+    }
+    
     // Footstep sounds + sound propagation
     playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
-    // Only emit sound events periodically (not every frame)
     if (Math.random() < (input.movementMode === 'sprint' ? 0.15 : input.movementMode === 'walk' ? 0.05 : 0.01)) {
       state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[input.movementMode], time: state.time });
     }
+  }
+
+  // Cover system
+  if (input.takeCover) {
+    input.takeCover = false;
+    if (state.player.inCover) {
+      // Toggle off
+      state.player.inCover = false;
+      state.player.coverObject = null;
+      state.player.peeking = false;
+      addMessage(state, '🧍 Lämnar skydd', 'info');
+    } else {
+      // Find nearest cover object (props or walls within 40px)
+      let bestDist = 40;
+      let bestPos: Vec2 | null = null;
+      for (const prop of state.props) {
+        const d = dist(state.player.pos, prop.pos);
+        if (d < bestDist) {
+          bestDist = d;
+          bestPos = { ...prop.pos };
+        }
+      }
+      // Also check walls as cover
+      for (const wall of state.walls) {
+        const wx = wall.x + wall.w / 2;
+        const wy = wall.y + wall.h / 2;
+        const d = dist(state.player.pos, { x: wx, y: wy });
+        if (d < bestDist + 20) {
+          bestDist = d;
+          bestPos = { x: wx, y: wy };
+        }
+      }
+      if (bestPos) {
+        state.player.inCover = true;
+        state.player.coverObject = bestPos;
+        state.player.peeking = false;
+        addMessage(state, '🛡️ I skydd! Skjut för att kika fram', 'info');
+      } else {
+        addMessage(state, '⚠ Inget skydd i närheten!', 'warning');
+      }
+    }
+  }
+
+  // Peek fire — shooting while in cover
+  if (state.player.inCover) {
+    state.player.peeking = input.shooting;
   }
 
   // Speed boost countdown
@@ -646,6 +698,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     } else {
       if (dist(b.pos, state.player.pos) < 12) {
+        // Cover reduces hit chance: full cover = 80% miss, peeking = 40% miss
+        if (state.player.inCover) {
+          const missChance = state.player.peeking ? 0.4 : 0.8;
+          if (Math.random() < missChance) {
+            // Bullet deflected by cover
+            spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 3);
+            addMessage(state, '🛡️ Skyddat!', 'info');
+            return false;
+          }
+        }
         const dmg = b.damage * (1 - state.player.armor);
         state.player.hp -= dmg;
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);

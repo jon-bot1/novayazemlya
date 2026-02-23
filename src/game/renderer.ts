@@ -1079,20 +1079,61 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.fillStyle = grad;
   ctx.fillRect(state.player.pos.x - 45, state.player.pos.y - 45, 90, 90);
 
-  // Ring
+  // Ring — changes color when in cover
   ctx.beginPath();
   ctx.arc(state.player.pos.x, state.player.pos.y, R + 8, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(120, 255, 80, ${pulse})`;
-  ctx.lineWidth = 3;
+  if (state.player.inCover) {
+    const coverPulse = 0.6 + Math.sin(state.time * 4) * 0.3;
+    ctx.strokeStyle = state.player.peeking
+      ? `rgba(255, 200, 60, ${coverPulse})`
+      : `rgba(80, 180, 255, ${coverPulse})`;
+    ctx.lineWidth = 4;
+  } else {
+    ctx.strokeStyle = `rgba(120, 255, 80, ${pulse})`;
+    ctx.lineWidth = 3;
+  }
   ctx.stroke();
   ctx.restore();
+
+  // Cover indicator — shield icon and status
+  if (state.player.inCover) {
+    ctx.save();
+    // Shield arc behind player (opposite to aim direction)
+    const shieldAngle = state.player.angle + Math.PI;
+    ctx.strokeStyle = state.player.peeking
+      ? 'rgba(255, 200, 60, 0.5)'
+      : 'rgba(80, 180, 255, 0.6)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(state.player.pos.x, state.player.pos.y, R + 14, shieldAngle - 1.2, shieldAngle + 1.2);
+    ctx.stroke();
+
+    // Dashed outer ring
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = 'rgba(80, 180, 255, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(state.player.pos.x, state.player.pos.y, R + 20, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Label
+    ctx.fillStyle = state.player.peeking ? 'rgba(255, 200, 60, 0.9)' : 'rgba(80, 180, 255, 0.9)';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      state.player.peeking ? '🔫 KIKA FRAM' : '🛡️ I SKYDD',
+      state.player.pos.x, state.player.pos.y - R - 34
+    );
+    ctx.restore();
+  }
 
   // Character
   const playerBlink = Math.sin(state.time * 0.8) > 0.95;
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
     '#c0ee99', '#88cc55', '#2a3a1a', playerBlink,
-    'beret', '#8a5545', true, R + 2
+    'beret', '#8a5545', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2
   );
 
   // Name tag

@@ -110,6 +110,9 @@ export interface Player {
   armor: number;
   lastShot: number;
   fireRate: number;
+  inCover: boolean;
+  coverObject: Vec2 | null; // position of the cover object
+  peeking: boolean; // actively peeking to fire
 }
 
 export interface Wall {
@@ -187,4 +190,5 @@ export interface InputState {
   throwGrenade: boolean;
   movementMode: MovementMode;
   moveTarget?: Vec2 | null;
+  takeCover: boolean;
 }

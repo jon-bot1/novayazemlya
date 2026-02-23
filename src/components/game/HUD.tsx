@@ -15,12 +15,14 @@ interface HUDProps {
   codesFound: string[];
   hasExtractionCode: boolean;
   movementMode: 'sneak' | 'walk' | 'sprint';
+  inCover: boolean;
+  peeking: boolean;
   onViewDocuments: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, onViewDocuments 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments 
 }) => {
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
@@ -69,6 +71,11 @@ export const HUD: React.FC<HUDProps> = ({
                 </span>
               );
             })()}
+            {inCover && (
+              <span className={`text-[10px] font-mono ${peeking ? 'text-warning animate-pulse-glow' : 'text-accent'}`}>
+                | {peeking ? '🔫 PEEK' : '🛡️ SKYDD'}
+              </span>
+            )}
           </div>
         </div>
 
