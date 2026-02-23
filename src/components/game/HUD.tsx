@@ -14,12 +14,13 @@ interface HUDProps {
   totalDocuments: number;
   codesFound: string[];
   hasExtractionCode: boolean;
+  movementMode: 'sneak' | 'walk' | 'sprint';
   onViewDocuments: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, onViewDocuments 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, onViewDocuments 
 }) => {
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
@@ -53,6 +54,19 @@ export const HUD: React.FC<HUDProps> = ({
                   <span className={`text-[10px] font-mono ${morphine > 0 ? 'text-loot' : 'text-foreground/30'}`}>💉{morphine}</span>
                   <span className="text-[9px] text-muted-foreground font-mono">[H]</span>
                 </>
+              );
+            })()}
+          </div>
+          {/* Movement mode indicator */}
+          <div className="hidden sm:flex items-center gap-1 mt-0.5">
+            {(() => {
+              const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
+              const labels = { sneak: 'SMYG', walk: 'GÅ', sprint: 'SPRING' };
+              const colors = { sneak: 'text-accent', walk: 'text-foreground/60', sprint: 'text-warning' };
+              return (
+                <span className={`text-[10px] font-mono ${colors[movementMode]}`}>
+                  {icons[movementMode]} {labels[movementMode]}
+                </span>
               );
             })()}
           </div>
