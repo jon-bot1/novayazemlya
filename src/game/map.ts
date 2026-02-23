@@ -247,8 +247,8 @@ export function generateMap() {
     makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
-    // Boss deep storage
-    makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'boss'),
+    // Boss — Kommendant Volkov — patrols the whole base
+    makeEnemy(HX + HW / 2, HY + HH / 2, 'boss'),
 
     // === OUTDOOR ENEMIES ===
     // Gate guards
@@ -300,8 +300,49 @@ export function generateMap() {
     enemies[i].shootRange = 150;
   }
 
+  // === BOSS SETUP: patrol waypoints + 2 bodyguards ===
+  const bossIdx = enemies.findIndex(e => e.type === 'boss');
+  if (bossIdx >= 0) {
+    const boss = enemies[bossIdx];
+    // Boss patrols the entire base with wide waypoints
+    (boss as any)._patrolWaypoints = [
+      { x: HX + 200, y: HY + 200 },          // hangar NW
+      { x: HX + HW - 200, y: HY + 200 },     // hangar NE
+      { x: HX + HW - 200, y: HY + HH - 200 },// hangar SE
+      { x: HX + 200, y: HY + HH - 200 },     // hangar SW
+      { x: 800, y: 600 },                      // west yard
+      { x: 2400, y: 600 },                     // east yard
+      { x: 1600, y: 400 },                     // north command
+      { x: 1600, y: HY + HH + 200 },          // south of hangar
+    ];
+    (boss as any)._waypointIdx = 0;
+    boss.patrolTarget = (boss as any)._patrolWaypoints[0];
+    boss.state = 'patrol';
+    boss.speed = 1.2; // slower patrol speed, fast when chasing
+
+    // 2 bodyguards — soldiers with heavy armor, black clothes
+    const bg1 = makeEnemy(boss.pos.x - 30, boss.pos.y + 20, 'soldier');
+    const bg2 = makeEnemy(boss.pos.x + 30, boss.pos.y + 20, 'soldier');
+    for (const bg of [bg1, bg2]) {
+      (bg as any)._bodyguardOf = boss.id;
+      bg.hp = 100;
+      bg.maxHp = 100;
+      bg.damage = 20;
+      bg.alertRange = 220;
+      bg.shootRange = 190;
+      bg.fireRate = 700;
+      bg.radioGroup = boss.radioGroup;
+      bg.tacticalRole = 'assault';
+      bg.type = 'soldier'; // type stays soldier but rendered differently
+      (bg as any)._isBodyguard = true;
+    }
+    enemies.push(bg1, bg2);
+  }
+
   // Spread patrol ranges wider for outside guards so they don't clump
-  for (let i = enemies.length - 5; i < enemies.length; i++) {
+  const outsideStart = bossIdx >= 0 ? enemies.length - 7 : enemies.length - 5; // 5 outside + 2 bodyguards at end
+  for (let i = outsideStart; i < outsideStart + 5; i++) {
+    if (i < 0 || i >= enemies.length) continue;
     enemies[i].patrolTarget = {
       x: enemies[i].pos.x + (Math.random() - 0.5) * 400,
       y: enemies[i].pos.y + (Math.random() - 0.5) * 300,

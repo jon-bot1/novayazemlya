@@ -1558,17 +1558,22 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
       }
     } else {
+      const isBodyguard = !!(enemy as any)._isBodyguard;
       const configs: Record<string, any> = {
         scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
         soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
       };
-      const cfg = configs[enemy.type];
+      let cfg = configs[enemy.type];
+      // Bodyguards: all-black tactical gear
+      if (isBodyguard) {
+        cfg = { body: '#1a1a1a', outline: '#000000', eye: '#444', hat: 'helmet', hatColor: '#111111' };
+      }
 
       drawCuteCharacter(
         ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
         cfg.body, cfg.outline, cfg.eye, isBlinking,
-        cfg.hat, cfg.hatColor, true, enemy.type === 'heavy' ? R + 4 : R
+        cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R)
       );
     }
 
