@@ -483,13 +483,13 @@ const SHOUT_COOLDOWN = 800; // ms
 type ShoutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
 const SHOUT_CONFIGS: Record<ShoutType, { formants: [number, number, number]; duration: number; pitch: number; pitchEnd: number; volume: number; roughness: number }> = {
-  alert:       { formants: [700, 1200, 2600],  duration: 0.35, pitch: 180, pitchEnd: 250, volume: 0.12, roughness: 2 },
-  chase:       { formants: [600, 1000, 2400],  duration: 0.45, pitch: 160, pitchEnd: 200, volume: 0.15, roughness: 3 },
-  investigate: { formants: [400, 900, 2200],   duration: 0.3,  pitch: 140, pitchEnd: 170, volume: 0.08, roughness: 1 },
-  attack:      { formants: [800, 1300, 2800],  duration: 0.25, pitch: 200, pitchEnd: 280, volume: 0.14, roughness: 4 },
-  lost:        { formants: [500, 1100, 2000],  duration: 0.4,  pitch: 150, pitchEnd: 120, volume: 0.09, roughness: 1 },
-  alarm:       { formants: [750, 1400, 2900],  duration: 0.5,  pitch: 190, pitchEnd: 300, volume: 0.16, roughness: 5 },
-  death:       { formants: [350, 800, 1800],   duration: 0.6,  pitch: 200, pitchEnd: 60,  volume: 0.18, roughness: 6 },
+  alert:       { formants: [700, 1200, 2600],  duration: 0.4,  pitch: 180, pitchEnd: 250, volume: 0.55, roughness: 2 },
+  chase:       { formants: [600, 1000, 2400],  duration: 0.5,  pitch: 160, pitchEnd: 200, volume: 0.6,  roughness: 3 },
+  investigate: { formants: [400, 900, 2200],   duration: 0.35, pitch: 140, pitchEnd: 170, volume: 0.4,  roughness: 1 },
+  attack:      { formants: [800, 1300, 2800],  duration: 0.3,  pitch: 200, pitchEnd: 280, volume: 0.6,  roughness: 4 },
+  lost:        { formants: [500, 1100, 2000],  duration: 0.45, pitch: 150, pitchEnd: 120, volume: 0.4,  roughness: 1 },
+  alarm:       { formants: [750, 1400, 2900],  duration: 0.55, pitch: 190, pitchEnd: 300, volume: 0.65, roughness: 5 },
+  death:       { formants: [350, 800, 1800],   duration: 0.65, pitch: 200, pitchEnd: 60,  volume: 0.7,  roughness: 6 },
 };
 
 export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
@@ -522,24 +522,24 @@ export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
   }
   distNode.curve = curve;
 
-  // Formant filters (simulate vowel shapes)
+  // Formant filters (simulate vowel shapes) — wider bandwidth for audibility
   const formantGain = ctx.createGain();
   formantGain.gain.setValueAtTime(c.volume, t);
-  formantGain.gain.linearRampToValueAtTime(c.volume * 1.2, t + c.duration * 0.15);
+  formantGain.gain.linearRampToValueAtTime(c.volume * 1.3, t + c.duration * 0.15);
   formantGain.gain.setValueAtTime(c.volume * 0.9, t + c.duration * 0.5);
   formantGain.gain.exponentialRampToValueAtTime(0.001, t + c.duration);
 
-  const filters = c.formants.map((freq, idx) => {
+  const filters = c.formants.map((freq) => {
     const f = ctx.createBiquadFilter();
     f.type = 'bandpass';
     f.frequency.value = freq;
-    f.Q.value = 5 + idx * 3;
+    f.Q.value = 1.5; // wide bandwidth so sound passes through
     return f;
   });
 
-  // Mix formants together
+  // Mix formants together — higher gain
   const merger = ctx.createGain();
-  merger.gain.value = 0.5;
+  merger.gain.value = 1.5;
 
   voice.connect(distNode);
   for (const f of filters) {
@@ -560,7 +560,7 @@ export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
   const noiseSrc = ctx.createBufferSource();
   noiseSrc.buffer = noiseBuf;
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(c.volume * 0.3, t);
+  noiseGain.gain.setValueAtTime(c.volume * 0.6, t);
   noiseGain.gain.exponentialRampToValueAtTime(0.001, t + noiseDur);
   const noiseHP = ctx.createBiquadFilter();
   noiseHP.type = 'highpass';
