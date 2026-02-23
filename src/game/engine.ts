@@ -128,8 +128,8 @@ function generateEnemyLoot(enemy: Enemy) {
       ...existingLoot,
       ...LOOT_POOLS.military(),
       ...LOOT_POOLS.body(),
-      { id: 'boss_usb', name: 'Volkov\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
-      { id: 'boss_dogtag', name: 'Volkov\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Volkov\'s ID tag — extremely rare' },
+      { id: 'boss_usb', name: 'Osipovitch\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
+      { id: 'boss_dogtag', name: 'Osipovitch\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitch\'s ID tag — extremely rare' },
     ];
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
@@ -163,7 +163,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'OPERATION STARTED — Eliminate Volkov, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
+    messages: [{ text: 'OPERATION STARTED — Eliminate Osipovitch, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
@@ -566,7 +566,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
-            addMessage(state, '💾 VOLKOV\'S USB DRIVE! Get to the extraction point!', 'intel');
+            addMessage(state, '💾 OSIPOVITCH\'S USB DRIVE! Get to the extraction point!', 'intel');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
@@ -750,7 +750,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else enemy.bossPhase = 0;
       
       if (enemy.bossPhase !== oldPhase) {
-        const phaseNames = ['', '⚠ COMMANDANT VOLKOV IS ENRAGED!', '☠ VOLKOV IS DESPERATE — WATCH OUT!'];
+        const phaseNames = ['', '⚠ COMMANDANT OSIPOVITCH IS ENRAGED!', '☠ OSIPOVITCH IS DESPERATE — WATCH OUT!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
           playBossRoar();
@@ -973,17 +973,28 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     const speed = enemy.speed * dt * 60;
     // Elevated enemies don't move — they stay on their platform
-    if (enemy.elevated && enemy.state !== 'attack' && enemy.state !== 'suppress') {
-      // Just rotate to face threats
-      if (enemy.state === 'chase' || enemy.state === 'investigate') {
-        enemy.state = 'attack'; // can't chase, switch to shooting
+    if (enemy.elevated) {
+      if (enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank') {
+        // Can only attack if player is within shoot range
+        if (distToPlayer < enemy.shootRange && canSeePlayer) {
+          enemy.state = 'attack';
+        } else {
+          enemy.state = 'idle'; // too far or can't see — go back to scanning
+        }
+      }
+      // Attack state: drop back to idle if player leaves range
+      if (enemy.state === 'attack' && (distToPlayer > enemy.shootRange * 1.3 || !canSeePlayer)) {
+        enemy.state = 'idle';
+      }
+      if (enemy.state === 'patrol' || enemy.state === 'idle') {
+        // Scan slowly back and forth
+        enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
+      }
+      // Elevated enemies never enter the movement switch (they don't move)
+      if (enemy.state !== 'attack' && enemy.state !== 'suppress') {
+        continue; // skip movement switch entirely
       }
     }
-    if (enemy.elevated && (enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'flank')) {
-      // Override: elevated guards don't leave their post
-      enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
-      // Skip movement switch
-    } else
     switch (enemy.state as string) {
       case 'idle': {
         // Bodyguards follow their boss instead of idling
@@ -1121,21 +1132,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'chase': {
         if (enemy.type === 'turret') {
-          // Turret can only aim within its arc
           if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
             enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           } else {
-            enemy.state = 'idle'; // lost target outside arc
+            enemy.state = 'idle';
           }
           break;
         }
         const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        // Gradual turning while chasing
+        const chaseTargetAngle = Math.atan2(dir.y, dir.x);
+        const CHASE_TURN = 3.5 * dt;
+        let chaseDelta = chaseTargetAngle - enemy.angle;
+        while (chaseDelta > Math.PI) chaseDelta -= Math.PI * 2;
+        while (chaseDelta < -Math.PI) chaseDelta += Math.PI * 2;
+        if (Math.abs(chaseDelta) > CHASE_TURN) {
+          enemy.angle += Math.sign(chaseDelta) * CHASE_TURN;
+        } else {
+          enemy.angle = chaseTargetAngle;
+        }
         const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
         if (dist(newPos, enemy.pos) < 0.1) {
           if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
           (enemy as any)._stuckCounter++;
           if ((enemy as any)._stuckCounter > 15) {
-            // Try to go around the wall
             const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
             const sidePos = tryMoveEnemy(state, enemy.pos, Math.cos(perpAngle) * speed, Math.sin(perpAngle) * speed, 10);
             enemy.pos = sidePos;
@@ -1145,7 +1165,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._stuckCounter = 0;
           enemy.pos = newPos;
         }
-        enemy.angle = Math.atan2(dir.y, dir.x);
         break;
       }
       case 'flank': {
@@ -1207,20 +1226,27 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'attack': {
-        // Turrets: restrict rotation to their fixed arc (can't shoot behind/inward)
         const targetAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         if (enemy.type === 'turret') {
-          // Only rotate toward player if within turret's arc
           if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
             enemy.angle = targetAngle;
-          }
-          // If player is outside arc, turret loses target
-          else {
+          } else {
             enemy.state = 'idle';
             break;
           }
         } else {
-          enemy.angle = targetAngle;
+          // Gradual turning — enemies must physically rotate toward player
+          const TURN_SPEED = enemy.type === 'boss' ? 4.5 : enemy.type === 'heavy' ? 3.0 : 4.0; // radians/sec
+          let angleDelta = targetAngle - enemy.angle;
+          // Normalize to -PI..PI
+          while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+          while (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+          const maxTurn = TURN_SPEED * dt;
+          if (Math.abs(angleDelta) > maxTurn) {
+            enemy.angle += Math.sign(angleDelta) * maxTurn;
+          } else {
+            enemy.angle = targetAngle;
+          }
         }
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
           const spread = enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
@@ -1263,7 +1289,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 damage: -1, // flashbang marker
                 fromPlayer: false,
               });
-              addMessage(state, '💫 VOLKOV throws FLASHBANG!', 'warning');
+              addMessage(state, '💫 OSIPOVITCH throws FLASHBANG!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
             } else {
               state.grenades.push({
@@ -1274,7 +1300,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 damage: 25,
                 fromPlayer: false,
               });
-              addMessage(state, '💣 VOLKOV throws grenade!', 'warning');
+              addMessage(state, '💣 OSIPOVITCH throws grenade!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
@@ -1307,7 +1333,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
           };
           state.enemies.push(minion);
-          addMessage(state, '📻 Volkov calls reinforcements!', 'warning');
+          addMessage(state, '📻 Osipovitch calls reinforcements!', 'warning');
           spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
@@ -1393,7 +1419,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT VOLKOV IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITCH IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
         }
@@ -1503,7 +1529,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
             if (!isCrit) {
-              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT VOLKOV IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITCH IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {

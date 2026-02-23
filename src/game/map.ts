@@ -247,8 +247,8 @@ export function generateMap() {
     makeEnemy(randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).x, randIn(ZONE_STORAGE_B.x, ZONE_STORAGE_B.y, ZONE_STORAGE_B.w, ZONE_STORAGE_B.h).y, 'heavy'),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
-    // Boss — Commandant Volkov — deep in storage area (far from entrance)
-    makeEnemy(HX + HW - 200, HY + HH - 200, 'boss'),
+     // Boss — Commandant Osipovitch — deep in storage area (far from entrance)
+     makeEnemy(HX + HW - 200, HY + HH - 200, 'boss'),
 
     // === OUTDOOR ENEMIES ===
     // Gate guards
@@ -352,9 +352,11 @@ export function generateMap() {
     boss.state = 'patrol';
     boss.speed = 1.2; // slower patrol speed, fast when chasing
 
-    // 2 bodyguards — soldiers with heavy armor, black clothes
+    // 2 bodyguards — ZAPAD and VOSTOK
     const bg1 = makeEnemy(boss.pos.x - 30, boss.pos.y + 20, 'soldier');
     const bg2 = makeEnemy(boss.pos.x + 30, boss.pos.y + 20, 'soldier');
+    (bg1 as any)._bodyguardName = 'ZAPAD';
+    (bg2 as any)._bodyguardName = 'VOSTOK';
     for (const bg of [bg1, bg2]) {
       (bg as any)._bodyguardOf = boss.id;
       bg.hp = 100;
@@ -365,7 +367,7 @@ export function generateMap() {
       bg.fireRate = 700;
       bg.radioGroup = boss.radioGroup;
       bg.tacticalRole = 'assault';
-      bg.type = 'soldier'; // type stays soldier but rendered differently
+      bg.type = 'soldier';
       (bg as any)._isBodyguard = true;
     }
     enemies.push(bg1, bg2);
