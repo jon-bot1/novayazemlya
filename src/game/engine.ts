@@ -721,6 +721,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           ? `💾☢ FULL SUCCESS — EXTRACTED: ${ep.name}!`
           : `⚠ EXTRACTED — MISSION INCOMPLETE`, fullSuccess ? 'info' : 'warning');
       }
+    } else if (d < 300 && Math.floor(state.time) % 5 === 0 && Math.floor(state.time) !== Math.floor(state.time - dt)) {
+      // Nearby hint when within 300px of active exfil
+      addMessage(state, `🚁 Extraction nearby — move to ${ep.name}!`, 'info');
     }
   }
   if (!inExtraction) {
