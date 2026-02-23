@@ -53,6 +53,7 @@ const makeEnemy = (x: number, y: number, type: 'scav' | 'soldier' | 'heavy' | 't
     suppressTimer: 0,
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
+    stunTimer: 0,
   };
   if (type === 'boss') {
     enemy.bossPhase = 0;
@@ -249,25 +250,27 @@ export function generateMap() {
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),  // NE
 
-    // === OUTSIDE PATROL GUARDS (south of fence) ===
-    // Pair 1 — patrolling near gate approach
-    makeEnemy(1400, 2000, 'soldier'),
-    makeEnemy(1550, 2010, 'soldier'),
-    // Pair 2 — patrolling wider perimeter
-    makeEnemy(1200, 2100, 'soldier'),
-    makeEnemy(1100, 2050, 'scav'),
-    // Lone guard with keycard — patrols near road (ALWAYS has keycard)
-    makeEnemy(1500, 2150, 'soldier'),
+    // === OUTSIDE PATROL GUARDS (south of fence, widely spread) ===
+    // Pair 1 — far west, near forest edge
+    makeEnemy(600, 2050, 'soldier'),
+    makeEnemy(700, 2100, 'soldier'),
+    // Pair 2 — far east
+    makeEnemy(2200, 2000, 'soldier'),
+    makeEnemy(2300, 2080, 'scav'),
+    // Lone guard with keycard — patrols road south (center)
+    makeEnemy(1500, 2300, 'soldier'),
   ];
 
-  // Give keycard to ALL outside patrol guards to guarantee it drops
+  // Spread patrol ranges wider for outside guards so they don't clump
   for (let i = enemies.length - 5; i < enemies.length; i++) {
-    if (i === enemies.length - 1) {
-      // Main keycard carrier — always has it
-      enemies[i].loot = [createKeycard()];
-    }
+    enemies[i].patrolTarget = {
+      x: enemies[i].pos.x + (Math.random() - 0.5) * 400,
+      y: enemies[i].pos.y + (Math.random() - 0.5) * 300,
+    };
   }
-  // Also give a second keycard to one of the pairs as backup
+
+  // Give keycard to the lone guard (primary) and one pair guard (backup)
+  enemies[enemies.length - 1].loot = [createKeycard()];
   enemies[enemies.length - 3].loot = [createKeycard()];
 
   // ══════════════════════════════════════

@@ -96,6 +96,49 @@ export const createGrenade = (name: string = 'RGD-5', damage: number = 200, radi
   description: `Granat — ${damage} skada i ${radius}px radie`,
 });
 
+export const createFlashbang = (): Item => ({
+  id: nextId(),
+  name: 'Bländgranat',
+  category: 'flashbang',
+  icon: '💫',
+  weight: 0.4,
+  value: 120,
+  damage: 0,
+  description: 'Bländar fiender och spelaren — 3 sekunders effekt',
+});
+
+export const createBackpack = (): Item => ({
+  id: nextId(),
+  name: 'Taktisk Ryggsäck',
+  category: 'backpack',
+  icon: '🎒',
+  weight: 0,
+  value: 200,
+  description: 'Ökar bärkapacitet — plats för mer loot',
+});
+
+export const createArmor = (name: string = 'Skyddsväst', armor: number = 30, icon: string = '🦺'): Item => ({
+  id: nextId(),
+  name,
+  category: 'armor',
+  icon,
+  weight: 3,
+  value: armor * 10,
+  damage: armor, // reuse damage field for armor value
+  description: `${name} — +${armor} skydd`,
+});
+
+export const createHelmet = (): Item => ({
+  id: nextId(),
+  name: 'Hjälm',
+  category: 'armor',
+  icon: '⛑️',
+  weight: 1.5,
+  value: 250,
+  damage: 15, // armor value
+  description: 'Skyddar huvudet — +15 skydd',
+});
+
 export const WEAPON_TEMPLATES = {
   makarov: () => createWeapon('PM Makarov', '9x18', 12, '🔫'),
   ak74: () => createWeapon('AK-74', '5.45x39', 25, '🔫'),
@@ -177,8 +220,12 @@ export const LOOT_POOLS = {
       [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
       [createValuable('Dogtags', 200, '🏷️'), 0.15],
       [createGrenade(), 0.2],
+      [createFlashbang(), 0.25],
       [createKey('Skåpnyckel', 'key_cabinet'), 0.1],
       [WEAPON_TEMPLATES.makarov(), 0.1],
+      [createBackpack(), 0.12],
+      [createArmor(), 0.15],
+      [createHelmet(), 0.1],
     ]);
   },
   body: (): Item[] => {
@@ -190,6 +237,7 @@ export const LOOT_POOLS = {
       [createKey('Lagernyckel', 'key_storage'), 0.05],
       [createValuable('Dogtags', 200, '🏷️'), 0.2],
       [createValuable('Anteckningar', 80, '📝'), 0.15],
+      [createFlashbang(), 0.1],
     ]);
   },
 };

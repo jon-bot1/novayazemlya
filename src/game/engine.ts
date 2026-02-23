@@ -1,7 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
-import { LOOT_POOLS } from './items';
+import { LOOT_POOLS, createFlashbang } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar, playVoiceShout } from './audio';
 import { speakCallout } from './voice';
 
@@ -112,6 +112,8 @@ export function createGameState(): GameState {
     hasExtractionCode: false,
     speedBoostTimer: 0,
     soundEvents: [],
+    flashbangTimer: 0,
+    backpackCapacity: 0,
   };
 }
 
@@ -252,6 +254,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
+  // Flashbang blindness countdown
+  if (state.flashbangTimer > 0) {
+    state.flashbangTimer = Math.max(0, state.flashbangTimer - dt);
+  }
+
   // Player aim angle
   if (input.aimX !== 0 || input.aimY !== 0) {
     state.player.angle = Math.atan2(input.aimY, input.aimX);
@@ -280,24 +287,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     playGunshot('pistol');
   }
 
-  // Throw grenade (G key)
+  // Throw grenade (G key) — supports both grenades and flashbangs
   if (input.throwGrenade) {
-    const grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
+    // Try flashbang first if no grenades
+    let grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
+    let isFlashbang = false;
+    if (grenadeIdx < 0) {
+      grenadeIdx = state.player.inventory.findIndex(i => i.category === 'flashbang');
+      isFlashbang = true;
+    }
     if (grenadeIdx >= 0) {
       const grenadeItem = state.player.inventory[grenadeIdx];
+      isFlashbang = grenadeItem.category === 'flashbang';
       const angle = state.player.angle;
       const throwSpeed = 4;
       state.grenades.push({
         pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
         vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
-        timer: 1.5,
-        damage: grenadeItem.damage || 60,
-        radius: 80,
+        timer: isFlashbang ? 1.0 : 1.5,
+        damage: isFlashbang ? -1 : (grenadeItem.damage || 200), // -1 = flashbang marker
+        radius: isFlashbang ? 200 : 150,
         fromPlayer: true,
       });
       state.player.inventory.splice(grenadeIdx, 1);
-      addMessage(state, '💣 GRANAT KASTAD!', 'warning');
-      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#886644', 3);
+      addMessage(state, isFlashbang ? '💫 BLÄNDGRANAT KASTAD!' : '💣 GRANAT KASTAD!', 'warning');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
     } else {
       addMessage(state, '⚠ Inga granater!', 'warning');
     }
@@ -336,6 +350,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
+          }
+          // Auto-equip backpack
+          if (item.category === 'backpack' && state.backpackCapacity === 0) {
+            state.backpackCapacity = 10;
+            addMessage(state, '🎒 Ryggsäck utrustad — mer plats för loot!', 'intel');
+          }
+          // Auto-equip armor
+          if (item.category === 'armor' && item.damage) {
+            state.player.armor += item.damage;
+            addMessage(state, `🛡️ +${item.damage} skydd utrustat!`, 'info');
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
@@ -379,6 +403,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
+          }
+          if (item.category === 'backpack' && state.backpackCapacity === 0) {
+            state.backpackCapacity = 10;
+            addMessage(state, '🎒 Ryggsäck utrustad!', 'intel');
+          }
+          if (item.category === 'armor' && item.damage) {
+            state.player.armor += item.damage;
+            addMessage(state, `🛡️ +${item.damage} skydd!`, 'info');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
@@ -508,6 +540,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Update enemies
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
+
+    // Stunned enemies can't act
+    if (enemy.stunTimer > 0) {
+      enemy.stunTimer -= dt;
+      enemy.state = 'idle';
+      continue;
+    }
 
     enemy.eyeBlink -= dt;
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
@@ -909,7 +948,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             lastShot: 0, angle: Math.random() * Math.PI * 2,
             type: 'scav', eyeBlink: 3, loot: [], looted: false,
             lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
-            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0,
+            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0,
           };
           state.enemies.push(minion);
           addMessage(state, '📻 Volkov kallar förstärkning!', 'warning');
@@ -933,38 +972,62 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (collidesWithWalls(state, g.pos.x, g.pos.y + g.vel.y, 4)) g.vel.y *= -0.5;
 
     if (g.timer <= 0) {
-      // EXPLOSION
-      addMessage(state, '💥 EXPLOSION!', 'damage');
-      spawnParticles(state, g.pos.x, g.pos.y, '#ff8833', 20);
-      spawnParticles(state, g.pos.x, g.pos.y, '#ffcc44', 15);
-      spawnParticles(state, g.pos.x, g.pos.y, '#444', 10);
-      playExplosion();
-      // Explosion sound event — very loud, alerts all nearby enemies
-      state.soundEvents.push({ pos: { ...g.pos }, radius: 500, time: state.time });
+      const isFlashbang = g.damage === -1;
 
-      // Damage enemies in radius
-      for (const enemy of state.enemies) {
-        if (enemy.state === 'dead') continue;
-        const d = dist(g.pos, enemy.pos);
-        if (d < g.radius) {
-          // Grenades are instant kill
-          enemy.hp = 0;
-          enemy.state = 'dead';
-          playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-          speakCallout('death', enemy.type);
-          enemy.loot = generateEnemyLoot(enemy);
-          state.killCount++;
-          addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
-          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+      if (isFlashbang) {
+        // FLASHBANG — stun enemies, blind player
+        addMessage(state, '💫 BLÄNDGRANAT!', 'warning');
+        spawnParticles(state, g.pos.x, g.pos.y, '#ffffcc', 25);
+        spawnParticles(state, g.pos.x, g.pos.y, '#ffffff', 20);
+        state.soundEvents.push({ pos: { ...g.pos }, radius: 400, time: state.time });
+
+        // Stun enemies in radius
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead') continue;
+          const d = dist(g.pos, enemy.pos);
+          if (d < g.radius) {
+            enemy.stunTimer = 3; // 3 seconds stun
+            enemy.state = 'idle';
+            addMessage(state, `💫 ${enemy.type.toUpperCase()} bländad!`, 'info');
+          }
         }
-      }
 
-      // Damage player if in radius
-      if (g.fromPlayer || true) {
+        // Blind player if in radius
+        const dPlayer = dist(g.pos, state.player.pos);
+        if (dPlayer < g.radius) {
+          const intensity = 1 - (dPlayer / g.radius);
+          state.flashbangTimer = 2 * intensity + 0.5; // 0.5 - 2.5 seconds based on distance
+          addMessage(state, '💫 BLÄNDAD!', 'damage');
+        }
+      } else {
+        // REGULAR GRENADE — instant kill
+        addMessage(state, '💥 EXPLOSION!', 'damage');
+        spawnParticles(state, g.pos.x, g.pos.y, '#ff8833', 20);
+        spawnParticles(state, g.pos.x, g.pos.y, '#ffcc44', 15);
+        spawnParticles(state, g.pos.x, g.pos.y, '#444', 10);
+        playExplosion();
+        state.soundEvents.push({ pos: { ...g.pos }, radius: 500, time: state.time });
+
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead') continue;
+          const d = dist(g.pos, enemy.pos);
+          if (d < g.radius) {
+            enemy.hp = 0;
+            enemy.state = 'dead';
+            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+            speakCallout('death', enemy.type);
+            enemy.loot = generateEnemyLoot(enemy);
+            state.killCount++;
+            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+          }
+        }
+
+        // Damage player if in radius
         const d = dist(g.pos, state.player.pos);
         if (d < g.radius) {
           const falloff = 1 - (d / g.radius);
-          const dmg = g.damage * falloff * 0.5; // reduced self-damage
+          const dmg = g.damage * falloff * 0.5;
           state.player.hp -= dmg;
           spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
           addMessage(state, `💥 Splitterskada! -${Math.floor(dmg)}HP`, 'damage');

@@ -11,6 +11,10 @@ const categoryLabels: Record<string, string> = {
   medical: 'sjukvård',
   armor: 'skydd',
   valuable: 'värdesaker',
+  grenade: 'granater',
+  flashbang: 'bländgranater',
+  backpack: 'utrustning',
+  key: 'nycklar',
 };
 
 const categoryIcons: Record<string, string> = {
@@ -19,10 +23,14 @@ const categoryIcons: Record<string, string> = {
   medical: '🏥',
   armor: '🛡️',
   valuable: '💰',
+  grenade: '💣',
+  flashbang: '💫',
+  backpack: '🎒',
+  key: '🔑',
 };
 
 export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
-  const categories = ['weapon', 'ammo', 'medical', 'armor', 'valuable'] as const;
+  const categories = ['weapon', 'ammo', 'medical', 'armor', 'grenade', 'flashbang', 'backpack', 'valuable', 'key'] as const;
   const totalValue = items.reduce((s, i) => s + i.value, 0);
   const totalWeight = items.reduce((s, i) => s + i.weight, 0);
 

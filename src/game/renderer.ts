@@ -34,7 +34,7 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  const headR = size * 0.62;
+  const headR = size * 0.42; // smaller head, body more visible
   const torsoW = size * 0.7;
   const torsoH = size * 0.55;
   const legW = size * 0.18;
@@ -1550,7 +1550,22 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Status icons
     ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';
-    if (enemy.state === 'attack') {
+    if (enemy.stunTimer > 0) {
+      // Flashbang stun effect
+      const pulse = 0.6 + Math.sin(state.time * 8) * 0.4;
+      ctx.globalAlpha = pulse;
+      ctx.fillText('💫', enemy.pos.x, enemy.pos.y - R - 12);
+      ctx.globalAlpha = 1;
+      // Stun stars circling head
+      for (let s = 0; s < 3; s++) {
+        const sa = state.time * 4 + s * (Math.PI * 2 / 3);
+        const sx = enemy.pos.x + Math.cos(sa) * 14;
+        const sy = enemy.pos.y - R - 8 + Math.sin(sa) * 6;
+        ctx.font = '8px sans-serif';
+        ctx.fillText('⭐', sx, sy);
+      }
+      ctx.font = '14px sans-serif';
+    } else if (enemy.state === 'attack') {
       ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 12);
     } else if (enemy.state === 'chase') {
       ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 12);
@@ -1811,6 +1826,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.restore(); // camera
 
   // No lighting overlay — pure daylight, uniform everywhere
+
+  // Flashbang white screen effect
+  if (state.flashbangTimer > 0) {
+    const alpha = Math.min(1, state.flashbangTimer * 0.8);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.fillRect(0, 0, w, h);
+  }
 
   // Low HP flash (only visual feedback, not lighting)
   if (state.player.hp < 30) {
