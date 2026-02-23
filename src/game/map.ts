@@ -296,8 +296,8 @@ export function generateMap() {
   for (let i = enemies.length - 5 - 9; i < enemies.length - 5; i++) {
     enemies[i].elevated = true;
     enemies[i].state = 'idle'; // wall guards don't patrol, they stand on platforms
-    enemies[i].alertRange = 250; // better view from elevation
-    enemies[i].shootRange = 220;
+    enemies[i].alertRange = 180; // limited range from elevation
+    enemies[i].shootRange = 150;
   }
 
   // Spread patrol ranges wider for outside guards so they don't clump
