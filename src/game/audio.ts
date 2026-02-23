@@ -42,40 +42,40 @@ export function playGunshot(type: 'pistol' | 'rifle' | 'shotgun' | 'heavy' | 'tu
 
   const configs = {
     pistol: {
-      freq: 220, freqEnd: 50, decay: 0.1,
-      noiseVol: 0.3, noiseDur: 0.06, noiseHP: 1200,
-      gain: 0.22, tailFreq: 140, tailDecay: 0.05, tailGain: 0.08,
-      distortion: 0,
-    },
-    rifle: {
-      freq: 150, freqEnd: 35, decay: 0.13,
-      noiseVol: 0.45, noiseDur: 0.08, noiseHP: 600,
-      gain: 0.3, tailFreq: 100, tailDecay: 0.08, tailGain: 0.12,
+      freq: 220, freqEnd: 50, decay: 0.12,
+      noiseVol: 0.7, noiseDur: 0.08, noiseHP: 1200,
+      gain: 0.5, tailFreq: 140, tailDecay: 0.06, tailGain: 0.2,
       distortion: 2,
     },
+    rifle: {
+      freq: 150, freqEnd: 35, decay: 0.15,
+      noiseVol: 0.85, noiseDur: 0.1, noiseHP: 600,
+      gain: 0.65, tailFreq: 100, tailDecay: 0.1, tailGain: 0.25,
+      distortion: 4,
+    },
     shotgun: {
-      freq: 70, freqEnd: 20, decay: 0.2,
-      noiseVol: 0.65, noiseDur: 0.15, noiseHP: 300,
-      gain: 0.38, tailFreq: 60, tailDecay: 0.12, tailGain: 0.18,
-      distortion: 8,
+      freq: 70, freqEnd: 20, decay: 0.22,
+      noiseVol: 1.0, noiseDur: 0.18, noiseHP: 300,
+      gain: 0.8, tailFreq: 60, tailDecay: 0.15, tailGain: 0.35,
+      distortion: 12,
     },
     heavy: {
-      freq: 55, freqEnd: 18, decay: 0.22,
-      noiseVol: 0.55, noiseDur: 0.12, noiseHP: 400,
-      gain: 0.36, tailFreq: 50, tailDecay: 0.15, tailGain: 0.15,
-      distortion: 6,
+      freq: 55, freqEnd: 18, decay: 0.25,
+      noiseVol: 0.9, noiseDur: 0.15, noiseHP: 400,
+      gain: 0.75, tailFreq: 50, tailDecay: 0.18, tailGain: 0.3,
+      distortion: 10,
     },
     turret: {
-      freq: 130, freqEnd: 45, decay: 0.07,
-      noiseVol: 0.5, noiseDur: 0.05, noiseHP: 900,
-      gain: 0.28, tailFreq: 90, tailDecay: 0.04, tailGain: 0.1,
-      distortion: 3,
+      freq: 130, freqEnd: 45, decay: 0.08,
+      noiseVol: 0.8, noiseDur: 0.06, noiseHP: 900,
+      gain: 0.55, tailFreq: 90, tailDecay: 0.05, tailGain: 0.2,
+      distortion: 5,
     },
     boss: {
-      freq: 90, freqEnd: 22, decay: 0.25,
-      noiseVol: 0.6, noiseDur: 0.14, noiseHP: 350,
-      gain: 0.4, tailFreq: 55, tailDecay: 0.18, tailGain: 0.2,
-      distortion: 10,
+      freq: 90, freqEnd: 22, decay: 0.28,
+      noiseVol: 1.0, noiseDur: 0.18, noiseHP: 350,
+      gain: 0.85, tailFreq: 55, tailDecay: 0.2, tailGain: 0.4,
+      distortion: 14,
     },
   };
   const c = configs[type];
@@ -186,7 +186,7 @@ export function playExplosion() {
   osc.type = 'sine';
   osc.frequency.setValueAtTime(60, now);
   osc.frequency.exponentialRampToValueAtTime(15, now + 0.5);
-  oscGain.gain.setValueAtTime(0.5, now);
+  oscGain.gain.setValueAtTime(0.8, now);
   oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
   osc.connect(oscGain).connect(master);
   osc.start(now);
@@ -198,7 +198,7 @@ export function playExplosion() {
   sub.type = 'sine';
   sub.frequency.setValueAtTime(35, now);
   sub.frequency.exponentialRampToValueAtTime(12, now + 0.3);
-  subGain.gain.setValueAtTime(0.35, now);
+  subGain.gain.setValueAtTime(0.6, now);
   subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
   sub.connect(subGain).connect(master);
   sub.start(now);
@@ -214,7 +214,7 @@ export function playExplosion() {
   const noise = ctx.createBufferSource();
   const noiseGain = ctx.createGain();
   noise.buffer = noiseBuffer;
-  noiseGain.gain.setValueAtTime(0.45, now);
+  noiseGain.gain.setValueAtTime(0.75, now);
   noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
   
   const lp = ctx.createBiquadFilter();
@@ -483,13 +483,13 @@ const SHOUT_COOLDOWN = 800; // ms
 type ShoutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
 const SHOUT_CONFIGS: Record<ShoutType, { formants: [number, number, number]; duration: number; pitch: number; pitchEnd: number; volume: number; roughness: number }> = {
-  alert:       { formants: [700, 1200, 2600],  duration: 0.4,  pitch: 180, pitchEnd: 250, volume: 0.55, roughness: 2 },
-  chase:       { formants: [600, 1000, 2400],  duration: 0.5,  pitch: 160, pitchEnd: 200, volume: 0.6,  roughness: 3 },
-  investigate: { formants: [400, 900, 2200],   duration: 0.35, pitch: 140, pitchEnd: 170, volume: 0.4,  roughness: 1 },
-  attack:      { formants: [800, 1300, 2800],  duration: 0.3,  pitch: 200, pitchEnd: 280, volume: 0.6,  roughness: 4 },
-  lost:        { formants: [500, 1100, 2000],  duration: 0.45, pitch: 150, pitchEnd: 120, volume: 0.4,  roughness: 1 },
-  alarm:       { formants: [750, 1400, 2900],  duration: 0.55, pitch: 190, pitchEnd: 300, volume: 0.65, roughness: 5 },
-  death:       { formants: [350, 800, 1800],   duration: 0.65, pitch: 200, pitchEnd: 60,  volume: 0.7,  roughness: 6 },
+  alert:       { formants: [800, 1400, 2800],  duration: 0.5,  pitch: 250, pitchEnd: 350, volume: 0.9, roughness: 5 },
+  chase:       { formants: [700, 1200, 2600],  duration: 0.55, pitch: 220, pitchEnd: 300, volume: 0.95, roughness: 6 },
+  investigate: { formants: [500, 1000, 2400],  duration: 0.4,  pitch: 180, pitchEnd: 220, volume: 0.7,  roughness: 3 },
+  attack:      { formants: [900, 1500, 3000],  duration: 0.4,  pitch: 280, pitchEnd: 400, volume: 1.0,  roughness: 8 },
+  lost:        { formants: [600, 1200, 2200],  duration: 0.5,  pitch: 200, pitchEnd: 160, volume: 0.75, roughness: 4 },
+  alarm:       { formants: [850, 1500, 3100],  duration: 0.6,  pitch: 260, pitchEnd: 400, volume: 1.0,  roughness: 8 },
+  death:       { formants: [400, 900, 2000],   duration: 0.8,  pitch: 300, pitchEnd: 80,  volume: 1.0,  roughness: 10 },
 };
 
 export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
@@ -539,7 +539,7 @@ export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
 
   // Mix formants together — higher gain
   const merger = ctx.createGain();
-  merger.gain.value = 1.5;
+  merger.gain.value = 2.5; // louder formant mix
 
   voice.connect(distNode);
   for (const f of filters) {
@@ -560,7 +560,7 @@ export function playVoiceShout(type: ShoutType, pitchVariation: number = 0) {
   const noiseSrc = ctx.createBufferSource();
   noiseSrc.buffer = noiseBuf;
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(c.volume * 0.6, t);
+  noiseGain.gain.setValueAtTime(c.volume * 0.8, t);
   noiseGain.gain.exponentialRampToValueAtTime(0.001, t + noiseDur);
   const noiseHP = ctx.createBiquadFilter();
   noiseHP.type = 'highpass';

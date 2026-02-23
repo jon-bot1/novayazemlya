@@ -1,28 +1,31 @@
 // Real speech synthesis for enemy callouts using Web Speech API
-// With robust mobile unlock and fallback
+// Panicked, screaming voices that always play to completion
 
 let lastCalloutTime = 0;
-const CALLOUT_COOLDOWN = 1500;
+const CALLOUT_COOLDOWN = 2500; // longer cooldown so voices always finish
 let unlocked = false;
 let speechAvailable = typeof speechSynthesis !== 'undefined';
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+let isSpeaking = false;
 
 type CalloutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
+// More panicked, screaming callouts
 const CALLOUTS: Record<CalloutType, string[]> = {
-  alert:       ['Contact!', 'I see him!', 'Over there!', 'Enemy spotted!', 'Hostile!'],
-  chase:       ['He is running!', 'After him!', 'Move move move!', 'Cut him off!'],
-  investigate: ['What was that?', 'Check it out.', 'Something moved.', 'Did you hear that?'],
-  attack:      ['Open fire!', 'Take him down!', 'Engaging!', 'Light him up!'],
-  lost:        ['Where did he go?', 'Lost visual.', 'I lost him.', 'He is gone.'],
-  alarm:       ['All units respond!', 'We need backup!', 'Reinforcements!', 'Calling for backup!'],
-  death:       ['Aaargh!', 'Urgh!', 'No!', 'Gah!'],
+  alert:       ['CONTACT! CONTACT!', 'HE IS RIGHT THERE!', 'OH GOD, OVER THERE!', 'HOSTILE! HOSTILE!', 'ENEMY! I SEE HIM!'],
+  chase:       ['HE IS RUNNING! GO GO GO!', 'AFTER HIM! NOW!', 'MOVE! MOVE! MOVE!', 'DON\'T LET HIM ESCAPE!', 'CUT HIM OFF! HURRY!'],
+  investigate: ['What the hell was that?!', 'Something moved! Check it!', 'Did you hear that?! GO!', 'Over there! I heard something!'],
+  attack:      ['OPEN FIRE! OPEN FIRE!', 'TAKE HIM DOWN NOW!', 'ENGAGING! SHOOT!', 'LIGHT HIM UP! FIRE!', 'KILL HIM! KILL HIM!'],
+  lost:        ['WHERE DID HE GO?!', 'I LOST HIM! SHIT!', 'HE DISAPPEARED!', 'WHERE IS HE?! FIND HIM!'],
+  alarm:       ['ALL UNITS! ALL UNITS!', 'WE NEED BACKUP NOW!', 'REINFORCEMENTS! HELP!', 'MAN DOWN! SEND EVERYONE!', 'CODE RED! CODE RED!'],
+  death:       ['AAAARGH!', 'NOOO!', 'HELP ME!', 'I\'M HIT! I\'M HIT!', 'MEDIC!', 'OH GOD NO!'],
 };
 
 const PITCH_BY_ENEMY: Record<string, number> = {
-  heavy: 0.5,
-  soldier: 0.85,
-  scav: 1.15,
-  turret: 1.3,
+  heavy: 0.6,
+  soldier: 1.0,
+  scav: 1.3,
+  turret: 1.5,
 };
 
 let cachedVoice: SpeechSynthesisVoice | null = null;
@@ -36,7 +39,6 @@ function ensureVoices(): SpeechSynthesisVoice | null {
   if (voices.length === 0) return null;
   voicesLoaded = true;
   
-  // Prefer English voices
   const english = voices.filter(v => v.lang.startsWith('en'));
   const pool = english.length > 0 ? english : voices;
   
@@ -47,7 +49,6 @@ function ensureVoices(): SpeechSynthesisVoice | null {
   return cachedVoice;
 }
 
-// Setup voice loading
 if (speechAvailable) {
   ensureVoices();
   speechSynthesis.addEventListener('voiceschanged', () => {
@@ -56,32 +57,24 @@ if (speechAvailable) {
   });
 }
 
-/**
- * Must be called inside a user gesture handler (click/touchstart).
- * Speaks a real word to unlock the audio policy on mobile browsers.
- */
 export function unlockSpeech() {
   if (unlocked || !speechAvailable) return;
   
   try {
-    // Force voice load
     ensureVoices();
     
-    // Speak a real short word — empty strings don't unlock on iOS/Chrome mobile
     const utt = new SpeechSynthesisUtterance('Go');
-    utt.volume = 0.01; // barely audible
-    utt.rate = 5; // fastest
+    utt.volume = 0.01;
+    utt.rate = 5;
     utt.pitch = 1;
     const voice = ensureVoices();
     if (voice) utt.voice = voice;
     
-    // Don't cancel before speak — let the utterance actually play to unlock
     speechSynthesis.speak(utt);
-    
     unlocked = true;
     console.log('[voice] Unlock attempted. Voices loaded:', voicesLoaded, 'Voice:', voice?.name || 'default');
     
-    // Cancel after a short delay so the unlock registers
+    // Cancel after delay so unlock registers
     setTimeout(() => { speechSynthesis.cancel(); }, 500);
   } catch (e) {
     console.error('[voice] Unlock failed:', e);
@@ -92,14 +85,14 @@ export function unlockSpeech() {
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   if (!speechAvailable || !unlocked) return;
 
+  // Don't interrupt a currently speaking utterance — let it finish
+  if (isSpeaking) return;
+
   const now = performance.now();
   if (now - lastCalloutTime < CALLOUT_COOLDOWN) return;
   lastCalloutTime = now;
 
   try {
-    // Cancel any queued speech
-    speechSynthesis.cancel();
-    
     const lines = CALLOUTS[type];
     const text = lines[Math.floor(Math.random() * lines.length)];
 
@@ -107,18 +100,29 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
     const voice = ensureVoices();
     if (voice) utt.voice = voice;
 
-    utt.pitch = PITCH_BY_ENEMY[enemyType] ?? 0.9;
-    utt.rate = type === 'death' ? 0.8 : 1.0 + Math.random() * 0.2;
+    // Panicked: higher pitch, faster rate
+    const basePitch = PITCH_BY_ENEMY[enemyType] ?? 1.0;
+    utt.pitch = Math.min(2, basePitch + 0.3 + Math.random() * 0.3); // higher = more panicked
+    utt.rate = type === 'death' ? 1.2 : 1.4 + Math.random() * 0.4; // fast, urgent
     utt.volume = 1.0;
 
-    utt.onerror = (e) => {
-      console.warn('[voice] Error:', e.error);
+    isSpeaking = true;
+    currentUtterance = utt;
+
+    utt.onend = () => {
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    utt.onerror = () => {
+      isSpeaking = false;
+      currentUtterance = null;
     };
 
-    // Chrome can pause speechSynthesis after inactivity — resume it
+    // Resume in case Chrome paused it
     speechSynthesis.resume();
     speechSynthesis.speak(utt);
   } catch (e) {
+    isSpeaking = false;
     console.error('[voice] speakCallout error:', e);
   }
 }
