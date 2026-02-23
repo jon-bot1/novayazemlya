@@ -1243,10 +1243,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'alert': {
-        // Looking around nervously at investigate location
+        // Looking around nervously — return to patrol after ~3 seconds
         enemy.angle += Math.sin(state.time * 3 + enemy.pos.x) * 0.03;
-        // After some time go back to patrol
-        if (Math.random() < 0.008) {
+        if (!( enemy as any)._alertStart) (enemy as any)._alertStart = state.time;
+        if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
+          (enemy as any)._alertStart = 0;
           enemy.state = 'patrol';
           enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
         }

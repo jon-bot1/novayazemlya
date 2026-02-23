@@ -32,7 +32,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     heavy: { hp: 120, speed: 0.8, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
     boss: { hp: 350, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
-    sniper: { hp: 40, speed: 0.6, damage: 45, alertRange: 500, shootRange: 450, fireRate: 3000 },
+    sniper: { hp: 40, speed: 0.6, damage: 45, alertRange: 400, shootRange: 350, fireRate: 5000 },
   }[type];
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
