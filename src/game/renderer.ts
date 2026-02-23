@@ -398,7 +398,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
-    // Detection radius field
+    // Detection field — forward cone (wide) + small rear circle
     ctx.save();
     const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
     const fieldColor = enemy.state === 'patrol'
@@ -406,24 +406,36 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       : enemy.state === 'chase'
       ? `rgba(255, 120, 40, ${alertPulse * 2})`
       : `rgba(255, 50, 30, ${alertPulse * 2.5})`;
-    
-    // Outer alert range
-    ctx.beginPath();
-    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, 0, Math.PI * 2);
-    ctx.fillStyle = fieldColor;
-    ctx.fill();
-    ctx.strokeStyle = enemy.state === 'patrol'
+    const strokeColor = enemy.state === 'patrol'
       ? `rgba(255, 200, 80, ${alertPulse * 3})`
       : `rgba(255, 80, 40, ${alertPulse * 4})`;
+
+    // Forward vision cone (~200° arc)
+    const coneHalf = Math.PI * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(enemy.pos.x, enemy.pos.y);
+    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange, enemy.angle - coneHalf, enemy.angle + coneHalf);
+    ctx.closePath();
+    ctx.fillStyle = fieldColor;
+    ctx.fill();
+    ctx.strokeStyle = strokeColor;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 6]);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Inner shoot range
+    // Rear awareness (small circle, 35% range)
+    ctx.beginPath();
+    ctx.arc(enemy.pos.x, enemy.pos.y, enemy.alertRange * 0.35, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 200, 80, ${alertPulse * 0.5})`;
+    ctx.fill();
+
+    // Inner shoot range (forward only)
     if (enemy.state !== 'patrol') {
       ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, 0, Math.PI * 2);
+      ctx.moveTo(enemy.pos.x, enemy.pos.y);
+      ctx.arc(enemy.pos.x, enemy.pos.y, enemy.shootRange, enemy.angle - coneHalf, enemy.angle + coneHalf);
+      ctx.closePath();
       ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 5]);
