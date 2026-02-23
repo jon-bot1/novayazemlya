@@ -1574,7 +1574,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   lctx.fillStyle = playerGlow;
   lctx.fillRect(playerScreenX - 50, playerScreenY - 50, 100, 100);
   
-  // Render each light source
+  // Render each light source with dynamic animation
   for (const light of state.lights) {
     const lx = light.pos.x - cx;
     const ly = light.pos.y - cy;
@@ -1583,11 +1583,20 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (lx < -light.radius || lx > w + light.radius || ly < -light.radius || ly > h + light.radius) continue;
     
     let intensity = light.intensity;
+    // All lights pulse gently from their fixed position
+    const uniqueSeed = light.pos.x * 7.3 + light.pos.y * 13.7;
+    const slowPulse = Math.sin(state.time * 0.8 + uniqueSeed) * 0.05;
+    intensity *= (0.95 + slowPulse);
+    
     if (light.flicker) {
-      intensity *= 0.85 + Math.sin(state.time * 8 + light.pos.x * 0.1) * 0.1 + Math.random() * 0.05;
+      // Dramatic flicker — irregular on/off pattern
+      const flickerA = Math.sin(state.time * 12 + uniqueSeed) * 0.2;
+      const flickerB = Math.sin(state.time * 7.3 + uniqueSeed * 0.5) * 0.15;
+      const flickerC = Math.random() * 0.08;
+      intensity *= Math.max(0.15, 0.7 + flickerA + flickerB + flickerC);
     }
     
-    const r = light.radius * 0.55; // Tighter light spread
+    const r = light.radius * 0.55;
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
     grad.addColorStop(0, `rgba(0,0,0,${intensity})`);
     grad.addColorStop(0.35, `rgba(0,0,0,${intensity * 0.5})`);
@@ -1638,8 +1647,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (lx - cx < -light.radius || lx - cx > w + light.radius || ly - cy < -light.radius || ly - cy > h + light.radius) continue;
     
     let intensity = light.intensity * 0.15;
+    const uniqueSeed = light.pos.x * 7.3 + light.pos.y * 13.7;
+    const slowPulse = Math.sin(state.time * 0.8 + uniqueSeed) * 0.05;
+    intensity *= (0.95 + slowPulse);
     if (light.flicker) {
-      intensity *= 0.85 + Math.sin(state.time * 8 + light.pos.x * 0.1) * 0.1;
+      intensity *= Math.max(0.15, 0.7 + Math.sin(state.time * 12 + uniqueSeed) * 0.2 + Math.sin(state.time * 7.3 + uniqueSeed * 0.5) * 0.15);
     }
     
     const r = light.radius * 0.6;
