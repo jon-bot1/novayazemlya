@@ -29,11 +29,11 @@ export const SECRET_CODES: Record<string, string> = {
 export const LORE_DOCUMENTS: LoreDocument[] = [
   {
     id: 'doc_1',
-    title: 'Operation "Grey Wolf"',
+    title: 'Novaya Zemlya — Field Report',
     author: 'Colonel Zorin',
     date: '14.03.1993',
     classification: 'SECRET',
-    content: `REPORT — Operation "Grey Wolf"
+    content: `REPORT — Novaya Zemlya
 
 Object Z-14 confirmed active. Recon team has detected signs of recent activity in the bunker's underground chambers.
 

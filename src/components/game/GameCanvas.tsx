@@ -29,7 +29,7 @@ const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
     <div className="max-w-lg w-full mx-4 flex flex-col gap-6 p-8 border border-border bg-card rounded">
       <div className="text-center">
-        <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">OPERATION GREY WOLF</h1>
+        <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
         <p className="text-xs font-mono text-muted-foreground mt-2">CLASSIFIED — EYES ONLY</p>
       </div>
 
