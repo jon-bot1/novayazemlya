@@ -6,15 +6,15 @@ interface InventoryPanelProps {
 }
 
 const categoryLabels: Record<string, string> = {
-  weapon: 'vapen',
+  weapon: 'weapons',
   ammo: 'ammunition',
-  medical: 'sjukvård',
-  armor: 'skydd',
-  valuable: 'värdesaker',
-  grenade: 'granater',
-  flashbang: 'bländgranater',
-  backpack: 'utrustning',
-  key: 'nycklar',
+  medical: 'medical',
+  armor: 'armor',
+  valuable: 'valuables',
+  grenade: 'grenades',
+  flashbang: 'flashbangs',
+  backpack: 'equipment',
+  key: 'keys',
 };
 
 const categoryIcons: Record<string, string> = {
@@ -37,9 +37,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
   return (
     <div className="w-56 h-full bg-card/90 backdrop-blur-sm border-l border-border flex flex-col pointer-events-auto">
       <div className="px-3 py-2 border-b border-border/60">
-        <h2 className="font-display text-sm text-foreground tracking-wider">📦 INVENTARIUM</h2>
+        <h2 className="font-display text-sm text-foreground tracking-wider">📦 INVENTORY</h2>
         <div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-1">
-          <span>{items.length} st</span>
+          <span>{items.length} pcs</span>
           <span>{totalWeight.toFixed(1)} kg</span>
           <span>{totalValue}₽</span>
         </div>
@@ -66,7 +66,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
           );
         })}
         {items.length === 0 && (
-          <p className="text-center text-muted-foreground text-[10px] font-mono py-6">Tomt</p>
+          <p className="text-center text-muted-foreground text-[10px] font-mono py-6">Empty</p>
         )}
       </div>
     </div>

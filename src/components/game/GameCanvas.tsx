@@ -12,6 +12,66 @@ import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
 
+const TIME_LIMIT = 300; // 5 minutes
+
+const IntroScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => (
+  <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
+    <div className="max-w-lg w-full mx-4 flex flex-col gap-6 p-8 border border-border bg-card rounded">
+      <div className="text-center">
+        <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">OPERATION GREY WOLF</h1>
+        <p className="text-xs font-mono text-muted-foreground mt-2">CLASSIFIED — EYES ONLY</p>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
+        <p className="text-xs font-mono text-foreground/80 leading-relaxed">
+          Infiltrate the abandoned military base <span className="text-accent">Object Z-14</span>. 
+          Locate and eliminate <span className="text-danger">Commandant Volkov</span>. 
+          Recover his <span className="text-loot">USB drive</span> containing critical intelligence. 
+          Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
+        </p>
+        <p className="text-xs font-mono text-muted-foreground mt-2 italic">
+          An officer outside carries an access card for the main gate. Hack control panels for intel.
+        </p>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">🎮 Controls</h2>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px] font-mono">
+          <span className="text-muted-foreground">WASD / Arrows</span><span className="text-foreground">Move</span>
+          <span className="text-muted-foreground">Mouse</span><span className="text-foreground">Aim & Shoot</span>
+          <span className="text-muted-foreground">Shift</span><span className="text-foreground">Sprint</span>
+          <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
+          <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Take Cover</span>
+          <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
+          <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
+          <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
+          <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
+          <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
+          <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">⚠ Rules of Engagement</h2>
+        <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
+          <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
+          <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
+          <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
+          <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
+          <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
+        </ul>
+      </div>
+
+      <button
+        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
+        onClick={onStart}
+      >
+        ▶ BEGIN OPERATION
+      </button>
+    </div>
+  </div>
+);
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -21,7 +81,7 @@ export const GameCanvas: React.FC = () => {
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
   const aimTouchRef = useRef<number | null>(null);
-  
+  const [started, setStarted] = useState(false);
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -114,7 +174,7 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch input: tap on enemy to shoot, tap on empty space to walk
+  // Touch input
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -123,10 +183,7 @@ export const GameCanvas: React.FC = () => {
       const cam = stateRef.current.camera;
       const w = window.innerWidth;
       const h = window.innerHeight;
-      return {
-        x: cam.x + (clientX - w / 2),
-        y: cam.y + (clientY - h / 2),
-      };
+      return { x: cam.x + (clientX - w / 2), y: cam.y + (clientY - h / 2) };
     };
 
     const findEnemyAtWorld = (wx: number, wy: number) => {
@@ -162,9 +219,7 @@ export const GameCanvas: React.FC = () => {
         const t = e.changedTouches[i];
         const world = screenToWorld(t.clientX, t.clientY);
         const enemy = findEnemyAtWorld(world.x, world.y);
-
         if (enemy) {
-          // Tap on enemy → aim and shoot at them
           aimTouchRef.current = t.identifier;
           const dx = world.x - stateRef.current.player.pos.x;
           const dy = world.y - stateRef.current.player.pos.y;
@@ -172,14 +227,12 @@ export const GameCanvas: React.FC = () => {
           inputRef.current.aimY = dy;
           inputRef.current.shooting = true;
         } else if (findInteractableAtWorld(world.x, world.y)) {
-          // Tap on interactable → walk there and auto-interact
           moveTouchRef.current = t.identifier;
           inputRef.current.moveTarget = world;
           inputRef.current.moveX = 0;
           inputRef.current.moveY = 0;
           inputRef.current.interact = true;
         } else {
-          // Tap on empty space → walk there
           moveTouchRef.current = t.identifier;
           inputRef.current.moveTarget = world;
           inputRef.current.moveX = 0;
@@ -193,15 +246,12 @@ export const GameCanvas: React.FC = () => {
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
-          const world = screenToWorld(t.clientX, t.clientY);
-          inputRef.current.moveTarget = world;
+          inputRef.current.moveTarget = screenToWorld(t.clientX, t.clientY);
         }
         if (t.identifier === aimTouchRef.current) {
           const world = screenToWorld(t.clientX, t.clientY);
-          const dx = world.x - stateRef.current.player.pos.x;
-          const dy = world.y - stateRef.current.player.pos.y;
-          inputRef.current.aimX = dx;
-          inputRef.current.aimY = dy;
+          inputRef.current.aimX = world.x - stateRef.current.player.pos.x;
+          inputRef.current.aimY = world.y - stateRef.current.player.pos.y;
           inputRef.current.shooting = true;
         }
       }
@@ -211,13 +261,8 @@ export const GameCanvas: React.FC = () => {
       e.preventDefault();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
-        if (t.identifier === moveTouchRef.current) {
-          moveTouchRef.current = null;
-        }
-        if (t.identifier === aimTouchRef.current) {
-          aimTouchRef.current = null;
-          inputRef.current.shooting = false;
-        }
+        if (t.identifier === moveTouchRef.current) moveTouchRef.current = null;
+        if (t.identifier === aimTouchRef.current) { aimTouchRef.current = null; inputRef.current.shooting = false; }
       }
     };
 
@@ -236,6 +281,7 @@ export const GameCanvas: React.FC = () => {
 
   // Game loop
   useEffect(() => {
+    if (!started) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -256,6 +302,7 @@ export const GameCanvas: React.FC = () => {
 
     let hudUpdateCounter = 0;
     let lastDocCheck = '';
+    let reinforcementsSpawned = false;
 
     const loop = (timestamp: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = timestamp;
@@ -269,23 +316,27 @@ export const GameCanvas: React.FC = () => {
       stateRef.current = state;
       inputRef.current.interact = false;
 
+      // 5-minute timer — game over with reinforcements
+      if (state.time >= TIME_LIMIT && !state.gameOver && !state.extracted && !reinforcementsSpawned) {
+        reinforcementsSpawned = true;
+        state.gameOver = true;
+        state.messages.push({ text: '🚨 REINFORCEMENTS ARRIVED — YOU ARE OVERWHELMED!', time: state.time, type: 'damage' });
+      }
+
       renderGame(ctx, state, cssW, cssH);
 
-      // Check for new documents to auto-open reader
+      // Check for new documents
       const docKey = state.documentsRead.join(',');
       if (docKey !== lastDocCheck && state.documentsRead.length > 0) {
         const newDocId = state.documentsRead[state.documentsRead.length - 1];
         const doc = LORE_DOCUMENTS.find(d => d.id === newDocId);
-        if (doc && docKey !== lastDocCheck) {
-          setReadingDoc(doc);
-        }
+        if (doc && docKey !== lastDocCheck) setReadingDoc(doc);
         lastDocCheck = docKey;
       }
 
       hudUpdateCounter++;
       const forceUpdate = state.gameOver || state.extracted;
       if (forceUpdate || hudUpdateCounter % 6 === 0) {
-        // Detect new loot items
         const currentCount = state.player.inventory.length;
         if (currentCount > lastInventoryCountRef.current) {
           const newItems = state.player.inventory.slice(lastInventoryCountRef.current);
@@ -295,7 +346,6 @@ export const GameCanvas: React.FC = () => {
             timestamp: Date.now(),
           }));
           setLootNotifications(prev => [...prev, ...newNotifs].slice(-5));
-          // Auto-remove after 3 seconds
           setTimeout(() => {
             setLootNotifications(prev => prev.filter(n => !newNotifs.find(nn => nn.id === n.id)));
           }, 3000);
@@ -327,11 +377,18 @@ export const GameCanvas: React.FC = () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [started]);
+
+  if (!started) {
+    return (
+      <div className="relative w-screen h-screen overflow-hidden bg-background">
+        <IntroScreen onStart={() => setStarted(true)} />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background touch-none flex">
-      
       <div className="relative flex-1 h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
         
@@ -351,6 +408,7 @@ export const GameCanvas: React.FC = () => {
           inCover={hudState.inCover}
           peeking={hudState.peeking}
           onViewDocuments={() => { setShowIntel(true); }}
+          timeLimit={TIME_LIMIT}
         />
 
         <LootPopup notifications={lootNotifications} />
@@ -362,11 +420,10 @@ export const GameCanvas: React.FC = () => {
           <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
           <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 translate-x-20" variant="action" />
           <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
-          {/* Movement mode toggle */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
             {(['sneak', 'walk', 'sprint'] as const).map(mode => {
               const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
-              const labels = { sneak: 'SMYG', walk: 'GÅ', sprint: 'SPRING' };
+              const labels = { sneak: 'SNEAK', walk: 'WALK', sprint: 'SPRINT' };
               const isActive = inputRef.current.movementMode === mode;
               return (
                 <button
@@ -386,18 +443,15 @@ export const GameCanvas: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile control hint */}
         <div className="sm:hidden absolute bottom-1 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
-          Tryck dit du vill gå · Tryck på fiende för att skjuta
+          Tap to move · Tap enemy to shoot
         </div>
 
-        {/* Desktop hint */}
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD rörelse | Shift sprint | Ctrl smyg | Q/Space skydd | Mus sikta+skjut | E leta | H läka | G granat/bländgranat
+          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1/2 switch weapon
         </div>
       </div>
 
-      {/* Always-visible inventory sidebar */}
       <InventoryPanel items={hudState.player.inventory} />
 
       <IntelPanel

@@ -16,14 +16,14 @@ export const IntelPanel: React.FC<IntelPanelProps> = ({ open, onClose, documents
     <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-auto z-20">
       <div className="w-[90vw] max-w-md max-h-[80vh] bg-card border border-border rounded overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="font-display text-lg text-foreground tracking-wider">📂 UNDERRÄTTELSER</h2>
+          <h2 className="font-display text-lg text-foreground tracking-wider">📂 INTELLIGENCE</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xs font-mono">[✕]</button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-3">
             <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2">
-              DOKUMENT ({documentsRead.length}/{LORE_DOCUMENTS.length})
+              DOCUMENTS ({documentsRead.length}/{LORE_DOCUMENTS.length})
             </h3>
             <div className="flex flex-col gap-1">
               {LORE_DOCUMENTS.map(doc => {
@@ -43,7 +43,7 @@ export const IntelPanel: React.FC<IntelPanelProps> = ({ open, onClose, documents
                         {found ? doc.title : '???'}
                       </div>
                       <div className="text-[10px] font-mono text-muted-foreground">
-                        {found ? `${doc.author} — ${doc.date}` : 'Ej hittad'}
+                        {found ? `${doc.author} — ${doc.date}` : 'Not found'}
                       </div>
                     </div>
                     {found && doc.hasCode && (
@@ -57,7 +57,7 @@ export const IntelPanel: React.FC<IntelPanelProps> = ({ open, onClose, documents
 
           <div className="p-3 border-t border-border">
             <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">
-              ☢ KODER ({codesFound.length}/{Object.keys(SECRET_CODES).length})
+              ☢ CODES ({codesFound.length}/{Object.keys(SECRET_CODES).length})
             </h3>
             <div className="flex flex-col gap-1">
               {Object.entries(SECRET_CODES).map(([code, desc]) => {

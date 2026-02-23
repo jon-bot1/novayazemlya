@@ -1908,11 +1908,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     'beret', '#8a5545', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
   );
 
-  // Name tag
-  ctx.fillStyle = '#88ff44';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 22);
+  // (player label removed)
 
   // Bleeding
   if (state.player.bleedRate > 0) {

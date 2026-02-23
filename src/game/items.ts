@@ -30,7 +30,7 @@ export const createAmmo = (type: AmmoType, count: number): Item => ({
   value: count * 5,
   ammoType: type,
   ammoCount: count,
-  description: `${count} patroner ${type}`,
+  description: `${count} rounds of ${type}`,
 });
 
 export const createMedical = (name: string, heal: number, icon: string, medType: MedicalType, stopsBleeding: number = 0, speedBoost: number = 0): Item => ({
@@ -45,10 +45,10 @@ export const createMedical = (name: string, heal: number, icon: string, medType:
   stopsBleeding,
   speedBoost,
   description: medType === 'bandage' 
-    ? `Stoppar blödning, återställer ${heal} HP`
+    ? `Stops bleeding, restores ${heal} HP`
     : medType === 'morphine'
-    ? `Full återställning + tillfällig hastighetsboost`
-    : `Återställer ${heal} HP`,
+    ? `Full restore + temporary speed boost`
+    : `Restores ${heal} HP`,
 });
 
 export const createValuable = (name: string, value: number, icon: string): Item => ({
@@ -58,7 +58,7 @@ export const createValuable = (name: string, value: number, icon: string): Item 
   icon,
   weight: 1,
   value,
-  description: `Värt ${value}₽`,
+  description: `Worth ${value}₽`,
 });
 
 export const createKey = (name: string, keyId: string): Item => ({
@@ -68,27 +68,27 @@ export const createKey = (name: string, keyId: string): Item => ({
   icon: '🔑',
   weight: 0.1,
   value: 0,
-  description: `Nyckel: ${name}`,
+  description: `Key: ${name}`,
 });
 
 export const createKeycard = (): Item => ({
   id: 'gate_keycard',
-  name: 'Passerkort',
+  name: 'Access Card',
   category: 'key',
   icon: '💳',
   weight: 0.1,
   value: 100,
-  description: 'Elektroniskt passerkort — öppnar basens huvudgrind',
+  description: 'Electronic access card — opens the main gate',
 });
 
 export const createExtractionCode = (): Item => ({
   id: 'extraction_code',
-  name: 'Exfiltreringskod',
+  name: 'Extraction Code',
   category: 'valuable',
   icon: '🔑',
   weight: 0.1,
   value: 0,
-  description: 'Kod som krävs för att aktivera evakueringspunkten',
+  description: 'Code required to activate the extraction point',
 });
 
 export const createGrenade = (name: string = 'RGD-5', damage: number = 200, radius: number = 150): Item => ({
@@ -99,50 +99,50 @@ export const createGrenade = (name: string = 'RGD-5', damage: number = 200, radi
   weight: 0.6,
   value: 150,
   damage,
-  description: `Granat — ${damage} skada i ${radius}px radie`,
+  description: `Grenade — ${damage} damage in ${radius}px radius`,
 });
 
 export const createFlashbang = (): Item => ({
   id: nextId(),
-  name: 'Bländgranat',
+  name: 'Flashbang',
   category: 'flashbang',
   icon: '💫',
   weight: 0.4,
   value: 120,
   damage: 0,
-  description: 'Bländar fiender och spelaren — 3 sekunders effekt',
+  description: 'Blinds enemies and player — 3 second effect',
 });
 
 export const createBackpack = (): Item => ({
   id: nextId(),
-  name: 'Taktisk Ryggsäck',
+  name: 'Tactical Backpack',
   category: 'backpack',
   icon: '🎒',
   weight: 0,
   value: 200,
-  description: 'Ökar bärkapacitet — plats för mer loot',
+  description: 'Increases carry capacity — more room for loot',
 });
 
-export const createArmor = (name: string = 'Skyddsväst', armor: number = 30, icon: string = '🦺'): Item => ({
+export const createArmor = (name: string = 'Body Armor', armor: number = 30, icon: string = '🦺'): Item => ({
   id: nextId(),
   name,
   category: 'armor',
   icon,
   weight: 3,
   value: armor * 10,
-  damage: armor, // reuse damage field for armor value
-  description: `${name} — +${armor} skydd`,
+  damage: armor,
+  description: `${name} — +${armor} protection`,
 });
 
 export const createHelmet = (): Item => ({
   id: nextId(),
-  name: 'Hjälm',
+  name: 'Helmet',
   category: 'armor',
   icon: '⛑️',
   weight: 1.5,
   value: 250,
-  damage: 15, // armor value
-  description: 'Skyddar huvudet — +15 skydd',
+  damage: 15,
+  description: 'Head protection — +15 armor',
 });
 
 export const WEAPON_TEMPLATES = {
@@ -170,13 +170,14 @@ function pickMany<T>(items: [T, number][]): T[] {
   return result;
 }
 
+type LootPoolType = 'common' | 'military' | 'medical' | 'intel' | 'body';
+
 // Context-aware loot pools based on container type
 export const LOOT_POOLS = {
   common: (): Item[] => {
     return pickMany<Item>([
-      [createAmmo('9x18', 8 + Math.floor(Math.random() * 8)), 0.6],
       [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
-      [createValuable('Cigaretter', 50, '🚬'), 0.3],
+      [createValuable('Cigarettes', 50, '🚬'), 0.3],
       [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.15],
       [createGrenade(), 0.1],
     ]);
@@ -185,67 +186,40 @@ export const LOOT_POOLS = {
     return pickMany<Item>([
       [createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)), 0.5],
       [createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)), 0.4],
-      [createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1), 0.3],
-      [createMedical('Morfin', 100, '💉', 'morphine', 5, 8), 0.08],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.3],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.08],
       [WEAPON_TEMPLATES.ak74(), 0.15],
       [createValuable('Dogtags', 200, '🏷️'), 0.1],
       [createGrenade(), 0.3],
     ]);
   },
-  valuable: (): Item[] => {
-    const pool: Item[] = [createValuable('Guldkedja', 350, '📿')];
-    if (Math.random() > 0.5) pool.push(createValuable('Elektronik', 250, '📻'));
-    if (Math.random() > 0.7) pool.push(createValuable('Hemligt Dokument', 500, '📜'));
-    return pool;
-  },
-
-  // Context-aware pools for specific container types
-  desk: (): Item[] => {
+  medical: (): Item[] => {
     return pickMany<Item>([
-      [createValuable('Anteckningar', 80, '📝'), 0.6],
-      [createValuable('Hemligt Dokument', 500, '📜'), 0.2],
-      [createKey('Skåpnyckel', 'key_cabinet'), 0.15],
-      [createKey('Lagernyckel', 'key_storage'), 0.1],
-      [createAmmo('9x18', 6), 0.2],
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.15],
-      [createValuable('Cigaretter', 50, '🚬'), 0.3],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.6],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.4],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.15],
+      [createValuable('Painkillers', 100, '💊'), 0.2],
     ]);
   },
-  archive: (): Item[] => {
+  intel: (): Item[] => {
     return pickMany<Item>([
-      [createValuable('Hemligt Dokument', 500, '📜'), 0.5],
-      [createValuable('Anteckningar', 80, '📝'), 0.7],
-      [createValuable('Karta', 300, '🗺️'), 0.15],
-      [createKey('Lagernyckel', 'key_storage'), 0.12],
-      [createKey('Säkerhetsnyckel', 'key_security'), 0.08],
-    ]);
-  },
-  locker: (): Item[] => {
-    return pickMany<Item>([
-      [createAmmo('9x18', 12 + Math.floor(Math.random() * 8)), 0.4],
-      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.25],
-      [createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1), 0.3],
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
-      [createValuable('Dogtags', 200, '🏷️'), 0.15],
-      [createGrenade(), 0.2],
-      [createFlashbang(), 0.25],
-      [createKey('Skåpnyckel', 'key_cabinet'), 0.1],
-      [WEAPON_TEMPLATES.makarov(), 0.1],
-      [createBackpack(), 0.12],
-      [createArmor(), 0.15],
-      [createHelmet(), 0.1],
+      [createValuable('Notes', 80, '📝'), 0.7],
+      [createValuable('Map', 300, '🗺️'), 0.15],
+      [createKey('Storage Key', 'key_storage'), 0.12],
+      [createKey('Security Key', 'key_security'), 0.08],
     ]);
   },
   body: (): Item[] => {
     return pickMany<Item>([
-      [createAmmo('9x18', 4 + Math.floor(Math.random() * 6)), 0.5],
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.3],
-      [createValuable('Cigaretter', 50, '🚬'), 0.4],
-      [createKey('Skåpnyckel', 'key_cabinet'), 0.08],
-      [createKey('Lagernyckel', 'key_storage'), 0.05],
-      [createValuable('Dogtags', 200, '🏷️'), 0.2],
-      [createValuable('Anteckningar', 80, '📝'), 0.15],
-      [createFlashbang(), 0.1],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
+      [createValuable('Dogtags', 200, '🏷️'), 0.15],
+      [createGrenade(), 0.2],
+      [createFlashbang(), 0.25],
+      [createKey('Locker Key', 'key_cabinet'), 0.1],
+      [WEAPON_TEMPLATES.makarov(), 0.1],
+      [createBackpack(), 0.12],
+      [createArmor(), 0.15],
+      [createHelmet(), 0.1],
     ]);
   },
 };
