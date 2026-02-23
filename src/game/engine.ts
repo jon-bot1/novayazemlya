@@ -2,7 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, 
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang } from './items';
-import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar, playVoiceShout } from './audio';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playBossRoar, playVoiceShout } from './audio';
 import { speakCallout } from './voice';
 
 function dist(a: Vec2, b: Vec2) {
@@ -591,10 +591,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
 
           if (panel.id === 'alarm_intel') {
-            // Intel terminal: reveals active exfil
+            // Intel terminal: reveals which exfil is active
+            (state as any)._exfilRevealed = true;
             const activeExfil = state.extractionPoints.find(ep => ep.active);
             if (activeExfil) {
-              addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}`, 'intel');
+              addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}!`, 'intel');
             } else {
               addMessage(state, '📡 INTEL: No extraction points available!', 'warning');
             }
