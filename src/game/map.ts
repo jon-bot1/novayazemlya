@@ -258,38 +258,22 @@ export function generateMap() {
     { pos: { x: MAP_W - 40, y: 600 }, radius: 50, timer: 5, active: true, name: 'LAGER ÖST' },
   ];
 
-  // === LIGHT SOURCES ===
+  // === LIGHT SOURCES (sparse, atmospheric) ===
   const lights: LightSource[] = [
-    // Hangar A — ceiling industrial lights
-    { pos: { x: 200, y: 200 }, radius: 160, color: '#ffdd88', intensity: 0.7, type: 'ceiling' },
-    { pos: { x: 400, y: 200 }, radius: 160, color: '#ffdd88', intensity: 0.65, type: 'ceiling', flicker: true },
-    { pos: { x: 200, y: 400 }, radius: 150, color: '#ffdd88', intensity: 0.6, type: 'ceiling' },
-    { pos: { x: 400, y: 400 }, radius: 150, color: '#ffdd88', intensity: 0.55, flicker: true, type: 'ceiling' },
-    // Hangar B
-    { pos: { x: 200, y: 650 }, radius: 140, color: '#ffcc66', intensity: 0.5, flicker: true, type: 'ceiling' },
-    { pos: { x: 400, y: 650 }, radius: 130, color: '#ffcc66', intensity: 0.45, type: 'ceiling' },
-    // Corridor
-    { pos: { x: 600, y: 250 }, radius: 100, color: '#ccddff', intensity: 0.6, type: 'ceiling' },
-    // Offices — desk lamps (warm)
-    { pos: { x: 770, y: 80 }, radius: 60, color: '#ffcc55', intensity: 0.8, type: 'desk' },
-    { pos: { x: 1100, y: 80 }, radius: 60, color: '#ffcc55', intensity: 0.75, type: 'desk' },
-    { pos: { x: 770, y: 350 }, radius: 60, color: '#ffcc55', intensity: 0.7, type: 'desk' },
-    { pos: { x: 1100, y: 350 }, radius: 55, color: '#ffcc55', intensity: 0.65, type: 'desk' },
-    // Office ceiling lights
-    { pos: { x: 780, y: 120 }, radius: 120, color: '#ddeeff', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 1060, y: 120 }, radius: 120, color: '#ddeeff', intensity: 0.45, type: 'ceiling' },
-    { pos: { x: 780, y: 340 }, radius: 110, color: '#ddeeff', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 1060, y: 340 }, radius: 110, color: '#ddeeff', intensity: 0.45, flicker: true, type: 'ceiling' },
-    // Storage — sparse, dim
-    { pos: { x: 820, y: 550 }, radius: 100, color: '#ffaa44', intensity: 0.4, flicker: true, type: 'ceiling' },
-    { pos: { x: 1050, y: 650 }, radius: 90, color: '#ffaa44', intensity: 0.35, flicker: true, type: 'ceiling' },
-    { pos: { x: 1050, y: 800 }, radius: 80, color: '#ff6633', intensity: 0.3, flicker: true, type: 'fire' },
-    // Window light shafts
-    { pos: { x: 250, y: 15 }, radius: 130, color: '#aaccff', intensity: 0.6, type: 'window' },
-    { pos: { x: 450, y: 15 }, radius: 130, color: '#aaccff', intensity: 0.55, type: 'window' },
-    { pos: { x: 15, y: 300 }, radius: 120, color: '#99bbee', intensity: 0.5, type: 'window' },
-    { pos: { x: 15, y: 600 }, radius: 120, color: '#99bbee', intensity: 0.45, type: 'window' },
-    // Extraction zones — green glow
+    // Hangar A — single flickering overhead
+    { pos: { x: 300, y: 300 }, radius: 180, color: '#ffdd88', intensity: 0.6, type: 'ceiling', flicker: true },
+    // Hangar B — dim
+    { pos: { x: 300, y: 650 }, radius: 140, color: '#ffcc66', intensity: 0.4, flicker: true, type: 'ceiling' },
+    // Corridor — cold light
+    { pos: { x: 600, y: 250 }, radius: 100, color: '#ccddff', intensity: 0.5, type: 'ceiling' },
+    // Office — desk lamp
+    { pos: { x: 770, y: 80 }, radius: 60, color: '#ffcc55', intensity: 0.7, type: 'desk' },
+    // Storage — flickering fire
+    { pos: { x: 1050, y: 800 }, radius: 80, color: '#ff6633', intensity: 0.35, flicker: true, type: 'fire' },
+    // Window shafts
+    { pos: { x: 250, y: 15 }, radius: 130, color: '#aaccff', intensity: 0.5, type: 'window' },
+    { pos: { x: 15, y: 300 }, radius: 120, color: '#99bbee', intensity: 0.4, type: 'window' },
+    // Extraction — green glow
     { pos: { x: 250, y: MAP_H - 40 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: MAP_W - 40, y: 600 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
   ];

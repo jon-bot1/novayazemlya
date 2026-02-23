@@ -1,59 +1,56 @@
 // Real speech synthesis for enemy callouts using Web Speech API
-// Panicked, screaming voices that always play to completion
+// Aggressive, varied voices that always play to completion
 
 let lastCalloutTime = 0;
-const CALLOUT_COOLDOWN = 2500; // longer cooldown so voices always finish
+const CALLOUT_COOLDOWN = 2500;
 let unlocked = false;
 let speechAvailable = typeof speechSynthesis !== 'undefined';
-let currentUtterance: SpeechSynthesisUtterance | null = null;
 let isSpeaking = false;
 
 type CalloutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
-// More panicked, screaming callouts
+// Aggressive military callouts
 const CALLOUTS: Record<CalloutType, string[]> = {
-  alert:       ['CONTACT! CONTACT!', 'HE IS RIGHT THERE!', 'OH GOD, OVER THERE!', 'HOSTILE! HOSTILE!', 'ENEMY! I SEE HIM!'],
-  chase:       ['HE IS RUNNING! GO GO GO!', 'AFTER HIM! NOW!', 'MOVE! MOVE! MOVE!', 'DON\'T LET HIM ESCAPE!', 'CUT HIM OFF! HURRY!'],
-  investigate: ['What the hell was that?!', 'Something moved! Check it!', 'Did you hear that?! GO!', 'Over there! I heard something!'],
-  attack:      ['OPEN FIRE! OPEN FIRE!', 'TAKE HIM DOWN NOW!', 'ENGAGING! SHOOT!', 'LIGHT HIM UP! FIRE!', 'KILL HIM! KILL HIM!'],
-  lost:        ['WHERE DID HE GO?!', 'I LOST HIM! SHIT!', 'HE DISAPPEARED!', 'WHERE IS HE?! FIND HIM!'],
-  alarm:       ['ALL UNITS! ALL UNITS!', 'WE NEED BACKUP NOW!', 'REINFORCEMENTS! HELP!', 'MAN DOWN! SEND EVERYONE!', 'CODE RED! CODE RED!'],
-  death:       ['AAAARGH!', 'NOOO!', 'HELP ME!', 'I\'M HIT! I\'M HIT!', 'MEDIC!', 'OH GOD NO!'],
+  alert:       ['CONTACT! CONTACT!', 'HE IS RIGHT THERE!', 'HOSTILE! HOSTILE!', 'ENEMY! I SEE HIM!', 'TARGET SPOTTED!'],
+  chase:       ['HE IS RUNNING! GO GO GO!', 'AFTER HIM! NOW!', 'MOVE! MOVE! MOVE!', 'DON\'T LET HIM ESCAPE!', 'CUT HIM OFF!'],
+  investigate: ['What the hell was that?!', 'Something moved! Check it!', 'Did you hear that?! GO!', 'Over there!'],
+  attack:      ['OPEN FIRE! OPEN FIRE!', 'TAKE HIM DOWN NOW!', 'SHOOT! SHOOT!', 'LIGHT HIM UP!', 'KILL HIM!'],
+  lost:        ['WHERE DID HE GO?!', 'I LOST HIM! SHIT!', 'HE DISAPPEARED!', 'FIND HIM!'],
+  alarm:       ['ALL UNITS! ALL UNITS!', 'WE NEED BACKUP NOW!', 'SEND EVERYONE!', 'CODE RED! CODE RED!'],
+  death:       ['AAAARGH!', 'NOOO!', 'HELP ME!', 'I\'M HIT!', 'MEDIC!', 'OH GOD!'],
 };
 
+// Deeper, more aggressive pitch ranges per enemy type
 const PITCH_BY_ENEMY: Record<string, number> = {
-  heavy: 0.6,
-  soldier: 1.0,
-  scav: 1.3,
-  turret: 1.5,
+  heavy: 0.35,
+  soldier: 0.65,
+  scav: 0.9,
+  turret: 1.1,
 };
 
-let cachedVoice: SpeechSynthesisVoice | null = null;
+let allVoices: SpeechSynthesisVoice[] = [];
 let voicesLoaded = false;
 
-function ensureVoices(): SpeechSynthesisVoice | null {
-  if (!speechAvailable) return null;
-  if (cachedVoice) return cachedVoice;
-  
+function loadVoices() {
+  if (!speechAvailable) return;
   const voices = speechSynthesis.getVoices();
-  if (voices.length === 0) return null;
+  if (voices.length === 0) return;
   voicesLoaded = true;
   
+  // Collect all English voices for variety
   const english = voices.filter(v => v.lang.startsWith('en'));
-  const pool = english.length > 0 ? english : voices;
-  
-  cachedVoice = pool.find(v => /daniel|david|james|george|male|natural/i.test(v.name))
-    || pool.find(v => v.lang === 'en-US')
-    || pool[0];
-  
-  return cachedVoice;
+  allVoices = english.length > 0 ? english : voices;
+}
+
+function pickRandomVoice(): SpeechSynthesisVoice | null {
+  if (allVoices.length === 0) return null;
+  return allVoices[Math.floor(Math.random() * allVoices.length)];
 }
 
 if (speechAvailable) {
-  ensureVoices();
+  loadVoices();
   speechSynthesis.addEventListener('voiceschanged', () => {
-    cachedVoice = null;
-    ensureVoices();
+    loadVoices();
   });
 }
 
@@ -61,20 +58,20 @@ export function unlockSpeech() {
   if (unlocked || !speechAvailable) return;
   
   try {
-    ensureVoices();
+    loadVoices();
     
-    const utt = new SpeechSynthesisUtterance('.');
-    utt.volume = 0.001;
+    // Minimal utterance to unlock audio policy
+    const utt = new SpeechSynthesisUtterance('Go');
+    utt.volume = 0.01;
     utt.rate = 5;
     utt.pitch = 1;
-    const voice = ensureVoices();
+    const voice = pickRandomVoice();
     if (voice) utt.voice = voice;
     
     speechSynthesis.speak(utt);
     unlocked = true;
-    console.log('[voice] Unlock attempted. Voices loaded:', voicesLoaded, 'Voice:', voice?.name || 'default');
+    console.log('[voice] Unlock OK. Voices:', allVoices.length);
     
-    // Cancel after delay so unlock registers
     setTimeout(() => { speechSynthesis.cancel(); }, 500);
   } catch (e) {
     console.error('[voice] Unlock failed:', e);
@@ -85,7 +82,7 @@ export function unlockSpeech() {
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   if (!speechAvailable || !unlocked) return;
 
-  // Don't interrupt a currently speaking utterance — let it finish
+  // Never interrupt — let current voice finish
   if (isSpeaking) return;
 
   const now = performance.now();
@@ -97,28 +94,22 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
     const text = lines[Math.floor(Math.random() * lines.length)];
 
     const utt = new SpeechSynthesisUtterance(text);
-    const voice = ensureVoices();
+    
+    // Pick a random voice each time for variety
+    const voice = pickRandomVoice();
     if (voice) utt.voice = voice;
 
-    // Panicked: higher pitch, faster rate
-    const basePitch = PITCH_BY_ENEMY[enemyType] ?? 1.0;
-    utt.pitch = Math.min(2, basePitch + 0.3 + Math.random() * 0.3); // higher = more panicked
-    utt.rate = type === 'death' ? 1.2 : 1.4 + Math.random() * 0.4; // fast, urgent
+    // Aggressive: deeper pitch, urgent rate
+    const basePitch = PITCH_BY_ENEMY[enemyType] ?? 0.7;
+    utt.pitch = Math.max(0.1, basePitch + (Math.random() * 0.3 - 0.15));
+    utt.rate = type === 'death' ? 0.9 : 1.1 + Math.random() * 0.3;
     utt.volume = 1.0;
 
     isSpeaking = true;
-    currentUtterance = utt;
 
-    utt.onend = () => {
-      isSpeaking = false;
-      currentUtterance = null;
-    };
-    utt.onerror = () => {
-      isSpeaking = false;
-      currentUtterance = null;
-    };
+    utt.onend = () => { isSpeaking = false; };
+    utt.onerror = () => { isSpeaking = false; };
 
-    // Resume in case Chrome paused it
     speechSynthesis.resume();
     speechSynthesis.speak(utt);
   } catch (e) {
