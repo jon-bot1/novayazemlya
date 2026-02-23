@@ -51,9 +51,9 @@ function drawCuteCharacter(
   ctx.ellipse(1, size * 0.85, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // === LEGS — clearly separated, with knee bend and boots ===
+  // === LEGS — always point downward (no rotation), so feet face south ===
   ctx.save();
-  ctx.rotate(angle);
+  // NO ctx.rotate(angle) here — legs always point down
   const walkPhase = (Date.now() % 400) / 400;
   const legSwing = Math.sin(walkPhase * Math.PI * 2) * 0.35;
   for (const side of [-1, 1]) {

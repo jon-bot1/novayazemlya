@@ -68,10 +68,11 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
 function generateEnemyLoot(enemy: Enemy) {
   if (enemy.type === 'turret') return LOOT_POOLS.military();
   if (enemy.type === 'boss') {
-    // Boss drops premium loot
+    // Boss drops USB drive (required for extraction) + premium loot
     return [
       ...LOOT_POOLS.military(),
       ...LOOT_POOLS.valuable(),
+      { id: 'boss_usb', name: 'Volkovs USB-minne', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'KRITISKT UNDERRÄTTELSEDATA — Ta med ut för att klara uppdraget!' },
       { id: 'boss_dogtag', name: 'Volkovs Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Kommendant Volkovs identitetsbricka — extremt sällsynt' },
     ];
   }
@@ -106,7 +107,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'RÄDEN HAR BÖRJAT — Infiltrera basen och hitta exfiltreringskoden', time: 0, type: 'info' }],
+    messages: [{ text: 'RÄDEN HAR BÖRJAT — Döda Kommendant Volkov och ta hans USB-minne!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
@@ -412,6 +413,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} skydd!`, 'info');
           }
+          if (item.id === 'boss_usb') {
+            addMessage(state, '💾 VOLKOVS USB-MINNE! Ta det till evakueringspunkten!', 'intel');
+          }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
         if (enemy.loot.length > 0) {
@@ -511,22 +515,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Extraction check
+  // Extraction check — requires USB drive from boss
+  const hasUSB = state.player.inventory.some(i => i.id === 'boss_usb');
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
-      // TODO: Re-enable extraction code requirement after testing
-      // if (!state.hasExtractionCode) {
-      //   if (Math.floor(state.time) !== Math.floor(state.time - dt)) {
-      //     addMessage(state, '⚠ EXFILTRERINGSKOD KRÄVS — Sök igenom kartan!', 'warning');
-      //   }
-      //   break;
-      // }
+      if (!hasUSB) {
+        if (Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
+          addMessage(state, '⚠ DU BEHÖVER VOLKOVS USB-MINNE FÖR ATT EVAKUERA!', 'warning');
+        }
+        break;
+      }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
         state.extracted = true;
-        addMessage(state, `EVAKUERING: ${ep.name}!`, 'info');
+        addMessage(state, `💾 UPPDRAG KLART — EVAKUERING: ${ep.name}!`, 'info');
       }
     }
   }
