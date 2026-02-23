@@ -262,15 +262,15 @@ export function generateMap() {
     makeEnemy(1000, 1860, 'soldier', -Math.PI * 0.5), // South fence west
     makeEnemy(2000, 1860, 'soldier', -Math.PI * 0.5), // South fence east
 
-    // === OUTSIDE PATROL GUARDS (south of fence, widely spread) ===
+    // === OUTSIDE PATROL GUARDS (south of fence, widely spread, away from player spawn ~1510,2250) ===
     // Pair 1 — far west, near forest edge
-    makeEnemy(600, 2050, 'soldier'),
-    makeEnemy(700, 2100, 'soldier'),
+    makeEnemy(500, 2000, 'soldier'),
+    makeEnemy(650, 2100, 'soldier'),
     // Pair 2 — far east
-    makeEnemy(2200, 2000, 'soldier'),
-    makeEnemy(2300, 2080, 'scav'),
-    // Lone guard with keycard — patrols road south (center)
-    makeEnemy(1500, 2300, 'soldier'),
+    makeEnemy(2400, 2000, 'soldier'),
+    makeEnemy(2550, 2100, 'scav'),
+    // Lone guard — patrols far south-west (NOT near spawn)
+    makeEnemy(900, 2300, 'soldier'),
   ];
 
   // Mark watchtower turrets as elevated

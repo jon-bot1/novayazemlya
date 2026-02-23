@@ -979,15 +979,25 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   // Update grenades
   state.grenades = state.grenades.filter(g => {
-    g.pos.x += g.vel.x;
-    g.pos.y += g.vel.y;
     g.vel.x *= 0.97; // friction
     g.vel.y *= 0.97;
     g.timer -= dt;
 
-    // Bounce off walls
+    // Bounce off walls — check BEFORE moving to prevent clipping through
     if (collidesWithWalls(state, g.pos.x + g.vel.x, g.pos.y, 4)) g.vel.x *= -0.5;
     if (collidesWithWalls(state, g.pos.x, g.pos.y + g.vel.y, 4)) g.vel.y *= -0.5;
+
+    // Only move if not colliding
+    const nx = g.pos.x + g.vel.x;
+    const ny = g.pos.y + g.vel.y;
+    if (!collidesWithWalls(state, nx, ny, 4)) {
+      g.pos.x = nx;
+      g.pos.y = ny;
+    } else {
+      // Stuck against wall — stop movement
+      g.vel.x *= 0.1;
+      g.vel.y *= 0.1;
+    }
 
     if (g.timer <= 0) {
       const isFlashbang = g.damage === -1;
