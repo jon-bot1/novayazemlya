@@ -1,4 +1,4 @@
-import { GameState } from './types';
+import { GameState, Prop } from './types';
 
 const R = 18;
 const WALL_HEIGHT = 18; // visible wall south-face height for 3/4 perspective
@@ -446,6 +446,169 @@ function shadeColor(hex: string, percent: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
+// Draw decorative prop with 3/4 perspective
+function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
+  const { x, y } = prop.pos;
+  const { w, h } = prop;
+  const left = x - w / 2;
+  const top = y - h / 2;
+
+  ctx.save();
+  switch (prop.type) {
+    case 'wood_crate': {
+      // South face
+      ctx.fillStyle = '#7a5a30';
+      ctx.fillRect(left, top + h, w, 10);
+      // Top face
+      ctx.fillStyle = '#9a7a48';
+      ctx.fillRect(left, top, w, h);
+      // Highlight
+      const g = ctx.createLinearGradient(left, top, left, top + h);
+      g.addColorStop(0, 'rgba(255,255,255,0.15)');
+      g.addColorStop(1, 'rgba(0,0,0,0.08)');
+      ctx.fillStyle = g;
+      ctx.fillRect(left, top, w, h);
+      // Plank lines
+      ctx.strokeStyle = 'rgba(80,50,20,0.3)';
+      ctx.lineWidth = 1;
+      const planks = Math.max(2, Math.floor(w / 10));
+      for (let i = 1; i < planks; i++) {
+        const px = left + (w / planks) * i;
+        ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px, top + h); ctx.stroke();
+      }
+      // Cross brace
+      ctx.strokeStyle = 'rgba(60,40,15,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(left + 2, top + 2); ctx.lineTo(left + w - 2, top + h - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(left + w - 2, top + 2); ctx.lineTo(left + 2, top + h - 2); ctx.stroke();
+      // Border
+      ctx.strokeStyle = '#6a4a25';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+    case 'concrete_barrier': {
+      // South face
+      ctx.fillStyle = '#5a5a58';
+      ctx.fillRect(left, top + h, w, 8);
+      // Top face
+      ctx.fillStyle = '#8a8a85';
+      ctx.fillRect(left, top, w, h);
+      // Scratches
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i < 3; i++) {
+        const sx = left + 4 + i * (w / 3);
+        ctx.beginPath(); ctx.moveTo(sx, top + 2); ctx.lineTo(sx + 6, top + h - 2); ctx.stroke();
+      }
+      // Yellow warning stripe
+      ctx.fillStyle = 'rgba(220,180,40,0.5)';
+      ctx.fillRect(left + 2, top + h - 4, w - 4, 3);
+      // Border
+      ctx.strokeStyle = '#6a6a65';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+    case 'equipment_table': {
+      // Table legs (shadows)
+      ctx.fillStyle = '#4a4a42';
+      ctx.fillRect(left + 2, top + h, 4, 10);
+      ctx.fillRect(left + w - 6, top + h, 4, 10);
+      // South face
+      ctx.fillStyle = '#5a5a50';
+      ctx.fillRect(left, top + h, w, 4);
+      // Top surface
+      ctx.fillStyle = '#7a7a70';
+      ctx.fillRect(left, top, w, h);
+      const tg = ctx.createLinearGradient(left, top, left + w, top);
+      tg.addColorStop(0, 'rgba(255,255,255,0.08)');
+      tg.addColorStop(0.5, 'rgba(255,255,255,0.02)');
+      tg.addColorStop(1, 'rgba(0,0,0,0.05)');
+      ctx.fillStyle = tg;
+      ctx.fillRect(left, top, w, h);
+      // Equipment items on table
+      ctx.fillStyle = '#3a5a3a';
+      ctx.fillRect(left + 4, top + 3, 8, 5); // radio
+      ctx.fillStyle = '#888';
+      ctx.fillRect(left + 15, top + 4, 12, 3); // tool
+      ctx.fillStyle = '#5a4a3a';
+      ctx.fillRect(left + w - 14, top + 3, 10, 6); // box
+      // Border
+      ctx.strokeStyle = '#5a5a4a';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+    case 'sandbags': {
+      // Stacked semicircle sandbag wall
+      ctx.fillStyle = '#8a8060';
+      ctx.beginPath();
+      ctx.ellipse(x, y, w / 2, h / 2 + 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#7a7050';
+      ctx.beginPath();
+      ctx.ellipse(x, y - 3, w / 2 - 2, h / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Sandbag lines
+      ctx.strokeStyle = 'rgba(60,50,30,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(left + 4, y); ctx.lineTo(left + w - 4, y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(left + 8, y - 4); ctx.lineTo(left + w - 8, y - 4); ctx.stroke();
+      ctx.strokeStyle = '#6a6050';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(x, y, w / 2, h / 2 + 4, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    }
+    case 'barrel_stack': {
+      // 3 barrels in triangle formation
+      const br = w * 0.35;
+      for (const [bx, by] of [[x - br * 0.6, y + br * 0.3], [x + br * 0.6, y + br * 0.3], [x, y - br * 0.4]]) {
+        ctx.fillStyle = '#5a6a58';
+        ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#4a5a48';
+        ctx.beginPath(); ctx.arc(bx, by, br - 2, 0, Math.PI * 2); ctx.fill();
+        // Rim highlight
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(bx, by, br - 1, -0.5, 0.5); ctx.stroke();
+        // Label
+        ctx.fillStyle = 'rgba(200,180,40,0.4)';
+        ctx.font = `bold ${br * 0.8}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('☢', bx, by + br * 0.3);
+      }
+      break;
+    }
+    case 'metal_shelf': {
+      // Vertical shelf unit
+      ctx.fillStyle = '#5a5a55';
+      ctx.fillRect(left, top, w, h);
+      // South face
+      ctx.fillStyle = '#4a4a42';
+      ctx.fillRect(left, top + h, w, 6);
+      // Shelves
+      const shelves = Math.max(2, Math.floor(h / 18));
+      for (let i = 1; i < shelves; i++) {
+        const sy = top + (h / shelves) * i;
+        ctx.fillStyle = '#6a6a60';
+        ctx.fillRect(left + 1, sy - 1, w - 2, 3);
+        // Random items on shelf
+        ctx.fillStyle = `rgba(${80 + i * 30}, ${70 + i * 20}, ${50 + i * 15}, 0.6)`;
+        ctx.fillRect(left + 3, sy - 8, 6, 7);
+        ctx.fillRect(left + w - 10, sy - 6, 7, 5);
+      }
+      ctx.strokeStyle = '#4a4a40';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, w, h);
+      break;
+    }
+  }
+  ctx.restore();
+}
+
 // Draw ground tile pattern (Zelda-style)
 function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number) {
   const tileSize = 48;
@@ -553,10 +716,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
 
   // ── WALLS (3D perspective) ──
-  // Sort walls by Y so south faces overlap correctly
   const sortedWalls = [...state.walls].sort((a, b) => a.y - b.y);
   for (const wall of sortedWalls) {
     drawWall3D(ctx, wall.x, wall.y, wall.w, wall.h, wall.color);
+  }
+
+  // ── PROPS (decorative structures) ──
+  const sortedProps = [...state.props].sort((a, b) => a.pos.y - b.pos.y);
+  for (const prop of sortedProps) {
+    drawProp(ctx, prop);
   }
 
   // ── DOCUMENT PICKUPS ──

@@ -54,6 +54,7 @@ export function createGameState(): GameState {
     grenades: [],
     particles: [],
     lootContainers: map.lootContainers,
+    props: map.props,
     documentPickups: map.documentPickups,
     walls: map.walls,
     extractionPoints: map.extractionPoints,
