@@ -72,17 +72,17 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
   if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
   
   const DEG15 = Math.PI * (15 / 180);
-  // Bodyguards and boss get wider firing arc
+  // Bodyguards and boss get wider AND longer arc
   const isBodyguard = !!(enemy as any)._isBodyguard;
   const arcMap: Record<string, number> = {
-    scav: Math.PI * 0.4 - DEG15,
-    soldier: Math.PI * 0.55 - DEG15,
-    heavy: Math.PI * 0.75 - DEG15,
-    turret: Math.PI * 0.85 - DEG15,
+    scav: Math.PI * 0.35 - DEG15,
+    soldier: Math.PI * 0.45 - DEG15,
+    heavy: Math.PI * 0.6 - DEG15,
+    turret: Math.PI * 0.5 - DEG15, // narrower, fixed position
     boss: Math.PI * 0.7,
   };
-  let arc = arcMap[enemy.type] || Math.PI * 0.55 - DEG15;
-  if (isBodyguard) arc = Math.PI * 0.65; // wider arc for elite bodyguards
+  let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
+  if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
   
   return angleDiff <= arc;
 }
@@ -709,14 +709,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Vision cone varies by enemy type/skill (reduced by 15° = ~0.26 rad)
+    // Vision cone varies by enemy type/skill
     const DEG15 = Math.PI * (15 / 180);
-    const visionConfig = {
-      scav:    { frontArc: Math.PI * 0.4 - DEG15, rearRange: 0.2 },
-      soldier: { frontArc: Math.PI * 0.55 - DEG15, rearRange: 0.35 },
-      heavy:   { frontArc: Math.PI * 0.75 - DEG15, rearRange: 0.55 },
-      turret:  { frontArc: Math.PI * 0.85 - DEG15, rearRange: 0.0 },
-    }[enemy.type] || { frontArc: Math.PI * 0.55 - DEG15, rearRange: 0.35 };
+    const isBodyguard = !!(enemy as any)._isBodyguard;
+    const visionConfig = isBodyguard
+      ? { frontArc: Math.PI * 0.75, rearRange: 0.4 }
+      : {
+          scav:    { frontArc: Math.PI * 0.35 - DEG15, rearRange: 0.15 },
+          soldier: { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 },
+          heavy:   { frontArc: Math.PI * 0.6 - DEG15, rearRange: 0.4 },
+          turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
+        }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
     let angleDiff = Math.abs(toPlayerAngle - enemy.angle);

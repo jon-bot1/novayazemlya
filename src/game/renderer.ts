@@ -1428,18 +1428,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         : `rgba(255, 80, 40, ${alertPulse * 4})`;
 
       const DEG15 = Math.PI * (15 / 180);
-      const visionArc = {
-        scav: Math.PI * 0.4 - DEG15,
-        soldier: Math.PI * 0.55 - DEG15,
-        heavy: Math.PI * 0.75 - DEG15,
-        turret: Math.PI * 0.85 - DEG15,
-      }[enemy.type] || Math.PI * 0.55 - DEG15;
-      const rearRange = {
-        scav: 0.2,
-        soldier: 0.35,
-        heavy: 0.55,
+      const isBodyguard = !!(enemy as any)._isBodyguard;
+      const visionArc = isBodyguard ? Math.PI * 0.75 : ({
+        scav: Math.PI * 0.35 - DEG15,
+        soldier: Math.PI * 0.45 - DEG15,
+        heavy: Math.PI * 0.6 - DEG15,
+        turret: Math.PI * 0.5 - DEG15,
+      }[enemy.type] || Math.PI * 0.45 - DEG15);
+      const rearRange = isBodyguard ? 0.4 : ({
+        scav: 0.15,
+        soldier: 0.25,
+        heavy: 0.4,
         turret: 0,
-      }[enemy.type] || 0.35;
+      }[enemy.type] || 0.25);
 
       ctx.beginPath();
       ctx.moveTo(enemy.pos.x, enemy.pos.y);
@@ -1473,11 +1474,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
     const isBlinking = enemy.eyeBlink < 0.15;
 
-    // Draw elevated platform for wall guards
+    // Draw elevated platform for wall guards — with stairs on both sides
     if (enemy.elevated && enemy.type !== 'turret') {
       ctx.save();
-      // Wooden platform/scaffolding
       const pw = 36, ph = 40;
+      // Main platform body
       ctx.fillStyle = '#8a7a5a';
       ctx.fillRect(enemy.pos.x - pw / 2, enemy.pos.y - ph / 2 + 8, pw, ph);
       // Platform top
@@ -1487,17 +1488,60 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = '#6a5a40';
       ctx.fillRect(enemy.pos.x - pw / 2 - 2, enemy.pos.y - ph / 2, 4, 12);
       ctx.fillRect(enemy.pos.x + pw / 2 - 2, enemy.pos.y - ph / 2, 4, 12);
-      // Ladder
+      // Left stairs
       ctx.fillStyle = '#7a6a4a';
-      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y, 6, 20);
-      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 4, 6, 2);
-      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 10, 6, 2);
-      ctx.fillRect(enemy.pos.x + pw / 2 + 2, enemy.pos.y + 16, 6, 2);
+      for (let s = 0; s < 4; s++) {
+        const sx = enemy.pos.x - pw / 2 - 6 - s * 4;
+        const sy = enemy.pos.y + s * 5;
+        const sw = 6;
+        const sh = ph - s * 8;
+        ctx.fillRect(sx, sy, sw, Math.max(4, sh * 0.3));
+      }
+      // Right stairs
+      for (let s = 0; s < 4; s++) {
+        const sx = enemy.pos.x + pw / 2 + s * 4;
+        const sy = enemy.pos.y + s * 5;
+        const sw = 6;
+        const sh = ph - s * 8;
+        ctx.fillRect(sx, sy, sw, Math.max(4, sh * 0.3));
+      }
+      // Stair railings
+      ctx.strokeStyle = '#5a4a30';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(enemy.pos.x - pw / 2 - 6, enemy.pos.y - 2);
+      ctx.lineTo(enemy.pos.x - pw / 2 - 22, enemy.pos.y + 18);
+      ctx.moveTo(enemy.pos.x + pw / 2 + 6, enemy.pos.y - 2);
+      ctx.lineTo(enemy.pos.x + pw / 2 + 22, enemy.pos.y + 18);
+      ctx.stroke();
       ctx.restore();
     }
 
+    // Draw turret tower (elevated platform + gun)
     if (enemy.type === 'turret') {
-      // Draw mounted machine gun — sandbag base + gun barrel
+      ctx.save();
+      const tw = 40, th = 44;
+      // Tower base
+      ctx.fillStyle = '#6a6a5a';
+      ctx.fillRect(enemy.pos.x - tw / 2, enemy.pos.y - th / 2 + 10, tw, th);
+      // Tower top platform
+      ctx.fillStyle = '#7a7a6a';
+      ctx.fillRect(enemy.pos.x - tw / 2 - 4, enemy.pos.y - th / 2 + 6, tw + 8, 8);
+      // Sandbag walls around top
+      ctx.fillStyle = '#8a8a6a';
+      ctx.fillRect(enemy.pos.x - tw / 2 - 6, enemy.pos.y - th / 2 + 2, tw + 12, 6);
+      // Tower legs/supports
+      ctx.fillStyle = '#5a5a4a';
+      ctx.fillRect(enemy.pos.x - tw / 2 + 2, enemy.pos.y + th / 2 - 4, 6, 12);
+      ctx.fillRect(enemy.pos.x + tw / 2 - 8, enemy.pos.y + th / 2 - 4, 6, 12);
+      // Ladder on one side
+      ctx.fillStyle = '#7a6a4a';
+      ctx.fillRect(enemy.pos.x + tw / 2 + 2, enemy.pos.y - 5, 5, 28);
+      for (let r = 0; r < 5; r++) {
+        ctx.fillRect(enemy.pos.x + tw / 2 + 1, enemy.pos.y - 3 + r * 6, 7, 2);
+      }
+      ctx.restore();
+      // Draw the gun on top
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
     } else if (enemy.type === 'boss') {
       // Boss: Kommendant Volkov — larger, glowing, unique appearance
