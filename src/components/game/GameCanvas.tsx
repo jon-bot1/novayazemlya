@@ -75,7 +75,7 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
     };
 
-    const onMouseDown = () => { unlockSpeech(); if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
+    const onMouseDown = (e: MouseEvent) => { unlockSpeech(); if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return; if (!showInventory && !showIntel && !readingDoc) inputRef.current.shooting = true; };
     const onMouseUp = () => { inputRef.current.shooting = false; };
     const onMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
@@ -354,10 +354,10 @@ export const GameCanvas: React.FC = () => {
 
         {/* Mobile action buttons */}
         <div className="sm:hidden">
-          <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
-          <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
-          <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
-          <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} className="absolute bottom-24 left-1/2 translate-x-20" variant="action" />
+          <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
+          <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
+          <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
+          <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 translate-x-20" variant="action" />
           <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
           {/* Movement mode toggle */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
