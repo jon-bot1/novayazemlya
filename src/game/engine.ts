@@ -306,6 +306,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   // Interact
   if (input.interact) {
+    // Gate keycard check — remove gate wall if player has keycard and is near gate
+    const gateWallIdx = state.walls.findIndex(w => w.color === '#aa4444');
+    if (gateWallIdx >= 0) {
+      const gw = state.walls[gateWallIdx];
+      const gateCenterX = gw.x + gw.w / 2;
+      const gateCenterY = gw.y + gw.h / 2;
+      if (dist(state.player.pos, { x: gateCenterX, y: gateCenterY }) < 80) {
+        const keycardIdx = state.player.inventory.findIndex(i => i.id === 'gate_keycard');
+        if (keycardIdx >= 0) {
+          state.walls.splice(gateWallIdx, 1);
+          addMessage(state, '💳 GRIND ÖPPNAD med passerkort!', 'intel');
+          spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
+        } else {
+          addMessage(state, '🔒 Grinden är låst — du behöver ett passerkort!', 'warning');
+        }
+      }
+    }
+
     // Loot containers
     for (const lc of state.lootContainers) {
       if (!lc.looted && dist(state.player.pos, lc.pos) < 70) {

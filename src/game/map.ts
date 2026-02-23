@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard } from './items';
 
 // Full outdoor military base: 3200x2400
 // The hangar building sits at offset HX, HY within the larger map
@@ -115,8 +115,9 @@ export function generateMap() {
     // === PERIMETER FENCE (outer boundary of base) ===
     // North fence
     makeWall(300, 280, 2600, FT, FENCE),
-    // South fence — gap for main gate (1400-1620)
+    // South fence — full with locked gate wall in the gap
     makeWall(300, 1850, 1100, FT, FENCE),
+    makeWall(1400, 1850, 220, FT, '#aa4444'),  // GATE WALL — special color for identification
     makeWall(1620, 1850, 1280, FT, FENCE),
     // West fence
     makeWall(300, 280, FT, 1570, FENCE),
@@ -247,7 +248,20 @@ export function generateMap() {
     // Watchtower turrets
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),  // NE
+
+    // === OUTSIDE PATROL GUARDS (south of fence) ===
+    // Pair 1 — patrolling near gate approach
+    makeEnemy(1400, 2000, 'soldier'),
+    makeEnemy(1550, 2010, 'soldier'),
+    // Pair 2 — patrolling wider perimeter
+    makeEnemy(1200, 2100, 'soldier'),
+    makeEnemy(1100, 2050, 'scav'),
+    // Lone guard with keycard — patrols near road
+    makeEnemy(1500, 2150, 'soldier'),
   ];
+
+  // Give keycard to the last outside patrol guard
+  enemies[enemies.length - 1].loot = [createKeycard()];
 
   // ══════════════════════════════════════
   // LOOT
