@@ -51,18 +51,26 @@ function pickVoice(): SpeechSynthesisVoice | null {
  */
 export function unlockSpeech() {
   if (unlocked || typeof speechSynthesis === 'undefined') return;
-  // Speak a silent utterance to unlock the API
-  const silent = new SpeechSynthesisUtterance('');
-  silent.volume = 0;
-  silent.rate = 10; // fastest possible so it's instant
-  speechSynthesis.speak(silent);
   unlocked = true;
-  console.log('[voice] Speech unlocked via user gesture');
+  // Force load voices
+  loadVoices();
+  // Speak a real word at minimal volume to truly unlock the API on iOS/Android
+  const silent = new SpeechSynthesisUtterance('.');
+  silent.volume = 0.01;
+  silent.rate = 10;
+  const voice = pickVoice();
+  if (voice) silent.voice = voice;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(silent);
+  console.log('[voice] Speech unlock attempted, voices available:', englishVoices.length);
 }
 
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   if (typeof speechSynthesis === 'undefined') return;
-  if (!unlocked) return; // Don't try before unlock
+  if (!unlocked) {
+    console.warn('[voice] Not unlocked yet, skipping callout:', type);
+    return;
+  }
 
   const now = performance.now();
   if (now - lastCalloutTime < CALLOUT_COOLDOWN) return;
@@ -72,6 +80,7 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
 
   const lines = CALLOUTS[type];
   const text = lines[Math.floor(Math.random() * lines.length)];
+  console.log('[voice] Speaking:', text, 'type:', type, 'enemy:', enemyType);
 
   const utt = new SpeechSynthesisUtterance(text);
   const voice = pickVoice();
@@ -81,7 +90,9 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   utt.rate = type === 'death' ? 0.7 : 1.1 + Math.random() * 0.3;
   utt.volume = 1.0;
 
-  utt.onerror = (e) => console.error('Speech error:', e.error);
+  utt.onstart = () => console.log('[voice] Started speaking:', text);
+  utt.onend = () => console.log('[voice] Finished speaking:', text);
+  utt.onerror = (e) => console.error('[voice] Speech error:', e.error, 'text:', text);
 
   speechSynthesis.resume();
   speechSynthesis.speak(utt);
