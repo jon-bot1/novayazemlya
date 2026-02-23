@@ -1618,7 +1618,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Draw the gun on top
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
     } else if (enemy.type === 'boss') {
-      // Boss: Kommendant Volkov — larger, glowing, unique appearance
+      // Boss: Commandant Osipovitch — larger, glowing, unique appearance
       const bossSize = R + 8;
       const phase = enemy.bossPhase || 0;
 
@@ -1670,7 +1670,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('★ KOMMENDANT VOLKOV ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+      ctx.fillText('★ COMMANDANT OSIPOVITCH ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
       if (phase >= 1) {
         ctx.font = 'bold 8px sans-serif';
         ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
@@ -1699,6 +1699,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         cfg.body, cfg.outline, cfg.eye, isBlinking,
         cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R), enemyMoving
       );
+      // Bodyguard name labels
+      if (isBodyguard) {
+        ctx.fillStyle = '#aaaaaa';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        // Determine which bodyguard (first or second)
+        const bgName = (enemy as any)._bodyguardName || 'GUARD';
+        ctx.fillText(bgName, enemy.pos.x, enemy.pos.y + R + 14);
+      }
     }
 
     // Status icons
