@@ -1,6 +1,6 @@
 import { GameState } from './types';
 
-const R = 14; // character radius for cute style
+const R = 14;
 
 function drawCuteCharacter(
   ctx: CanvasRenderingContext2D,
@@ -16,37 +16,37 @@ function drawCuteCharacter(
   ctx.translate(x, y);
 
   // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath();
   ctx.ellipse(0, size * 0.6, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Gun (behind body)
+  // Gun
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#888';
     ctx.beginPath();
     ctx.roundRect(size * 0.3, -2.5, size * 1.2, 5, 2);
     ctx.fill();
-    ctx.fillStyle = '#444';
+    ctx.fillStyle = '#777';
     ctx.beginPath();
     ctx.roundRect(size * 1.1, -3.5, 5, 7, 1);
     ctx.fill();
     ctx.restore();
   }
 
-  // Body (round cute shape)
+  // Body
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
   ctx.arc(0, 0, size, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Cheeks (blush)
-  ctx.fillStyle = 'rgba(200, 100, 100, 0.15)';
+  // Cheeks
+  ctx.fillStyle = 'rgba(200, 100, 100, 0.2)';
   ctx.beginPath();
   ctx.arc(-size * 0.5, size * 0.2, size * 0.3, 0, Math.PI * 2);
   ctx.fill();
@@ -54,13 +54,10 @@ function drawCuteCharacter(
   ctx.arc(size * 0.5, size * 0.2, size * 0.3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Face (always faces angle direction)
+  // Face
   ctx.save();
   ctx.rotate(angle);
-
-  // Eyes
   if (isBlinking) {
-    // Closed eyes - cute lines
     ctx.strokeStyle = eyeColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -70,7 +67,6 @@ function drawCuteCharacter(
     ctx.arc(size * 0.25, size * 0.15, 2, 0, Math.PI);
     ctx.stroke();
   } else {
-    // Open eyes
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(size * 0.25, -size * 0.2, 3.5, 0, Math.PI * 2);
@@ -78,7 +74,6 @@ function drawCuteCharacter(
     ctx.beginPath();
     ctx.arc(size * 0.25, size * 0.2, 3.5, 0, Math.PI * 2);
     ctx.fill();
-    // Pupils
     ctx.fillStyle = eyeColor;
     ctx.beginPath();
     ctx.arc(size * 0.32, -size * 0.2, 2, 0, Math.PI * 2);
@@ -86,7 +81,6 @@ function drawCuteCharacter(
     ctx.beginPath();
     ctx.arc(size * 0.32, size * 0.2, 2, 0, Math.PI * 2);
     ctx.fill();
-    // Shine
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(size * 0.35, -size * 0.25, 1, 0, Math.PI * 2);
@@ -95,8 +89,7 @@ function drawCuteCharacter(
     ctx.arc(size * 0.35, size * 0.15, 1, 0, Math.PI * 2);
     ctx.fill();
   }
-
-  ctx.restore(); // angle rotation
+  ctx.restore();
 
   // Hat
   ctx.save();
@@ -109,10 +102,7 @@ function drawCuteCharacter(
       ctx.lineTo(0, -size * 0.85);
       ctx.closePath();
       ctx.fill();
-      // Ear flaps
-      ctx.fillStyle = hatColor;
       ctx.fillRect(-size * 0.9, -size * 0.3, size * 0.3, size * 0.6);
-      // Star
       ctx.fillStyle = '#cc3333';
       ctx.font = `${size * 0.5}px sans-serif`;
       ctx.textAlign = 'center';
@@ -124,9 +114,6 @@ function drawCuteCharacter(
       ctx.arc(0, 0, size * 0.9, -Math.PI * 0.85, Math.PI * 0.85);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
       break;
     case 'beret':
       ctx.fillStyle = hatColor;
@@ -140,7 +127,6 @@ function drawCuteCharacter(
       ctx.arc(0, 0, size * 0.82, -Math.PI * 0.7, Math.PI * 0.7);
       ctx.closePath();
       ctx.fill();
-      // Knot at back
       ctx.beginPath();
       ctx.moveTo(-size * 0.6, -size * 0.3);
       ctx.lineTo(-size * 1.0, -size * 0.5);
@@ -150,6 +136,7 @@ function drawCuteCharacter(
       break;
   }
   ctx.restore();
+  ctx.restore(); // main translate
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
@@ -161,204 +148,194 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Ground
-  ctx.fillStyle = '#2a3025';
+  // ── GROUND ──
+  // Outside area (dark)
+  ctx.fillStyle = '#1a2018';
+  ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
+
+  // Hangar floor (concrete, bright)
+  ctx.fillStyle = '#4a4a42';
   ctx.fillRect(0, 0, state.mapWidth, state.mapHeight);
 
-  // Ground texture grid
-  ctx.strokeStyle = '#3a4035';
+  // Floor tile grid
+  ctx.strokeStyle = '#5a5a52';
   ctx.lineWidth = 0.5;
-  for (let x = 0; x < state.mapWidth; x += 40) {
+  const startX = Math.max(0, Math.floor(cx / 50) * 50);
+  const startY = Math.max(0, Math.floor(cy / 50) * 50);
+  for (let x = startX; x < Math.min(state.mapWidth, cx + w + 50); x += 50) {
     ctx.beginPath();
-    ctx.moveTo(x, Math.max(0, cy - 20));
-    ctx.lineTo(x, Math.min(state.mapHeight, cy + h + 20));
+    ctx.moveTo(x, Math.max(0, cy));
+    ctx.lineTo(x, Math.min(state.mapHeight, cy + h));
     ctx.stroke();
   }
-  for (let y = 0; y < state.mapHeight; y += 40) {
+  for (let y = startY; y < Math.min(state.mapHeight, cy + h + 50); y += 50) {
     ctx.beginPath();
-    ctx.moveTo(Math.max(0, cx - 20), y);
-    ctx.lineTo(Math.min(state.mapWidth, cx + w + 20), y);
+    ctx.moveTo(Math.max(0, cx), y);
+    ctx.lineTo(Math.min(state.mapWidth, cx + w), y);
     ctx.stroke();
   }
 
-  // Ground decorations
-  ctx.fillStyle = '#4a5a3a';
-  for (let i = 0; i < 50; i++) {
-    const gx = ((i * 137 + 42) % state.mapWidth);
-    const gy = ((i * 251 + 89) % state.mapHeight);
-    ctx.fillText('🌿', gx, gy);
-  }
-
-  // Building labels
-  ctx.fillStyle = 'rgba(160, 150, 120, 0.3)';
-  ctx.font = '14px "Oswald", sans-serif';
+  // Zone labels
+  ctx.fillStyle = 'rgba(200, 200, 180, 0.15)';
+  ctx.font = 'bold 20px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('KASERN', 290, 90);
-  ctx.fillText('FÖRRÅD', 940, 390);
-  ctx.fillText('BUNKER', 1790, 1490);
+  ctx.fillText('HANGAR', 250, 400);
+  ctx.fillText('KONTOR', 900, 200);
+  ctx.fillText('LAGER', 950, 650);
+  ctx.font = '12px sans-serif';
+  ctx.fillText('KORRIDOR', 600, 260);
 
-  // Extraction zones
+  // ── EXTRACTION ZONES ──
   for (const ep of state.extractionPoints) {
     if (!ep.active) continue;
     ctx.save();
-    const pulse = 0.4 + Math.sin(state.time * 3) * 0.2;
-    
-    // Pulsing circle
+    const pulse = 0.5 + Math.sin(state.time * 3) * 0.3;
+
     ctx.beginPath();
     ctx.arc(ep.pos.x, ep.pos.y, ep.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(60, 200, 80, ${pulse * 0.1})`;
+    ctx.fillStyle = `rgba(60, 220, 80, ${pulse * 0.15})`;
     ctx.fill();
-    ctx.strokeStyle = `rgba(60, 200, 80, ${pulse})`;
+    ctx.strokeStyle = `rgba(60, 220, 80, ${pulse})`;
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Arrow and label
-    ctx.fillStyle = `rgba(60, 200, 80, ${pulse})`;
-    ctx.font = '11px "Share Tech Mono", monospace';
+    ctx.fillStyle = `rgba(60, 220, 80, ${pulse})`;
+    ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 10);
-    ctx.font = '16px sans-serif';
-    ctx.fillText('🚁', ep.pos.x, ep.pos.y + 5);
+    ctx.fillText(ep.name, ep.pos.x, ep.pos.y - ep.radius - 8);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('🚁', ep.pos.x, ep.pos.y + 6);
     ctx.restore();
   }
 
-  // Walls with cute style
+  // ── WALLS ──
   for (const wall of state.walls) {
-    // Main wall
     ctx.fillStyle = wall.color;
-    ctx.beginPath();
-    (ctx as any).roundRect(wall.x, wall.y, wall.w, wall.h, 2);
-    ctx.fill();
-    // Top highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
     ctx.fillRect(wall.x, wall.y, wall.w, Math.min(3, wall.h));
-    // Bottom shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
     ctx.fillRect(wall.x, wall.y + wall.h - 2, wall.w, 2);
   }
 
-  // Document pickups
+  // ── DOCUMENT PICKUPS ──
   for (const dp of state.documentPickups) {
     if (dp.collected) continue;
     const bob = Math.sin(state.time * 3 + dp.pos.x) * 3;
-    const glow = 0.3 + Math.sin(state.time * 2) * 0.15;
-    
-    // Glow
+    const glow = 0.4 + Math.sin(state.time * 2) * 0.2;
+
     ctx.beginPath();
-    ctx.arc(dp.pos.x, dp.pos.y + bob, 18, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(80, 160, 255, ${glow * 0.15})`;
+    ctx.arc(dp.pos.x, dp.pos.y + bob, 20, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(80, 160, 255, ${glow * 0.2})`;
     ctx.fill();
-    
-    // Document icon
-    ctx.font = '18px sans-serif';
+
+    ctx.font = '20px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('📄', dp.pos.x, dp.pos.y + bob + 6);
-    
-    // Label
+
     ctx.fillStyle = `rgba(100, 180, 255, ${glow + 0.3})`;
-    ctx.font = '8px "Share Tech Mono", monospace';
-    ctx.fillText('DOKUMENT', dp.pos.x, dp.pos.y + bob - 14);
+    ctx.font = 'bold 9px sans-serif';
+    ctx.fillText('DOKUMENT', dp.pos.x, dp.pos.y + bob - 16);
   }
 
-  // Loot containers with cute style
+  // ── LOOT ──
   for (const lc of state.lootContainers) {
     if (lc.looted) {
-      ctx.fillStyle = '#2a2a22';
-      ctx.beginPath();
-      (ctx as any).roundRect(lc.pos.x - lc.size / 2, lc.pos.y - lc.size / 2, lc.size, lc.size, 3);
-      ctx.fill();
-      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#3a3a32';
+      ctx.fillRect(lc.pos.x - lc.size / 2, lc.pos.y - lc.size / 2, lc.size, lc.size);
+      ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('📦', lc.pos.x, lc.pos.y + 4);
+      ctx.fillText('📦', lc.pos.x, lc.pos.y + 5);
     } else {
       const bob = Math.sin(state.time * 2 + lc.pos.x) * 2;
-      const icons = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️' };
-      
-      // Glow ring
+      const icons: Record<string, string> = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️' };
+
       ctx.beginPath();
       ctx.arc(lc.pos.x, lc.pos.y + bob, lc.size * 0.8, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(200, 180, 60, 0.08)';
+      ctx.fillStyle = 'rgba(220, 200, 60, 0.12)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(200, 180, 60, 0.4)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(220, 200, 60, 0.5)';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
-      
-      ctx.font = '16px sans-serif';
+
+      ctx.font = '18px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(icons[lc.type], lc.pos.x, lc.pos.y + bob + 5);
-      
-      ctx.fillStyle = 'rgba(200, 180, 60, 0.6)';
-      ctx.font = '7px "Share Tech Mono", monospace';
-      ctx.fillText(lc.type.toUpperCase(), lc.pos.x, lc.pos.y + bob - 12);
+      ctx.fillText(icons[lc.type] || '📦', lc.pos.x, lc.pos.y + bob + 6);
+
+      ctx.fillStyle = 'rgba(220, 200, 60, 0.7)';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillText(lc.type.toUpperCase(), lc.pos.x, lc.pos.y + bob - 14);
     }
   }
 
-  // Dead enemies - cute ghost
+  // ── DEAD ENEMIES ──
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
     ctx.save();
-    ctx.translate(enemy.pos.x, enemy.pos.y);
-    ctx.globalAlpha = 0.4;
-    ctx.font = '16px sans-serif';
+    ctx.globalAlpha = 0.5;
+    ctx.font = '18px sans-serif';
     ctx.textAlign = 'center';
     const floatUp = Math.sin(state.time * 2) * 3;
-    ctx.fillText('👻', 0, floatUp + 4);
+    ctx.fillText('👻', enemy.pos.x, enemy.pos.y + floatUp + 4);
     ctx.restore();
   }
 
-  // Living enemies - cute military characters
+  // ── LIVING ENEMIES ──
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
-    
+
     const isBlinking = enemy.eyeBlink < 0.15;
-    const configs = {
-      scav: { body: '#8a8a6a', outline: '#6a6a4a', eye: '#333', hat: 'bandana' as const, hatColor: '#5a6a4a' },
-      soldier: { body: '#5a7a4a', outline: '#4a6a3a', eye: '#222', hat: 'helmet' as const, hatColor: '#4a5a3a' },
-      heavy: { body: '#7a5a4a', outline: '#5a4a3a', eye: '#211', hat: 'ushanka' as const, hatColor: '#6a4a3a' },
-    }[enemy.type];
+    const configs: Record<string, any> = {
+      scav: { body: '#aa9a7a', outline: '#8a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
+      soldier: { body: '#7a9a5a', outline: '#5a7a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
+      heavy: { body: '#aa6a5a', outline: '#8a4a3a', eye: '#211', hat: 'ushanka', hatColor: '#8a5a4a' },
+    };
+    const cfg = configs[enemy.type];
 
     drawCuteCharacter(
       ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
-      configs.body, configs.outline, configs.eye, isBlinking,
-      configs.hat, configs.hatColor, true, enemy.type === 'heavy' ? R + 3 : R
+      cfg.body, cfg.outline, cfg.eye, isBlinking,
+      cfg.hat, cfg.hatColor, true, enemy.type === 'heavy' ? R + 4 : R
     );
 
-    // Alert/Attack emoji
+    // Status indicator
     if (enemy.state === 'chase') {
-      ctx.font = '12px sans-serif';
+      ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 8);
+      ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 10);
     } else if (enemy.state === 'attack') {
-      ctx.font = '12px sans-serif';
+      ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 8);
+      ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 10);
     } else if (enemy.state === 'patrol') {
-      // Zzz for patrol
-      const zzAlpha = 0.3 + Math.sin(state.time * 2) * 0.2;
-      ctx.globalAlpha = zzAlpha;
-      ctx.font = '8px sans-serif';
-      ctx.fillText('💤', enemy.pos.x + R, enemy.pos.y - R - 4);
+      ctx.globalAlpha = 0.4 + Math.sin(state.time * 2) * 0.2;
+      ctx.font = '10px sans-serif';
+      ctx.fillText('💤', enemy.pos.x + R, enemy.pos.y - R - 6);
       ctx.globalAlpha = 1;
     }
 
-    // HP bar for damaged enemies
+    // HP bar
     if (enemy.hp < enemy.maxHp) {
-      const barW = 26;
+      const barW = 28;
       const ratio = enemy.hp / enemy.maxHp;
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.beginPath();
-      (ctx as any).roundRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y - R - 18, barW + 2, 5, 2);
-      ctx.fill();
-      ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#aa3a3a';
-      ctx.beginPath();
-      (ctx as any).roundRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 17, barW * ratio, 3, 1);
-      ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y - R - 22, barW + 2, 6);
+      ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#cc3a3a';
+      ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 21, barW * ratio, 4);
     }
+
+    // Enemy type label
+    ctx.fillStyle = 'rgba(255,200,200,0.5)';
+    ctx.font = '7px sans-serif';
+    ctx.textAlign = 'center';
+    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT' }[enemy.type];
+    ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 14);
   }
 
-  // Particles
+  // ── PARTICLES ──
   for (const p of state.particles) {
     const alpha = p.life / p.maxLife;
     ctx.globalAlpha = alpha;
@@ -369,19 +346,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
   ctx.globalAlpha = 1;
 
-  // Bullets
+  // ── BULLETS ──
   for (const b of state.bullets) {
-    ctx.fillStyle = b.fromPlayer ? '#ffcc44' : '#ff5544';
+    ctx.fillStyle = b.fromPlayer ? '#ffdd44' : '#ff5544';
     ctx.beginPath();
-    ctx.arc(b.pos.x, b.pos.y, 2.5, 0, Math.PI * 2);
+    ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
     ctx.fill();
-    // Glow
     ctx.beginPath();
-    ctx.arc(b.pos.x, b.pos.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = b.fromPlayer ? 'rgba(255,200,60,0.2)' : 'rgba(255,80,60,0.2)';
+    ctx.arc(b.pos.x, b.pos.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = b.fromPlayer ? 'rgba(255,220,60,0.25)' : 'rgba(255,80,60,0.25)';
     ctx.fill();
-    // Trail
-    ctx.strokeStyle = b.fromPlayer ? 'rgba(255,200,60,0.15)' : 'rgba(255,80,60,0.15)';
+    ctx.strokeStyle = b.fromPlayer ? 'rgba(255,220,60,0.2)' : 'rgba(255,80,60,0.2)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(b.pos.x, b.pos.y);
@@ -389,43 +364,51 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
-  // Player glow (large, bright)
+  // ── PLAYER ──
+  // Outer glow - very visible
   ctx.save();
-  const glowPulse = 0.5 + Math.sin(state.time * 2) * 0.2;
+  const pulse = 0.6 + Math.sin(state.time * 2) * 0.2;
+
+  // Large soft glow
+  const grad = ctx.createRadialGradient(
+    state.player.pos.x, state.player.pos.y, 0,
+    state.player.pos.x, state.player.pos.y, 40
+  );
+  grad.addColorStop(0, `rgba(100, 255, 80, ${pulse * 0.4})`);
+  grad.addColorStop(0.5, `rgba(100, 255, 80, ${pulse * 0.15})`);
+  grad.addColorStop(1, 'rgba(100, 255, 80, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(state.player.pos.x - 40, state.player.pos.y - 40, 80, 80);
+
+  // Ring
   ctx.beginPath();
-  ctx.arc(state.player.pos.x, state.player.pos.y, R + 20, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(120, 255, 80, ${glowPulse * 0.3})`;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(state.player.pos.x, state.player.pos.y, R + 10, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(120, 255, 80, ${glowPulse * 0.5})`;
-  ctx.fill();
-  ctx.strokeStyle = `rgba(150, 255, 100, ${glowPulse})`;
+  ctx.arc(state.player.pos.x, state.player.pos.y, R + 8, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(120, 255, 80, ${pulse})`;
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();
 
-  // Player - cute military character (brighter for visibility)
+  // Character
   const playerBlink = Math.sin(state.time * 0.8) > 0.95;
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    '#b0d888', '#88bb66', '#2a3a1a', playerBlink,
-    'beret', '#7a5040', true, R + 2
+    '#c0ee99', '#88cc55', '#2a3a1a', playerBlink,
+    'beret', '#8a5545', true, R + 2
   );
 
-  // Player name tag
-  ctx.fillStyle = 'rgba(180, 240, 120, 0.9)';
-  ctx.font = 'bold 10px "Share Tech Mono", monospace';
+  // Name tag (always visible)
+  ctx.fillStyle = '#88ff44';
+  ctx.font = 'bold 12px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 16);
+  ctx.fillText('▼ DU ▼', state.player.pos.x, state.player.pos.y - R - 20);
 
   // Bleeding indicator
   if (state.player.bleedRate > 0) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(state.player.pos.x, state.player.pos.y, R + 6, 0, Math.PI * 2);
-    const pulseAlpha = 0.15 + Math.sin(state.time * 8) * 0.1;
-    ctx.strokeStyle = `rgba(220, 50, 50, ${pulseAlpha})`;
+    const pa = 0.2 + Math.sin(state.time * 8) * 0.15;
+    ctx.strokeStyle = `rgba(220, 50, 50, ${pa})`;
     ctx.lineWidth = 2;
     ctx.setLineDash([4, 4]);
     ctx.stroke();
@@ -433,31 +416,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // Interaction prompts
+  // ── INTERACTION PROMPTS ──
   for (const lc of state.lootContainers) {
     if (!lc.looted && dist2d(state.player.pos, lc.pos) < 50) {
-      ctx.fillStyle = 'rgba(200, 180, 60, 0.8)';
-      ctx.font = '9px "Share Tech Mono", monospace';
+      ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
+      ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size);
+      ctx.fillText('[E] LETA', lc.pos.x, lc.pos.y + lc.size + 4);
     }
   }
   for (const dp of state.documentPickups) {
     if (!dp.collected && dist2d(state.player.pos, dp.pos) < 50) {
-      ctx.fillStyle = 'rgba(100, 180, 255, 0.8)';
-      ctx.font = '9px "Share Tech Mono", monospace';
+      ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
+      ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 22);
+      ctx.fillText('[E] LÄS', dp.pos.x, dp.pos.y + 24);
     }
   }
 
-  ctx.restore(); // camera transform
+  ctx.restore(); // camera
 
-  // Vignette (light)
-  const gradient = ctx.createRadialGradient(w / 2, h / 2, w * 0.4, w / 2, h / 2, w * 0.8);
-  gradient.addColorStop(0, 'rgba(0,0,0,0)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0.2)');
-  ctx.fillStyle = gradient;
+  // Minimal vignette
+  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.5, w / 2, h / 2, w * 0.9);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 
   // Damage flash
