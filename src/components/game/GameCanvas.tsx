@@ -114,24 +114,12 @@ export const GameCanvas: React.FC = () => {
       e.preventDefault();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
-        const halfW = window.innerWidth / 2;
-
-        if (t.clientX < halfW) {
-          // Left side → tap to walk to that world position
-          moveTouchRef.current = t.identifier;
-          const world = screenToWorld(t.clientX, t.clientY);
-          inputRef.current.moveTarget = world;
-          inputRef.current.moveX = 0;
-          inputRef.current.moveY = 0;
-        } else {
-          // Right side → aim & shoot toward that point
-          aimTouchRef.current = t.identifier;
-          const dx = t.clientX - halfW;
-          const dy = t.clientY - window.innerHeight / 2;
-          inputRef.current.aimX = dx;
-          inputRef.current.aimY = dy;
-          inputRef.current.shooting = true;
-        }
+        // Any tap → walk to that world position
+        moveTouchRef.current = t.identifier;
+        const world = screenToWorld(t.clientX, t.clientY);
+        inputRef.current.moveTarget = world;
+        inputRef.current.moveX = 0;
+        inputRef.current.moveY = 0;
       }
     };
 
@@ -140,16 +128,8 @@ export const GameCanvas: React.FC = () => {
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
-          // Update walk target as finger drags
           const world = screenToWorld(t.clientX, t.clientY);
           inputRef.current.moveTarget = world;
-        }
-        if (t.identifier === aimTouchRef.current) {
-          const dx = t.clientX - window.innerWidth / 2;
-          const dy = t.clientY - window.innerHeight / 2;
-          inputRef.current.aimX = dx;
-          inputRef.current.aimY = dy;
-          inputRef.current.shooting = true;
         }
       }
     };
@@ -160,11 +140,6 @@ export const GameCanvas: React.FC = () => {
         const t = e.changedTouches[i];
         if (t.identifier === moveTouchRef.current) {
           moveTouchRef.current = null;
-          // Keep moveTarget — character walks there then stops
-        }
-        if (t.identifier === aimTouchRef.current) {
-          aimTouchRef.current = null;
-          inputRef.current.shooting = false;
         }
       }
     };
@@ -282,7 +257,7 @@ export const GameCanvas: React.FC = () => {
 
       {/* Mobile control hint */}
       <div className="sm:hidden absolute bottom-2 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
-        VÄNSTER sida = gå · HÖGER sida = sikta & skjut
+        Tryck dit du vill gå · Skjuter automatiskt mot fiender
       </div>
 
       {/* Desktop hint */}
