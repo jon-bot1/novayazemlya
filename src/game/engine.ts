@@ -1075,13 +1075,25 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
 
-      // Snipers don't use normal movement — they stay put and aim
+      // Sniper behavior: move toward player until in LOS + range, then stop and shoot
       if (enemy.state === 'idle' || enemy.state === 'patrol') {
+        // Slowly scan
         enemy.angle += Math.sin(state.time * 0.3 + enemy.pos.x * 0.01) * 0.003;
         continue;
       }
-      if (enemy.state === 'chase') {
-        enemy.state = 'attack'; // snipers don't chase, they shoot
+      if (enemy.state === 'chase' || enemy.state === 'investigate') {
+        // Move toward player until within shootRange and has LOS
+        const dtp = dist(enemy.pos, state.player.pos);
+        const sniperLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
+        if (dtp <= enemy.shootRange && sniperLos) {
+          enemy.state = 'attack'; // in position — start shooting
+        } else {
+          // Advance toward player, tree-hopping style (slow, deliberate)
+          const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+          enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * enemy.speed * dt * 60, toPlayer.y * enemy.speed * dt * 60, 8);
+          enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
+        }
+        continue;
       }
       // Fall through to attack state in switch
     }
