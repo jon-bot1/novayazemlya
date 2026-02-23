@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee';
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -60,6 +60,15 @@ export interface Particle {
   maxLife: number;
   color: string;
   size: number;
+}
+
+export interface Grenade {
+  pos: Vec2;
+  vel: Vec2;
+  timer: number; // seconds until explosion
+  damage: number;
+  radius: number; // explosion radius
+  fromPlayer: boolean;
 }
 
 export interface Enemy {
@@ -119,6 +128,7 @@ export interface GameState {
   player: Player;
   enemies: Enemy[];
   bullets: Bullet[];
+  grenades: Grenade[];
   particles: Particle[];
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
@@ -152,6 +162,7 @@ export interface InputState {
   aimY: number;
   shooting: boolean;
   interact: boolean;
-  heal: boolean; // H key
+  heal: boolean;
+  throwGrenade: boolean; // G key
   moveTarget?: Vec2 | null;
 }

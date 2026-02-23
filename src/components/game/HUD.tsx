@@ -58,11 +58,18 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         </div>
 
-        {/* Ammo + Intel */}
+        {/* Ammo + Grenades + Intel */}
         <div className="flex flex-col items-end gap-0.5">
           <div className="flex items-center gap-2">
             <span className="text-foreground font-display text-lg text-glow-amber">{player.currentAmmo}</span>
             <span className="text-muted-foreground text-xs font-mono">{player.ammoType}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-mono text-muted-foreground">💣</span>
+            <span className={`text-xs font-mono ${player.inventory.filter(i => i.category === 'grenade').length > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
+              {player.inventory.filter(i => i.category === 'grenade').length}
+            </span>
+            <span className="text-[9px] text-muted-foreground font-mono">[G]</span>
           </div>
           <span className="text-xs text-muted-foreground font-mono">☠ {killCount}</span>
           <button 

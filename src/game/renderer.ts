@@ -777,6 +777,54 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
+  // ── GRENADES ──
+  for (const g of state.grenades) {
+    const bob = Math.sin(state.time * 15) * 2;
+    const timerRatio = g.timer / 1.5;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(g.pos.x, g.pos.y + 6, 6, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Danger radius indicator (grows as timer decreases)
+    if (timerRatio < 0.5) {
+      const alpha = (1 - timerRatio * 2) * 0.15;
+      ctx.beginPath();
+      ctx.arc(g.pos.x, g.pos.y, g.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 80, 30, ${alpha})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 80, 30, ${alpha * 2})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Grenade body
+    ctx.fillStyle = timerRatio > 0.3 ? '#5a6a4a' : '#aa4430';
+    ctx.beginPath();
+    ctx.arc(g.pos.x, g.pos.y + bob, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Fuse spark
+    const sparkAlpha = 0.5 + Math.sin(state.time * 20) * 0.5;
+    ctx.fillStyle = `rgba(255, 220, 60, ${sparkAlpha})`;
+    ctx.beginPath();
+    ctx.arc(g.pos.x, g.pos.y + bob - 6, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Timer text
+    ctx.fillStyle = 'rgba(255, 200, 80, 0.8)';
+    ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(g.timer.toFixed(1), g.pos.x, g.pos.y + bob - 12);
+  }
+
   // ── PARTICLES ──
   for (const p of state.particles) {
     const alpha = p.life / p.maxLife;

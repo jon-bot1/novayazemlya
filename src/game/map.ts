@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade } from './items';
 
 // Hangar complex: 1200x900 - tighter for mobile visibility
 const MAP_W = 1200;
@@ -205,7 +205,7 @@ export function createInitialPlayer() {
     maxHp: 100,
     speed: 2.5,
     angle: 0,
-    inventory: [weapon, createAmmo('9x18', 24)],
+    inventory: [weapon, createAmmo('9x18', 24), createGrenade(), createGrenade()],
     equippedWeapon: weapon,
     currentAmmo: 8,
     maxAmmo: 8,
