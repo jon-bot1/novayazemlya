@@ -67,6 +67,7 @@ export function createGameState(): GameState {
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
+    speedBoostTimer: 0,
   };
 }
 
@@ -130,10 +131,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
+  const playerSpeed = state.speedBoostTimer > 0 ? state.player.speed * 1.5 : state.player.speed;
   if (moveLen > 0.1) {
-    const speed = state.player.speed * dt * 60;
+    const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
     state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+  }
+
+  // Speed boost countdown
+  if (state.speedBoostTimer > 0) {
+    state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
   // Player aim angle
@@ -229,18 +236,43 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Use medical items
-    if (state.player.hp < state.player.maxHp) {
-      const medIdx = state.player.inventory.findIndex(i => i.category === 'medical');
-      if (medIdx >= 0) {
-        const med = state.player.inventory[medIdx];
-        state.player.hp = Math.min(state.player.maxHp, state.player.hp + (med.healAmount || 0));
-        state.player.inventory.splice(medIdx, 1);
-        state.player.bleedRate = Math.max(0, state.player.bleedRate - 2);
-        addMessage(state, `Använde ${med.name} (+${med.healAmount}HP)`, 'info');
-        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ff66', 5);
-      }
+  }
+
+  // Manual healing (H key)
+  if (input.heal) {
+    const player = state.player;
+    const needsHeal = player.hp < player.maxHp;
+    const isBleeding = player.bleedRate > 0;
+
+    // Priority: bandage if bleeding, then medkit, then morphine
+    let medIdx = -1;
+    if (isBleeding) {
+      medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'bandage');
     }
+    if (medIdx < 0 && needsHeal) {
+      medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'medkit');
+    }
+    if (medIdx < 0 && (needsHeal || isBleeding)) {
+      medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'morphine');
+    }
+
+    if (medIdx >= 0) {
+      const med = player.inventory[medIdx];
+      player.hp = Math.min(player.maxHp, player.hp + (med.healAmount || 0));
+      if (med.stopsBleeding) {
+        player.bleedRate = Math.max(0, player.bleedRate - med.stopsBleeding);
+      }
+      if (med.speedBoost && med.speedBoost > 0) {
+        state.speedBoostTimer = med.speedBoost;
+        addMessage(state, `⚡ ADRENALINKICK! Hastighet ökad i ${med.speedBoost}s`, 'info');
+      }
+      player.inventory.splice(medIdx, 1);
+      addMessage(state, `💊 ${med.name} (+${med.healAmount}HP)`, 'info');
+      spawnParticles(state, player.pos.x, player.pos.y, '#44ff66', 5);
+    } else if (needsHeal || isBleeding) {
+      addMessage(state, '⚠ Ingen medicin!', 'warning');
+    }
+    input.heal = false;
   }
 
   // Bleeding

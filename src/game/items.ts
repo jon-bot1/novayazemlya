@@ -1,4 +1,4 @@
-import { Item, AmmoType } from './types';
+import { Item, AmmoType, MedicalType } from './types';
 
 let itemIdCounter = 0;
 const nextId = () => `item_${itemIdCounter++}`;
@@ -27,15 +27,22 @@ export const createAmmo = (type: AmmoType, count: number): Item => ({
   description: `${count} patroner ${type}`,
 });
 
-export const createMedical = (name: string, heal: number, icon: string): Item => ({
+export const createMedical = (name: string, heal: number, icon: string, medType: MedicalType, stopsBleeding: number = 0, speedBoost: number = 0): Item => ({
   id: nextId(),
   name,
   category: 'medical',
   icon,
-  weight: 0.5,
+  weight: medType === 'morphine' ? 0.3 : medType === 'medkit' ? 1 : 0.5,
   value: heal * 10,
   healAmount: heal,
-  description: `Återställer ${heal} HP`,
+  medicalType: medType,
+  stopsBleeding,
+  speedBoost,
+  description: medType === 'bandage' 
+    ? `Stoppar blödning, återställer ${heal} HP`
+    : medType === 'morphine'
+    ? `Full återställning + tillfällig hastighetsboost`
+    : `Återställer ${heal} HP`,
 });
 
 export const createValuable = (name: string, value: number, icon: string): Item => ({
@@ -69,7 +76,7 @@ export const LOOT_POOLS = {
   common: (): Item[] => {
     const pool: Item[] = [];
     if (Math.random() > 0.4) pool.push(createAmmo('9x18', 8 + Math.floor(Math.random() * 8)));
-    if (Math.random() > 0.6) pool.push(createMedical('Bandage', 15, '🩹'));
+    if (Math.random() > 0.6) pool.push(createMedical('Bandage', 10, '🩹', 'bandage', 3));
     if (Math.random() > 0.7) pool.push(createValuable('Cigaretter', 50, '🚬'));
     if (Math.random() > 0.85) pool.push(createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)));
     return pool;
@@ -78,7 +85,8 @@ export const LOOT_POOLS = {
     const pool: Item[] = [];
     if (Math.random() > 0.5) pool.push(createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)));
     if (Math.random() > 0.6) pool.push(createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)));
-    if (Math.random() > 0.7) pool.push(createMedical('Sjukvårdskit', 40, '🏥'));
+    if (Math.random() > 0.7) pool.push(createMedical('Sjukvårdskit', 40, '🏥', 'medkit', 1));
+    if (Math.random() > 0.92) pool.push(createMedical('Morfin', 100, '💉', 'morphine', 5, 8));
     if (Math.random() > 0.85) pool.push(WEAPON_TEMPLATES.ak74());
     if (Math.random() > 0.9) pool.push(createValuable('Dogtags', 200, '🏷️'));
     return pool;

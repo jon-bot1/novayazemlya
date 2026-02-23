@@ -40,6 +40,22 @@ export const HUD: React.FC<HUDProps> = ({
           {player.bleedRate > 0 && (
             <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 BLÖDNING</span>
           )}
+          {/* Medical inventory summary */}
+          <div className="flex items-center gap-2 mt-0.5">
+            {(() => {
+              const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
+              const medkits = player.inventory.filter(i => i.medicalType === 'medkit').length;
+              const morphine = player.inventory.filter(i => i.medicalType === 'morphine').length;
+              return (
+                <>
+                  <span className={`text-[10px] font-mono ${bandages > 0 ? 'text-foreground/70' : 'text-foreground/30'}`}>🩹{bandages}</span>
+                  <span className={`text-[10px] font-mono ${medkits > 0 ? 'text-foreground/70' : 'text-foreground/30'}`}>🏥{medkits}</span>
+                  <span className={`text-[10px] font-mono ${morphine > 0 ? 'text-loot' : 'text-foreground/30'}`}>💉{morphine}</span>
+                  <span className="text-[9px] text-muted-foreground font-mono">[H]</span>
+                </>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Ammo + Intel */}
