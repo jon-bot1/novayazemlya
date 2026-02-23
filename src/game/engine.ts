@@ -68,6 +68,18 @@ export function createGameState(): GameState {
   };
 }
 
+function hasLineOfSight(state: GameState, a: Vec2, b: Vec2): boolean {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.ceil(d / 10);
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    if (collidesWithWalls(state, a.x + dx * t, a.y + dy * t, 2)) return false;
+  }
+  return true;
+}
+
 function collidesWithWalls(state: GameState, x: number, y: number, r: number): boolean {
   for (const w of state.walls) {
     if (rectContains(w.x, w.y, w.w, w.h, x, y, r)) return true;
@@ -253,15 +265,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
     const distToPlayer = dist(enemy.pos, state.player.pos);
+    const canSeePlayer = distToPlayer < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos);
 
-    if (distToPlayer < enemy.alertRange) {
+    if (canSeePlayer) {
       if (distToPlayer < enemy.shootRange) {
         enemy.state = 'attack';
       } else {
         enemy.state = 'chase';
       }
     } else if (enemy.state !== 'patrol') {
-      if (distToPlayer > enemy.alertRange * 1.5) {
+      if (distToPlayer > enemy.alertRange * 1.5 || !hasLineOfSight(state, enemy.pos, state.player.pos)) {
         enemy.state = 'patrol';
         enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
       }
