@@ -30,7 +30,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
           .order('result', { ascending: false })
           .order('kills', { ascending: false })
           .order('time_seconds', { ascending: true })
-          .limit(10);
+          .limit(5);
         if (data) setScores(data);
       } catch {}
       setLoading(false);
