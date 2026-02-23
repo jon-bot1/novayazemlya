@@ -48,6 +48,16 @@ export const createValuable = (name: string, value: number, icon: string): Item 
   description: `Värt ${value}₽`,
 });
 
+export const createExtractionCode = (): Item => ({
+  id: 'extraction_code',
+  name: 'Exfiltreringskod',
+  category: 'valuable',
+  icon: '🔑',
+  weight: 0.1,
+  value: 0,
+  description: 'Kod som krävs för att aktivera evakueringspunkten',
+});
+
 export const WEAPON_TEMPLATES = {
   makarov: () => createWeapon('PM Makarov', '9x18', 12, '🔫'),
   ak74: () => createWeapon('AK-74', '5.45x39', 25, '🔫'),

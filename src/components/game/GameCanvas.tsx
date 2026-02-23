@@ -29,6 +29,7 @@ export const GameCanvas: React.FC = () => {
     extracted: false,
     documentsRead: [] as string[],
     codesFound: [] as string[],
+    hasExtractionCode: false,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -274,6 +275,7 @@ export const GameCanvas: React.FC = () => {
           extracted: state.extracted,
           documentsRead: [...state.documentsRead],
           codesFound: [...state.codesFound],
+          hasExtractionCode: state.hasExtractionCode,
         });
       }
 
@@ -303,6 +305,7 @@ export const GameCanvas: React.FC = () => {
           documentsFound={hudState.documentsRead.length}
           totalDocuments={LORE_DOCUMENTS.length}
           codesFound={hudState.codesFound}
+          hasExtractionCode={hudState.hasExtractionCode}
           onViewDocuments={() => { setShowIntel(true); }}
         />
 

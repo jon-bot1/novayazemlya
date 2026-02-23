@@ -130,6 +130,7 @@ export interface GameState {
   messages: GameMessage[];
   codesFound: string[];
   documentsRead: string[];
+  hasExtractionCode: boolean;
 }
 
 export interface GameMessage {

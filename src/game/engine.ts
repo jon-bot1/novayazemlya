@@ -62,9 +62,10 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'RÄDEN HAR BÖRJAT — Hitta dokumenten och kom ut levande', time: 0, type: 'info' }],
+    messages: [{ text: 'RÄDEN HAR BÖRJAT — Hitta exfiltreringskoden och kom ut levande', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
+    hasExtractionCode: false,
   };
 }
 
@@ -168,6 +169,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         lc.looted = true;
         for (const item of lc.items) {
           state.player.inventory.push(item);
+          if (item.id === 'extraction_code') {
+            state.hasExtractionCode = true;
+            addMessage(state, '🔑 EXFILTRERINGSKOD HITTAD! Gå till evakueringspunkten!', 'intel');
+          }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
           }
@@ -206,6 +211,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.looted = true;
         for (const item of enemy.loot) {
           state.player.inventory.push(item);
+          if (item.id === 'extraction_code') {
+            state.hasExtractionCode = true;
+            addMessage(state, '🔑 EXFILTRERINGSKOD HITTAD! Gå till evakueringspunkten!', 'intel');
+          }
           if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
             state.player.currentAmmo += item.ammoCount;
           }
@@ -245,6 +254,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
+      if (!state.hasExtractionCode) {
+        // Show warning once per second
+        if (Math.floor(state.time) !== Math.floor(state.time - dt)) {
+          addMessage(state, '⚠ EXFILTRERINGSKOD KRÄVS — Sök igenom kartan!', 'warning');
+        }
+        break;
+      }
       inExtraction = true;
       state.extractionProgress += dt;
       if (state.extractionProgress >= ep.timer) {
