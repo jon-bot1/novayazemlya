@@ -638,9 +638,9 @@ export function generateMap() {
   // EXTRACTION POINTS (outdoor)
   // ══════════════════════════════════════
   const allExfils: ExtractionPoint[] = [
-    { pos: { x: 500, y: MAP_H - 100 }, radius: 50, timer: 5, active: false, name: 'FOREST ROAD SOUTH' },
-    { pos: { x: MAP_W - 100, y: 1000 }, radius: 50, timer: 5, active: false, name: 'FOREST ROAD EAST' },
-    { pos: { x: 200, y: 500 }, radius: 50, timer: 5, active: false, name: 'FOREST ROAD NORTHWEST' },
+    { pos: { x: 500, y: MAP_H - 100 }, radius: 80, timer: 5, active: false, name: 'FOREST ROAD SOUTH' },
+    { pos: { x: MAP_W - 100, y: 1000 }, radius: 80, timer: 5, active: false, name: 'FOREST ROAD EAST' },
+    { pos: { x: 200, y: 500 }, radius: 80, timer: 5, active: false, name: 'FOREST ROAD NORTHWEST' },
   ];
   // Only one random exfil is open
   allExfils[Math.floor(Math.random() * allExfils.length)].active = true;
