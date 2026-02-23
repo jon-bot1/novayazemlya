@@ -80,6 +80,8 @@ export interface Grenade {
   fromPlayer: boolean;
 }
 
+export type TacticalRole = 'assault' | 'flanker' | 'suppressor' | 'none';
+
 export interface Enemy {
   id: string;
   pos: Vec2;
@@ -89,7 +91,7 @@ export interface Enemy {
   damage: number;
   alertRange: number;
   shootRange: number;
-  state: 'idle' | 'patrol' | 'alert' | 'investigate' | 'chase' | 'attack' | 'dead';
+  state: 'idle' | 'patrol' | 'alert' | 'investigate' | 'chase' | 'attack' | 'flank' | 'suppress' | 'dead';
   patrolTarget: Vec2;
   investigateTarget?: Vec2; // where a sound was heard
   lastShot: number;
@@ -105,6 +107,12 @@ export interface Enemy {
   lastRadioCall: number; // timestamp of last radio call
   radioGroup: number; // enemies in same group can communicate
   radioAlert: number; // visual timer for radio icon (seconds remaining)
+  // Tactical AI
+  tacticalRole: TacticalRole;
+  flankTarget?: Vec2; // position to flank to
+  suppressTimer: number; // time remaining in suppression mode
+  callForHelpTimer: number; // cooldown for calling help
+  lastTacticalSwitch: number; // prevent rapid role switching
 }
 
 export interface Player {
