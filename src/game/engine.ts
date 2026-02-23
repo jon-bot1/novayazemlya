@@ -515,8 +515,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           panel.hackProgress += 0.05;
           if (panel.hackProgress >= 1) {
             panel.hacked = true;
-            addMessage(state, '💻 KONTROLLPANEL HACKAD! Alarm avaktiverat.', 'intel');
             spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
+            
+            if (panel.id === 'alarm_gate') {
+              // Gate panel: reset all inside enemies to idle
+              addMessage(state, '💻 GRINDPANEL HACKAD! Fiender återgår till patrull.', 'intel');
+              for (const e of state.enemies) {
+                if (e.state !== 'dead' && e.type !== 'turret' && !e.elevated) {
+                  // Only reset enemies inside the base (y < gate y)
+                  if (e.pos.y < 1750) {
+                    e.state = 'patrol';
+                    e.tacticalRole = 'none';
+                  }
+                }
+              }
+              state.alarmActive = false;
+            } else {
+              // Inside panel: reveal active extraction point
+              addMessage(state, '💻 KONTROLLPANEL HACKAD!', 'intel');
+              const activeExfil = state.extractionPoints.find(ep => ep.active);
+              if (activeExfil) {
+                addMessage(state, `📡 INTEL: Exfiltration öppen vid ${activeExfil.name}`, 'intel');
+              }
+            }
             // Check if all panels hacked — disable alarm
             if (state.alarmPanels.every(p => p.hacked)) {
               state.alarmActive = false;
@@ -550,6 +571,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const shouldAutoHeal = state.player.hp < 40 && state.player.hp > 0;
   if (input.heal || shouldAutoHeal) {
     const player = state.player;
+    const morphineMax = Math.floor(player.maxHp * 1.5); // morphine allows up to 150%
     const needsHeal = player.hp < player.maxHp;
     const isBleeding = player.bleedRate > 0;
 
@@ -570,7 +592,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     if (medIdx >= 0) {
       const med = player.inventory[medIdx];
-      player.hp = Math.min(player.maxHp, player.hp + (med.healAmount || 0));
+      const capHp = med.medicalType === 'morphine' ? morphineMax : player.maxHp;
+      player.hp = Math.min(capHp, player.hp + (med.healAmount || 0));
       if (med.stopsBleeding) {
         player.bleedRate = Math.max(0, player.bleedRate - med.stopsBleeding);
       }
