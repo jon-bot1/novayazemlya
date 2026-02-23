@@ -969,6 +969,64 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (enemy.type === 'turret') {
       // Draw mounted machine gun — sandbag base + gun barrel
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
+    } else if (enemy.type === 'boss') {
+      // Boss: Kommendant Volkov — larger, glowing, unique appearance
+      const bossSize = R + 8;
+      const phase = enemy.bossPhase || 0;
+
+      // Menacing aura
+      const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
+      const auraR = bossSize + 20 + Math.sin(state.time * 3) * 8;
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, auraR, 0, Math.PI * 2);
+      ctx.fillStyle = auraColors[phase];
+      ctx.fill();
+
+      // Second pulsing ring
+      if (phase >= 1) {
+        const ring2 = bossSize + 30 + Math.sin(state.time * 5) * 5;
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
+        ctx.strokeStyle = phase === 2 ? 'rgba(255, 30, 30, 0.3)' : 'rgba(255, 120, 40, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Draw the boss character — dark uniform, ushanka with red star, glowing eyes
+      const bodyColor = phase === 2 ? '#8a2a2a' : phase === 1 ? '#6a3a2a' : '#4a4a5a';
+      const outlineColor = phase === 2 ? '#cc3333' : phase === 1 ? '#aa5533' : '#2a2a3a';
+      const eyeColor = phase >= 1 ? '#ff4422' : '#ffaa00';
+
+      drawCuteCharacter(
+        ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
+        bodyColor, outlineColor, eyeColor, isBlinking,
+        'ushanka', '#3a2828', true, bossSize
+      );
+
+      // Glowing eyes effect
+      ctx.save();
+      ctx.translate(enemy.pos.x, enemy.pos.y);
+      const glowAlpha = 0.3 + Math.sin(state.time * 4) * 0.2;
+      const eyeGlow = ctx.createRadialGradient(0, -bossSize * 0.3, 0, 0, -bossSize * 0.3, bossSize * 0.6);
+      eyeGlow.addColorStop(0, `rgba(255, ${phase >= 1 ? '60' : '170'}, ${phase >= 1 ? '20' : '40'}, ${glowAlpha})`);
+      eyeGlow.addColorStop(1, 'rgba(255, 60, 20, 0)');
+      ctx.fillStyle = eyeGlow;
+      ctx.beginPath();
+      ctx.arc(0, -bossSize * 0.3, bossSize * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Boss name plate
+      ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('★ KOMMENDANT VOLKOV ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+      if (phase >= 1) {
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
+      }
     } else {
       const configs: Record<string, any> = {
         scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
@@ -1048,7 +1106,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = 'rgba(255,200,200,0.5)';
     ctx.font = '7px sans-serif';
     ctx.textAlign = 'center';
-    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT', turret: 'KULSPRUTA' }[enemy.type];
+    const typeLabel = { scav: 'PLUNDRARE', soldier: 'SOLDAT', heavy: 'TUNGT', turret: 'KULSPRUTA', boss: '' }[enemy.type];
     ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 

@@ -40,6 +40,14 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
 
 function generateEnemyLoot(enemy: Enemy) {
   if (enemy.type === 'turret') return LOOT_POOLS.military();
+  if (enemy.type === 'boss') {
+    // Boss drops premium loot
+    return [
+      ...LOOT_POOLS.military(),
+      ...LOOT_POOLS.valuable(),
+      { id: 'boss_dogtag', name: 'Volkovs Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Kommendant Volkovs identitetsbricka — extremt sällsynt' },
+    ];
+  }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
   return LOOT_POOLS[poolType]();
 }
@@ -452,6 +460,41 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     enemy.eyeBlink -= dt;
     if (enemy.eyeBlink <= 0) enemy.eyeBlink = 3 + Math.random() * 4;
 
+    // Boss phase transitions based on HP
+    if (enemy.type === 'boss') {
+      const hpRatio = enemy.hp / enemy.maxHp;
+      const oldPhase = enemy.bossPhase || 0;
+      if (hpRatio < 0.3) enemy.bossPhase = 2;
+      else if (hpRatio < 0.6) enemy.bossPhase = 1;
+      else enemy.bossPhase = 0;
+      
+      if (enemy.bossPhase !== oldPhase) {
+        const phaseNames = ['', '⚠ KOMMENDANT VOLKOV ÄR RASANDE!', '☠ VOLKOV ÄR DESPERAT — AKTA DIG!'];
+        if (phaseNames[enemy.bossPhase!]) {
+          addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
+        }
+        // Phase 1+: faster fire rate, more speed
+        if (enemy.bossPhase! >= 1) {
+          enemy.fireRate = 350;
+          enemy.speed = 2.2;
+          enemy.damage = 35;
+        }
+        if (enemy.bossPhase === 2) {
+          enemy.fireRate = 250;
+          enemy.speed = 2.8;
+          enemy.damage = 40;
+        }
+      }
+
+      // Boss charge attack
+      if (enemy.bossChargeTimer !== undefined) {
+        enemy.bossChargeTimer = Math.max(0, (enemy.bossChargeTimer || 0) - dt);
+      }
+      if (enemy.bossSpawnTimer !== undefined) {
+        enemy.bossSpawnTimer = Math.max(0, (enemy.bossSpawnTimer || 0) - dt);
+      }
+    }
+
     // Alarm boost — increases alert range and makes enemies aggressive
     const alarmBoost = state.alarmActive ? 1.5 : 1.0;
 
@@ -660,9 +703,49 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const gunType = enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : 'rifle';
           playGunshot(gunType);
         }
-        if (enemy.type !== 'turret' && distToPlayer < enemy.shootRange * 0.5) {
+        if (enemy.type !== 'turret' && enemy.type !== 'boss' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
           enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
+        }
+        // Boss: charge attack — rush toward player periodically
+        if (enemy.type === 'boss' && (enemy.bossChargeTimer || 0) <= 0 && distToPlayer > 60) {
+          const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+          const chargeSpeed = speed * 3;
+          enemy.pos = tryMove(state, enemy.pos, chargeDir.x * chargeSpeed, chargeDir.y * chargeSpeed, 12);
+          // Melee damage if close
+          if (dist(enemy.pos, state.player.pos) < 30) {
+            const meleeDmg = 25 * (1 - state.player.armor);
+            state.player.hp -= meleeDmg;
+            addMessage(state, `🗡️ VOLKOV SLÅR TILL! -${Math.floor(meleeDmg)}HP`, 'damage');
+            spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff4444', 8);
+            playHit();
+            enemy.bossChargeTimer = 5 + Math.random() * 3;
+            if (state.player.hp <= 0) {
+              state.gameOver = true;
+              addMessage(state, '☠ DÖD', 'damage');
+            }
+          }
+        }
+        // Boss: spawn reinforcements in phase 1+
+        if (enemy.type === 'boss' && (enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {
+          enemy.bossSpawnTimer = 12 + Math.random() * 8;
+          const spawnAngle = Math.random() * Math.PI * 2;
+          const spawnDist = 80 + Math.random() * 60;
+          const sx = enemy.pos.x + Math.cos(spawnAngle) * spawnDist;
+          const sy = enemy.pos.y + Math.sin(spawnAngle) * spawnDist;
+          const minion: Enemy = {
+            id: `enemy_minion_${Date.now()}`,
+            pos: { x: sx, y: sy },
+            hp: 30, maxHp: 30, speed: 1.6, damage: 10,
+            alertRange: 200, shootRange: 150, fireRate: 1000,
+            state: 'chase', patrolTarget: { x: sx, y: sy },
+            lastShot: 0, angle: Math.random() * Math.PI * 2,
+            type: 'scav', eyeBlink: 3, loot: [], looted: false,
+            lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
+          };
+          state.enemies.push(minion);
+          addMessage(state, '📻 Volkov kallar förstärkning!', 'warning');
+          spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
       }
@@ -703,7 +786,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'dead';
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()} (granat)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';
@@ -755,7 +838,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'dead';
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
-            addMessage(state, `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? '💀 KOMMENDANT VOLKOV ÄR DÖD!' : `Eliminerad: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             enemy.state = 'chase';
