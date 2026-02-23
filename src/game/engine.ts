@@ -2,7 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, 
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS } from './items';
-import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playAlarm, playBossRoar } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -472,6 +472,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const phaseNames = ['', '⚠ KOMMENDANT VOLKOV ÄR RASANDE!', '☠ VOLKOV ÄR DESPERAT — AKTA DIG!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
+          playBossRoar();
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
@@ -510,7 +511,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           panel.activated = true;
           state.alarmActive = true;
           addMessage(state, '🚨 ALARM AKTIVERAT! Alla fiender larmas!', 'warning');
-          playRadio();
+          playAlarm();
           // Alert ALL enemies on the map
           for (const ally of state.enemies) {
             if (ally.state === 'dead') continue;
@@ -700,7 +701,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
           // Enemy gunshot sound event (alerts other enemies too)
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
-          const gunType = enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : 'rifle';
+          const gunType = enemy.type === 'boss' ? 'boss' : enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : 'rifle';
           playGunshot(gunType);
         }
         if (enemy.type !== 'turret' && enemy.type !== 'boss' && distToPlayer < enemy.shootRange * 0.5) {
