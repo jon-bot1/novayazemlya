@@ -1,0 +1,279 @@
+import { GameState, InputState, Vec2, Bullet, Enemy, GameMessage } from './types';
+import { generateMap, createInitialPlayer } from './map';
+
+function dist(a: Vec2, b: Vec2) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+function normalize(v: Vec2): Vec2 {
+  const d = Math.sqrt(v.x * v.x + v.y * v.y);
+  if (d === 0) return { x: 0, y: 0 };
+  return { x: v.x / d, y: v.y / d };
+}
+
+function rectContains(rx: number, ry: number, rw: number, rh: number, px: number, py: number, pr: number = 0) {
+  return px + pr > rx && px - pr < rx + rw && py + pr > ry && py - pr < ry + rh;
+}
+
+function addMessage(state: GameState, text: string, type: GameMessage['type']) {
+  state.messages.push({ text, time: state.time, type });
+  if (state.messages.length > 8) state.messages.shift();
+}
+
+export function createGameState(): GameState {
+  const map = generateMap();
+  const player = createInitialPlayer();
+  return {
+    player,
+    enemies: map.enemies,
+    bullets: [],
+    lootContainers: map.lootContainers,
+    walls: map.walls,
+    extractionPoints: map.extractionPoints,
+    camera: { x: player.pos.x, y: player.pos.y },
+    mapWidth: map.mapWidth,
+    mapHeight: map.mapHeight,
+    gameOver: false,
+    extracted: false,
+    extractionProgress: 0,
+    killCount: 0,
+    time: 0,
+    messages: [{ text: 'RAID STARTED — Find loot and extract', time: 0, type: 'info' }],
+  };
+}
+
+function collidesWithWalls(state: GameState, x: number, y: number, r: number): boolean {
+  for (const w of state.walls) {
+    if (rectContains(w.x, w.y, w.w, w.h, x, y, r)) return true;
+  }
+  return false;
+}
+
+function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
+  let nx = pos.x + dx;
+  let ny = pos.y + dy;
+  
+  // Clamp to map
+  nx = Math.max(r, Math.min(state.mapWidth - r, nx));
+  ny = Math.max(r, Math.min(state.mapHeight - r, ny));
+  
+  if (!collidesWithWalls(state, nx, ny, r)) return { x: nx, y: ny };
+  if (!collidesWithWalls(state, nx, pos.y, r)) return { x: nx, y: pos.y };
+  if (!collidesWithWalls(state, pos.x, ny, r)) return { x: pos.x, y: ny };
+  return pos;
+}
+
+export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
+  if (state.gameOver || state.extracted) return state;
+
+  state.time += dt;
+
+  // Player movement
+  const moveLen = Math.sqrt(input.moveX ** 2 + input.moveY ** 2);
+  if (moveLen > 0.1) {
+    const speed = state.player.speed * dt * 60;
+    const dir = normalize({ x: input.moveX, y: input.moveY });
+    state.player.pos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+  }
+
+  // Player aim angle
+  if (input.aimX !== 0 || input.aimY !== 0) {
+    state.player.angle = Math.atan2(input.aimY, input.aimX);
+  } else if (moveLen > 0.1) {
+    state.player.angle = Math.atan2(input.moveY, input.moveX);
+  }
+
+  // Player shooting
+  if (input.shooting && state.player.currentAmmo > 0 && state.time - state.player.lastShot > state.player.fireRate / 1000) {
+    const spread = (Math.random() - 0.5) * 0.08;
+    const angle = state.player.angle + spread;
+    const speed = 8;
+    state.bullets.push({
+      pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
+      vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+      damage: state.player.equippedWeapon?.damage || 10,
+      damageType: 'bullet',
+      fromPlayer: true,
+      life: 60,
+    });
+    state.player.currentAmmo--;
+    state.player.lastShot = state.time;
+  }
+
+  // Interact with loot
+  if (input.interact) {
+    for (const lc of state.lootContainers) {
+      if (!lc.looted && dist(state.player.pos, lc.pos) < 50) {
+        lc.looted = true;
+        for (const item of lc.items) {
+          state.player.inventory.push(item);
+          // Auto-load matching ammo
+          if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
+            state.player.currentAmmo += item.ammoCount;
+          }
+        }
+        if (lc.items.length > 0) {
+          addMessage(state, `Looted ${lc.type}: ${lc.items.map(i => i.name).join(', ')}`, 'loot');
+        } else {
+          addMessage(state, `${lc.type} is empty`, 'info');
+        }
+      }
+    }
+
+    // Use medical items
+    if (state.player.hp < state.player.maxHp) {
+      const medIdx = state.player.inventory.findIndex(i => i.category === 'medical');
+      if (medIdx >= 0) {
+        const med = state.player.inventory[medIdx];
+        state.player.hp = Math.min(state.player.maxHp, state.player.hp + (med.healAmount || 0));
+        state.player.inventory.splice(medIdx, 1);
+        state.player.bleedRate = Math.max(0, state.player.bleedRate - 2);
+        addMessage(state, `Used ${med.name} (+${med.healAmount}HP)`, 'info');
+      }
+    }
+  }
+
+  // Bleeding
+  if (state.player.bleedRate > 0) {
+    state.player.hp -= state.player.bleedRate * dt;
+  }
+
+  // Extraction check
+  let inExtraction = false;
+  for (const ep of state.extractionPoints) {
+    if (ep.active && dist(state.player.pos, ep.pos) < ep.radius) {
+      inExtraction = true;
+      state.extractionProgress += dt;
+      if (state.extractionProgress >= ep.timer) {
+        state.extracted = true;
+        addMessage(state, `EXTRACTED at ${ep.name}!`, 'info');
+      }
+    }
+  }
+  if (!inExtraction) {
+    state.extractionProgress = Math.max(0, state.extractionProgress - dt * 2);
+  }
+
+  // Update enemies
+  for (const enemy of state.enemies) {
+    if (enemy.state === 'dead') continue;
+
+    const distToPlayer = dist(enemy.pos, state.player.pos);
+
+    // State transitions
+    if (distToPlayer < enemy.alertRange) {
+      // Check line of sight (simplified - no wall check for perf)
+      if (distToPlayer < enemy.shootRange) {
+        enemy.state = 'attack';
+      } else {
+        enemy.state = 'chase';
+      }
+    } else if (enemy.state !== 'patrol') {
+      // Lost player, go back to patrol
+      if (distToPlayer > enemy.alertRange * 1.5) {
+        enemy.state = 'patrol';
+        enemy.patrolTarget = { 
+          x: enemy.pos.x + (Math.random() - 0.5) * 300, 
+          y: enemy.pos.y + (Math.random() - 0.5) * 300 
+        };
+      }
+    }
+
+    // Enemy behavior
+    const speed = enemy.speed * dt * 60;
+    switch (enemy.state) {
+      case 'patrol': {
+        if (dist(enemy.pos, enemy.patrolTarget) < 20) {
+          enemy.patrolTarget = {
+            x: enemy.pos.x + (Math.random() - 0.5) * 300,
+            y: enemy.pos.y + (Math.random() - 0.5) * 300,
+          };
+        }
+        const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
+        enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
+        enemy.angle = Math.atan2(dir.y, dir.x);
+        break;
+      }
+      case 'chase': {
+        const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        enemy.pos = tryMove(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+        enemy.angle = Math.atan2(dir.y, dir.x);
+        break;
+      }
+      case 'attack': {
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
+          const spread = (Math.random() - 0.5) * 0.15;
+          const angle = enemy.angle + spread;
+          const bSpeed = 6;
+          state.bullets.push({
+            pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+            vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
+            damage: enemy.damage,
+            damageType: 'bullet',
+            fromPlayer: false,
+            life: 50,
+          });
+          enemy.lastShot = state.time;
+        }
+        // Slight movement during combat
+        if (distToPlayer < enemy.shootRange * 0.5) {
+          const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
+          enemy.pos = tryMove(state, enemy.pos, dir.x * speed * 0.3, dir.y * speed * 0.3, 10);
+        }
+        break;
+      }
+    }
+  }
+
+  // Update bullets
+  state.bullets = state.bullets.filter(b => {
+    b.pos.x += b.vel.x;
+    b.pos.y += b.vel.y;
+    b.life--;
+
+    if (b.life <= 0) return false;
+    if (collidesWithWalls(state, b.pos.x, b.pos.y, 2)) return false;
+
+    if (b.fromPlayer) {
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead') continue;
+        if (dist(b.pos, enemy.pos) < 14) {
+          enemy.hp -= b.damage;
+          if (enemy.hp <= 0) {
+            enemy.state = 'dead';
+            state.killCount++;
+            addMessage(state, `Killed ${enemy.type.toUpperCase()}`, 'kill');
+          } else {
+            enemy.state = 'chase';
+          }
+          return false;
+        }
+      }
+    } else {
+      if (dist(b.pos, state.player.pos) < 12) {
+        const dmg = b.damage * (1 - state.player.armor);
+        state.player.hp -= dmg;
+        if (Math.random() > 0.7) {
+          state.player.bleedRate += 0.5;
+          addMessage(state, 'BLEEDING!', 'damage');
+        }
+        addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
+        if (state.player.hp <= 0) {
+          state.gameOver = true;
+          addMessage(state, 'K.I.A.', 'damage');
+        }
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Camera follow
+  const camLerp = 0.1;
+  state.camera.x += (state.player.pos.x - state.camera.x) * camLerp;
+  state.camera.y += (state.player.pos.y - state.camera.y) * camLerp;
+
+  return state;
+}
