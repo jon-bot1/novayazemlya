@@ -1614,10 +1614,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (b.fromPlayer) {
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead' || !enemy.elevated) continue;
-        if (dist(b.pos, enemy.pos) < 18) { // slightly larger hitbox for elevated targets
-          if (Math.random() < 0.4) {
+        if (dist(b.pos, enemy.pos) < 28) { // larger hitbox — guards are on walls
+          if (Math.random() < 0.25) {
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
-            return false; // concealment miss
+            return false; // concealment miss (reduced from 40% to 25%)
           }
           const critChance = Math.min(0.35, 0.05 + state.killCount * 0.02);
           const isCrit = Math.random() < critChance;
@@ -1641,7 +1641,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
-            // When hit, elevated guards go to attack and expand their range
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
               enemy.shootRange = Math.max(enemy.shootRange, 250);
@@ -1653,10 +1652,25 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Wall collision — elevated enemy bullets fly over walls
+    // Wall collision — but let player bullets pass through walls near elevated enemies
     if (!b.elevated && collidesWithWalls(state, b.pos.x, b.pos.y, 2)) {
-      spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
-      return false;
+      // If player bullet is near an elevated enemy, skip wall collision (they're ON the wall)
+      if (b.fromPlayer) {
+        let nearElevated = false;
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead' || !enemy.elevated) continue;
+          if (dist(b.pos, enemy.pos) < 50) { nearElevated = true; break; }
+        }
+        if (nearElevated) {
+          // Don't destroy bullet — let it continue to the elevated hitbox check next frame
+        } else {
+          spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
+          return false;
+        }
+      } else {
+        spawnParticles(state, b.pos.x, b.pos.y, '#888', 3);
+        return false;
+      }
     }
 
     if (b.fromPlayer) {
