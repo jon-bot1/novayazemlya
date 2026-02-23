@@ -156,6 +156,7 @@ export interface Prop {
   h: number;
   type: 'wood_crate' | 'concrete_barrier' | 'equipment_table' | 'sandbags' | 'barrel_stack' | 'metal_shelf'
     | 'tree' | 'pine_tree' | 'bush' | 'fence_h' | 'fence_v' | 'guard_booth' | 'watchtower' | 'vehicle_wreck' | 'gate' | 'road_sign' | 'searchlight';
+  blocksPlayer?: boolean;
 }
 
 export type TerrainType = 'grass' | 'dirt' | 'asphalt' | 'concrete' | 'forest';
