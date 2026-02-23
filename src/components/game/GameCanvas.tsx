@@ -140,6 +140,9 @@ export const GameCanvas: React.FC = () => {
     const keys = new Set<string>();
 
     const onKeyDown = (e: KeyboardEvent) => {
+      // Don't capture game keys when typing in an input field
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       keys.add(e.key.toLowerCase());
       if (e.key === 'e') inputRef.current.interact = true;
       if (e.key === 'h') inputRef.current.heal = true;
