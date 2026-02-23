@@ -2,6 +2,7 @@
 
 let lastCalloutTime = 0;
 const CALLOUT_COOLDOWN = 1200;
+let unlocked = false;
 
 type CalloutType = 'alert' | 'chase' | 'investigate' | 'attack' | 'lost' | 'alarm' | 'death';
 
@@ -22,54 +23,57 @@ const PITCH_BY_ENEMY: Record<string, number> = {
   turret: 1.3,
 };
 
-// Voice loading state
-let voicesReady = false;
 let englishVoices: SpeechSynthesisVoice[] = [];
 
 function loadVoices() {
   if (typeof speechSynthesis === 'undefined') return;
   const all = speechSynthesis.getVoices();
   englishVoices = all.filter(v => v.lang.startsWith('en'));
-  if (englishVoices.length === 0) {
-    // Some browsers return all voices as fallback
-    englishVoices = all;
-  }
-  voicesReady = englishVoices.length > 0;
+  if (englishVoices.length === 0) englishVoices = all;
 }
 
-// Eagerly load voices
 if (typeof speechSynthesis !== 'undefined') {
   loadVoices();
   speechSynthesis.addEventListener('voiceschanged', loadVoices);
 }
 
 function pickVoice(): SpeechSynthesisVoice | null {
-  if (!voicesReady) loadVoices(); // retry
+  if (englishVoices.length === 0) loadVoices();
   if (englishVoices.length === 0) return null;
-  const preferred = englishVoices.find(v => /david|james|daniel|george|male/i.test(v.name))
+  return englishVoices.find(v => /david|james|daniel|george|male/i.test(v.name))
     || englishVoices.find(v => v.lang === 'en-US')
     || englishVoices[0];
-  return preferred || null;
+}
+
+/**
+ * Must be called from a user gesture (click/touch) to unlock speech on mobile.
+ * Call this once at game start.
+ */
+export function unlockSpeech() {
+  if (unlocked || typeof speechSynthesis === 'undefined') return;
+  // Speak a silent utterance to unlock the API
+  const silent = new SpeechSynthesisUtterance('');
+  silent.volume = 0;
+  silent.rate = 10; // fastest possible so it's instant
+  speechSynthesis.speak(silent);
+  unlocked = true;
+  console.log('[voice] Speech unlocked via user gesture');
 }
 
 export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
-  if (typeof speechSynthesis === 'undefined') {
-    console.warn('SpeechSynthesis not available');
-    return;
-  }
+  if (typeof speechSynthesis === 'undefined') return;
+  if (!unlocked) return; // Don't try before unlock
 
   const now = performance.now();
   if (now - lastCalloutTime < CALLOUT_COOLDOWN) return;
   lastCalloutTime = now;
 
-  // Cancel queued speech to prevent buildup
   speechSynthesis.cancel();
 
   const lines = CALLOUTS[type];
   const text = lines[Math.floor(Math.random() * lines.length)];
 
   const utt = new SpeechSynthesisUtterance(text);
-
   const voice = pickVoice();
   if (voice) utt.voice = voice;
 
@@ -77,12 +81,8 @@ export function speakCallout(type: CalloutType, enemyType: string = 'soldier') {
   utt.rate = type === 'death' ? 0.7 : 1.1 + Math.random() * 0.3;
   utt.volume = 1.0;
 
-  utt.onerror = (e) => {
-    console.error('Speech error:', e.error);
-  };
+  utt.onerror = (e) => console.error('Speech error:', e.error);
 
-  // Chrome bug workaround: speechSynthesis can get stuck after ~15s of inactivity
-  // Calling resume() before speak() prevents this
   speechSynthesis.resume();
   speechSynthesis.speak(utt);
 }
