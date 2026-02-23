@@ -325,6 +325,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.flashbangTimer = Math.max(0, state.flashbangTimer - dt);
   }
 
+  // Weapon slot switching (1 = sidearm, 2 = primary)
+  if (input.switchWeapon) {
+    const slot = input.switchWeapon;
+    const wpnForSlot = slot === 1 ? state.player.sidearm : state.player.primaryWeapon;
+    if (wpnForSlot) {
+      state.player.activeSlot = slot;
+      state.player.equippedWeapon = wpnForSlot;
+      if (wpnForSlot.ammoType) state.player.ammoType = wpnForSlot.ammoType;
+      addMessage(state, `🔫 ${wpnForSlot.name} [${slot}]`, 'info');
+    } else if (slot === 2) {
+      addMessage(state, '⚠ Inget primärvapen!', 'warning');
+    }
+    input.switchWeapon = undefined;
+  }
+
   // Player aim angle
   if (input.aimX !== 0 || input.aimY !== 0) {
     state.player.angle = Math.atan2(input.aimY, input.aimX);
@@ -430,11 +445,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} skydd utrustat!`, 'info');
           }
-          // Auto-equip better weapon
-          if (item.category === 'weapon' && item.damage && (!state.player.equippedWeapon || item.damage > state.player.equippedWeapon.damage!)) {
-            state.player.equippedWeapon = item;
-            if (item.ammoType) state.player.ammoType = item.ammoType;
-            addMessage(state, `🔫 ${item.name} utrustad!`, 'info');
+          // Auto-equip weapon to primary slot (sidearm stays as pistol)
+          if (item.category === 'weapon' && item.damage) {
+            if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
+              state.player.primaryWeapon = item;
+              // Auto-switch to primary
+              state.player.activeSlot = 2;
+              state.player.equippedWeapon = item;
+              if (item.ammoType) state.player.ammoType = item.ammoType;
+              addMessage(state, `🔫 ${item.name} utrustad [2]!`, 'info');
+            } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
+              state.player.sidearm = item;
+              addMessage(state, `🔫 ${item.name} som sidearm [1]!`, 'info');
+            }
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
@@ -487,10 +510,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} skydd!`, 'info');
           }
-          if (item.category === 'weapon' && item.damage && (!state.player.equippedWeapon || item.damage > state.player.equippedWeapon.damage!)) {
-            state.player.equippedWeapon = item;
-            if (item.ammoType) state.player.ammoType = item.ammoType;
-            addMessage(state, `🔫 ${item.name} utrustad!`, 'info');
+          if (item.category === 'weapon' && item.damage) {
+            if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
+              state.player.primaryWeapon = item;
+              state.player.activeSlot = 2;
+              state.player.equippedWeapon = item;
+              if (item.ammoType) state.player.ammoType = item.ammoType;
+              addMessage(state, `🔫 ${item.name} utrustad [2]!`, 'info');
+            } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
+              state.player.sidearm = item;
+              addMessage(state, `🔫 ${item.name} som sidearm [1]!`, 'info');
+            }
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;

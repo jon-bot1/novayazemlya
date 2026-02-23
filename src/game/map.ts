@@ -650,13 +650,16 @@ export function generateMap() {
 export function createInitialPlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
   return {
-    pos: { x: 1510, y: MAP_H - 150 },  // Start at south gate
+    pos: { x: 1510, y: MAP_H - 150 },
     hp: 100,
     maxHp: 100,
     speed: 2.5,
-    angle: -Math.PI / 2, // Facing north
+    angle: -Math.PI / 2,
     inventory: [weapon, createAmmo('9x18', 24), createGrenade(), createGrenade()],
     equippedWeapon: weapon,
+    sidearm: weapon,
+    primaryWeapon: null as any,
+    activeSlot: 1 as const,
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
