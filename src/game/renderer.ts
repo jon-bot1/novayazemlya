@@ -1557,22 +1557,22 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const lightCanvas = _lightCanvas;
   const lctx = lightCanvas.getContext('2d')!;
   
-  // Start with darkness
-  lctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  // Start with darkness — heavier for more shadow contrast
+  lctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
   lctx.fillRect(0, 0, w, h);
   
   // Cut out light circles using 'destination-out' blending
   lctx.globalCompositeOperation = 'destination-out';
   
-  // Player always emits a small light
+  // Player emits a small flashlight-like glow
   const playerScreenX = state.player.pos.x - cx;
   const playerScreenY = state.player.pos.y - cy;
-  const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, 70);
-  playerGlow.addColorStop(0, 'rgba(0,0,0,0.8)');
-  playerGlow.addColorStop(0.7, 'rgba(0,0,0,0.3)');
+  const playerGlow = lctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, 50);
+  playerGlow.addColorStop(0, 'rgba(0,0,0,0.9)');
+  playerGlow.addColorStop(0.5, 'rgba(0,0,0,0.4)');
   playerGlow.addColorStop(1, 'rgba(0,0,0,0)');
   lctx.fillStyle = playerGlow;
-  lctx.fillRect(playerScreenX - 70, playerScreenY - 70, 140, 140);
+  lctx.fillRect(playerScreenX - 50, playerScreenY - 50, 100, 100);
   
   // Render each light source
   for (const light of state.lights) {
@@ -1587,10 +1587,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       intensity *= 0.85 + Math.sin(state.time * 8 + light.pos.x * 0.1) * 0.1 + Math.random() * 0.05;
     }
     
-    const r = light.radius;
+    const r = light.radius * 0.55; // Tighter light spread
     const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, r);
     grad.addColorStop(0, `rgba(0,0,0,${intensity})`);
-    grad.addColorStop(0.5, `rgba(0,0,0,${intensity * 0.5})`);
+    grad.addColorStop(0.35, `rgba(0,0,0,${intensity * 0.5})`);
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     lctx.fillStyle = grad;
     lctx.fillRect(lx - r, ly - r, r * 2, r * 2);
@@ -1656,7 +1656,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Subtle vignette
   const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.45, w / 2, h / 2, w * 0.85);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.2)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.45)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, w, h);
 
