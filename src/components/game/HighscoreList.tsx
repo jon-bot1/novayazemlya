@@ -49,25 +49,27 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
     return `${m}:${String(sec).padStart(2, '0')}`;
   };
 
-  const resultIcon = (r: string) => {
-    if (r === 'success') return '🏆';
-    if (r === 'incomplete') return '⚠';
-    return '☠';
+  const resultLabel = (r: string) => {
+    if (r === 'success') return { icon: '🏆', text: 'SUCCESS', color: 'text-loot' };
+    if (r === 'almost') return { icon: '⚠', text: 'ALMOST', color: 'text-warning' };
+    if (r === 'mia') return { icon: '❓', text: 'MIA', color: 'text-muted-foreground' };
+    return { icon: '☠', text: 'KIA', color: 'text-danger' };
   };
 
   return (
     <div className="mt-4 border-t border-border pt-3">
       <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏆 Highscores</h3>
       <div className="space-y-0.5">
-        <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_1.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
-          <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span></span>
+        <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
+          <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span>Status</span>
         </div>
         {scores.map((s, i) => {
           const isMe = currentName && s.player_name === currentName;
+          const rl = resultLabel(s.result);
           return (
             <div
               key={s.id}
-              className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_1.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
+              className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
                 isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'
               }`}
             >
@@ -75,7 +77,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
               <span className="truncate">{s.player_name}</span>
               <span>{s.kills}</span>
               <span>{formatTime(Number(s.time_seconds))}</span>
-              <span>{resultIcon(s.result)}</span>
+              <span className={rl.color}>{rl.icon} {rl.text}</span>
             </div>
           );
         })}
@@ -88,7 +90,7 @@ export async function submitHighscore(
   playerName: string,
   kills: number,
   timeSeconds: number,
-  result: 'success' | 'incomplete' | 'failed',
+  result: 'success' | 'almost' | 'mia' | 'kia',
   lootValue: number
 ) {
   try {
