@@ -265,8 +265,8 @@ export function playHit() {
   osc.type = 'triangle';
   osc.frequency.setValueAtTime(350, now);
   osc.frequency.exponentialRampToValueAtTime(60, now + 0.07);
-  gain.gain.setValueAtTime(0.03, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+  gain.gain.setValueAtTime(0.008, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
   osc.connect(gain).connect(master);
   osc.start(now);
   osc.stop(now + 0.08);
@@ -281,8 +281,8 @@ export function playHit() {
   const src = ctx.createBufferSource();
   src.buffer = buf;
   const nGain = ctx.createGain();
-  nGain.gain.setValueAtTime(0.02, now);
-  nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+  nGain.gain.setValueAtTime(0.005, now);
+  nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
   const bp = ctx.createBiquadFilter();
   bp.type = 'bandpass';
   bp.frequency.value = 1500;
