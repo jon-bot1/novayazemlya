@@ -26,6 +26,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
           .from('highscores')
           .select('*')
           .neq('result', 'abandoned')
+          .neq('player_name', 'Anonymous')
           .order('result', { ascending: false })
           .order('kills', { ascending: false })
           .order('time_seconds', { ascending: true })
@@ -95,8 +96,9 @@ export async function submitHighscore(
   lootValue: number
 ) {
   try {
+    const saveName = playerName === '__anonymous__' ? 'Anonymous' : playerName.trim().slice(0, 20);
     await (supabase as any).from('highscores').insert({
-      player_name: playerName.trim().slice(0, 20),
+      player_name: saveName,
       kills,
       time_seconds: Math.round(timeSeconds),
       result,

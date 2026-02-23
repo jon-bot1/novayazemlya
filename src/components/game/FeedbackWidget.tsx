@@ -14,13 +14,13 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({ playerName }) =>
 
   const handleSubmit = async () => {
     if (rating === 0) return;
-    if (playerName && (playerName.trim().toLowerCase() === 'test123' || playerName === '__anonymous__')) { setSubmitted(true); return; }
+    if (playerName && playerName.trim().toLowerCase() === 'test123') { setSubmitted(true); return; }
     setSubmitting(true);
     try {
       await (supabase as any).from('tester_feedback').insert({
         rating,
         comment: comment.trim() || null,
-        player_name: playerName || null,
+        player_name: playerName === '__anonymous__' ? 'Anonymous' : (playerName || null),
       });
       setSubmitted(true);
     } catch {

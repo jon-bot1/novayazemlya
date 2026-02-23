@@ -331,7 +331,7 @@ export const GameCanvas: React.FC = () => {
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;
-    if (playerName.trim().toLowerCase() === 'test123' || playerName === '__anonymous__') return;
+    if (playerName.trim().toLowerCase() === 'test123') return;
     const handleUnload = () => {
       const state = stateRef.current;
       if (!state || state.gameOver || state.extracted) return;
@@ -347,7 +347,7 @@ export const GameCanvas: React.FC = () => {
           'Prefer': 'return=minimal',
         },
         body: JSON.stringify({
-          player_name: playerName.trim().slice(0, 20),
+          player_name: playerName === '__anonymous__' ? 'Anonymous' : playerName.trim().slice(0, 20),
           kills: state.killCount,
           time_seconds: Math.round(state.time),
           result: 'abandoned',
