@@ -324,6 +324,12 @@ export function generateMap() {
     enemies[i].shootRange = 150;
   }
 
+  // Boost outside patrol guards' vision depth by 25%
+  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) {
+    enemies[i].alertRange = Math.round(enemies[i].alertRange * 1.25);
+    enemies[i].shootRange = Math.round(enemies[i].shootRange * 1.25);
+  }
+
   // === BOSS SETUP: patrol waypoints + 2 bodyguards ===
   const bossIdx = enemies.findIndex(e => e.type === 'boss');
   if (bossIdx >= 0) {
@@ -569,10 +575,14 @@ export function generateMap() {
   // ══════════════════════════════════════
   // EXTRACTION POINTS (outdoor)
   // ══════════════════════════════════════
-  const extractionPoints: ExtractionPoint[] = [
-    { pos: { x: 500, y: MAP_H - 100 }, radius: 50, timer: 5, active: true, name: 'SKOGSVÄG SYD' },
-    { pos: { x: MAP_W - 100, y: 1000 }, radius: 50, timer: 5, active: true, name: 'SKOGSVÄG ÖST' },
+  const allExfils: ExtractionPoint[] = [
+    { pos: { x: 500, y: MAP_H - 100 }, radius: 50, timer: 5, active: false, name: 'SKOGSVÄG SYD' },
+    { pos: { x: MAP_W - 100, y: 1000 }, radius: 50, timer: 5, active: false, name: 'SKOGSVÄG ÖST' },
+    { pos: { x: 200, y: 500 }, radius: 50, timer: 5, active: false, name: 'SKOGSVÄG NORDVÄST' },
   ];
+  // Only one random exfil is open
+  allExfils[Math.floor(Math.random() * allExfils.length)].active = true;
+  const extractionPoints = allExfils;
 
   // ══════════════════════════════════════
   // LIGHTS
@@ -606,6 +616,7 @@ export function generateMap() {
     // Extraction — green glow
     { pos: { x: 500, y: MAP_H - 100 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: MAP_W - 100, y: 1000 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
+    { pos: { x: 200, y: 500 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
   ];
 
   // ══════════════════════════════════════
