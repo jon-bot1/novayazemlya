@@ -1642,12 +1642,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
     } else {
       const isBodyguard = !!(enemy as any)._isBodyguard;
+      const isOfficer = !!(enemy as any)._isOfficer;
       const configs: Record<string, any> = {
         scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
         soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
       };
       let cfg = configs[enemy.type];
+      // Officers: beret with badge, no helmet
+      if (isOfficer) {
+        cfg = { body: '#6a8a4a', outline: '#4a6a2a', eye: '#222', hat: 'beret', hatColor: '#8b0000' };
+      }
       // Bodyguards: all-black tactical gear
       if (isBodyguard) {
         cfg = { body: '#1a1a1a', outline: '#000000', eye: '#444', hat: 'helmet', hatColor: '#111111' };

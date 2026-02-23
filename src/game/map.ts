@@ -360,6 +360,7 @@ export function generateMap() {
   const keycardCount = 1 + Math.floor(Math.random() * 2); // 1 or 2
   for (let k = 0; k < keycardCount; k++) {
     enemies[outsideIndices[k]].loot = [createKeycard()];
+    (enemies[outsideIndices[k]] as any)._isOfficer = true;
   }
 
   // ══════════════════════════════════════
