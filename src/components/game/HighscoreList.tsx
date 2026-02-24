@@ -1,7 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ACHIEVEMENTS, TIER_LABEL, type Achievement } from './HUD';
+import { ACHIEVEMENTS, TIER_LABEL, type Achievement, type AchievementTier } from './HUD';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Score algorithm: result bonus + kill points + time bonus + achievement tiebreaker
+export function calculateScore(kills: number, timeSeconds: number, result: string, achievements: string): number {
+  // Result multiplier: success=3x, almost=1.5x, mia=1x, kia=0.5x
+  const resultMultiplier = result === 'success' ? 3.0 : result === 'almost' ? 1.5 : result === 'mia' ? 1.0 : 0.5;
+  // Kill points: 100 per kill
+  const killPoints = kills * 100;
+  // Time bonus: faster = more points. Base 300s (5min), bonus for finishing under
+  const timeBonus = Math.max(0, Math.floor((300 - timeSeconds) * 5));
+  // Base score
+  const baseScore = Math.floor((killPoints + timeBonus) * resultMultiplier);
+  // Achievement tiebreaker: bronze=1, silver=3, gold=7
+  const tierValues: Record<string, number> = { bronze: 1, silver: 3, gold: 7 };
+  const achIds = achievements ? achievements.split(',').filter(Boolean) : [];
+  let achBonus = 0;
+  for (const id of achIds) {
+    const tier = id.match(/_(bronze|silver|gold)$/)?.[1];
+    achBonus += tier ? tierValues[tier] : 7; // non-tiered (ghost) = gold value
+  }
+  return baseScore + achBonus;
+}
 
 interface HighscoreEntry {
   id: string;
@@ -12,6 +33,7 @@ interface HighscoreEntry {
   loot_value: number;
   created_at: string;
   achievements: string;
+  score?: number;
 }
 
 interface HighscoreListProps {
@@ -30,11 +52,15 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
           .select('*')
           .neq('result', 'abandoned')
           .neq('player_name', 'Anonymous')
-          .order('result', { ascending: false })
-          .order('kills', { ascending: false })
-          .order('time_seconds', { ascending: true })
-          .limit(5);
-        if (data) setScores(data);
+          .limit(50);
+        if (data) {
+          // Sort by computed score descending
+          const sorted = (data as HighscoreEntry[])
+            .map(s => ({ ...s, score: calculateScore(s.kills, Number(s.time_seconds), s.result, s.achievements || '') }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 5);
+          setScores(sorted);
+        }
       } catch {}
       setLoading(false);
     };
@@ -65,8 +91,8 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
     <div className="mt-4 border-t border-border pt-3">
       <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏆 Highscores</h3>
       <div className="space-y-0.5">
-        <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
-          <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span>Status</span>
+        <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3rem_3.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
+          <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span>Score</span><span>Status</span>
         </div>
         {scores.map((s, i) => {
           const isMe = currentName && s.player_name === currentName;
@@ -76,7 +102,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
           return (
             <div key={s.id}>
               <div
-                className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
+                className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3rem_3.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
                   isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'
                 }`}
               >
@@ -84,7 +110,8 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                 <span className="truncate">{s.player_name}</span>
                 <span>{s.kills}</span>
                 <span>{formatTime(Number(s.time_seconds))}</span>
-                <span className={rl.color}>{rl.icon} {rl.text}</span>
+                <span className="text-accent">{s.score ?? 0}</span>
+                <span className={rl.color}>{rl.icon}</span>
               </div>
               {earnedAchievements.length > 0 && (
                 <div className="flex gap-1 px-1 ml-5 mb-0.5">
