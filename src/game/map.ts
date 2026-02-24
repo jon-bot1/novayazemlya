@@ -346,11 +346,15 @@ export function generateMap() {
   // Save base enemy count before adding officers (index math depends on this)
   const baseEnemyCount = enemies.length;
 
-  // === OUTDOOR OFFICERS — spawn 2-3 outside the base with good loot ===
-  const officerZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
+  // === OUTDOOR OFFICERS — guarantee at least 2 outside walls, rest can be anywhere ===
+  const pureOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
+  const allOfficerZones = [...pureOutsideZones, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
   const numOfficers = 3 + Math.floor(Math.random() * 3); // 3-5
   for (let i = 0; i < numOfficers; i++) {
-    const zone = officerZones[Math.floor(Math.random() * officerZones.length)];
+    // First 2 officers always spawn outside walls
+    const zone = i < 2
+      ? pureOutsideZones[Math.floor(Math.random() * pureOutsideZones.length)]
+      : allOfficerZones[Math.floor(Math.random() * allOfficerZones.length)];
     const p = randIn(zone.x, zone.y, zone.w, zone.h);
     const officer = makeEnemy(p.x, p.y, 'soldier');
     (officer as any)._isOfficer = true;

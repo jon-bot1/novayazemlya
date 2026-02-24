@@ -1104,11 +1104,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // === BERSERK STATE — charges player, double HP, 10 seconds ===
     if ((enemy as any)._berserkTimer > 0) {
       (enemy as any)._berserkTimer -= dt;
-      // Rush toward player at high speed
+      // Rush toward player but stop at minimum distance to avoid overlapping
       const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
       enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
-      const berserkSpeed = ((enemy as any)._originalSpeed || enemy.speed) * dt * 60 * 2.5;
-      enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * berserkSpeed, toPlayer.y * berserkSpeed, 10);
+      const distToPlayer = dist(enemy.pos, state.player.pos);
+      const MIN_BERSERK_DIST = 40; // don't run on top of the player
+      if (distToPlayer > MIN_BERSERK_DIST) {
+        const berserkSpeed = ((enemy as any)._originalSpeed || enemy.speed) * dt * 60 * 2.5;
+        // Slow down when approaching minimum distance
+        const approachFactor = Math.min(1, (distToPlayer - MIN_BERSERK_DIST) / 60);
+        enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * berserkSpeed * approachFactor, toPlayer.y * berserkSpeed * approachFactor, 10);
+      }
       // Rapid fire toward player
       if (state.time - enemy.lastShot > enemy.fireRate / 1000 * 0.5 && dist(enemy.pos, state.player.pos) < enemy.shootRange * 1.5) {
         const spread = (Math.random() - 0.5) * 0.25;
