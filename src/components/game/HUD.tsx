@@ -16,24 +16,74 @@ interface AchievementStats {
   killCount: number;
 }
 
+export type AchievementTier = 'bronze' | 'silver' | 'gold';
+
 export interface Achievement {
   id: string;
   name: string;
   icon: string;
   desc: string;
+  tier: AchievementTier;
   check: (s: AchievementStats) => boolean;
 }
 
+export const TIER_COLORS: Record<AchievementTier, string> = {
+  bronze: '#cd7f32',
+  silver: '#c0c0c0',
+  gold: '#ffd700',
+};
+
+export const TIER_LABEL: Record<AchievementTier, string> = {
+  bronze: '🥉',
+  silver: '🥈',
+  gold: '🥇',
+};
+
+function tierAchievements(
+  baseId: string, name: string, icon: string, descBase: string,
+  field: keyof AchievementStats, thresholds: [number, number, number]
+): Achievement[] {
+  const tiers: AchievementTier[] = ['bronze', 'silver', 'gold'];
+  return tiers.map((tier, i) => ({
+    id: `${baseId}_${tier}`,
+    name: `${name} ${TIER_LABEL[tier]}`,
+    icon,
+    desc: `${thresholds[i]}+ ${descBase}`,
+    tier,
+    check: (s: AchievementStats) => (s[field] as number) >= thresholds[i],
+  }));
+}
+
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'mosin10', name: 'Mosin Master', icon: '🎯', desc: '10 kills with Mosin-Nagant', check: s => s.mosinKills >= 10 },
-  { id: 'nade10', name: 'Bombardier', icon: '💣', desc: '10 kills with grenades', check: s => s.grenadeKills >= 10 },
-  { id: 'tnt10', name: 'Demolitionist', icon: '🧨', desc: '10 kills with TNT charges', check: s => s.tntKills >= 10 },
-  { id: 'longshot10', name: 'Sharpshooter', icon: '🔭', desc: '10 kills at >250px range', check: s => s.longShots >= 10 },
-  { id: 'headshot10', name: 'Headhunter', icon: '💀', desc: '10 headshot kills', check: s => s.headshotKills >= 10 },
-  { id: 'close10', name: 'Up Close', icon: '🗡️', desc: '10 kills at close range (<50px)', check: s => s.knifeDistanceKills >= 10 },
-  { id: 'nohit', name: 'Ghost', icon: '👻', desc: 'Complete a raid without taking damage', check: s => s.noHitsTaken && s.killCount > 0 },
-  { id: 'kills25', name: 'One Man Army', icon: '🪖', desc: '25+ kills in a single raid', check: s => s.killCount >= 25 },
+  ...tierAchievements('mosin', 'Mosin Master', '🎯', 'kills with Mosin-Nagant', 'mosinKills', [5, 15, 25]),
+  ...tierAchievements('nade', 'Bombardier', '💣', 'kills with grenades', 'grenadeKills', [5, 15, 25]),
+  ...tierAchievements('tnt', 'Demolitionist', '🧨', 'kills with TNT charges', 'tntKills', [3, 8, 15]),
+  ...tierAchievements('longshot', 'Sharpshooter', '🔭', 'kills at long range', 'longShots', [5, 15, 25]),
+  ...tierAchievements('headshot', 'Headhunter', '💀', 'headshot kills', 'headshotKills', [5, 15, 25]),
+  ...tierAchievements('close', 'Up Close', '🗡️', 'kills at close range', 'knifeDistanceKills', [5, 15, 25]),
+  ...tierAchievements('kills', 'One Man Army', '🪖', 'kills in a single raid', 'killCount', [15, 25, 40]),
+  { id: 'nohit', name: 'Ghost 👻', icon: '👻', desc: 'Complete a raid without taking damage', tier: 'gold', check: s => s.noHitsTaken && s.killCount > 0 },
 ];
+
+// For each achievement group, return only the highest earned tier
+export function getHighestTierAchievements(stats: AchievementStats): Achievement[] {
+  const earned = ACHIEVEMENTS.filter(a => a.check(stats));
+  // Group by base id (strip _tier suffix)
+  const groups = new Map<string, Achievement>();
+  for (const a of earned) {
+    const baseId = a.id.replace(/_(bronze|silver|gold)$/, '');
+    const existing = groups.get(baseId);
+    if (!existing) {
+      groups.set(baseId, a);
+    } else {
+      const tierOrder: AchievementTier[] = ['bronze', 'silver', 'gold'];
+      if (tierOrder.indexOf(a.tier) > tierOrder.indexOf(existing.tier)) {
+        groups.set(baseId, a);
+      }
+    }
+  }
+  return Array.from(groups.values());
+}
 
 interface HUDProps {
   player: Player;
@@ -80,9 +130,9 @@ export const HUD: React.FC<HUDProps> = ({
         result = 'mia';
       }
       const lootValue = player.inventory.reduce((s, i) => s + i.value, 0);
-      // Compute achievements
+      // Compute achievements — save highest tier per group
       const earned = achievementStats
-        ? ACHIEVEMENTS.filter(a => a.check(achievementStats)).map(a => a.id)
+        ? getHighestTierAchievements(achievementStats).map(a => a.id)
         : [];
       submitHighscore(playerName, killCount, time, result, lootValue, earned.join(','));
     }
@@ -327,15 +377,16 @@ export const HUD: React.FC<HUDProps> = ({
               )}
               {/* Achievements */}
               {achievementStats && (() => {
-                const earned = ACHIEVEMENTS.filter(a => a.check(achievementStats));
+                const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
                   <div className="mt-2 border-t border-border pt-2">
                     <span className="text-xs font-mono text-accent">🏅 ACHIEVEMENTS:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {earned.map(a => (
-                        <div key={a.id} className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 border border-accent/30">
+                        <div key={a.id} className="flex items-center gap-1 px-2 py-0.5 rounded border"
+                          style={{ borderColor: TIER_COLORS[a.tier] + '66', backgroundColor: TIER_COLORS[a.tier] + '15' }}>
                           <span className="text-sm">{a.icon}</span>
-                          <span className="text-[10px] font-mono text-accent">{a.name}</span>
+                          <span className="text-[10px] font-mono" style={{ color: TIER_COLORS[a.tier] }}>{a.name}</span>
                         </div>
                       ))}
                     </div>
