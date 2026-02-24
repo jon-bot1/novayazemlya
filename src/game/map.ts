@@ -674,7 +674,54 @@ export function generateMap() {
       w: 28 + Math.random() * 18, h: 28 + Math.random() * 18,
       type: (Math.random() > 0.3 ? 'pine_tree' : 'tree') as Prop['type'],
     })),
-    // Scattered bushes near fences
+
+    // === SCATTERED TREES OUTSIDE FENCE (between treeline and perimeter) ===
+    // South outside — between fence (y~1850) and south treeline (y~2300)
+    ...Array.from({ length: 12 }, () => ({
+      pos: { x: 400 + Math.random() * 2400, y: 1900 + Math.random() * 350 },
+      w: 26 + Math.random() * 16, h: 26 + Math.random() * 16,
+      type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
+    })),
+    // West outside — between treeline (x~200) and fence (x~300)
+    ...Array.from({ length: 8 }, () => ({
+      pos: { x: 200 + Math.random() * 120, y: 400 + Math.random() * 1400 },
+      w: 24 + Math.random() * 14, h: 24 + Math.random() * 14,
+      type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
+    })),
+    // East outside
+    ...Array.from({ length: 8 }, () => ({
+      pos: { x: 2920 + Math.random() * 120, y: 400 + Math.random() * 1400 },
+      w: 24 + Math.random() * 14, h: 24 + Math.random() * 14,
+      type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
+    })),
+    // North outside — between fence (y~280) and north treeline (y~200)
+    ...Array.from({ length: 10 }, () => ({
+      pos: { x: 400 + Math.random() * 2400, y: 200 + Math.random() * 100 },
+      w: 24 + Math.random() * 14, h: 24 + Math.random() * 14,
+      type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
+    })),
+
+    // === ROCKS & BUSHES OUTSIDE FENCE (cover for sniper and player) ===
+    // South area rocks
+    ...Array.from({ length: 8 }, () => ({
+      pos: { x: 500 + Math.random() * 2200, y: 1920 + Math.random() * 300 },
+      w: 20 + Math.random() * 16, h: 18 + Math.random() * 14,
+      type: 'concrete_barrier' as Prop['type'],
+    })),
+    // Bushes scattered outside
+    ...Array.from({ length: 15 }, () => ({
+      pos: { x: 350 + Math.random() * 2500, y: 1880 + Math.random() * 400 },
+      w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
+      type: 'bush' as Prop['type'],
+    })),
+    // More bushes around north/east/west outside areas
+    ...Array.from({ length: 10 }, () => ({
+      pos: { x: 100 + Math.random() * 3000, y: 100 + Math.random() * 200 },
+      w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
+      type: 'bush' as Prop['type'],
+    })),
+
+    // Scattered bushes near fences (inside compound)
     ...Array.from({ length: 20 }, () => ({
       pos: { x: 320 + Math.random() * 2560, y: 300 + Math.random() * 1500 },
       w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
