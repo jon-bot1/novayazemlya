@@ -336,8 +336,8 @@ export function generateMap() {
   // Save base enemy count before adding officers (index math depends on this)
   const baseEnemyCount = enemies.length;
 
-  // === INDOOR OFFICERS — spawn 2-3 inside the base with good loot ===
-  const officerZones = [ZONE_HANGAR_A, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_CORRIDOR];
+  // === OUTDOOR OFFICERS — spawn 2-3 outside the base with good loot ===
+  const officerZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
   const numOfficers = 2 + Math.floor(Math.random() * 2); // 2-3
   for (let i = 0; i < numOfficers; i++) {
     const zone = officerZones[Math.floor(Math.random() * officerZones.length)];
@@ -454,22 +454,25 @@ export function generateMap() {
     }
   }
 
-  // Randomize keycard: 1-2 outside patrol guards carry one
-  const outsideGuards = enemies.filter(e => !e.elevated && !(e as any)._isOfficer && e.type === 'soldier');
+  // Randomize keycard: 1-2 outside patrol guards (soldier or scav) carry one
+  const outsideGuards = enemies.filter(e => !e.elevated && !(e as any)._isOfficer && (e.type === 'soldier' || e.type === 'scav'));
+  // Filter to those actually in outside/yard zones
+  const outsideZoneGuards = outsideGuards.filter(e => {
+    for (const oz of [...allOutsideZones, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N, ZONE_GATE]) {
+      if (e.pos.x >= oz.x && e.pos.x <= oz.x + oz.w && e.pos.y >= oz.y && e.pos.y <= oz.y + oz.h) return true;
+    }
+    return false;
+  });
+  const keycardPool = outsideZoneGuards.length > 0 ? outsideZoneGuards : outsideGuards;
   // Shuffle and pick 1-2
-  for (let i = outsideGuards.length - 1; i > 0; i--) {
+  for (let i = keycardPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [outsideGuards[i], outsideGuards[j]] = [outsideGuards[j], outsideGuards[i]];
+    [keycardPool[i], keycardPool[j]] = [keycardPool[j], keycardPool[i]];
   }
   const keycardCount = 1 + Math.floor(Math.random() * 2); // 1 or 2
-  for (let k = 0; k < Math.min(keycardCount, outsideGuards.length); k++) {
-    const guard = outsideGuards[k];
-    guard.loot = [createKeycard()];
-    (guard as any)._isOfficer = true;
-    guard.alertRange = Math.round(guard.alertRange * 1.4);
-    guard.shootRange = Math.round(guard.shootRange * 1.4);
-    guard.damage = 50; // Mosin
-    guard.fireRate = 2000; // bolt action
+  for (let k = 0; k < Math.min(keycardCount, keycardPool.length); k++) {
+    const guard = keycardPool[k];
+    guard.loot.push(createKeycard());
   }
 
   // ══════════════════════════════════════
