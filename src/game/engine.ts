@@ -191,6 +191,8 @@ export function createGameState(): GameState {
     wallsBreached: 0,
     documentsCollected: 0,
     terminalsHacked: 0,
+    distanceTravelled: 0,
+    exfilsVisited: new Set<string>(),
   };
 }
 
@@ -315,6 +317,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
     }
+    // Track distance travelled
+    state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
     
     // Moving breaks cover
@@ -943,6 +947,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const fullSuccess = hasUSB && hasCodes;
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
+    // Track visiting exfil points (within 150px)
+    if (dist(state.player.pos, ep.pos) < 150) {
+      state.exfilsVisited.add(ep.name);
+    }
     if (!ep.active) continue;
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {

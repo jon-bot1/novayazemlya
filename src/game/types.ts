@@ -266,6 +266,8 @@ export interface GameState {
   wallsBreached: number; // walls destroyed with TNT
   documentsCollected: number; // lore documents picked up
   terminalsHacked: number; // alarm panels hacked
+  distanceTravelled: number; // total pixels walked
+  exfilsVisited: Set<string>; // names of exfil points player has been near
 }
 
 export interface SoundEvent {

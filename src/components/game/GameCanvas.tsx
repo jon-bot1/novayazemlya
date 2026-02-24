@@ -777,6 +777,8 @@ export const GameCanvas: React.FC = () => {
             wallsBreached: state.wallsBreached,
             documentsCollected: state.documentsCollected,
             terminalsHacked: state.terminalsHacked,
+            distanceTravelled: Math.round(state.distanceTravelled / 10),
+            exfilsVisited: state.exfilsVisited.size,
           },
         });
       }
