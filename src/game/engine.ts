@@ -2264,9 +2264,53 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
-            // Sniper Tuman: flag for immediate flee on next frame
+            // Sniper Tuman: flee immediately on hit (same frame)
             if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
-              (enemy as any)._sniperShouldFlee = true;
+              const isCoverProp = (p: { type: string }) =>
+                p.type === 'tree' || p.type === 'pine_tree' || p.type === 'bush' ||
+                p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
+                p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
+
+              const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+              const throwSpeed = 3.5;
+              state.grenades.push({
+                pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
+                vel: { x: Math.cos(fbAngle) * throwSpeed, y: Math.sin(fbAngle) * throwSpeed },
+                timer: 0.6,
+                damage: -1,
+                radius: 200,
+                fromPlayer: false,
+                sourceId: enemy.id, sourceType: 'sniper',
+              });
+              playExplosion();
+
+              let fleeCovers = state.props.filter(p =>
+                isCoverProp(p) && dist(p.pos, state.player.pos) > 300 && dist(p.pos, enemy.pos) > 80
+              );
+              if (fleeCovers.length === 0) {
+                fleeCovers = state.props.filter(p => isCoverProp(p) && dist(p.pos, enemy.pos) > 60);
+              }
+
+              if (fleeCovers.length > 0) {
+                fleeCovers.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
+                const target = fleeCovers[Math.floor(Math.random() * Math.min(3, fleeCovers.length))];
+                (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
+              } else {
+                const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+                const teleportDist = 300 + Math.random() * 200;
+                (enemy as any)._sniperTargetTree = {
+                  x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * teleportDist)),
+                  y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * teleportDist)),
+                };
+              }
+
+              (enemy as any)._sniperInvisible = 2.0;
+              (enemy as any)._sniperShouldFlee = false;
+              (enemy as any)._sniperFleeCooldown = 12;
+              for (let si = 0; si < 14; si++) {
+                state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
+              }
+              addMessage(state, '💫 Sniper Tuman hit — flashbang + teleport!', 'warning');
             }
           }
           return false;
