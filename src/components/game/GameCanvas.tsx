@@ -318,6 +318,18 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.4 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Fixed: TNT from enemy bodies now counts correctly</li>
+                  <li>• Sniper Tuman scans surroundings when player not in sight</li>
+                  <li>• Sniper throws flashbang & flees when player too close or under fire</li>
+                  <li>• Officers now spawn outdoors (yard & patrol zones)</li>
+                  <li>• Access cards can drop from regular guards (scav & soldier)</li>
+                  <li>• Access card carriers guaranteed to be outside the base</li>
+                  <li>• TNT drop rate increased across all loot tables</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
                 <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.3 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• Larger, clearer weapon & item HUD</li>
