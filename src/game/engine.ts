@@ -1455,9 +1455,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const sniperDistToPlayer = dist(enemy.pos, state.player.pos);
       const sniperHasLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
 
-      // --- Active hunting: if player not in range, move toward them ---
+      // --- If player not in range/LOS, teleport to a cover position closer to player ---
       if (!sniperHasLos || sniperDistToPlayer > enemy.shootRange) {
-        // Scan while moving
+        // Scan while waiting
         if (!(enemy as any)._sniperScanDir) (enemy as any)._sniperScanDir = 1;
         if (!(enemy as any)._sniperScanTimer) (enemy as any)._sniperScanTimer = 2 + Math.random() * 3;
         (enemy as any)._sniperScanTimer -= dt;
@@ -1465,13 +1465,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._sniperScanDir *= -1;
           (enemy as any)._sniperScanTimer = 1.5 + Math.random() * 2.5;
         }
-        // Actively move toward player (not just scan)
-        const huntSpeed = enemy.speed * 1.8; // faster when hunting
-        const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-        enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * huntSpeed * dt * 60, toPlayer.y * huntSpeed * dt * 60, 8);
-        // Look in movement direction with slight scan wobble
-        enemy.angle = Math.atan2(toPlayer.y, toPlayer.x) + (enemy as any)._sniperScanDir * 0.3;
+        // Stay still — just look around
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + (enemy as any)._sniperScanDir * 0.3;
         enemy.state = 'chase';
+
+        // Periodically teleport closer when out of range
+        if ((enemy as any)._sniperTeleportTimer <= 0 && !(enemy as any)._sniperInvisible) {
+          const repositionCovers = state.props.filter(p =>
+            isCoverProp(p) &&
+            dist(p.pos, state.player.pos) < enemy.shootRange * 0.9 &&
+            dist(p.pos, state.player.pos) > 150 &&
+            dist(p.pos, enemy.pos) > 80
+          );
+          if (repositionCovers.length > 0) {
+            const target = repositionCovers[Math.floor(Math.random() * Math.min(4, repositionCovers.length))];
+            (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
+            (enemy as any)._sniperInvisible = 2.0;
+            for (let si = 0; si < 12; si++) {
+              state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
+            }
+            addMessage(state, '💨 Sniper Tuman vanishes into the shadows...', 'warning');
+            (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 4;
+            continue;
+          }
+          (enemy as any)._sniperTeleportTimer = 3 + Math.random() * 3;
+        }
       }
 
       // --- Proximity threat / under fire: sniper should always flee when shot ---
@@ -1519,15 +1537,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
           }
         } else {
-          // No cover at all — physically run away
+          // No cover — teleport to a random far position
           const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
-          const runDist = 300;
-          enemy.investigateTarget = {
-            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * runDist)),
-            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * runDist)),
+          const teleportDist = 300 + Math.random() * 200;
+          (enemy as any)._sniperTargetTree = {
+            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * teleportDist)),
+            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * teleportDist)),
           };
-          enemy.state = 'investigate';
-          enemy.speed = Math.max(enemy.speed, 3.0);
+          (enemy as any)._sniperInvisible = 2.5;
+          for (let si = 0; si < 15; si++) {
+            state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
+          }
         }
         (enemy as any)._sniperRelocateDelay = 0;
         continue;
