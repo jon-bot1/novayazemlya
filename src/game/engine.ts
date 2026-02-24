@@ -1214,6 +1214,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 4 + Math.random() * 4;
       (enemy as any)._sniperTeleportTimer -= dt;
 
+      // Relocate delay after being hit
+      if ((enemy as any)._sniperRelocateDelay > 0) {
+        (enemy as any)._sniperRelocateDelay -= dt;
+        if ((enemy as any)._sniperRelocateDelay <= 0 && !(enemy as any)._sniperInvisible) {
+          const trees = state.props.filter(p => (p.type === 'tree' || p.type === 'pine_tree') && dist(p.pos, enemy.pos) > 200);
+          if (trees.length > 0) {
+            trees.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
+            const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)];
+            (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
+            (enemy as any)._sniperInvisible = 2.0;
+            for (let si = 0; si < 12; si++) {
+              state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
+            }
+            addMessage(state, '💨 Sniper Tuman vanishes after being hit!', 'warning');
+          }
+        }
+      }
+
       // While invisible, skip everything
       if ((enemy as any)._sniperInvisible > 0) {
         (enemy as any)._sniperInvisible -= dt;
@@ -1891,19 +1909,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
-            // Sniper Tuman: immediately relocate when hit
+            // Sniper Tuman: start 0.5s relocate delay on every hit
             if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
-              const trees = state.props.filter(p => (p.type === 'tree' || p.type === 'pine_tree') && dist(p.pos, enemy.pos) > 200);
-              if (trees.length > 0) {
-                trees.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
-                const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)];
-                (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
-                (enemy as any)._sniperInvisible = 2.0;
-                for (let si = 0; si < 12; si++) {
-                  state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
-                }
-                addMessage(state, '💨 Sniper Tuman vanishes after being hit!', 'warning');
-              }
+              (enemy as any)._sniperRelocateDelay = 0.5;
             }
           }
           return false;
