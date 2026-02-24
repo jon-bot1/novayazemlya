@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ACHIEVEMENTS } from './HUD';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HighscoreEntry {
   id: string;
@@ -87,9 +88,18 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
               </div>
               {earnedAchievements.length > 0 && (
                 <div className="flex gap-1 px-1 ml-5 mb-0.5">
-                  {earnedAchievements.map(a => (
-                    <span key={a.id} className="text-[10px]" title={a.name}>{a.icon}</span>
-                  ))}
+                  <TooltipProvider delayDuration={200}>
+                    {earnedAchievements.map(a => (
+                      <Tooltip key={a.id}>
+                        <TooltipTrigger asChild>
+                          <span className="text-[10px] cursor-default">{a.icon}</span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs font-mono bg-background border-border">
+                          {a.name}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
                 </div>
               )}
             </div>
