@@ -304,7 +304,9 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
               <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
               <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
+              <li>• 🧨 <span className="text-warning">TNT charges</span> can be found in loot — use <span className="text-accent">E near perimeter walls</span> to breach fences and create new entry points</li>
               <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
+              <li>• Guards outside the base may carry an <span className="text-loot">Access Card</span> to open the main gate</li>
               <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
               <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
             </ul>
