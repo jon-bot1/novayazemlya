@@ -2037,15 +2037,21 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cover prompt — show on nearest cover object when player is near but not in cover
   if (state.coverNearby && !state.player.inCover && (state as any)._nearestCoverPos) {
     const cp = (state as any)._nearestCoverPos as { x: number; y: number };
+    const label = (state as any)._nearestCoverLabel as string || 'Cover';
+    const colorMap: Record<string, string> = {
+      'Hard': '#50b4ff', 'Medium': '#88cc55', 'Light': '#cccc44',
+      'Soft': '#cc9944', 'Concealment': '#cc6644',
+    };
+    const color = colorMap[label] || '#50b4ff';
     ctx.save();
     const pulse = 0.6 + Math.sin(state.time * 4) * 0.3;
     ctx.globalAlpha = pulse;
     ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#50b4ff';
+    ctx.fillStyle = color;
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 4;
-    ctx.fillText('🛡️ [Q] Cover', cp.x, cp.y - 20);
+    ctx.fillText(`🛡️ [Q] ${label}`, cp.x, cp.y - 20);
     ctx.restore();
   }
 

@@ -154,6 +154,8 @@ export interface Player {
   fireRate: number;
   inCover: boolean;
   coverObject: Vec2 | null;
+  coverQuality: number; // 0-1, miss chance when in full cover (peeking = half)
+  coverLabel: string; // display label for cover type
   peeking: boolean;
   lastGrenadeTime: number;
   tntCount: number;
