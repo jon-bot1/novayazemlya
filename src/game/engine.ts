@@ -1316,10 +1316,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // ZAPAD & VOSTOK — aggressive grenade push while chasing/attacking
     if ((enemy as any)._isBodyguard && (enemy.state === 'chase' || enemy.state === 'attack') &&
         distToPlayer < enemy.shootRange * 1.2 && distToPlayer > 80) {
-      if (!(enemy as any)._bgGrenadeTimer) (enemy as any)._bgGrenadeTimer = 4 + Math.random() * 3;
+      if (!(enemy as any)._bgGrenadeTimer) (enemy as any)._bgGrenadeTimer = 2 + Math.random() * 2;
       (enemy as any)._bgGrenadeTimer -= dt;
       if ((enemy as any)._bgGrenadeTimer <= 0) {
-        (enemy as any)._bgGrenadeTimer = 6 + Math.random() * 4;
+        (enemy as any)._bgGrenadeTimer = 3 + Math.random() * 3;
         const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         state.grenades.push({
           pos: { x: enemy.pos.x, y: enemy.pos.y },
