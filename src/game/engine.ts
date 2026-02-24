@@ -331,19 +331,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Footstep sounds + sound propagation
   // Cover proximity detection — show hint when near cover objects
   let nearCover = false;
+  let nearestCoverPos: { x: number; y: number } | null = null;
+  let nearestCoverDist = Infinity;
   if (!state.player.inCover) {
     for (const prop of state.props) {
-      if (dist(state.player.pos, prop.pos) < 40) { nearCover = true; break; }
+      const d = dist(state.player.pos, prop.pos);
+      if (d < 40 && d < nearestCoverDist) {
+        nearCover = true;
+        nearestCoverPos = prop.pos;
+        nearestCoverDist = d;
+      }
     }
     if (!nearCover) {
       for (const wall of state.walls) {
         const wx = wall.x + wall.w / 2;
         const wy = wall.y + wall.h / 2;
-        if (dist(state.player.pos, { x: wx, y: wy }) < 60) { nearCover = true; break; }
+        const d = dist(state.player.pos, { x: wx, y: wy });
+        if (d < 60 && d < nearestCoverDist) {
+          nearCover = true;
+          nearestCoverPos = { x: wx, y: wy };
+          nearestCoverDist = d;
+        }
       }
     }
   }
   state.coverNearby = nearCover;
+  (state as any)._nearestCoverPos = nearestCoverPos;
   
   playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
@@ -2200,7 +2213,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     if (b.fromPlayer) {
       const isMosin = b.weaponName === 'Mosin-Nagant';
-      const hitRadius = isMosin ? 19 : 14; // Mosin has +5px forgiving hitbox
+      const hitRadius = isMosin ? 21 : 16; // base 14+2, Mosin 19+2 forgiving hitbox
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
         if (dist(b.pos, enemy.pos) < hitRadius) {
