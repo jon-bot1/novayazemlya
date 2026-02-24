@@ -2,8 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, 
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT } from './items';
-import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playBossRoar, playVoiceShout } from './audio';
-import { speakCallout } from './voice';
+import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
@@ -681,8 +680,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         enemy.hp = 0;
         enemy.state = 'dead';
-        playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-        speakCallout('death', enemy.type);
+        
         sendReinforcementToPlatform(state, enemy);
         enemy.loot = generateEnemyLoot(enemy);
         state.killCount++;
@@ -1070,7 +1068,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
-          playBossRoar();
+          
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
@@ -2098,8 +2096,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             }
             enemy.hp = 0;
             enemy.state = 'dead';
-            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-            speakCallout('death', enemy.type);
+            
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
@@ -2166,8 +2163,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
-            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-            speakCallout('death', enemy.type);
+            
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
@@ -2246,8 +2242,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
-            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-            speakCallout('death', enemy.type);
+            
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
