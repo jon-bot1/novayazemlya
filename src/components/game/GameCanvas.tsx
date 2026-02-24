@@ -315,10 +315,19 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         <>
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="text-xs font-mono">
-                <span className="text-muted-foreground">2026-03-24</span>
-                <span className="text-foreground ml-2">Game version 0.1 released</span>
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.2 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Sniper Tuman relocates 0.5s after being hit (smoke + teleport)</li>
+                  <li>• Sniper immune to critical headshots</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
+                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1 — 2026-03-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Initial release</li>
+                </ul>
               </div>
             </div>
           </div>
