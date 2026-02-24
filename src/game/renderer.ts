@@ -2034,6 +2034,21 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.stroke();
   ctx.restore();
 
+  // Cover prompt — show on nearest cover object when player is near but not in cover
+  if (state.coverNearby && !state.player.inCover && (state as any)._nearestCoverPos) {
+    const cp = (state as any)._nearestCoverPos as { x: number; y: number };
+    ctx.save();
+    const pulse = 0.6 + Math.sin(state.time * 4) * 0.3;
+    ctx.globalAlpha = pulse;
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#50b4ff';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.fillText('🛡️ [Q] Cover', cp.x, cp.y - 20);
+    ctx.restore();
+  }
+
   // Cover indicator — shield icon and status
   if (state.player.inCover) {
     ctx.save();
