@@ -6,17 +6,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 // Score algorithm: result bonus + kill points + time bonus + achievement tiebreaker
 export function calculateScore(kills: number, timeSeconds: number, result: string, achievements: string): number {
   const resultMultiplier = result === 'success' ? 3.0 : result === 'almost' ? 1.5 : result === 'mia' ? 1.0 : 0.5;
-  const killPoints = kills * 100;
-  const timeBonus = Math.max(0, Math.floor((300 - timeSeconds) * 5));
-  const baseScore = Math.floor((killPoints + timeBonus) * resultMultiplier);
-  const tierValues: Record<string, number> = { bronze: 1, silver: 3, gold: 7 };
+  const killPoints = kills; // 1 point per kill
+  const timeBonus = Math.max(0, Math.round((300 - timeSeconds) * 0.05 * 10) / 10); // ~0.05 per second saved
+  const baseScore = Math.round((killPoints + timeBonus) * resultMultiplier * 10) / 10;
+  const tierValues: Record<string, number> = { bronze: 0.1, silver: 0.3, gold: 0.7 };
   const achIds = achievements ? achievements.split(',').filter(Boolean) : [];
   let achBonus = 0;
   for (const id of achIds) {
     const tier = id.match(/_(bronze|silver|gold)$/)?.[1];
-    achBonus += tier ? tierValues[tier] : 7;
+    achBonus += tier ? tierValues[tier] : 0.7;
   }
-  return baseScore + achBonus;
+  return Math.round((baseScore + achBonus) * 10) / 10;
 }
 
 // Achievement weight for "Most Decorated" ranking
