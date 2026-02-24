@@ -16,7 +16,7 @@ export function calculateScore(kills: number, timeSeconds: number, result: strin
     const tier = id.match(/_(bronze|silver|gold)$/)?.[1];
     achBonus += tier ? tierValues[tier] : 0.7;
   }
-  return Math.round((baseScore + achBonus) * 10) / 10;
+  return Math.ceil(baseScore + achBonus);
 }
 
 // Achievement weight for "Most Decorated" ranking
