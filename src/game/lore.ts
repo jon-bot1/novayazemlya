@@ -31,7 +31,7 @@ export const LORE_DOCUMENTS: LoreDocument[] = [
     id: 'doc_1',
     title: 'Novaya Zemlya — Field Report',
     author: 'Colonel Zorin',
-    date: '14.03.1993',
+    date: '14.03.1983',
     classification: 'SECRET',
     content: `REPORT — Novaya Zemlya
 
@@ -53,7 +53,7 @@ Group "Cedar" has been redeployed to reinforce the perimeter. Communications via
     id: 'doc_2',
     title: 'Unknown Soldier\'s Diary',
     author: 'Private ???',
-    date: '22.11.1994',
+    date: '22.11.1984',
     classification: 'OPEN',
     content: `Day 47.
 
@@ -75,7 +75,7 @@ I just want to go home.`,
     id: 'doc_3',
     title: 'Interrogation Protocol No. 847',
     author: 'Major Petrenko',
-    date: '03.06.1995',
+    date: '03.06.1985',
     classification: 'TOP SECRET',
     content: `INTERROGATION PROTOCOL
 Subject: [DATA EXPUNGED]
@@ -104,7 +104,7 @@ Clearance level: Command eyes only.`,
     id: 'doc_4',
     title: 'Radio Intercept — Frequency 147.300',
     author: 'SIGINT Division',
-    date: '11.09.1995',
+    date: '11.09.1985',
     classification: 'SECRET',
     content: `RADIO INTERCEPT DECRYPTION
 Frequency: 147.300 MHz
@@ -156,7 +156,7 @@ RUN`,
     id: 'doc_6',
     title: 'Inventory List — Storage No. 3',
     author: 'Warrant Officer Sidorov',
-    date: '01.01.1994',
+    date: '01.01.1984',
     classification: 'OPEN',
     content: `INVENTORY LIST
 Storage No. 3, Objekt 47 "Severnyj Vektor"
@@ -183,7 +183,7 @@ P.S. Mice ate three MREs. Or not mice. God knows what runs around here at night.
     id: 'doc_7',
     title: 'Personnel File: Commandant A. Osipovitj',
     author: 'GRU Internal Security',
-    date: '08.02.1993',
+    date: '08.02.1983',
     classification: 'TOP SECRET',
     content: `PERSONNEL FILE — TOP SECRET
 Subject: Andrei Pavlovich Osipovitj
@@ -192,9 +192,9 @@ Unit: Special Group "Wolf"
 Station: Objekt 47 "Severnyj Vektor", Underground Section
 
 BACKGROUND:
-Osipovitj was recruited from Spetsnaz in 1987. Outstanding combat record — 47 confirmed operations. Psychological profile shows extreme loyalty to the project but rising instability since the exposure.
+Osipovitj was recruited from Spetsnaz in 1977. Outstanding combat record — 47 confirmed operations. Psychological profile shows extreme loyalty to the project but rising instability since the exposure.
 
-His two personal bodyguards, callsigns ZAPAD and VOSTOK, have served with him since 1989. Both are former GRU special operators. They never leave his side.
+His two personal bodyguards, callsigns ZAPAD and VOSTOK, have served with him since 1979. Both are former GRU special operators. They never leave his side.
 
 EXPOSURE:
 During inspection of Laboratory No. 3 (see "Dawn" protocol), Osipovitj was exposed to an unknown substance from B-series containers. Since then, subordinates report:
