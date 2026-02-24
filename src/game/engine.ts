@@ -542,11 +542,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // === ENEMIES FLEE FROM PLACED TNT ===
+   // === ENEMIES FLEE FROM PLACED TNT ===
   for (const tnt of state.placedTNTs) {
     if (tnt.timer > 0 && tnt.timer < 4.5) { // react after 0.5s of placement
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
+        if (enemy.elevated) continue; // platform enemies can't flee
         if ((enemy as any)._fleeingTNT) continue;
         const dToTNT = dist(tnt.pos, enemy.pos);
         if (dToTNT < 200) {
@@ -622,20 +623,38 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     for (const enemy of state.enemies) {
       if (enemy.state === 'dead') continue;
       const d = dist(tnt.pos, enemy.pos);
-      if (d < TNT_RADIUS && hasLineOfSight(state, tnt.pos, enemy.pos, enemy.elevated)) {
+      if (d < TNT_RADIUS) {
+        const directLos = hasLineOfSight(state, tnt.pos, enemy.pos, false); // ground-level LOS
+        // Damage multiplier: no LOS (behind wall) = 10%, elevated = 50%, direct = 100%
+        let dmgMultiplier = 1.0;
+        if (!directLos && !enemy.elevated) {
+          dmgMultiplier = 0.10; // behind wall
+        } else if (enemy.elevated) {
+          dmgMultiplier = 0.50; // on platform
+        }
+        if (dmgMultiplier <= 0) continue;
+
         if (enemy.type === 'boss') {
-          const dmg = enemy.maxHp * 0.33;
+          const dmg = enemy.maxHp * 0.33 * dmgMultiplier;
           enemy.hp -= dmg;
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
           addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
           if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
         }
         if ((enemy as any)._isBodyguard) {
-          const dmg = enemy.maxHp * 0.5;
+          const dmg = enemy.maxHp * 0.5 * dmgMultiplier;
           enemy.hp -= dmg;
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
           addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
           if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+        }
+        const fullDmg = TNT_DAMAGE * dmgMultiplier;
+        if (fullDmg < enemy.hp) {
+          enemy.hp -= fullDmg;
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+          addMessage(state, `💥 ${enemy.type.toUpperCase()} takes ${Math.floor(fullDmg)} damage!`, 'damage');
+          enemy.state = 'chase';
+          continue;
         }
         enemy.hp = 0;
         enemy.state = 'dead';
@@ -1203,9 +1222,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._platformTarget) {
         enemy.state = 'chase';
         enemy.investigateTarget = (enemy as any)._platformTarget;
-      } else if (!los || distToPlayer > enemy.alertRange * 1.5) {
-        // STRICT LOS: Lost sight of player — MUST lose track, go investigate last known pos
+      } else if (!canSeePlayer) {
+        // Lost sight — investigate player's LAST KNOWN position
         enemy.state = 'investigate';
+        enemy.investigateTarget = { ...state.player.pos }; // snapshot current pos as last known
+        enemy.tacticalRole = 'none';
+      } else if (distToPlayer > enemy.alertRange * 1.5) {
+        // Too far but still has LOS — chase
+        enemy.state = 'chase';
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
         // Radio last known position to group
@@ -1287,6 +1311,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       });
       addMessage(state, '💫 HEAVY throws FLASHBANG!', 'warning');
       spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 4);
+    }
+
+    // ZAPAD & VOSTOK — aggressive grenade push while chasing/attacking
+    if ((enemy as any)._isBodyguard && (enemy.state === 'chase' || enemy.state === 'attack') &&
+        distToPlayer < enemy.shootRange * 1.2 && distToPlayer > 80) {
+      if (!(enemy as any)._bgGrenadeTimer) (enemy as any)._bgGrenadeTimer = 4 + Math.random() * 3;
+      (enemy as any)._bgGrenadeTimer -= dt;
+      if ((enemy as any)._bgGrenadeTimer <= 0) {
+        (enemy as any)._bgGrenadeTimer = 6 + Math.random() * 4;
+        const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        state.grenades.push({
+          pos: { x: enemy.pos.x, y: enemy.pos.y },
+          vel: { x: Math.cos(gAngle) * 4, y: Math.sin(gAngle) * 4 },
+          timer: 1.5,
+          radius: 120,
+          damage: 80,
+          fromPlayer: false,
+          sourceId: enemy.id,
+          sourceType: 'soldier',
+        });
+        const bgName = (enemy as any)._bodyguardName || 'BODYGUARD';
+        addMessage(state, `💣 ${bgName} throws GRENADE!`, 'warning');
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff8833', 4);
+        enemy.speed = Math.max(enemy.speed, 2.8);
+      }
     }
 
     // Decay timers
