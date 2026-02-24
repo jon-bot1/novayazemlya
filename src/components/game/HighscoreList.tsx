@@ -152,20 +152,18 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
         <div>
           <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏅 Most Decorated</h3>
           <div className="space-y-0.5">
-            <div className="grid grid-cols-[1.2rem_1fr_3rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
-              <span>#</span><span>Name</span><span>Medals</span>
+            <div className="grid grid-cols-[1.2rem_1fr] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
+              <span>#</span><span>Name</span>
             </div>
             {decorated.map((s, i) => {
               const isMe = currentName && s.player_name === currentName;
               const earnedIds = s.achievements ? s.achievements.split(',').filter(Boolean) : [];
               const earnedAchievements = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
-              const weight = achievementWeight(s.achievements || '');
               return (
                 <div key={s.id + '_dec'}>
-                  <div className={`grid grid-cols-[1.2rem_1fr_3rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'}`}>
+                  <div className={`grid grid-cols-[1.2rem_1fr] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'}`}>
                     <span className="text-muted-foreground">{i + 1}</span>
                     <span className="truncate">{s.player_name}</span>
-                    <span className="text-accent">{earnedIds.length} <span className="text-muted-foreground text-[9px]">({weight}pts)</span></span>
                   </div>
                   {earnedAchievements.length > 0 && (
                     <div className="flex flex-wrap gap-1 px-1 ml-5 mb-0.5">
