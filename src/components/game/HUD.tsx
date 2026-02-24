@@ -22,11 +22,12 @@ interface HUDProps {
   onViewDocuments: () => void;
   timeLimit?: number;
   playerName?: string;
+  deathCause?: string;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit, playerName 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit, playerName, deathCause 
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -223,6 +224,11 @@ export const HUD: React.FC<HUDProps> = ({
             <h1 className={`text-3xl font-display ${gameOver ? 'text-danger text-glow-red' : hasExtractionCode ? 'text-loot text-glow-green' : 'text-warning text-glow-amber'}`}>
               {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
             </h1>
+            {gameOver && deathCause && (
+              <p className="text-sm font-mono text-danger/90 text-center border border-danger/30 bg-danger/10 rounded px-3 py-1.5">
+                {deathCause}
+              </p>
+            )}
             {extracted && !hasExtractionCode && (
               <p className="text-sm font-mono text-warning text-center">
                 {!player.inventory.some(i => i.id === 'boss_usb') && !player.inventory.some(i => i.id === 'nuclear_codebook')
@@ -240,6 +246,10 @@ export const HUD: React.FC<HUDProps> = ({
             )}
             
             <div className="w-full border-t border-border pt-3 flex flex-col gap-2">
+              <div className="flex justify-between text-sm font-mono text-muted-foreground">
+                <span>Time:</span>
+                <span className="text-foreground">{Math.floor(time / 60)}:{String(Math.floor(time % 60)).padStart(2, '0')}</span>
+              </div>
               <div className="flex justify-between text-sm font-mono text-muted-foreground">
                 <span>Eliminated:</span>
                 <span className="text-foreground">{killCount}</span>

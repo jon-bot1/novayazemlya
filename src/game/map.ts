@@ -353,6 +353,7 @@ export function generateMap() {
     officer.loot = [
       WEAPON_TEMPLATES.mosin(),
       createGrenade(),
+      createKeycard(),
       ...(Math.random() < 0.5 ? [createArmor()] : []),
       createValuable('Dogtags', 200, '🏷️'),
     ];
