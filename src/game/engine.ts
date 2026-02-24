@@ -501,25 +501,102 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.useTNT) {
     input.useTNT = false;
     if (state.player.tntCount > 0) {
-      let breached = false;
-      for (let wi = state.walls.length - 1; wi >= 0; wi--) {
+      const TNT_DAMAGE = 200;
+      const TNT_RADIUS = 150;
+      const BREACH_WIDTH = 96; // ~3-4 character widths
+
+      // Pick nearest wall by real wall distance (not center distance)
+      let bestIdx = -1;
+      let bestDist = Number.POSITIVE_INFINITY;
+      let impact = { x: state.player.pos.x, y: state.player.pos.y };
+      for (let wi = 0; wi < state.walls.length; wi++) {
         const w = state.walls[wi];
         if (w.color === '#aa4444') continue; // gate uses keycard
-        const wx = w.x + w.w / 2;
-        const wy = w.y + w.h / 2;
-        if (dist(state.player.pos, { x: wx, y: wy }) < 60) {
-          state.player.tntCount--;
-          state.walls.splice(wi, 1);
-          addMessage(state, '🧨 TNT DETONATED! Wall breached!', 'intel');
-          playExplosion();
-          spawnParticles(state, wx, wy, '#ff8833', 20);
-          spawnParticles(state, wx, wy, '#ffcc44', 15);
-          state.soundEvents.push({ pos: { x: wx, y: wy }, radius: 500, time: state.time });
-          breached = true;
-          break;
+        const cx = Math.max(w.x, Math.min(state.player.pos.x, w.x + w.w));
+        const cy = Math.max(w.y, Math.min(state.player.pos.y, w.y + w.h));
+        const d = dist(state.player.pos, { x: cx, y: cy });
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = wi;
+          impact = { x: cx, y: cy };
         }
       }
-      if (!breached) {
+
+      if (bestIdx >= 0 && bestDist < 70) {
+        state.player.tntCount--;
+        const w = state.walls[bestIdx];
+
+        // Remove only a section of the wall, roughly 3-4 figures wide
+        const newSegments: typeof state.walls = [];
+        if (w.w >= w.h) {
+          // Horizontal wall
+          const holeStart = Math.max(w.x, impact.x - BREACH_WIDTH / 2);
+          const holeEnd = Math.min(w.x + w.w, impact.x + BREACH_WIDTH / 2);
+          const leftW = holeStart - w.x;
+          const rightW = w.x + w.w - holeEnd;
+          if (leftW > 8) newSegments.push({ ...w, w: leftW });
+          if (rightW > 8) newSegments.push({ ...w, x: holeEnd, w: rightW });
+        } else {
+          // Vertical wall
+          const holeStart = Math.max(w.y, impact.y - BREACH_WIDTH / 2);
+          const holeEnd = Math.min(w.y + w.h, impact.y + BREACH_WIDTH / 2);
+          const topH = holeStart - w.y;
+          const bottomH = w.y + w.h - holeEnd;
+          if (topH > 8) newSegments.push({ ...w, h: topH });
+          if (bottomH > 8) newSegments.push({ ...w, y: holeEnd, h: bottomH });
+        }
+        state.walls.splice(bestIdx, 1, ...newSegments);
+
+        addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
+        playExplosion();
+        spawnParticles(state, impact.x, impact.y, '#ff8833', 24);
+        spawnParticles(state, impact.x, impact.y, '#ffcc44', 18);
+        state.soundEvents.push({ pos: { x: impact.x, y: impact.y }, radius: 500, time: state.time });
+
+        // TNT damage behaves like a grenade
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead') continue;
+          const d = dist(impact, enemy.pos);
+          if (d < TNT_RADIUS && hasLineOfSight(state, impact, enemy.pos, enemy.elevated)) {
+            if (enemy.type === 'boss') {
+              const dmg = enemy.maxHp * 0.33;
+              enemy.hp -= dmg;
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
+              addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
+              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+            }
+            if ((enemy as any)._isBodyguard) {
+              const dmg = enemy.maxHp * 0.5;
+              enemy.hp -= dmg;
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+              addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
+              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+            }
+            enemy.hp = 0;
+            enemy.state = 'dead';
+            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+            speakCallout('death', enemy.type);
+            sendReinforcementToPlatform(state, enemy);
+            enemy.loot = generateEnemyLoot(enemy);
+            state.killCount++;
+            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (TNT)`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+          }
+        }
+
+        const dPlayer = dist(impact, state.player.pos);
+        if (dPlayer < TNT_RADIUS && hasLineOfSight(state, impact, state.player.pos)) {
+          const falloff = 1 - (dPlayer / TNT_RADIUS);
+          const dmg = TNT_DAMAGE * falloff * 0.5;
+          state.player.hp -= dmg;
+          spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
+          addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
+          if (state.player.hp <= 0) {
+            state.gameOver = true;
+            addMessage(state, '☠ DEAD', 'damage');
+          }
+        }
+      } else {
         addMessage(state, '⚠ No wall nearby to breach!', 'warning');
       }
     } else {
@@ -1250,23 +1327,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle += (enemy as any)._sniperScanDir * 1.2 * dt;
       }
 
-      // --- Proximity threat: if player too close (<200px) or under fire, flee with flashbang ---
+      // --- Proximity threat / under fire: sniper should always flee when shot ---
       const playerTooClose = sniperDistToPlayer < 200;
       const underFire = (enemy as any)._sniperRelocateDelay > 0;
-      if ((playerTooClose || underFire) && !(enemy as any)._sniperInvisible && !((enemy as any)._sniperFleeCooldown > 0)) {
-        // Throw flashbang at player before fleeing
-        const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-        const throwSpeed = 3.5;
-        state.grenades.push({
-          pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
-          vel: { x: Math.cos(fbAngle) * throwSpeed, y: Math.sin(fbAngle) * throwSpeed },
-          timer: 0.6,
-          damage: -1, // flashbang marker
-          radius: 200,
-          fromPlayer: false,
-        });
-        addMessage(state, '💫 Sniper Tuman throws a flashbang and flees!', 'warning');
-        playExplosion();
+      const fleeCooldownActive = (enemy as any)._sniperFleeCooldown > 0;
+      const shouldFleeFromShot = underFire; // always true on hit, even during cooldown
+      const shouldFleeFromProximity = playerTooClose && !fleeCooldownActive;
+
+      if ((shouldFleeFromShot || shouldFleeFromProximity) && !(enemy as any)._sniperInvisible) {
+        // Throw flashbang only when cooldown is free (avoid spam)
+        if (!fleeCooldownActive) {
+          const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          const throwSpeed = 3.5;
+          state.grenades.push({
+            pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
+            vel: { x: Math.cos(fbAngle) * throwSpeed, y: Math.sin(fbAngle) * throwSpeed },
+            timer: 0.6,
+            damage: -1, // flashbang marker
+            radius: 200,
+            fromPlayer: false,
+          });
+          addMessage(state, '💫 Sniper Tuman throws a flashbang and flees!', 'warning');
+          playExplosion();
+          (enemy as any)._sniperFleeCooldown = 12;
+        }
 
         // Immediately start fleeing — teleport to a far tree
         const fleeTrees = state.props.filter(p =>
@@ -1283,8 +1367,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
           }
         }
-        (enemy as any)._sniperFleeCooldown = 12; // can't flee again for 12s
-        (enemy as any)._sniperRelocateDelay = 0; // clear the hit-relocate since we're already fleeing
+        (enemy as any)._sniperRelocateDelay = 0; // consumed by immediate flee
         continue;
       }
       // Decrement flee cooldown
