@@ -694,54 +694,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 18);
     state.soundEvents.push({ pos: { ...tnt.pos }, radius: 500, time: state.time });
 
-    // Damage enemies
-    for (const enemy of state.enemies) {
-      if (enemy.state === 'dead') continue;
-      const d = dist(tnt.pos, enemy.pos);
-      if (d < TNT_RADIUS) {
-        const directLos = hasLineOfSight(state, tnt.pos, enemy.pos, false); // ground-level LOS
-        // Damage multiplier: no LOS (behind wall) = 10%, elevated = 50%, direct = 100%
-        let dmgMultiplier = 1.0;
-        if (!directLos && !enemy.elevated) {
-          dmgMultiplier = 0.10; // behind wall
-        } else if (enemy.elevated) {
-          dmgMultiplier = 0.50; // on platform
-        }
-        if (dmgMultiplier <= 0) continue;
-
-        if (enemy.type === 'boss') {
-          const dmg = enemy.maxHp * 0.33 * dmgMultiplier;
-          enemy.hp -= dmg;
-          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
-          addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
-          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
-        }
-        if ((enemy as any)._isBodyguard) {
-          const dmg = enemy.maxHp * 0.5 * dmgMultiplier;
-          enemy.hp -= dmg;
-          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
-          addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
-          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
-        }
-        const fullDmg = TNT_DAMAGE * dmgMultiplier;
-        if (fullDmg < enemy.hp) {
-          enemy.hp -= fullDmg;
-          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
-          addMessage(state, `💥 ${enemy.type.toUpperCase()} takes ${Math.floor(fullDmg)} damage!`, 'damage');
-          enemy.state = 'chase';
-          continue;
-        }
-        enemy.hp = 0;
-        enemy.state = 'dead';
-        
-        sendReinforcementToPlatform(state, enemy);
-        enemy.loot = generateEnemyLoot(enemy);
-        state.killCount++;
-        state.tntKills++;
-        addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (TNT)`, 'kill');
-        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
-      }
-    }
+    // TNT only damages walls — no enemy damage (breach-only explosive)
+    // Enemies flee from the blast but are not harmed
 
     // Damage player
     const dPlayer = dist(tnt.pos, state.player.pos);
@@ -1089,6 +1043,67 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.stunTimer -= dt;
       enemy.state = 'idle';
       continue;
+    }
+
+    // === PANIC STATE — random shooting, running, friendly fire ===
+    if ((enemy as any)._panicTimer > 0) {
+      (enemy as any)._panicTimer -= dt;
+      // Spin around wildly
+      enemy.angle += (Math.random() - 0.5) * 8 * dt;
+      // Run in random direction
+      const panicDir = { x: Math.cos(enemy.angle + (Math.random() - 0.5) * 2), y: Math.sin(enemy.angle + (Math.random() - 0.5) * 2) };
+      const panicSpeed = enemy.speed * dt * 60 * 1.5;
+      enemy.pos = tryMoveEnemy(state, enemy.pos, panicDir.x * panicSpeed, panicDir.y * panicSpeed, 10);
+      // Panic fire — random bullets (can hit other enemies = friendly fire)
+      if (Math.random() < 0.15) {
+        const panicAngle = enemy.angle + (Math.random() - 0.5) * 1.5;
+        state.bullets.push({
+          pos: { x: enemy.pos.x + Math.cos(panicAngle) * 14, y: enemy.pos.y + Math.sin(panicAngle) * 14 },
+          vel: { x: Math.cos(panicAngle) * 5, y: Math.sin(panicAngle) * 5 },
+          damage: enemy.damage * 0.5, damageType: 'bullet', fromPlayer: false, life: 35,
+          sourceId: enemy.id, sourceType: enemy.type,
+        });
+        state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+        playGunshot('rifle');
+      }
+      // Spawn panic particles
+      if (Math.random() < 0.2) {
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffff44', 1);
+      }
+      if ((enemy as any)._panicTimer <= 0) {
+        // Recover from panic — flee state
+        enemy.state = 'investigate';
+        enemy.investigateTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
+      }
+      continue;
+    }
+
+    // === LOW HP EFFECTS ===
+    const hpRatio = enemy.hp / enemy.maxHp;
+    // Speed penalty at <75% HP
+    if (hpRatio < 0.75 && enemy.type !== 'turret' && enemy.type !== 'boss') {
+      if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
+      enemy.speed = (enemy as any)._originalSpeed * 0.25; // 75% speed loss
+    }
+    // Flee chance check (per second, not per frame)
+    if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && !(enemy as any)._isBodyguard) {
+      if (!(enemy as any)._fleeCheckTimer) (enemy as any)._fleeCheckTimer = 1.0;
+      (enemy as any)._fleeCheckTimer -= dt;
+      if ((enemy as any)._fleeCheckTimer <= 0) {
+        (enemy as any)._fleeCheckTimer = 1.0;
+        const fleeChance = hpRatio < 0.50 ? 0.15 : hpRatio < 0.75 ? 0.10 : 0;
+        if (fleeChance > 0 && Math.random() < fleeChance && (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress')) {
+          // Flee! Run away from player
+          const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+          enemy.investigateTarget = {
+            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * 300)),
+            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 300)),
+          };
+          enemy.state = 'investigate';
+          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.5; // flee at half original speed
+          addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
+        }
+      }
     }
 
     enemy.eyeBlink -= dt;
@@ -2353,6 +2368,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
+            // Panic chance on taking damage (not boss, sniper, bodyguard, turret)
+            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer) {
+              const panicChance = enemy.hp / enemy.maxHp < 0.3 ? 0.25 : enemy.hp / enemy.maxHp < 0.5 ? 0.12 : 0.05;
+              if (Math.random() < panicChance) {
+                (enemy as any)._panicTimer = 2 + Math.random() * 2;
+                addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS!`, 'warning');
+              }
+            }
             // Sniper Tuman: flee immediately on hit (same frame)
             if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
               const isCoverProp = (p: { type: string }) =>
@@ -2409,6 +2432,34 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
     } else {
+      // Friendly fire — panicked enemy bullets can hit other enemies
+      if (b.sourceId) {
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead' || enemy.id === b.sourceId) continue;
+          if (dist(b.pos, enemy.pos) < 14) {
+            enemy.hp -= b.damage;
+            spawnParticles(state, b.pos.x, b.pos.y, '#ffaa00', 4);
+            playHit();
+            addMessage(state, `🔥 FRIENDLY FIRE — ${enemy.type.toUpperCase()} hit!`, 'info');
+            if (enemy.hp <= 0) {
+              enemy.state = 'dead';
+              sendReinforcementToPlatform(state, enemy);
+              enemy.loot = generateEnemyLoot(enemy);
+              state.killCount++;
+              addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
+              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
+            } else {
+              // Hit enemy panics too!
+              if (!(enemy as any)._panicTimer && Math.random() < 0.3) {
+                (enemy as any)._panicTimer = 1.5 + Math.random() * 1.5;
+                addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS from friendly fire!`, 'warning');
+              }
+            }
+            return false;
+          }
+        }
+      }
+
       if (dist(b.pos, state.player.pos) < 12) {
         // Cover reduces hit chance based on cover quality
         if (state.player.inCover) {
