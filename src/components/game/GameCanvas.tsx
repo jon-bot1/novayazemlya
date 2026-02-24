@@ -104,7 +104,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-[10px] font-mono text-danger px-1.5 py-0.5 border border-danger/30 rounded">BOSS</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
-              Former Spetsnaz, recruited 1987. After exposure to the B-series substance in Laboratory No. 3, 
+              Former Spetsnaz, recruited 1977. After exposure to the B-series substance in Laboratory No. 3, 
               Osipovitj developed unnatural strength and insomnia lasting weeks without degradation. 
               Claims to hear "orders from below". Patrols the deep storage at night, armed and muttering. 
               The most dangerous man on Novaya Zemlya — and possibly no longer entirely human.
@@ -129,7 +129,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-[10px] font-mono text-warning px-1.5 py-0.5 border border-warning/30 rounded">BODYGUARDS</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
-              Osipovitj's personal shadows since 1989. Both former GRU special operators who followed their 
+              Osipovitj's personal shadows since 1979. Both former GRU special operators who followed their 
               commander into the abyss. ZAPAD (West) and VOSTOK (East) — they never speak, never leave his side, 
               and never hesitate. Rumor says they underwent the same B-series exposure voluntarily. 
               Their loyalty is absolute. Their mercy is nonexistent.
