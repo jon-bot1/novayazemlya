@@ -36,9 +36,11 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
     return () => window.removeEventListener('keydown', handler);
   }, [handleStart]);
 
+  const [tab, setTab] = React.useState<'briefing' | 'updates'>('briefing');
+
   return (
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
-    <div className="max-w-lg w-full mx-4 flex flex-col gap-6 p-8 border border-border bg-card rounded">
+    <div className="max-w-lg w-full mx-4 flex flex-col gap-4 p-8 border border-border bg-card rounded max-h-[95vh] overflow-y-auto">
       <div className="text-center">
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
         <p className="text-xs font-mono text-muted-foreground mt-2">CLASSIFIED — EYES ONLY</p>
@@ -67,45 +69,93 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </label>
       </div>
 
-      <div className="border-t border-border pt-4">
-        <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
-        <p className="text-xs font-mono text-foreground/80 leading-relaxed">
-          Infiltrate the abandoned military base <span className="text-accent">Objekt 47 "Severnyj Vektor"</span>. 
-          Locate and eliminate <span className="text-danger">Commandant Osipovitj</span>. 
-          Recover his <span className="text-loot">USB drive</span> and hack the <span className="text-warning">nuclear codebook terminal</span>. 
-          <strong>Both items are required</strong> for full mission success.
-          Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
-        </p>
+      {/* Tabs */}
+      <div className="flex gap-0 border-b border-border">
+        <button
+          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'briefing' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setTab('briefing')}
+        >
+          📋 Briefing
+        </button>
+        <button
+          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'updates' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setTab('updates')}
+        >
+          📡 Updates
+        </button>
       </div>
 
-      <div className="border-t border-border pt-4">
-        <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">🎮 Controls</h2>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px] font-mono">
-          <span className="text-muted-foreground">WASD / Arrows</span><span className="text-foreground">Move</span>
-          <span className="text-muted-foreground">Mouse</span><span className="text-foreground">Aim & Shoot</span>
-          <span className="text-muted-foreground">Shift</span><span className="text-foreground">Sprint</span>
-          <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
-          <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Take Cover</span>
-          <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
-          <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
-          <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
-          <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
-          <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
-          <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
-        </div>
-      </div>
+      {tab === 'briefing' && (
+        <>
+          <div>
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
+            <p className="text-xs font-mono text-foreground/80 leading-relaxed">
+              Infiltrate the abandoned military base <span className="text-accent">Objekt 47 "Severnyj Vektor"</span>. 
+              Locate and eliminate <span className="text-danger">Commandant Osipovitj</span>. 
+              Recover his <span className="text-loot">USB drive</span> and hack the <span className="text-warning">nuclear codebook terminal</span>. 
+              <strong>Both items are required</strong> for full mission success.
+              Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
+            </p>
+          </div>
 
-      <div className="border-t border-border pt-4">
-        <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">⚠ Rules of Engagement</h2>
-        <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
-          <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
-          <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
-          <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
-          <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
-          <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
-          <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
-        </ul>
-      </div>
+          <div className="border-t border-border pt-4">
+            <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">🎮 Controls</h2>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px] font-mono">
+              <span className="text-muted-foreground">WASD / Arrows</span><span className="text-foreground">Move</span>
+              <span className="text-muted-foreground">Mouse</span><span className="text-foreground">Aim & Shoot</span>
+              <span className="text-muted-foreground">Shift</span><span className="text-foreground">Sprint</span>
+              <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
+              <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Take Cover</span>
+              <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
+              <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
+              <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
+              <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
+              <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
+              <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">⚠ Rules of Engagement</h2>
+            <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
+              <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
+              <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
+              <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
+              <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
+              <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
+              <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
+            </ul>
+          </div>
+        </>
+      )}
+
+      {tab === 'updates' && (
+        <>
+          <div>
+            <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
+            <div className="space-y-2">
+              <div className="text-xs font-mono">
+                <span className="text-muted-foreground">2026-03-24</span>
+                <span className="text-foreground ml-2">Game version 0.1 released</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">🗺️ Roadmap</h2>
+            <ul className="text-[11px] font-mono text-foreground/70 space-y-1.5">
+              <li>• Focus on the hidden intel you can find and weave them into gameplay</li>
+              <li>• Multiplayer?</li>
+              <li>• Extended map with new buildings</li>
+              <li>• New boss</li>
+              <li>• Expand Sniper's mechanics (semi-boss)</li>
+              <li>• Loot system that lets you keep and sell loot after raid</li>
+              <li>• Upgrades</li>
+              <li>• Finite ammunition</li>
+            </ul>
+          </div>
+        </>
+      )}
 
       <button
         className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
