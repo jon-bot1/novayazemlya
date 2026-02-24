@@ -120,7 +120,18 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
               const isMe = currentName && s.player_name === currentName;
               const rl = resultLabel(s.result);
               const earnedIds = s.achievements ? s.achievements.split(',').filter(Boolean) : [];
-              const earnedAchievements = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
+              const allEarned = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
+              // Deduplicate: only show highest tier per achievement group
+              const groupMap = new Map<string, typeof allEarned[0]>();
+              const tierOrder: AchievementTier[] = ['bronze', 'silver', 'gold'];
+              for (const a of allEarned) {
+                const baseId = a.id.replace(/_(bronze|silver|gold)$/, '');
+                const existing = groupMap.get(baseId);
+                if (!existing || tierOrder.indexOf(a.tier) > tierOrder.indexOf(existing.tier)) {
+                  groupMap.set(baseId, a);
+                }
+              }
+              const earnedAchievements = Array.from(groupMap.values());
               return (
                 <div key={s.id}>
                   <div className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3rem_1.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'}`}>
@@ -165,7 +176,17 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
             {decorated.map((s, i) => {
               const isMe = currentName && s.player_name === currentName;
               const earnedIds = s.achievements ? s.achievements.split(',').filter(Boolean) : [];
-              const earnedAchievements = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
+              const allEarned = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
+              const groupMap = new Map<string, typeof allEarned[0]>();
+              const tierOrder: AchievementTier[] = ['bronze', 'silver', 'gold'];
+              for (const a of allEarned) {
+                const baseId = a.id.replace(/_(bronze|silver|gold)$/, '');
+                const existing = groupMap.get(baseId);
+                if (!existing || tierOrder.indexOf(a.tier) > tierOrder.indexOf(existing.tier)) {
+                  groupMap.set(baseId, a);
+                }
+              }
+              const earnedAchievements = Array.from(groupMap.values());
               return (
                 <div key={s.id + '_dec'}>
                   <div className={`grid grid-cols-[1.2rem_1fr] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'}`}>
