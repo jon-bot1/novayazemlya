@@ -25,14 +25,14 @@ export interface Achievement {
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'mosin10', name: 'Mosin Master', icon: '🎯', desc: '10 kills med Mosin-Nagant', check: s => s.mosinKills >= 10 },
-  { id: 'nade10', name: 'Bombardier', icon: '💣', desc: '10 kills med granater', check: s => s.grenadeKills >= 10 },
-  { id: 'tnt10', name: 'Demolitionist', icon: '🧨', desc: '10 kills med TNT', check: s => s.tntKills >= 10 },
-  { id: 'longshot10', name: 'Sharpshooter', icon: '🔭', desc: '10 kills på >250px avstånd', check: s => s.longShots >= 10 },
-  { id: 'headshot10', name: 'Headhunter', icon: '💀', desc: '10 headshot-kills', check: s => s.headshotKills >= 10 },
-  { id: 'close10', name: 'Up Close', icon: '🗡️', desc: '10 kills på <50px avstånd', check: s => s.knifeDistanceKills >= 10 },
-  { id: 'nohit', name: 'Ghost', icon: '👻', desc: 'Klara rundan utan att ta skada', check: s => s.noHitsTaken && s.killCount > 0 },
-  { id: 'kills25', name: 'One Man Army', icon: '🪖', desc: '25+ kills på en runda', check: s => s.killCount >= 25 },
+  { id: 'mosin10', name: 'Mosin Master', icon: '🎯', desc: '10 kills with Mosin-Nagant', check: s => s.mosinKills >= 10 },
+  { id: 'nade10', name: 'Bombardier', icon: '💣', desc: '10 kills with grenades', check: s => s.grenadeKills >= 10 },
+  { id: 'tnt10', name: 'Demolitionist', icon: '🧨', desc: '10 kills with TNT charges', check: s => s.tntKills >= 10 },
+  { id: 'longshot10', name: 'Sharpshooter', icon: '🔭', desc: '10 kills at >250px range', check: s => s.longShots >= 10 },
+  { id: 'headshot10', name: 'Headhunter', icon: '💀', desc: '10 headshot kills', check: s => s.headshotKills >= 10 },
+  { id: 'close10', name: 'Up Close', icon: '🗡️', desc: '10 kills at close range (<50px)', check: s => s.knifeDistanceKills >= 10 },
+  { id: 'nohit', name: 'Ghost', icon: '👻', desc: 'Complete a raid without taking damage', check: s => s.noHitsTaken && s.killCount > 0 },
+  { id: 'kills25', name: 'One Man Army', icon: '🪖', desc: '25+ kills in a single raid', check: s => s.killCount >= 25 },
 ];
 
 interface HUDProps {
