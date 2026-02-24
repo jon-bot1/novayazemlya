@@ -36,7 +36,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
     return () => window.removeEventListener('keydown', handler);
   }, [handleStart]);
 
-  const [tab, setTab] = React.useState<'briefing' | 'updates'>('briefing');
+  const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates'>('briefing');
 
   return (
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
@@ -78,12 +78,194 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           📋 Briefing
         </button>
         <button
+          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'characters' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setTab('characters')}
+        >
+          👤 Characters
+        </button>
+        <button
           className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'updates' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
           onClick={() => setTab('updates')}
         >
           📡 Updates
         </button>
       </div>
+
+      {tab === 'characters' && (
+        <>
+          <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
+            PERSONNEL DOSSIER — Objekt 47 "Severnyj Vektor"
+          </div>
+
+          {/* Boss */}
+          <div className="border border-danger/40 rounded p-3 bg-danger/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-danger">💀 Commandant Osipovitj</span>
+              <span className="text-[10px] font-mono text-danger px-1.5 py-0.5 border border-danger/30 rounded">BOSS</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Former Spetsnaz, recruited 1987. After exposure to the B-series substance in Laboratory No. 3, 
+              Osipovitj developed unnatural strength and insomnia lasting weeks without degradation. 
+              Claims to hear "orders from below". Patrols the deep storage at night, armed and muttering. 
+              The most dangerous man on Novaya Zemlya — and possibly no longer entirely human.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-danger">350</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Modified AK + Flashbangs</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">30</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-warning">500ms (rapid)</span>
+              <span className="text-muted-foreground">Alert Range</span><span className="text-foreground">280px</span>
+              <span className="text-muted-foreground">Shoot Range</span><span className="text-foreground">220px</span>
+              <span className="text-muted-foreground">Speed</span><span className="text-foreground">1.8 (chase) / 1.2 (patrol)</span>
+              <span className="text-muted-foreground">Special</span><span className="text-warning">3 phases, flashbangs, spawns minions</span>
+              <span className="text-muted-foreground">Drops</span><span className="text-loot">💾 USB Drive, 💀 Dogtag</span>
+            </div>
+          </div>
+
+          {/* Bodyguards */}
+          <div className="border border-warning/40 rounded p-3 bg-warning/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-warning">🛡️ ZAPAD & VOSTOK</span>
+              <span className="text-[10px] font-mono text-warning px-1.5 py-0.5 border border-warning/30 rounded">BODYGUARDS</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Osipovitj's personal shadows since 1989. Both former GRU special operators who followed their 
+              commander into the abyss. ZAPAD (West) and VOSTOK (East) — they never speak, never leave his side, 
+              and never hesitate. Rumor says they underwent the same B-series exposure voluntarily. 
+              Their loyalty is absolute. Their mercy is nonexistent.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-warning">100 each</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Assault Rifle</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-warning">20</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">700ms</span>
+              <span className="text-muted-foreground">Alert Range</span><span className="text-foreground">320px (widened arc)</span>
+              <span className="text-muted-foreground">Shoot Range</span><span className="text-foreground">280px</span>
+              <span className="text-muted-foreground">Special</span><span className="text-warning">Wide vision arc, grenade resistant (50% dmg)</span>
+            </div>
+          </div>
+
+          {/* Sniper */}
+          <div className="border border-accent/40 rounded p-3 bg-accent/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-accent">🎯 The Sniper</span>
+              <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">SEMI-BOSS</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Nobody knows his real name. The soldiers call him "Tishina" — Silence. 
+              He appeared at Objekt 47 three months ago with no transfer papers. 
+              Operates alone in the perimeter forest with a scoped Mosin-Nagant. 
+              His kills are clean — one round, center mass, no witnesses. 
+              Some say he was the one who silenced Group Cedar. If you hear nothing, he's already aiming.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-foreground">70</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Mosin-Nagant (scoped)</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">68 (devastating)</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">5000ms (bolt-action)</span>
+              <span className="text-muted-foreground">Alert Range</span><span className="text-danger">400px (extreme)</span>
+              <span className="text-muted-foreground">Shoot Range</span><span className="text-danger">350px (extreme)</span>
+              <span className="text-muted-foreground">Speed</span><span className="text-foreground">0.6 (slow, methodical)</span>
+              <span className="text-muted-foreground">Special</span><span className="text-accent">Extremely narrow vision arc (laser focus)</span>
+            </div>
+          </div>
+
+          {/* Soldiers */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">🔫 Soldier</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">STANDARD</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Conscripts and regulars stationed at the base. Trained but not elite. 
+              They follow orders, patrol routes, and radio for backup when things go loud.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-foreground">56</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">AK-74</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-foreground">15</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">800ms</span>
+              <span className="text-muted-foreground">Tactics</span><span className="text-foreground">Flank / Assault, radio comms</span>
+            </div>
+          </div>
+
+          {/* Heavy */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">🪖 Heavy</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">ARMORED</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Armored troopers carrying heavy firepower. Slow but extremely durable. 
+              They prefer suppressive fire, pinning you down while others flank.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-warning">120</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">RPK-74</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-foreground">25</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">1500ms</span>
+              <span className="text-muted-foreground">Tactics</span><span className="text-foreground">Suppressor role</span>
+            </div>
+          </div>
+
+          {/* Scav */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">🐀 Scav</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">WEAK</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Deserters, looters, or those who stayed behind when everyone else fled. 
+              Poorly armed, jumpy, and dangerous mostly in numbers.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-foreground">32</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Makarov PM</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-foreground">8</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">1200ms</span>
+            </div>
+          </div>
+
+          {/* Turret */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">🏗️ Turret Emplacement</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">STATIC</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Fixed machine gun nests at watchtowers and key positions. 
+              Can't move, but their firepower and HP make them deadly obstacles.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-warning">200</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">PKM (mounted)</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-foreground">20</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">800ms</span>
+              <span className="text-muted-foreground">Special</span><span className="text-foreground">Elevated, shoots over walls</span>
+            </div>
+          </div>
+
+          {/* Officers */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">⭐ Officer</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">ELITE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Career military with bolt-action precision. They carry Mosin-Nagants and 
+              hit hard at extended range. Often carry valuable loot — grenades, armor, dogtags.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-foreground">70</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Mosin-Nagant</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">50</span>
+              <span className="text-muted-foreground">Fire Rate</span><span className="text-foreground">2000ms (bolt-action)</span>
+              <span className="text-muted-foreground">Range</span><span className="text-foreground">+40% extended</span>
+              <span className="text-muted-foreground">Drops</span><span className="text-loot">Mosin, grenades, armor, dogtags</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {tab === 'briefing' && (
         <>
