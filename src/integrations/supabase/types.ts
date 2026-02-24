@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       highscores: {
         Row: {
+          achievements: string | null
           created_at: string
           id: string
           kills: number
@@ -25,6 +26,7 @@ export type Database = {
           time_seconds: number
         }
         Insert: {
+          achievements?: string | null
           created_at?: string
           id?: string
           kills?: number
@@ -34,6 +36,7 @@ export type Database = {
           time_seconds?: number
         }
         Update: {
+          achievements?: string | null
           created_at?: string
           id?: string
           kills?: number

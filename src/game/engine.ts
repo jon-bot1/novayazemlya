@@ -178,6 +178,14 @@ export function createGameState(): GameState {
     reinforcementTimer: 45 + Math.random() * 15, // first wave after ~45-60s
     reinforcementsSpawned: 0,
     coverNearby: false,
+    mosinKills: 0,
+    grenadeKills: 0,
+    tntKills: 0,
+    longShots: 0,
+    headshotKills: 0,
+    sneakKills: 0,
+    knifeDistanceKills: 0,
+    noHitsTaken: true,
   };
 }
 
@@ -534,6 +542,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // === ENEMIES FLEE FROM PLACED TNT ===
+  for (const tnt of state.placedTNTs) {
+    if (tnt.timer > 0 && tnt.timer < 4.5) { // react after 0.5s of placement
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
+        if ((enemy as any)._fleeingTNT) continue;
+        const dToTNT = dist(tnt.pos, enemy.pos);
+        if (dToTNT < 200) {
+          (enemy as any)._fleeingTNT = true;
+          // Find cover away from TNT
+          const awayAngle = Math.atan2(enemy.pos.y - tnt.pos.y, enemy.pos.x - tnt.pos.x);
+          const fleeDist = 250;
+          enemy.investigateTarget = {
+            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * fleeDist)),
+            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * fleeDist)),
+          };
+          enemy.state = 'investigate';
+          enemy.speed = Math.max(enemy.speed, 2.5);
+          addMessage(state, `⚠ ${enemy.type.toUpperCase()} flees from TNT!`, 'warning');
+        }
+      }
+    }
+  }
+
   // Update placed TNTs — countdown and detonate
   state.placedTNTs = state.placedTNTs.filter(tnt => {
     tnt.timer -= dt;
@@ -612,6 +644,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         sendReinforcementToPlatform(state, enemy);
         enemy.loot = generateEnemyLoot(enemy);
         state.killCount++;
+        state.tntKills++;
         addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (TNT)`, 'kill');
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
       }
@@ -623,6 +656,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const falloff = 1 - (dPlayer / TNT_RADIUS);
       const dmg = TNT_DAMAGE * falloff * 0.5;
       state.player.hp -= dmg;
+      state.noHitsTaken = false;
       spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
       addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
       if (state.player.hp <= 0) {
@@ -772,8 +806,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
           if (panel.id === 'alarm_intel') {
             // Intel terminal: reveals which exfil is active
-            (state as any)._exfilRevealed = true;
             const activeExfil = state.extractionPoints.find(ep => ep.active);
+            state.exfilRevealed = activeExfil?.name || undefined;
             if (activeExfil) {
               addMessage(state, `📡 INTEL: Extraction open at ${activeExfil.name}!`, 'intel');
             } else {
@@ -1993,6 +2027,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            state.grenadeKills++;
             addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
@@ -2004,6 +2039,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const falloff = 1 - (d / g.radius);
           const dmg = g.damage * falloff * 0.5;
           state.player.hp -= dmg;
+          state.noHitsTaken = false;
           spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
           addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
@@ -2057,8 +2093,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            // Track elevated kill achievements
+            if (isCrit) state.headshotKills++;
+            if (b.weaponName === 'Mosin-Nagant') state.mosinKills++;
+            const killDist = dist(b.pos, state.player.pos);
+            if (killDist > 250) state.longShots++;
+            if (killDist < 50) state.knifeDistanceKills++;
             if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
-            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
@@ -2130,6 +2171,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            // Track bullet kill achievements
+            if (isCrit) state.headshotKills++;
+            if (b.weaponName === 'Mosin-Nagant') state.mosinKills++;
+            const killDist = dist(b.pos, state.player.pos);
+            if (killDist > 250) state.longShots++;
+            if (killDist < 50) state.knifeDistanceKills++;
+            
             if (!isCrit) {
               addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
@@ -2164,6 +2212,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const armorReduction = Math.min(0.8, state.player.armor / 100);
         const dmg = b.damage * Math.max(0.05, 1 - armorReduction);
         state.player.hp -= dmg;
+        state.noHitsTaken = false;
         spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
         playHit();
         if (Math.random() > 0.7) {

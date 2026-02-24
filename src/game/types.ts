@@ -251,6 +251,16 @@ export interface GameState {
   reinforcementsSpawned: number; // total reinforcements spawned so far
   coverNearby: boolean; // true when player is near a cover object
   deathCause?: string; // what killed the player
+  exfilRevealed?: string; // name of revealed exfil point
+  // Achievement tracking
+  mosinKills: number;
+  grenadeKills: number;
+  tntKills: number;
+  longShots: number; // kills at >250px distance
+  headshotKills: number;
+  sneakKills: number; // kills while in sneak mode
+  knifeDistanceKills: number; // kills at <50px
+  noHitsTaken: boolean; // true until player takes damage
 }
 
 export interface SoundEvent {

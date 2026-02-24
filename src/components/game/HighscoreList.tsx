@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { ACHIEVEMENTS } from './HUD';
 
 interface HighscoreEntry {
   id: string;
@@ -9,6 +10,7 @@ interface HighscoreEntry {
   result: string;
   loot_value: number;
   created_at: string;
+  achievements: string;
 }
 
 interface HighscoreListProps {
@@ -68,18 +70,28 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
         {scores.map((s, i) => {
           const isMe = currentName && s.player_name === currentName;
           const rl = resultLabel(s.result);
+          const earnedIds = s.achievements ? s.achievements.split(',').filter(Boolean) : [];
+          const earnedAchievements = ACHIEVEMENTS.filter(a => earnedIds.includes(a.id));
           return (
-            <div
-              key={s.id}
-              className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
-                isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'
-              }`}
-            >
-              <span className="text-muted-foreground">{i + 1}</span>
-              <span className="truncate">{s.player_name}</span>
-              <span>{s.kills}</span>
-              <span>{formatTime(Number(s.time_seconds))}</span>
-              <span className={rl.color}>{rl.icon} {rl.text}</span>
+            <div key={s.id}>
+              <div
+                className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${
+                  isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'
+                }`}
+              >
+                <span className="text-muted-foreground">{i + 1}</span>
+                <span className="truncate">{s.player_name}</span>
+                <span>{s.kills}</span>
+                <span>{formatTime(Number(s.time_seconds))}</span>
+                <span className={rl.color}>{rl.icon} {rl.text}</span>
+              </div>
+              {earnedAchievements.length > 0 && (
+                <div className="flex gap-1 px-1 ml-5 mb-0.5">
+                  {earnedAchievements.map(a => (
+                    <span key={a.id} className="text-[10px]" title={a.name}>{a.icon}</span>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -93,7 +105,8 @@ export async function submitHighscore(
   kills: number,
   timeSeconds: number,
   result: 'success' | 'almost' | 'mia' | 'kia',
-  lootValue: number
+  lootValue: number,
+  achievements: string = ''
 ) {
   try {
     const saveName = playerName === '__anonymous__' ? 'Anonymous' : playerName.trim().slice(0, 20);
@@ -103,6 +116,7 @@ export async function submitHighscore(
       time_seconds: Math.round(timeSeconds),
       result,
       loot_value: lootValue,
+      achievements,
     });
   } catch {}
 }

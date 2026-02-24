@@ -328,6 +328,15 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.6 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Enemies flee from placed TNT charges</li>
+                  <li>• Hacked intel terminal now shows active exfil in HUD</li>
+                  <li>• 🏅 Achievements system: 8 per-round achievements with icons</li>
+                  <li>• Achievements shown on death/extraction screen & in highscores</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
                 <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.5 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• Mosin-Nagant: +20% headshot bonus</li>
@@ -442,6 +451,8 @@ export const GameCanvas: React.FC = () => {
     inCover: false,
     peeking: false,
     deathCause: undefined as string | undefined,
+    exfilRevealed: undefined as string | undefined,
+    achievementStats: undefined as any,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -750,6 +761,18 @@ export const GameCanvas: React.FC = () => {
           inCover: state.player.inCover,
           peeking: state.player.peeking,
           deathCause: state.deathCause,
+          exfilRevealed: state.exfilRevealed,
+          achievementStats: {
+            mosinKills: state.mosinKills,
+            grenadeKills: state.grenadeKills,
+            tntKills: state.tntKills,
+            longShots: state.longShots,
+            headshotKills: state.headshotKills,
+            sneakKills: state.sneakKills,
+            knifeDistanceKills: state.knifeDistanceKills,
+            noHitsTaken: state.noHitsTaken,
+            killCount: state.killCount,
+          },
         });
       }
 
@@ -795,6 +818,8 @@ export const GameCanvas: React.FC = () => {
           timeLimit={TIME_LIMIT}
           playerName={playerName}
           deathCause={hudState.deathCause}
+          exfilRevealed={hudState.exfilRevealed}
+          achievementStats={hudState.achievementStats}
         />
 
         <LootPopup notifications={lootNotifications} />
