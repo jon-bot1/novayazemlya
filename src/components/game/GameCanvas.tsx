@@ -772,6 +772,11 @@ export const GameCanvas: React.FC = () => {
             knifeDistanceKills: state.knifeDistanceKills,
             noHitsTaken: state.noHitsTaken,
             killCount: state.killCount,
+            bodiesLooted: state.bodiesLooted,
+            cachesLooted: state.cachesLooted,
+            wallsBreached: state.wallsBreached,
+            documentsCollected: state.documentsCollected,
+            terminalsHacked: state.terminalsHacked,
           },
         });
       }

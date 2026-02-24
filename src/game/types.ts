@@ -261,6 +261,11 @@ export interface GameState {
   sneakKills: number; // kills while in sneak mode
   knifeDistanceKills: number; // kills at <50px
   noHitsTaken: boolean; // true until player takes damage
+  bodiesLooted: number; // enemy corpses looted
+  cachesLooted: number; // loot containers looted
+  wallsBreached: number; // walls destroyed with TNT
+  documentsCollected: number; // lore documents picked up
+  terminalsHacked: number; // alarm panels hacked
 }
 
 export interface SoundEvent {
