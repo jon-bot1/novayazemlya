@@ -1761,6 +1761,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         scav: { body: '#bb9a7a', outline: '#9a7a5a', eye: '#333', hat: 'bandana', hatColor: '#7a8a5a' },
         soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
+        shocker: { body: '#3a5a8a', outline: '#2a4a7a', eye: '#aaf', hat: 'helmet', hatColor: '#2244aa' },
       };
       let cfg = configs[enemy.type];
       // Officers: beret with badge, no helmet
@@ -1786,6 +1787,25 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         // Determine which bodyguard (first or second)
         const bgName = (enemy as any)._bodyguardName || 'GUARD';
         ctx.fillText(bgName, enemy.pos.x, enemy.pos.y + R + 14);
+      }
+      // Shocker label with electric arc
+      if (enemy.type === 'shocker') {
+        const pulse = 0.6 + Math.sin(state.time * 10) * 0.4;
+        ctx.fillStyle = `rgba(68, 221, 255, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚡ SHOCKER', enemy.pos.x, enemy.pos.y - R - 10);
+        // Electric arcs when close to player
+        if (Math.sqrt((enemy.pos.x - state.player.pos.x) ** 2 + (enemy.pos.y - state.player.pos.y) ** 2) < 60) {
+          ctx.strokeStyle = `rgba(68, 221, 255, ${0.3 + Math.random() * 0.5})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(enemy.pos.x, enemy.pos.y);
+          const mx = (enemy.pos.x + state.player.pos.x) / 2 + (Math.random() - 0.5) * 20;
+          const my = (enemy.pos.y + state.player.pos.y) / 2 + (Math.random() - 0.5) * 20;
+          ctx.quadraticCurveTo(mx, my, state.player.pos.x, state.player.pos.y);
+          ctx.stroke();
+        }
       }
     }
 

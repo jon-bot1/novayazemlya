@@ -1,7 +1,7 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
-import { LOOT_POOLS, createFlashbang, createTNT } from './items';
+import { LOOT_POOLS, createFlashbang, createTNT, isSecondaryWeapon } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
@@ -80,6 +80,7 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     turret: Math.PI * 0.5 - DEG15,
     boss: Math.PI * 0.7,
     sniper: Math.PI * 0.15, // extremely narrow, laser-focused
+    shocker: Math.PI * 0.5 - DEG15, // wide arc for melee rush
   };
   let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
@@ -132,7 +133,7 @@ function generateEnemyLoot(enemy: Enemy) {
       { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
     ];
   }
-  const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : 'common';
+  const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
   return [...existingLoot, ...LOOT_POOLS[poolType]()];
 }
 
@@ -192,6 +193,7 @@ export function createGameState(): GameState {
     terminalsHacked: 0,
     distanceTravelled: 0,
     exfilsVisited: new Set<string>(),
+    pendingWeapon: null,
   };
 }
 
@@ -747,18 +749,27 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.tntCount++;
             addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
-          // Auto-equip weapon to primary slot (sidearm stays as pistol)
+          // Weapon pickup with slot system & confirmation
           if (item.category === 'weapon' && item.damage) {
-            if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
-              state.player.primaryWeapon = item;
-              // Auto-switch to primary
-              state.player.activeSlot = 2;
-              state.player.equippedWeapon = item;
+            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
+            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+            if (!currentInSlot) {
+              // Empty slot — auto-equip
+              if (slot === 'primary') {
+                state.player.primaryWeapon = item;
+                state.player.activeSlot = 2;
+                state.player.equippedWeapon = item;
+              } else {
+                state.player.sidearm = item;
+                state.player.activeSlot = 1;
+                state.player.equippedWeapon = item;
+              }
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} equipped [2]!`, 'info');
-            } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
-              state.player.sidearm = item;
-              addMessage(state, `🔫 ${item.name} as sidearm [1]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
+            } else {
+              // Slot occupied — ask for confirmation
+              state.pendingWeapon = { item, slot, replacing: currentInSlot };
+              addMessage(state, `🔫 ${item.name} found! Press Y to swap, N to skip`, 'warning');
             }
           }
         }
@@ -820,15 +831,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
           if (item.category === 'weapon' && item.damage) {
-            if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
-              state.player.primaryWeapon = item;
-              state.player.activeSlot = 2;
-              state.player.equippedWeapon = item;
+            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
+            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+            if (!currentInSlot) {
+              if (slot === 'primary') {
+                state.player.primaryWeapon = item;
+                state.player.activeSlot = 2;
+                state.player.equippedWeapon = item;
+              } else {
+                state.player.sidearm = item;
+                state.player.activeSlot = 1;
+                state.player.equippedWeapon = item;
+              }
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} equipped [2]!`, 'info');
-            } else if (!state.player.sidearm || item.damage > (state.player.sidearm.damage || 0)) {
-              state.player.sidearm = item;
-              addMessage(state, `🔫 ${item.name} as sidearm [1]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
+            } else {
+              state.pendingWeapon = { item, slot, replacing: currentInSlot };
+              addMessage(state, `🔫 ${item.name} found! Press Y to swap, N to skip`, 'warning');
             }
           }
           if (item.id === 'boss_usb') {
@@ -1283,7 +1302,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           soldier: { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 },
           heavy:   { frontArc: Math.PI * 0.6 - DEG15, rearRange: 0.4 },
           turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
-          sniper:  { frontArc: Math.PI * 0.15, rearRange: 0.05 }, // extremely narrow, laser-focused
+          sniper:  { frontArc: Math.PI * 0.15, rearRange: 0.05 },
+          shocker: { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.3 },
         }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -2094,26 +2114,42 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
-          const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
-          const angle = enemy.angle + spread;
-          const bSpeed = enemy.type === 'sniper' ? 10 : enemy.type === 'turret' ? 8 : 6;
-          state.bullets.push({
-            pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
-            vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
-            damage: enemy.damage,
-            damageType: 'bullet',
-            fromPlayer: false,
-            life: enemy.type === 'sniper' ? 80 : 50,
-            elevated: enemy.elevated,
-            sourceId: enemy.id,
-            sourceType: enemy.type,
-          });
-          enemy.lastShot = state.time;
-          spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
-          // Enemy gunshot sound event (alerts other enemies too)
-          state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
-          const gunType = enemy.type === 'boss' ? 'boss' : enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : enemy.type === 'sniper' ? 'rifle' : 'rifle';
-          playGunshot(gunType);
+          if (enemy.type === 'shocker') {
+            // Electric shock — melee range, no bullet, direct damage
+            const dmg = enemy.damage;
+            state.player.hp -= dmg;
+            state.player.bleedRate = Math.min(state.player.bleedRate + 0.5, 3);
+            enemy.lastShot = state.time;
+            spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ddff', 8);
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ddff', 4);
+            addMessage(state, `⚡ ELECTRIC SHOCK! -${Math.floor(dmg)}HP`, 'damage');
+            state.soundEvents.push({ pos: { ...enemy.pos }, radius: 100, time: state.time });
+            playHit();
+            if (state.player.hp <= 0) {
+              state.gameOver = true;
+              state.deathCause = `⚡ Electrocuted by Shocker`;
+            }
+          } else {
+            const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
+            const angle = enemy.angle + spread;
+            const bSpeed = enemy.type === 'sniper' ? 10 : enemy.type === 'turret' ? 8 : 6;
+            state.bullets.push({
+              pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+              vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
+              damage: enemy.damage,
+              damageType: 'bullet',
+              fromPlayer: false,
+              life: enemy.type === 'sniper' ? 80 : 50,
+              elevated: enemy.elevated,
+              sourceId: enemy.id,
+              sourceType: enemy.type,
+            });
+            enemy.lastShot = state.time;
+            spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
+            state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+            const gunType = enemy.type === 'boss' ? 'boss' : enemy.type === 'turret' ? 'turret' : enemy.type === 'heavy' ? 'heavy' : enemy.type === 'sniper' ? 'rifle' : 'rifle';
+            playGunshot(gunType);
+          }
         }
         if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && distToPlayer < enemy.shootRange * 0.5) {
           const dir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
