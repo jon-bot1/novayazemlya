@@ -1100,7 +1100,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue;
     }
 
-    // Sniper: hides in trees, teleports between them toward the player
+    // Sniper Tuman: hides in trees, teleports between them toward the player
     if (enemy.type === 'sniper') {
       if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 4 + Math.random() * 4;
       (enemy as any)._sniperTeleportTimer -= dt;
@@ -1110,8 +1110,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         (enemy as any)._sniperInvisible -= dt;
         if ((enemy as any)._sniperInvisible <= 0) {
           const targetTree = (enemy as any)._sniperTargetTree;
-          if (targetTree) enemy.pos = { x: targetTree.x, y: targetTree.y };
-          addMessage(state, '🔭 Sniper repositioned!', 'warning');
+          if (targetTree) {
+            enemy.pos = { x: targetTree.x, y: targetTree.y };
+            // Smoke cloud at arrival
+            for (let si = 0; si < 12; si++) {
+              const sa = Math.random() * Math.PI * 2;
+              const sr = 5 + Math.random() * 20;
+              state.particles.push({
+                pos: { x: enemy.pos.x + Math.cos(sa) * sr, y: enemy.pos.y + Math.sin(sa) * sr },
+                vel: { x: Math.cos(sa) * (0.3 + Math.random() * 0.5), y: Math.sin(sa) * (0.3 + Math.random() * 0.5) },
+                life: 40 + Math.random() * 30,
+                maxLife: 70,
+                color: '#88888866',
+                size: 4 + Math.random() * 6,
+              });
+            }
+          }
+          addMessage(state, '🔭 Sniper Tuman repositioned!', 'warning');
         }
         continue;
       }
@@ -1132,6 +1147,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
           (enemy as any)._sniperInvisible = 2.5;
           (enemy as any)._sniperTeleportTimer = 6 + Math.random() * 4;
+          // Smoke cloud at departure
+          for (let si = 0; si < 12; si++) {
+            const sa = Math.random() * Math.PI * 2;
+            const sr = 5 + Math.random() * 20;
+            state.particles.push({
+              pos: { x: enemy.pos.x + Math.cos(sa) * sr, y: enemy.pos.y + Math.sin(sa) * sr },
+              vel: { x: Math.cos(sa) * (0.2 + Math.random() * 0.4), y: Math.sin(sa) * (0.2 + Math.random() * 0.4) - 0.3 },
+              life: 50 + Math.random() * 40,
+              maxLife: 90,
+              color: '#99999966',
+              size: 5 + Math.random() * 7,
+            });
+          }
           continue;
         } else {
           // No good trees — just reset timer and walk
