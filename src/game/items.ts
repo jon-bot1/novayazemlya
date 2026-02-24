@@ -193,7 +193,7 @@ export const LOOT_POOLS = {
       [createValuable('Cigarettes', 50, '🚬'), 0.3],
       [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.15],
       [createGrenade(), 0.1],
-      [createTNT(), 0.08],
+      [createTNT(), 0.25],
     ]);
   },
   military: (): Item[] => {
@@ -205,7 +205,7 @@ export const LOOT_POOLS = {
       [WEAPON_TEMPLATES.ak74(), 0.15],
       [createValuable('Dogtags', 200, '🏷️'), 0.1],
       [createGrenade(), 0.3],
-      [createTNT(), 0.12],
+      [createTNT(), 0.30],
     ]);
   },
   medical: (): Item[] => {
@@ -235,7 +235,7 @@ export const LOOT_POOLS = {
       [createBackpack(), 0.12],
       [createArmor(), 0.15],
       [createHelmet(), 0.1],
-      [createTNT(), 0.06],
+      [createTNT(), 0.18],
     ]);
   },
 };
