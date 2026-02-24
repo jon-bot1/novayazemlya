@@ -1389,10 +1389,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
 
         // Immediately start fleeing — teleport to a far tree
-        const fleeTrees = state.props.filter(p =>
+        let fleeTrees = state.props.filter(p =>
           (p.type === 'tree' || p.type === 'pine_tree') &&
           dist(p.pos, state.player.pos) > 400 && dist(p.pos, enemy.pos) > 100
         );
+        // Fallback: if no far trees, accept any tree away from current pos
+        if (fleeTrees.length === 0) {
+          fleeTrees = state.props.filter(p =>
+            (p.type === 'tree' || p.type === 'pine_tree') &&
+            dist(p.pos, enemy.pos) > 80
+          );
+        }
         if (fleeTrees.length > 0) {
           fleeTrees.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos)); // farthest from player
           const fleeTree = fleeTrees[Math.floor(Math.random() * Math.min(3, fleeTrees.length))];
@@ -1402,6 +1409,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           for (let si = 0; si < 15; si++) {
             state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
           }
+        } else {
+          // No trees at all — physically run away from player
+          const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+          const runDist = 250;
+          enemy.investigateTarget = {
+            x: enemy.pos.x + Math.cos(awayAngle) * runDist,
+            y: enemy.pos.y + Math.sin(awayAngle) * runDist,
+          };
+          enemy.state = 'investigate';
+          enemy.speed = Math.max(enemy.speed, 3.0);
         }
         (enemy as any)._sniperRelocateDelay = 0; // consumed by immediate flee
         continue;
@@ -2123,9 +2140,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
-            // Sniper Tuman: start 0.5s relocate delay on every hit
+            // Sniper Tuman: flee IMMEDIATELY on hit (no delay)
             if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
-              (enemy as any)._sniperRelocateDelay = 0.5;
+              (enemy as any)._sniperRelocateDelay = 0.02; // near-instant, triggers next frame
             }
           }
           return false;
