@@ -163,7 +163,7 @@ export const WEAPON_TEMPLATES = {
   ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   180,   'auto'),
   akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   250,   'auto'),
   toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'),
-  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1700,  'single'),
+  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'),
   ppsh:    () => createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'),
 };
 

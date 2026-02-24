@@ -328,6 +328,22 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.5 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Mosin-Nagant: +20% headshot bonus</li>
+                  <li>• Mosin-Nagant: fire rate increased (1450ms)</li>
+                  <li>• Mosin-Nagant: +5px forgiving hitbox — easier to land shots</li>
+                  <li>• TNT now has 5-second fuse delay with blinking indicator</li>
+                  <li>• TNT only breaches a wall section (~3-4 figures wide)</li>
+                  <li>• TNT deals grenade-level blast damage to nearby enemies & player</li>
+                  <li>• Death screen now shows cause of death (who/what killed you)</li>
+                  <li>• Survival time shown on death/extraction screen</li>
+                  <li>• Officers guaranteed to carry Access Cards</li>
+                  <li>• Sniper Tuman: relocates on every hit (no longer blocked by cooldown)</li>
+                  <li>• TNT keybind changed to T (no longer conflicts with looting)</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
                 <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.4 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• Fixed: TNT from enemy bodies now counts correctly</li>
