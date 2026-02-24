@@ -52,35 +52,42 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
   const [decorated, setDecorated] = useState<HighscoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const loadScores = async () => {
+    try {
+      const { data } = await (supabase as any)
+        .from('highscores')
+        .select('*')
+        .neq('result', 'abandoned')
+        .neq('player_name', 'Anonymous')
+        .limit(50);
+      if (data) {
+        const entries = (data as HighscoreEntry[]).map(s => ({
+          ...s,
+          score: calculateScore(s.kills, Number(s.time_seconds), s.result, s.achievements || ''),
+        }));
+        setScores([...entries].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5));
+        setDecorated(
+          entries
+            .filter(s => s.achievements && s.achievements.length > 0)
+            .sort((a, b) => achievementWeight(b.achievements || '') - achievementWeight(a.achievements || ''))
+            .slice(0, 5)
+        );
+      }
+    } catch {}
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await (supabase as any)
-          .from('highscores')
-          .select('*')
-          .neq('result', 'abandoned')
-          .neq('player_name', 'Anonymous')
-          .limit(50);
-        if (data) {
-          const entries = (data as HighscoreEntry[]).map(s => ({
-            ...s,
-            score: calculateScore(s.kills, Number(s.time_seconds), s.result, s.achievements || ''),
-          }));
-          // Top scores
-          setScores([...entries].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5));
-          // Most decorated — ranked by achievement weight, must have at least 1
-          setDecorated(
-            entries
-              .filter(s => s.achievements && s.achievements.length > 0)
-              .sort((a, b) => achievementWeight(b.achievements || '') - achievementWeight(a.achievements || ''))
-              .slice(0, 5)
-          );
-        }
-      } catch {}
-      setLoading(false);
-    };
-    load();
+    loadScores();
   }, []);
+
+  // Re-fetch when currentName changes (i.e. after a new score is submitted)
+  useEffect(() => {
+    if (currentName) {
+      const timer = setTimeout(() => loadScores(), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentName]);
 
   if (loading) {
     return <p className="text-xs font-mono text-muted-foreground text-center mt-3">Loading...</p>;

@@ -2260,19 +2260,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const d = dist(g.pos, enemy.pos);
           if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             if (enemy.type === 'boss') {
-              // Boss takes 33% grenade damage instead of instant kill
-              const dmg = enemy.maxHp * 0.33;
+              // Boss takes 25% grenade damage (75% grenade defense)
+              const dmg = enemy.maxHp * 0.25;
               enemy.hp -= dmg;
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
-              addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
+              addMessage(state, `💥 Boss resists blast! -${Math.floor(dmg)}HP`, 'damage');
               if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
             }
-            // Bodyguards take 50% grenade damage instead of instant kill
+            // Bodyguards take 25% grenade damage (75% grenade defense)
             if ((enemy as any)._isBodyguard) {
-              const dmg = enemy.maxHp * 0.5;
+              const dmg = enemy.maxHp * 0.25;
               enemy.hp -= dmg;
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
-              addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
+              addMessage(state, `💥 Bodyguard resists blast! -${Math.floor(dmg)}HP`, 'damage');
               if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
             }
             enemy.hp = 0;
