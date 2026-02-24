@@ -95,7 +95,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                           <span className="text-[10px] cursor-default">{a.icon}</span>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs font-mono bg-background border-border">
-                          {a.name}
+                          <span className="font-bold">{a.name}</span> — {a.desc}
                         </TooltipContent>
                       </Tooltip>
                     ))}
