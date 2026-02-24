@@ -1808,27 +1808,69 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
       ctx.font = '14px sans-serif';
     } else if ((enemy as any)._panicTimer > 0) {
-      // Panic state — red/yellow flashing aura + screaming icon
-      const panicPulse = 0.5 + Math.sin(state.time * 12) * 0.5;
+      // PANIC — yellow/orange flashing aura + screaming icon
+      const panicPulse = 0.5 + Math.sin(state.time * 14) * 0.5;
       ctx.save();
       ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y, R + 8, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, ${Math.floor(100 + panicPulse * 155)}, 0, ${0.2 + panicPulse * 0.15})`;
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 10, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, ${Math.floor(200 + panicPulse * 55)}, 0, ${0.15 + panicPulse * 0.2})`;
       ctx.fill();
-      ctx.strokeStyle = `rgba(255, 50, 0, ${panicPulse * 0.6})`;
+      ctx.strokeStyle = `rgba(255, 180, 0, ${panicPulse * 0.7})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+      ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 12);
+      // Exclamation marks flying chaotically
+      for (let pi = 0; pi < 3; pi++) {
+        const pa = state.time * 8 + pi * (Math.PI * 2 / 3);
+        const px = enemy.pos.x + Math.cos(pa) * 18;
+        const py = enemy.pos.y - R - 14 + Math.sin(pa * 1.3) * 7;
+        ctx.font = '8px sans-serif';
+        ctx.fillStyle = `rgba(255, ${Math.floor(100 + panicPulse * 155)}, 0, ${panicPulse})`;
+        ctx.fillText('!', px, py);
+      }
+      ctx.font = '14px sans-serif';
+    } else if ((enemy as any)._berserkTimer > 0) {
+      // BERSERK — red pulsing aura + fire icon
+      const bPulse = 0.5 + Math.sin(state.time * 10) * 0.5;
+      ctx.save();
+      // Red glow ring
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 12, 0, Math.PI * 2);
+      const bGrad = ctx.createRadialGradient(enemy.pos.x, enemy.pos.y, R, enemy.pos.x, enemy.pos.y, R + 12);
+      bGrad.addColorStop(0, `rgba(255, 30, 0, ${0.3 + bPulse * 0.3})`);
+      bGrad.addColorStop(1, 'rgba(255, 30, 0, 0)');
+      ctx.fillStyle = bGrad;
+      ctx.fill();
+      // Inner red ring
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 6, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 50, 0, ${0.5 + bPulse * 0.5})`;
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.restore();
-      ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 12);
-      // Exclamation marks flying off
-      for (let pi = 0; pi < 2; pi++) {
-        const pa = state.time * 6 + pi * Math.PI;
-        const px = enemy.pos.x + Math.cos(pa) * 16;
-        const py = enemy.pos.y - R - 14 + Math.sin(pa) * 5;
-        ctx.font = '7px sans-serif';
-        ctx.fillStyle = `rgba(255, 50, 0, ${panicPulse})`;
-        ctx.fillText('!', px, py);
-      }
+      ctx.fillText('🔥', enemy.pos.x, enemy.pos.y - R - 12);
+      // "BERSERK" label
+      ctx.fillStyle = `rgba(255, 50, 30, ${0.7 + bPulse * 0.3})`;
+      ctx.font = 'bold 7px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BERSERK', enemy.pos.x, enemy.pos.y + R + 22);
+      ctx.font = '14px sans-serif';
+    } else if ((enemy as any)._proneTimer > 0 || (enemy as any)._proneGoDownTimer > 0) {
+      // PRONE — green camo indicator, smaller silhouette
+      ctx.save();
+      const pronePulse = 0.4 + Math.sin(state.time * 3) * 0.2;
+      ctx.beginPath();
+      ctx.ellipse(enemy.pos.x, enemy.pos.y, R + 6, R * 0.4, enemy.angle, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(60, 100, 40, ${pronePulse})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(40, 80, 20, ${pronePulse + 0.2})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillText('🌿', enemy.pos.x, enemy.pos.y - R - 10);
       ctx.font = '14px sans-serif';
     } else if (enemy.state === 'attack') {
       ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 12);
