@@ -495,11 +495,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // TNT wall breach — player can blow a hole in perimeter fence walls
+    // TNT wall breach — player can blow a hole in any wall
     if (state.player.tntCount > 0) {
       for (let wi = state.walls.length - 1; wi >= 0; wi--) {
         const w = state.walls[wi];
-        if (w.color !== '#8a8a7a') continue; // only fence walls
+        // Skip gate wall (special color) — use keycard instead
+        if (w.color === '#aa4444') continue;
         const wx = w.x + w.w / 2;
         const wy = w.y + w.h / 2;
         if (dist(state.player.pos, { x: wx, y: wy }) < 60) {
@@ -1239,7 +1240,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // --- Proximity threat: if player too close (<200px) or under fire, flee with flashbang ---
       const playerTooClose = sniperDistToPlayer < 200;
       const underFire = (enemy as any)._sniperRelocateDelay > 0;
-      if ((playerTooClose || underFire) && !(enemy as any)._sniperInvisible && !(enemy as any)._sniperFleeCooldown) {
+      if ((playerTooClose || underFire) && !(enemy as any)._sniperInvisible && !((enemy as any)._sniperFleeCooldown > 0)) {
         // Throw flashbang at player before fleeing
         const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         const throwSpeed = 3.5;
@@ -1280,9 +1281,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._sniperRelocateDelay > 0) {
         (enemy as any)._sniperRelocateDelay -= dt;
         if ((enemy as any)._sniperRelocateDelay <= 0 && !(enemy as any)._sniperInvisible) {
-          const trees = state.props.filter(p => (p.type === 'tree' || p.type === 'pine_tree') && dist(p.pos, enemy.pos) > 200);
+          const trees = state.props.filter(p => (p.type === 'tree' || p.type === 'pine_tree') && dist(p.pos, enemy.pos) > 150);
           if (trees.length > 0) {
-            trees.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
+            // Sort farthest from player so sniper actually retreats
+            trees.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
             const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)];
             (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
             (enemy as any)._sniperInvisible = 2.0;
