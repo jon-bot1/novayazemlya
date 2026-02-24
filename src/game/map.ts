@@ -33,6 +33,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
     boss: { hp: 440, speed: 1.8, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
     sniper: { hp: 70, speed: 0.6, damage: 68, alertRange: 400, shootRange: 350, fireRate: 5000 },
+    shocker: { hp: 56, speed: 1.8, damage: 35, alertRange: 150, shootRange: 45, fireRate: 600 },
   }[type];
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
@@ -335,6 +336,11 @@ export function generateMap() {
 
     // === SNIPER — random spawn, minimum 1200px from player ===
     rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper', undefined, 1200),
+
+    // === SHOCKERS — electric melee enemies ===
+    rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
+    rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
+    ...(Math.random() < 0.5 ? [rz(pick(allInsideZones), 'shocker')] : []),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)
@@ -342,7 +348,7 @@ export function generateMap() {
 
   // === OUTDOOR OFFICERS — spawn 2-3 outside the base with good loot ===
   const officerZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
-  const numOfficers = 2 + Math.floor(Math.random() * 2); // 2-3
+  const numOfficers = 3 + Math.floor(Math.random() * 3); // 3-5
   for (let i = 0; i < numOfficers; i++) {
     const zone = officerZones[Math.floor(Math.random() * officerZones.length)];
     const p = randIn(zone.x, zone.y, zone.w, zone.h);

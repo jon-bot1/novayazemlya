@@ -159,13 +159,24 @@ export const createHelmet = (): Item => ({
 
 export const WEAPON_TEMPLATES = {
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
-  makarov: () => createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'),
-  ak74:    () => createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   216,   'auto'),
-  akm:     () => createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   300,   'auto'),
-  toz:     () => createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'),
-  mosin:   () => createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'),
-  ppsh:    () => createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'),
+  makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
+  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   248,   'auto'); w.weaponSlot = 'primary'; return w; },
+  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   345,   'auto'); w.weaponSlot = 'primary'; return w; },
+  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'); w.weaponSlot = 'primary'; return w; },
+  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'); w.weaponSlot = 'primary'; return w; },
+  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'); w.weaponSlot = 'primary'; return w; },
+  // Secondary weapons
+  revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   7,       50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
+  baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3,        8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
+  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     15, '🗡️',   3,        6,   350,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
 };
+
+export function isSecondaryWeapon(item: Item): boolean {
+  if (item.weaponSlot) return item.weaponSlot === 'secondary';
+  // Fallback for legacy items without slot tag
+  const secondaryNames = ['makarov', 'nagant', 'baton', 'knife'];
+  return secondaryNames.some(n => item.name.toLowerCase().includes(n));
+}
 
 // Weighted random pick helper
 function pick<T>(items: [T, number][]): T | null {

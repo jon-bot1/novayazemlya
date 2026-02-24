@@ -3,7 +3,7 @@ export interface Vec2 {
   y: number;
 }
 
-export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee';
+export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee' | 'electric';
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
@@ -31,6 +31,13 @@ export interface Item {
   weaponRange?: number;   // bullet lifetime in frames (default 60)
   weaponFireRate?: number; // ms between shots (overrides player fireRate)
   fireMode?: 'single' | 'auto'; // single = one shot per click, auto = hold to fire
+  weaponSlot?: 'primary' | 'secondary'; // which slot this weapon goes in
+}
+
+export interface PendingWeapon {
+  item: Item;
+  slot: 'primary' | 'secondary';
+  replacing: Item | null;
 }
 
 export interface DocumentPickup {
@@ -115,7 +122,7 @@ export interface Enemy {
   lastShot: number;
   fireRate: number;
   angle: number;
-  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss' | 'sniper';
+  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss' | 'sniper' | 'shocker';
   bossPhase?: number; // 0=normal, 1=enraged, 2=desperate
   bossChargeTimer?: number; // charge attack cooldown
   bossSpawnTimer?: number; // spawn minion cooldown
@@ -271,6 +278,7 @@ export interface GameState {
   terminalsHacked: number; // alarm panels hacked
   distanceTravelled: number; // total pixels walked
   exfilsVisited: Set<string>; // names of exfil points player has been near
+  pendingWeapon: PendingWeapon | null; // weapon awaiting player confirmation
 }
 
 export interface SoundEvent {

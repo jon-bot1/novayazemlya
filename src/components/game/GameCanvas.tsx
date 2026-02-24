@@ -260,6 +260,25 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             </div>
           </div>
 
+          {/* Shocker */}
+          <div className="border border-border rounded p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-foreground">⚡ Shocker</span>
+              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 border border-border rounded">MELEE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Equipped with experimental electric shock batons. Fast and deadly at close range.
+              The shock causes bleeding and disrupts movement.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-foreground">56</span>
+              <span className="text-muted-foreground">Weapon</span><span className="text-foreground">Electric Baton</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">35</span>
+              <span className="text-muted-foreground">Range</span><span className="text-warning">Very Short (melee)</span>
+              <span className="text-muted-foreground">Speed</span><span className="text-foreground">Fast — rushes you</span>
+            </div>
+          </div>
+
           {/* Officers */}
           <div className="border border-border rounded p-3">
             <div className="flex items-center justify-between mb-1">
@@ -334,6 +353,17 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.8 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Weapon slot system: primary + secondary (pistol/revolver/baton/knife)</li>
+                  <li>• Weapon swap confirmation — press Y/N or click to accept/reject</li>
+                  <li>• AK fire rate reduced 15% (AK-74: 248ms, AKM: 345ms)</li>
+                  <li>• Officer spawn rate increased (3-5 per raid)</li>
+                  <li>• New enemy: ⚡ Shocker — electric melee, fast, short range</li>
+                  <li>• New secondary weapons: Nagant Revolver, Baton, Combat Knife</li>
+                </ul>
+              </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.7 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
@@ -477,6 +507,7 @@ export const GameCanvas: React.FC = () => {
     deathCause: undefined as string | undefined,
     exfilRevealed: undefined as string | undefined,
     achievementStats: undefined as any,
+    pendingWeapon: null as any,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -496,6 +527,30 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'e') inputRef.current.interact = true;
       if (e.key === 't') inputRef.current.useTNT = true;
       if (e.key === 'h') inputRef.current.heal = true;
+      // Weapon confirmation: Y to accept, N to reject
+      if (e.key === 'y' || e.key === 'Y') {
+        const st = stateRef.current;
+        if (st.pendingWeapon) {
+          const pw = st.pendingWeapon;
+          if (pw.slot === 'primary') {
+            st.player.primaryWeapon = pw.item;
+            st.player.activeSlot = 2;
+            st.player.equippedWeapon = pw.item;
+          } else {
+            st.player.sidearm = pw.item;
+            st.player.activeSlot = 1;
+            st.player.equippedWeapon = pw.item;
+          }
+          if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
+          st.pendingWeapon = null;
+        }
+      }
+      if (e.key === 'n' || e.key === 'N') {
+        const st = stateRef.current;
+        if (st.pendingWeapon) {
+          st.pendingWeapon = null;
+        }
+      }
       if (e.key === 'g') inputRef.current.throwGrenade = true;
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (e.key === '1') inputRef.current.switchWeapon = 1;
@@ -804,6 +859,7 @@ export const GameCanvas: React.FC = () => {
             distanceTravelled: Math.round(state.distanceTravelled / 10),
             exfilsVisited: state.exfilsVisited.size,
           },
+          pendingWeapon: state.pendingWeapon,
         });
       }
 
@@ -854,6 +910,52 @@ export const GameCanvas: React.FC = () => {
         />
 
         <LootPopup notifications={lootNotifications} />
+
+        {/* Weapon swap confirmation */}
+        {hudState.pendingWeapon && (
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+            <div className="bg-card/95 border-2 border-warning rounded-lg px-6 py-4 text-center shadow-xl min-w-[280px]">
+              <div className="text-xs font-display text-warning uppercase tracking-wider mb-2">⚔ Swap Weapon?</div>
+              <div className="text-sm font-mono text-foreground mb-1">
+                Drop <span className="text-danger">{hudState.pendingWeapon.replacing?.name || '—'}</span>
+              </div>
+              <div className="text-sm font-mono text-foreground mb-3">
+                Equip <span className="text-accent">{hudState.pendingWeapon.item.name}</span>
+                <span className="text-muted-foreground text-xs ml-1">({hudState.pendingWeapon.slot})</span>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <button
+                  className="px-4 py-1.5 bg-accent text-accent-foreground rounded font-mono text-sm hover:bg-accent/80"
+                  onClick={() => {
+                    const st = stateRef.current;
+                    if (st.pendingWeapon) {
+                      const pw = st.pendingWeapon;
+                      if (pw.slot === 'primary') {
+                        st.player.primaryWeapon = pw.item;
+                        st.player.activeSlot = 2;
+                        st.player.equippedWeapon = pw.item;
+                      } else {
+                        st.player.sidearm = pw.item;
+                        st.player.activeSlot = 1;
+                        st.player.equippedWeapon = pw.item;
+                      }
+                      if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
+                      st.pendingWeapon = null;
+                    }
+                  }}
+                >
+                  [Y] Swap
+                </button>
+                <button
+                  className="px-4 py-1.5 bg-destructive text-destructive-foreground rounded font-mono text-sm hover:bg-destructive/80"
+                  onClick={() => { stateRef.current.pendingWeapon = null; }}
+                >
+                  [N] Skip
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mobile action buttons */}
         <div className="sm:hidden">
