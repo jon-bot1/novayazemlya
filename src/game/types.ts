@@ -268,4 +268,5 @@ export interface InputState {
   moveTarget?: Vec2 | null;
   takeCover: boolean;
   switchWeapon?: 1 | 2;
+  useTNT: boolean;
 }
