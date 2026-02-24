@@ -2142,7 +2142,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'chase';
             // Sniper Tuman: flee IMMEDIATELY on hit (no delay)
             if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
-              (enemy as any)._sniperRelocateDelay = 0.02; // near-instant, triggers next frame
+              (enemy as any)._sniperRelocateDelay = 0.45;
             }
           }
           return false;
