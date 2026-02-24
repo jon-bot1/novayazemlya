@@ -325,8 +325,12 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_SE, 'scav'),
     rz(ZONE_OUTSIDE_S, 'soldier'),
     // North side patrols
+    rz(ZONE_OUTSIDE_NW, 'soldier'),
     rz(ZONE_OUTSIDE_N, 'soldier'),
     rz(ZONE_OUTSIDE_N, 'soldier'),
+    rz(ZONE_OUTSIDE_N, 'soldier'),
+    rz(ZONE_OUTSIDE_N, 'heavy'),
+    rz(ZONE_OUTSIDE_NE, 'soldier'),
     rz(ZONE_OUTSIDE_NE, 'scav'),
 
     // === SNIPER — random spawn, minimum 1200px from player ===
