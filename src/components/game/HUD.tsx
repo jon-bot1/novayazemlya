@@ -19,6 +19,8 @@ interface AchievementStats {
   wallsBreached: number;
   documentsCollected: number;
   terminalsHacked: number;
+  distanceTravelled: number;
+  exfilsVisited: number;
 }
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold';
@@ -72,6 +74,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   ...tierAchievements('breach', 'Breacher', '🧱', 'walls breached with TNT', 'wallsBreached', [1, 2, 3]),
   ...tierAchievements('docs', 'Archivist', '📜', 'documents collected', 'documentsCollected', [2, 4, 6]),
   ...tierAchievements('hacks', 'Hackerman', '💻', 'terminals hacked', 'terminalsHacked', [1, 2, 3]),
+  ...tierAchievements('travel', 'Traveller', '🥾', 'm distance travelled', 'distanceTravelled', [500, 1500, 3000]),
+  { id: 'tourist', name: 'Tourist 🗺️', icon: '🗺️', desc: 'Visit all 3 exfil points in one raid', tier: 'gold', check: s => s.exfilsVisited >= 3 },
   { id: 'nohit', name: 'Ghost 👻', icon: '👻', desc: 'Complete a raid without taking damage', tier: 'gold', check: s => s.noHitsTaken && s.killCount > 0 },
 ];
 
