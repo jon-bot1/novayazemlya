@@ -608,6 +608,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
           }
+          // Auto-pickup TNT from enemy bodies
+          if (item.name === 'TNT Charge') {
+            state.player.tntCount++;
+            addMessage(state, '🧨 TNT acquired! Use E near perimeter wall to breach!', 'intel');
+          }
           if (item.category === 'weapon' && item.damage) {
             if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
               state.player.primaryWeapon = item;
@@ -1214,7 +1219,64 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 4 + Math.random() * 4;
       (enemy as any)._sniperTeleportTimer -= dt;
 
-      // Relocate delay after being hit
+      // --- Scanning behavior: sniper looks around searching for the player ---
+      if (!(enemy as any)._sniperScanDir) (enemy as any)._sniperScanDir = 1;
+      if (!(enemy as any)._sniperScanTimer) (enemy as any)._sniperScanTimer = 2 + Math.random() * 3;
+      const sniperDistToPlayer = dist(enemy.pos, state.player.pos);
+      const sniperHasLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
+
+      // If player not in LOS or out of range, scan by rotating
+      if (!sniperHasLos || sniperDistToPlayer > enemy.shootRange) {
+        (enemy as any)._sniperScanTimer -= dt;
+        if ((enemy as any)._sniperScanTimer <= 0) {
+          (enemy as any)._sniperScanDir *= -1;
+          (enemy as any)._sniperScanTimer = 1.5 + Math.random() * 2.5;
+        }
+        // Rotate scanning — wider sweeps to find the player
+        enemy.angle += (enemy as any)._sniperScanDir * 1.2 * dt;
+      }
+
+      // --- Proximity threat: if player too close (<200px) or under fire, flee with flashbang ---
+      const playerTooClose = sniperDistToPlayer < 200;
+      const underFire = (enemy as any)._sniperRelocateDelay > 0;
+      if ((playerTooClose || underFire) && !(enemy as any)._sniperInvisible && !(enemy as any)._sniperFleeCooldown) {
+        // Throw flashbang at player before fleeing
+        const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        const throwSpeed = 3.5;
+        state.grenades.push({
+          pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
+          vel: { x: Math.cos(fbAngle) * throwSpeed, y: Math.sin(fbAngle) * throwSpeed },
+          timer: 0.6,
+          damage: -1, // flashbang marker
+          radius: 200,
+          fromPlayer: false,
+        });
+        addMessage(state, '💫 Sniper Tuman throws a flashbang and flees!', 'warning');
+        playExplosion();
+
+        // Immediately start fleeing — teleport to a far tree
+        const fleeTrees = state.props.filter(p =>
+          (p.type === 'tree' || p.type === 'pine_tree') &&
+          dist(p.pos, state.player.pos) > 400 && dist(p.pos, enemy.pos) > 100
+        );
+        if (fleeTrees.length > 0) {
+          fleeTrees.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos)); // farthest from player
+          const fleeTree = fleeTrees[Math.floor(Math.random() * Math.min(3, fleeTrees.length))];
+          (enemy as any)._sniperTargetTree = { x: fleeTree.pos.x, y: fleeTree.pos.y };
+          (enemy as any)._sniperInvisible = 2.5;
+          // Smoke at departure
+          for (let si = 0; si < 15; si++) {
+            state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
+          }
+        }
+        (enemy as any)._sniperFleeCooldown = 12; // can't flee again for 12s
+        (enemy as any)._sniperRelocateDelay = 0; // clear the hit-relocate since we're already fleeing
+        continue;
+      }
+      // Decrement flee cooldown
+      if ((enemy as any)._sniperFleeCooldown > 0) (enemy as any)._sniperFleeCooldown -= dt;
+
+      // Relocate delay after being hit (original behavior)
       if ((enemy as any)._sniperRelocateDelay > 0) {
         (enemy as any)._sniperRelocateDelay -= dt;
         if ((enemy as any)._sniperRelocateDelay <= 0 && !(enemy as any)._sniperInvisible) {
@@ -1253,6 +1315,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               });
             }
           }
+          // Face toward player after repositioning
+          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           addMessage(state, '🔭 Sniper Tuman repositioned!', 'warning');
         }
         continue;
@@ -1273,7 +1337,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)]; // one of 3 closest
           (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
           (enemy as any)._sniperInvisible = 2.5;
-          (enemy as any)._sniperTeleportTimer = 6 + Math.random() * 4;
+          (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 3; // slightly faster teleports
           // Smoke cloud at departure
           for (let si = 0; si < 12; si++) {
             const sa = Math.random() * Math.PI * 2;
@@ -1299,6 +1363,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const sniperLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
       if (dtp <= enemy.shootRange && sniperLos) {
         enemy.state = 'attack';
+        // Snap aim toward player when in attack range
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
       } else {
         enemy.state = 'chase';
         const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
