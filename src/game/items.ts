@@ -136,6 +136,16 @@ export const createArmor = (name: string = 'Body Armor', armor: number = 30, ico
   description: `${name} — +${armor} protection`,
 });
 
+export const createTNT = (): Item => ({
+  id: nextId(),
+  name: 'TNT Charge',
+  category: 'valuable',
+  icon: '🧨',
+  weight: 2,
+  value: 500,
+  description: 'Explosive charge — can breach outer walls',
+});
+
 export const createHelmet = (): Item => ({
   id: nextId(),
   name: 'Helmet',
@@ -183,6 +193,7 @@ export const LOOT_POOLS = {
       [createValuable('Cigarettes', 50, '🚬'), 0.3],
       [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.15],
       [createGrenade(), 0.1],
+      [createTNT(), 0.08],
     ]);
   },
   military: (): Item[] => {
@@ -194,6 +205,7 @@ export const LOOT_POOLS = {
       [WEAPON_TEMPLATES.ak74(), 0.15],
       [createValuable('Dogtags', 200, '🏷️'), 0.1],
       [createGrenade(), 0.3],
+      [createTNT(), 0.12],
     ]);
   },
   medical: (): Item[] => {
@@ -223,6 +235,7 @@ export const LOOT_POOLS = {
       [createBackpack(), 0.12],
       [createArmor(), 0.15],
       [createHelmet(), 0.1],
+      [createTNT(), 0.06],
     ]);
   },
 };

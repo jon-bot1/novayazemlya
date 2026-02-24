@@ -130,7 +130,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
               Osipovitj's personal shadows since 1979. Both former GRU special operators who followed their 
-              commander into the abyss. ZAPAD (West) and VOSTOK (East) — they never speak, never leave his side, 
+              commander into the abyss. ZAPAD and VOSTOK — they never speak, never leave his side, 
               and never hesitate. Rumor says they underwent the same B-series exposure voluntarily. 
               Their loyalty is absolute. Their mercy is nonexistent.
             </p>

@@ -1,7 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
-import { LOOT_POOLS, createFlashbang } from './items';
+import { LOOT_POOLS, createFlashbang, createTNT } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio, playBossRoar, playVoiceShout } from './audio';
 import { speakCallout } from './voice';
 
@@ -176,6 +176,7 @@ export function createGameState(): GameState {
     mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
     reinforcementTimer: 45 + Math.random() * 15, // first wave after ~45-60s
     reinforcementsSpawned: 0,
+    coverNearby: false,
   };
 }
 
@@ -309,7 +310,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
     
     // Footstep sounds + sound propagation
-    playFootstep(input.movementMode);
+  // Cover proximity detection — show hint when near cover objects
+  let nearCover = false;
+  if (!state.player.inCover) {
+    for (const prop of state.props) {
+      if (dist(state.player.pos, prop.pos) < 40) { nearCover = true; break; }
+    }
+    if (!nearCover) {
+      for (const wall of state.walls) {
+        const wx = wall.x + wall.w / 2;
+        const wy = wall.y + wall.h / 2;
+        if (dist(state.player.pos, { x: wx, y: wy }) < 60) { nearCover = true; break; }
+      }
+    }
+  }
+  state.coverNearby = nearCover;
+  
+  playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
     if (Math.random() < (input.movementMode === 'sprint' ? 0.15 : input.movementMode === 'walk' ? 0.05 : 0.01)) {
       state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[input.movementMode], time: state.time });
@@ -420,35 +437,42 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     playGunshot('pistol');
   }
 
-  // Throw grenade (G key) — supports both grenades and flashbangs
+  // Throw grenade (G key) — supports both grenades and flashbangs, 1s cooldown
   if (input.throwGrenade) {
-    // Try flashbang first if no grenades
-    let grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
-    let isFlashbang = false;
-    if (grenadeIdx < 0) {
-      grenadeIdx = state.player.inventory.findIndex(i => i.category === 'flashbang');
-      isFlashbang = true;
-    }
-    if (grenadeIdx >= 0) {
-      const grenadeItem = state.player.inventory[grenadeIdx];
-      isFlashbang = grenadeItem.category === 'flashbang';
-      const angle = state.player.angle;
-      const throwSpeed = 4;
-      state.grenades.push({
-        pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
-        vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
-        timer: isFlashbang ? 1.0 : 1.5,
-        damage: isFlashbang ? -1 : (grenadeItem.damage || 200), // -1 = flashbang marker
-        radius: isFlashbang ? 200 : 150,
-        fromPlayer: true,
-      });
-      state.player.inventory.splice(grenadeIdx, 1);
-      addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : '💣 GRENADE THROWN!', 'warning');
-      spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
+    // Check 1 second cooldown
+    if (state.time - state.player.lastGrenadeTime < 1.0) {
+      addMessage(state, '⚠ Wait before throwing again!', 'warning');
+      input.throwGrenade = false;
     } else {
-      addMessage(state, '⚠ No grenades!', 'warning');
+      // Try flashbang first if no grenades
+      let grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
+      let isFlashbang = false;
+      if (grenadeIdx < 0) {
+        grenadeIdx = state.player.inventory.findIndex(i => i.category === 'flashbang');
+        isFlashbang = true;
+      }
+      if (grenadeIdx >= 0) {
+        const grenadeItem = state.player.inventory[grenadeIdx];
+        isFlashbang = grenadeItem.category === 'flashbang';
+        const angle = state.player.angle;
+        const throwSpeed = 4;
+        state.grenades.push({
+          pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
+          vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
+          timer: isFlashbang ? 1.0 : 1.5,
+          damage: isFlashbang ? -1 : (grenadeItem.damage || 200), // -1 = flashbang marker
+          radius: isFlashbang ? 200 : 150,
+          fromPlayer: true,
+        });
+        state.player.inventory.splice(grenadeIdx, 1);
+        state.player.lastGrenadeTime = state.time;
+        addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : '💣 GRENADE THROWN!', 'warning');
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
+      } else {
+        addMessage(state, '⚠ No grenades!', 'warning');
+      }
+      input.throwGrenade = false;
     }
-    input.throwGrenade = false;
   }
 
   // Interact
@@ -467,6 +491,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
         } else {
           addMessage(state, '🔒 Gate is locked — you need an access card!', 'warning');
+        }
+      }
+    }
+
+    // TNT wall breach — player can blow a hole in perimeter fence walls
+    if (state.player.tntCount > 0) {
+      for (let wi = state.walls.length - 1; wi >= 0; wi--) {
+        const w = state.walls[wi];
+        if (w.color !== '#8a8a7a') continue; // only fence walls
+        const wx = w.x + w.w / 2;
+        const wy = w.y + w.h / 2;
+        if (dist(state.player.pos, { x: wx, y: wy }) < 60) {
+          state.player.tntCount--;
+          state.walls.splice(wi, 1);
+          addMessage(state, '🧨 TNT DETONATED! Wall breached!', 'intel');
+          playExplosion();
+          spawnParticles(state, wx, wy, '#ff8833', 20);
+          spawnParticles(state, wx, wy, '#ffcc44', 15);
+          state.soundEvents.push({ pos: { x: wx, y: wy }, radius: 500, time: state.time });
+          break;
         }
       }
     }
@@ -493,6 +537,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
+          }
+          // Auto-pickup TNT
+          if (item.name === 'TNT Charge') {
+            state.player.tntCount++;
+            addMessage(state, '🧨 TNT acquired! Use E near perimeter wall to breach!', 'intel');
           }
           // Auto-equip weapon to primary slot (sidearm stays as pistol)
           if (item.category === 'weapon' && item.damage) {
@@ -992,8 +1041,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._platformTarget) {
         enemy.state = 'chase';
         enemy.investigateTarget = (enemy as any)._platformTarget;
-      } else if (distToPlayer > enemy.alertRange * 1.5 || !los) {
-        // Lost sight of player — investigate last known position
+      } else if (!los || distToPlayer > enemy.alertRange * 1.5) {
+        // STRICT LOS: Lost sight of player — MUST lose track, go investigate last known pos
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
         enemy.tacticalRole = 'none';
@@ -1014,6 +1063,66 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
       // NOTE: removed unconditional patrol fallback (was a bug overriding investigate)
+    }
+
+    // === ENEMY HEALING (officers, bodyguards, boss) ===
+    // Officers heal with bandage when in cover (not attacking/chasing)
+    if ((enemy as any)._isOfficer && !((enemy as any)._isBodyguard) && enemy.hp < enemy.maxHp * 0.5 && 
+        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert') &&
+        !(enemy as any)._healingTimer) {
+      (enemy as any)._healingTimer = 2.0;
+      addMessage(state, '🩹 Officer is bandaging wounds!', 'warning');
+    }
+    // Bodyguards heal with bandage when in cover
+    if ((enemy as any)._isBodyguard && enemy.hp < enemy.maxHp * 0.5 && 
+        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert') &&
+        !(enemy as any)._healingTimer) {
+      (enemy as any)._healingTimer = 2.0;
+      addMessage(state, '🩹 Bodyguard is bandaging wounds!', 'warning');
+    }
+    // Boss heals with injector
+    if (enemy.type === 'boss' && enemy.hp < enemy.maxHp * 0.4 && !(enemy as any)._bossHealUsed &&
+        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert' || enemy.state === 'attack') &&
+        !(enemy as any)._healingTimer) {
+      (enemy as any)._healingTimer = 2.0;
+      (enemy as any)._bossHealUsed = true;
+      addMessage(state, '💉 OSIPOVITJ IS INJECTING HIMSELF!', 'warning');
+    }
+    // Process healing timer
+    if ((enemy as any)._healingTimer > 0) {
+      (enemy as any)._healingTimer -= dt;
+      // Animation: spawn green particles while healing
+      if (Math.random() < 0.3) {
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 1);
+      }
+      if ((enemy as any)._healingTimer <= 0) {
+        delete (enemy as any)._healingTimer;
+        if (enemy.type === 'boss') {
+          enemy.hp = Math.min(enemy.maxHp, enemy.hp + 35);
+          addMessage(state, '💉 Osipovitj healed +35HP!', 'damage');
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 8);
+        } else {
+          enemy.hp = Math.min(enemy.maxHp, enemy.hp + 20);
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 5);
+        }
+      }
+    }
+
+    // Heavy throws flashbangs
+    if (enemy.type === 'heavy' && enemy.state === 'attack' && !(enemy as any)._heavyFlashUsed &&
+        distToPlayer < enemy.shootRange && distToPlayer > 60 && Math.random() < 0.002) {
+      (enemy as any)._heavyFlashUsed = true;
+      const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+      state.grenades.push({
+        pos: { x: enemy.pos.x, y: enemy.pos.y },
+        vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
+        timer: 1.0,
+        radius: 180,
+        damage: -1,
+        fromPlayer: false,
+      });
+      addMessage(state, '💫 HEAVY throws FLASHBANG!', 'warning');
+      spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 4);
     }
 
     // Decay timers

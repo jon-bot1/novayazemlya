@@ -110,33 +110,45 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Timer */}
         {timeRemaining !== null && (
           <div className={`text-center ${timeUrgent ? 'animate-pulse-glow' : ''}`}>
-            <span className={`font-display text-xl ${timeUrgent ? 'text-danger text-glow-red' : 'text-foreground'}`}>
-              {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            <span className={`font-display text-2xl ${timeUrgent ? 'text-danger text-glow-red' : 'text-foreground'}`}>
+              ⏱ {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </span>
-            {timeUrgent && <div className="text-[10px] text-danger font-mono">⚠ REINFORCEMENTS INBOUND</div>}
+            <div className={`text-[10px] font-mono ${timeUrgent ? 'text-danger' : 'text-muted-foreground'}`}>
+              {timeUrgent ? '⚠ HURRY! Time = death!' : 'Reinforcements arrive at 00:00'}
+            </div>
           </div>
         )}
 
-        {/* Weapon slots */}
-        <div className="flex flex-col items-end gap-0.5">
-          <div className="flex items-center gap-1">
-            <span className={`text-[10px] font-mono px-1 rounded ${player.activeSlot === 1 ? 'bg-accent/30 text-accent' : 'text-foreground/30'}`}>
+        {/* Weapon slots — CLEAR display */}
+        <div className="flex flex-col items-end gap-1">
+          {/* Active weapon — large and prominent */}
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded px-3 py-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-foreground font-display text-sm">
+                🔫 {player.equippedWeapon?.name || '—'}
+              </span>
+              <span className="text-lg font-display text-glow-amber text-foreground">{player.currentAmmo}</span>
+              <span className="text-[10px] text-muted-foreground font-mono">{player.ammoType}</span>
+            </div>
+          </div>
+          {/* Weapon slots */}
+          <div className="flex gap-1">
+            <div className={`px-2 py-1 rounded border text-[11px] font-mono ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent' : 'bg-card/50 border-border/40 text-muted-foreground'}`}>
               [1] {player.sidearm?.name || '—'}
-            </span>
-            <span className={`text-[10px] font-mono px-1 rounded ${player.activeSlot === 2 ? 'bg-accent/30 text-accent' : 'text-foreground/30'}`}>
+            </div>
+            <div className={`px-2 py-1 rounded border text-[11px] font-mono ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent' : 'bg-card/50 border-border/40 text-muted-foreground'}`}>
               [2] {player.primaryWeapon?.name || '—'}
-            </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-foreground font-display text-lg text-glow-amber">{player.currentAmmo}</span>
-            <span className="text-muted-foreground text-xs font-mono">{player.ammoType}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-mono text-muted-foreground">💣</span>
             <span className={`text-xs font-mono ${player.inventory.filter(i => i.category === 'grenade').length > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
-              {player.inventory.filter(i => i.category === 'grenade').length}
+              💣 {player.inventory.filter(i => i.category === 'grenade').length} <span className="text-[9px] text-muted-foreground">[G]</span>
             </span>
-            <span className="text-[9px] text-muted-foreground font-mono">[G]</span>
+            {player.inventory.some(i => i.name === 'TNT Charge') && (
+              <span className="text-xs font-mono text-warning">
+                🧨 {player.inventory.filter(i => i.name === 'TNT Charge').length}
+              </span>
+            )}
           </div>
           <span className="text-xs text-muted-foreground font-mono">☠ {killCount}</span>
           <button 
