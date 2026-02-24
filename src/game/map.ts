@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable, createTNT } from './items';
 
 // Full outdoor military base: 3200x2400
 // The hangar building sits at offset HX, HY within the larger map
@@ -263,9 +263,11 @@ export function generateMap() {
   const ZONE_OUTSIDE_SE = { x: 2200, y: 1900, w: 500, h: 400 };
   const ZONE_OUTSIDE_S  = { x: 800, y: 2000, w: 600, h: 300 };
   const ZONE_OUTSIDE_NW = { x: 200, y: 1500, w: 400, h: 300 };
+  const ZONE_OUTSIDE_N  = { x: 800, y: 100, w: 1600, h: 180 };
+  const ZONE_OUTSIDE_NE = { x: 2500, y: 100, w: 400, h: 300 };
 
   const allInsideZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_CORRIDOR, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B];
-  const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW];
+  const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
 
   const enemies: Enemy[] = [
     // Inside base — random zone spawns
@@ -305,15 +307,16 @@ export function generateMap() {
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),   // NE
 
     // === WALL GUARDS on elevated platforms (inside the wall perimeter) ===
-    makeEnemy(800, 320, 'soldier', Math.PI * 0.5),
-    makeEnemy(1600, 320, 'soldier', Math.PI * 0.5),
-    makeEnemy(2400, 320, 'soldier', Math.PI * 0.5),
-    makeEnemy(340, 800, 'soldier', Math.PI),
-    makeEnemy(340, 1400, 'soldier', Math.PI),
-    makeEnemy(2880, 800, 'soldier', 0),
-    makeEnemy(2880, 1400, 'soldier', 0),
-    makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5),
-    makeEnemy(2000, 1830, 'soldier', -Math.PI * 0.5),
+    // Randomly decide which platforms get guards (60% chance each)
+    ...(Math.random() < 0.6 ? [makeEnemy(800, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(1600, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(2400, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(340, 800, 'soldier', Math.PI)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(340, 1400, 'soldier', Math.PI)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(2880, 800, 'soldier', 0)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(2880, 1400, 'soldier', 0)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.6 ? [makeEnemy(2000, 1830, 'soldier', -Math.PI * 0.5)] : []),
 
     // === OUTSIDE PATROL GUARDS — randomized in outside zones ===
     rz(ZONE_OUTSIDE_SW, 'soldier'),
@@ -321,6 +324,10 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_SE, 'soldier'),
     rz(ZONE_OUTSIDE_SE, 'scav'),
     rz(ZONE_OUTSIDE_S, 'soldier'),
+    // North side patrols
+    rz(ZONE_OUTSIDE_N, 'soldier'),
+    rz(ZONE_OUTSIDE_N, 'soldier'),
+    rz(ZONE_OUTSIDE_NE, 'scav'),
 
     // === SNIPER — random spawn, minimum 1200px from player ===
     rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper', undefined, 1200),
@@ -352,22 +359,44 @@ export function generateMap() {
     enemies.push(officer);
   }
 
-  // Mark watchtower turrets as elevated (use baseEnemyCount for stable indexing)
-  enemies[baseEnemyCount - 5 - 9 - 2].elevated = true; // NW turret
-  enemies[baseEnemyCount - 5 - 9 - 1].elevated = true; // NE turret
+  // Mark watchtower turrets as elevated (they are always in the enemies array right after outdoor enemies)
+  // Find turrets by type and position instead of hardcoded indices
+  for (const e of enemies) {
+    if (e.type === 'turret' && (
+      (Math.abs(e.pos.x - 350) < 5 && Math.abs(e.pos.y - 330) < 5) ||
+      (Math.abs(e.pos.x - 2880) < 5 && Math.abs(e.pos.y - 330) < 5)
+    )) {
+      e.elevated = true;
+    }
+  }
 
-  // Mark wall guards as elevated (9 guards before the 5 outside patrol guards in the base array)
-  for (let i = baseEnemyCount - 5 - 9; i < baseEnemyCount - 5; i++) {
-    enemies[i].elevated = true;
-    enemies[i].state = 'idle'; // wall guards don't patrol, they stand on platforms
-    enemies[i].alertRange = 180; // limited range from elevation
-    enemies[i].shootRange = 150;
+  // Mark wall guards as elevated — find by position pattern (on walls)
+  for (const e of enemies) {
+    if (e.type !== 'soldier') continue;
+    const onNorthWall = Math.abs(e.pos.y - 320) < 5;
+    const onWestWall = Math.abs(e.pos.x - 340) < 5;
+    const onEastWall = Math.abs(e.pos.x - 2880) < 5;
+    const onSouthWall = Math.abs(e.pos.y - 1830) < 5;
+    if (onNorthWall || onWestWall || onEastWall || onSouthWall) {
+      e.elevated = true;
+      e.state = 'idle';
+      e.alertRange = 180;
+      e.shootRange = 150;
+    }
   }
 
   // Boost outside patrol guards' vision depth by 25%
-  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) {
-    enemies[i].alertRange = Math.round(enemies[i].alertRange * 1.25);
-    enemies[i].shootRange = Math.round(enemies[i].shootRange * 1.25);
+  // (they are rz() spawned in outside zones, not elevated, not officers)
+  for (const e of enemies) {
+    if (e.elevated || (e as any)._isOfficer || e.type === 'turret' || e.type === 'boss' || e.type === 'sniper') continue;
+    // Check if in an outside zone
+    for (const oz of allOutsideZones) {
+      if (e.pos.x >= oz.x && e.pos.x <= oz.x + oz.w && e.pos.y >= oz.y && e.pos.y <= oz.y + oz.h) {
+        e.alertRange = Math.round(e.alertRange * 1.25);
+        e.shootRange = Math.round(e.shootRange * 1.25);
+        break;
+      }
+    }
   }
 
   // === BOSS SETUP: patrol waypoints + 2 bodyguards ===
@@ -412,30 +441,35 @@ export function generateMap() {
   }
 
   // Spread patrol ranges wider for outside guards so they don't clump
-  // Outside guards are at indices baseEnemyCount-5 to baseEnemyCount-1
-  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) {
-    enemies[i].patrolTarget = {
-      x: enemies[i].pos.x + (Math.random() - 0.5) * 400,
-      y: enemies[i].pos.y + (Math.random() - 0.5) * 300,
-    };
+  for (const e of enemies) {
+    if (e.elevated || (e as any)._isOfficer || e.type === 'turret' || e.type === 'boss' || e.type === 'sniper') continue;
+    for (const oz of allOutsideZones) {
+      if (e.pos.x >= oz.x && e.pos.x <= oz.x + oz.w && e.pos.y >= oz.y && e.pos.y <= oz.y + oz.h) {
+        e.patrolTarget = {
+          x: e.pos.x + (Math.random() - 0.5) * 400,
+          y: e.pos.y + (Math.random() - 0.5) * 300,
+        };
+        break;
+      }
+    }
   }
 
   // Randomize keycard: 1-2 outside patrol guards carry one
-  const outsideIndices: number[] = [];
-  for (let i = baseEnemyCount - 5; i < baseEnemyCount; i++) outsideIndices.push(i);
+  const outsideGuards = enemies.filter(e => !e.elevated && !(e as any)._isOfficer && e.type === 'soldier');
   // Shuffle and pick 1-2
-  for (let i = outsideIndices.length - 1; i > 0; i--) {
+  for (let i = outsideGuards.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [outsideIndices[i], outsideIndices[j]] = [outsideIndices[j], outsideIndices[i]];
+    [outsideGuards[i], outsideGuards[j]] = [outsideGuards[j], outsideGuards[i]];
   }
   const keycardCount = 1 + Math.floor(Math.random() * 2); // 1 or 2
-  for (let k = 0; k < keycardCount; k++) {
-    enemies[outsideIndices[k]].loot = [createKeycard()];
-    (enemies[outsideIndices[k]] as any)._isOfficer = true;
-    enemies[outsideIndices[k]].alertRange = Math.round(enemies[outsideIndices[k]].alertRange * 1.4);
-    enemies[outsideIndices[k]].shootRange = Math.round(enemies[outsideIndices[k]].shootRange * 1.4);
-    enemies[outsideIndices[k]].damage = 50; // Mosin
-    enemies[outsideIndices[k]].fireRate = 2000; // bolt action
+  for (let k = 0; k < Math.min(keycardCount, outsideGuards.length); k++) {
+    const guard = outsideGuards[k];
+    guard.loot = [createKeycard()];
+    (guard as any)._isOfficer = true;
+    guard.alertRange = Math.round(guard.alertRange * 1.4);
+    guard.shootRange = Math.round(guard.shootRange * 1.4);
+    guard.damage = 50; // Mosin
+    guard.fireRate = 2000; // bolt action
   }
 
   // ══════════════════════════════════════
@@ -561,18 +595,55 @@ export function generateMap() {
     { pos: { x: 1200, y: 1700 }, w: 16, h: 16, type: 'searchlight' },
     { pos: { x: 1800, y: 1700 }, w: 16, h: 16, type: 'searchlight' },
 
-    // Concrete barriers around compound
+    // Concrete barriers around compound — MANY MORE for cover
     { pos: { x: 900, y: 700 }, w: 50, h: 16, type: 'concrete_barrier' },
     { pos: { x: 2400, y: 800 }, w: 50, h: 16, type: 'concrete_barrier' },
     { pos: { x: 1500, y: 550 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 1100, y: 450 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 1800, y: 500 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 2100, y: 650 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 750, y: 1100 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 1300, y: 900 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 2000, y: 1100 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 2700, y: 1200 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 600, y: 1300 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 1700, y: 1300 }, w: 50, h: 16, type: 'concrete_barrier' },
 
-    // Sandbag positions
+    // Sandbag positions — MORE scattered across compound
     { pos: { x: 1400, y: 1700 }, w: 60, h: 16, type: 'sandbags' },
     { pos: { x: 1600, y: 1700 }, w: 60, h: 16, type: 'sandbags' },
+    { pos: { x: 850, y: 500 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 1200, y: 600 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 1900, y: 700 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 2300, y: 500 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 500, y: 1000 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 1500, y: 1200 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 2500, y: 1000 }, w: 50, h: 14, type: 'sandbags' },
+    { pos: { x: 800, y: 1500 }, w: 50, h: 14, type: 'sandbags' },
 
-    // Barrel stacks around compound
+    // Wood crates scattered outdoors for cover
+    { pos: { x: 1000, y: 500 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 2200, y: 600 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 800, y: 800 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 1600, y: 700 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 2600, y: 500 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 1100, y: 1100 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 1900, y: 1000 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 400, y: 700 }, w: 26, h: 26, type: 'wood_crate' },
+
+    // Barrel stacks — MORE around compound
     { pos: { x: 650, y: 500 }, w: 22, h: 22, type: 'barrel_stack' },
     { pos: { x: 2600, y: 700 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 1100, y: 700 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 1800, y: 900 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 2300, y: 1100 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 700, y: 1200 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 1400, y: 1000 }, w: 22, h: 22, type: 'barrel_stack' },
+
+    // Vehicle wrecks — more for cover
+    { pos: { x: 1800, y: 1500 }, w: 55, h: 28, type: 'vehicle_wreck' },
+    { pos: { x: 2200, y: 1300 }, w: 50, h: 25, type: 'vehicle_wreck' },
+    { pos: { x: 1000, y: 1400 }, w: 55, h: 28, type: 'vehicle_wreck' },
 
     // === FOREST TREES ===
     // North treeline
@@ -728,5 +799,7 @@ export function createInitialPlayer() {
     inCover: false,
     coverObject: null,
     peeking: false,
+    lastGrenadeTime: 0,
+    tntCount: 0,
   };
 }

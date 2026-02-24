@@ -144,6 +144,8 @@ export interface Player {
   inCover: boolean;
   coverObject: Vec2 | null;
   peeking: boolean;
+  lastGrenadeTime: number;
+  tntCount: number;
 }
 
 export interface Wall {
@@ -235,6 +237,7 @@ export interface GameState {
   mineFieldZone: { x: number; y: number; w: number; h: number };
   reinforcementTimer: number; // countdown to next reinforcement wave
   reinforcementsSpawned: number; // total reinforcements spawned so far
+  coverNearby: boolean; // true when player is near a cover object
 }
 
 export interface SoundEvent {
