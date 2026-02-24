@@ -1698,7 +1698,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (repositionCovers.length > 0) {
             const target = repositionCovers[Math.floor(Math.random() * Math.min(4, repositionCovers.length))];
             (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
-            (enemy as any)._sniperInvisible = 0.35;
+            (enemy as any)._sniperInvisible = 0.8;
             for (let si = 0; si < 12; si++) {
               state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
             }
@@ -1758,7 +1758,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           };
         }
         // Smoke at departure
-        (enemy as any)._sniperInvisible = 0.3;
+        (enemy as any)._sniperInvisible = 1.0;
         for (let si = 0; si < 15; si++) {
           state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
         }
@@ -1790,8 +1790,40 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           addMessage(state, '🔭 Sniper Tuman repositioned!', 'warning');
+          // Allow healing once after each teleport
+          (enemy as any)._sniperCanHeal = true;
+          (enemy as any)._sniperHealTimer = 0;
         }
         continue;
+      }
+
+      // === SNIPER HEALING — 2s channel, 20HP, once per teleport, can't shoot ===
+      if ((enemy as any)._sniperCanHeal && enemy.hp < enemy.maxHp && !(enemy as any)._sniperHealTimer) {
+        // Start healing if not in immediate danger (player not too close)
+        if (dist(enemy.pos, state.player.pos) > 200) {
+          (enemy as any)._sniperHealTimer = 2.0;
+          (enemy as any)._sniperHealing = true;
+        }
+      }
+      if ((enemy as any)._sniperHealing) {
+        (enemy as any)._sniperHealTimer -= dt;
+        // Healing particles
+        if (Math.random() < 0.4) {
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff88', 1);
+        }
+        // Cancel if player gets close
+        if (dist(enemy.pos, state.player.pos) < 150) {
+          (enemy as any)._sniperHealing = false;
+          (enemy as any)._sniperHealTimer = 0;
+          addMessage(state, '❌ Sniper healing interrupted!', 'info');
+        }
+        if ((enemy as any)._sniperHealTimer <= 0 && (enemy as any)._sniperHealing) {
+          enemy.hp = Math.min(enemy.maxHp, enemy.hp + 20);
+          (enemy as any)._sniperCanHeal = false;
+          (enemy as any)._sniperHealing = false;
+          addMessage(state, '💚 Sniper Tuman healed +20HP!', 'warning');
+        }
+        if ((enemy as any)._sniperHealing) continue; // Skip shooting while healing
       }
 
       // Proactive teleport toward player using cover
@@ -2543,7 +2575,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
                 p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
 
-              const teleportDelay = 0.02;
+              const teleportDelay = 1.2; // long enough to avoid follow-up shots
 
               const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
               const throwSpeed = 3.5;
