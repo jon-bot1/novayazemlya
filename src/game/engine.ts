@@ -1,4 +1,4 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT } from './items';
@@ -145,6 +145,7 @@ export function createGameState(): GameState {
     enemies: map.enemies,
     bullets: [],
     grenades: [],
+    placedTNTs: [],
     particles: [],
     lootContainers: map.lootContainers,
     props: map.props,
@@ -429,6 +430,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       damageType: 'bullet',
       fromPlayer: true,
       life: bulletLife,
+      weaponName: wpn?.name,
     });
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
@@ -498,21 +500,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   }
 
-  // TNT wall breach — separate from interact, uses T key
+  // TNT wall breach — place charge with 5s fuse
   if (input.useTNT) {
     input.useTNT = false;
     if (state.player.tntCount > 0) {
-      const TNT_DAMAGE = 200;
-      const TNT_RADIUS = 150;
-      const BREACH_WIDTH = 96; // ~3-4 character widths
-
-      // Pick nearest wall by real wall distance (not center distance)
+      // Find nearest wall
       let bestIdx = -1;
       let bestDist = Number.POSITIVE_INFINITY;
       let impact = { x: state.player.pos.x, y: state.player.pos.y };
       for (let wi = 0; wi < state.walls.length; wi++) {
         const w = state.walls[wi];
-        if (w.color === '#aa4444') continue; // gate uses keycard
+        if (w.color === '#aa4444') continue;
         const cx = Math.max(w.x, Math.min(state.player.pos.x, w.x + w.w));
         const cy = Math.max(w.y, Math.min(state.player.pos.y, w.y + w.h));
         const d = dist(state.player.pos, { x: cx, y: cy });
@@ -525,79 +523,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       if (bestIdx >= 0 && bestDist < 70) {
         state.player.tntCount--;
-        const w = state.walls[bestIdx];
-
-        // Remove only a section of the wall, roughly 3-4 figures wide
-        const newSegments: typeof state.walls = [];
-        if (w.w >= w.h) {
-          // Horizontal wall
-          const holeStart = Math.max(w.x, impact.x - BREACH_WIDTH / 2);
-          const holeEnd = Math.min(w.x + w.w, impact.x + BREACH_WIDTH / 2);
-          const leftW = holeStart - w.x;
-          const rightW = w.x + w.w - holeEnd;
-          if (leftW > 8) newSegments.push({ ...w, w: leftW });
-          if (rightW > 8) newSegments.push({ ...w, x: holeEnd, w: rightW });
-        } else {
-          // Vertical wall
-          const holeStart = Math.max(w.y, impact.y - BREACH_WIDTH / 2);
-          const holeEnd = Math.min(w.y + w.h, impact.y + BREACH_WIDTH / 2);
-          const topH = holeStart - w.y;
-          const bottomH = w.y + w.h - holeEnd;
-          if (topH > 8) newSegments.push({ ...w, h: topH });
-          if (bottomH > 8) newSegments.push({ ...w, y: holeEnd, h: bottomH });
-        }
-        state.walls.splice(bestIdx, 1, ...newSegments);
-
-        addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
-        playExplosion();
-        spawnParticles(state, impact.x, impact.y, '#ff8833', 24);
-        spawnParticles(state, impact.x, impact.y, '#ffcc44', 18);
-        state.soundEvents.push({ pos: { x: impact.x, y: impact.y }, radius: 500, time: state.time });
-
-        // TNT damage behaves like a grenade
-        for (const enemy of state.enemies) {
-          if (enemy.state === 'dead') continue;
-          const d = dist(impact, enemy.pos);
-          if (d < TNT_RADIUS && hasLineOfSight(state, impact, enemy.pos, enemy.elevated)) {
-            if (enemy.type === 'boss') {
-              const dmg = enemy.maxHp * 0.33;
-              enemy.hp -= dmg;
-              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
-              addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
-              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
-            }
-            if ((enemy as any)._isBodyguard) {
-              const dmg = enemy.maxHp * 0.5;
-              enemy.hp -= dmg;
-              spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
-              addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
-              if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
-            }
-            enemy.hp = 0;
-            enemy.state = 'dead';
-            playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
-            speakCallout('death', enemy.type);
-            sendReinforcementToPlatform(state, enemy);
-            enemy.loot = generateEnemyLoot(enemy);
-            state.killCount++;
-            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (TNT)`, 'kill');
-            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
-          }
-        }
-
-        const dPlayer = dist(impact, state.player.pos);
-        if (dPlayer < TNT_RADIUS && hasLineOfSight(state, impact, state.player.pos)) {
-          const falloff = 1 - (dPlayer / TNT_RADIUS);
-          const dmg = TNT_DAMAGE * falloff * 0.5;
-          state.player.hp -= dmg;
-          spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
-          addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
-          if (state.player.hp <= 0) {
-            state.gameOver = true;
-            state.deathCause = '🧨 Killed by own TNT explosion';
-            addMessage(state, '☠ DEAD', 'damage');
-          }
-        }
+        state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
+        addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
+        state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
       } else {
         addMessage(state, '⚠ No wall nearby to breach!', 'warning');
       }
@@ -605,6 +533,107 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       addMessage(state, '⚠ No TNT charges!', 'warning');
     }
   }
+
+  // Update placed TNTs — countdown and detonate
+  state.placedTNTs = state.placedTNTs.filter(tnt => {
+    tnt.timer -= dt;
+    if (tnt.timer > 0) return true; // still ticking
+
+    // DETONATE
+    const TNT_DAMAGE = 200;
+    const TNT_RADIUS = 150;
+    const BREACH_WIDTH = 96;
+
+    // Find nearest wall to breach
+    let bestIdx = -1;
+    let bestDist = 40; // must be very close to the placed position
+    for (let wi = 0; wi < state.walls.length; wi++) {
+      const w = state.walls[wi];
+      if (w.color === '#aa4444') continue;
+      const cx = Math.max(w.x, Math.min(tnt.pos.x, w.x + w.w));
+      const cy = Math.max(w.y, Math.min(tnt.pos.y, w.y + w.h));
+      const d = dist(tnt.pos, { x: cx, y: cy });
+      if (d < bestDist) {
+        bestDist = d;
+        bestIdx = wi;
+      }
+    }
+
+    if (bestIdx >= 0) {
+      const w = state.walls[bestIdx];
+      const newSegments: typeof state.walls = [];
+      if (w.w >= w.h) {
+        const holeStart = Math.max(w.x, tnt.pos.x - BREACH_WIDTH / 2);
+        const holeEnd = Math.min(w.x + w.w, tnt.pos.x + BREACH_WIDTH / 2);
+        const leftW = holeStart - w.x;
+        const rightW = w.x + w.w - holeEnd;
+        if (leftW > 8) newSegments.push({ ...w, w: leftW });
+        if (rightW > 8) newSegments.push({ ...w, x: holeEnd, w: rightW });
+      } else {
+        const holeStart = Math.max(w.y, tnt.pos.y - BREACH_WIDTH / 2);
+        const holeEnd = Math.min(w.y + w.h, tnt.pos.y + BREACH_WIDTH / 2);
+        const topH = holeStart - w.y;
+        const bottomH = w.y + w.h - holeEnd;
+        if (topH > 8) newSegments.push({ ...w, h: topH });
+        if (bottomH > 8) newSegments.push({ ...w, y: holeEnd, h: bottomH });
+      }
+      state.walls.splice(bestIdx, 1, ...newSegments);
+    }
+
+    addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
+    playExplosion();
+    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 24);
+    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 18);
+    state.soundEvents.push({ pos: { ...tnt.pos }, radius: 500, time: state.time });
+
+    // Damage enemies
+    for (const enemy of state.enemies) {
+      if (enemy.state === 'dead') continue;
+      const d = dist(tnt.pos, enemy.pos);
+      if (d < TNT_RADIUS && hasLineOfSight(state, tnt.pos, enemy.pos, enemy.elevated)) {
+        if (enemy.type === 'boss') {
+          const dmg = enemy.maxHp * 0.33;
+          enemy.hp -= dmg;
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
+          addMessage(state, `💥 Boss takes ${Math.floor(dmg)} damage!`, 'damage');
+          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+        }
+        if ((enemy as any)._isBodyguard) {
+          const dmg = enemy.maxHp * 0.5;
+          enemy.hp -= dmg;
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+          addMessage(state, `💥 Bodyguard takes ${Math.floor(dmg)} damage!`, 'damage');
+          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+        }
+        enemy.hp = 0;
+        enemy.state = 'dead';
+        playVoiceShout('death', enemy.type === 'heavy' ? -0.5 : 0.2);
+        speakCallout('death', enemy.type);
+        sendReinforcementToPlatform(state, enemy);
+        enemy.loot = generateEnemyLoot(enemy);
+        state.killCount++;
+        addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (TNT)`, 'kill');
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+      }
+    }
+
+    // Damage player
+    const dPlayer = dist(tnt.pos, state.player.pos);
+    if (dPlayer < TNT_RADIUS && hasLineOfSight(state, tnt.pos, state.player.pos)) {
+      const falloff = 1 - (dPlayer / TNT_RADIUS);
+      const dmg = TNT_DAMAGE * falloff * 0.5;
+      state.player.hp -= dmg;
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
+      addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
+      if (state.player.hp <= 0) {
+        state.gameOver = true;
+        state.deathCause = '🧨 Killed by own TNT explosion';
+        addMessage(state, '☠ DEAD', 'damage');
+      }
+    }
+
+    return false; // remove detonated TNT
+  });
 
   // Interact (E key) — looting, keycard, terminals
   if (input.interact) {
@@ -2046,9 +2075,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     if (b.fromPlayer) {
+      const isMosin = b.weaponName === 'Mosin-Nagant';
+      const hitRadius = isMosin ? 19 : 14; // Mosin has +5px forgiving hitbox
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
-        if (dist(b.pos, enemy.pos) < 14) {
+        if (dist(b.pos, enemy.pos) < hitRadius) {
           // Elevated enemies have concealment bonus — 40% miss chance
           if (enemy.elevated && Math.random() < 0.4) {
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
@@ -2057,8 +2088,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
           // Critical hit / headshot — chance scales with kill count (skill)
           // Soldiers have +15% headshot chance (weaker helmets)
+          // Mosin-Nagant has +20% headshot bonus
           const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
-          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus);
+          const mosinBonus = isMosin ? 0.20 : 0;
+          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus + mosinBonus);
           const isCrit = enemy.type !== 'boss' && enemy.type !== 'sniper' && Math.random() < critChance;
           
           if (isCrit) {

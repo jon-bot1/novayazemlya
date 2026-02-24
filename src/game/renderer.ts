@@ -1872,6 +1872,54 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
+  // ── PLACED TNT CHARGES ──
+  for (const tnt of state.placedTNTs) {
+    const timerRatio = tnt.timer / tnt.maxTimer;
+    // Blinking — faster as timer runs out
+    const blinkFreq = timerRatio > 0.5 ? 2 : timerRatio > 0.2 ? 6 : 14;
+    const blinkOn = Math.sin(state.time * blinkFreq * Math.PI * 2) > 0;
+
+    // Danger radius
+    if (timerRatio < 0.6) {
+      const alpha = (1 - timerRatio) * 0.12;
+      ctx.beginPath();
+      ctx.arc(tnt.pos.x, tnt.pos.y, 150, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 60, 20, ${alpha})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 60, 20, ${alpha * 2})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // TNT body
+    ctx.fillStyle = blinkOn ? '#dd3322' : '#882211';
+    ctx.beginPath();
+    ctx.roundRect(tnt.pos.x - 7, tnt.pos.y - 5, 14, 10, 2);
+    ctx.fill();
+    ctx.strokeStyle = '#441100';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Blinking light
+    if (blinkOn) {
+      ctx.fillStyle = '#ff4444';
+      ctx.shadowColor = '#ff2200';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(tnt.pos.x, tnt.pos.y - 6, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // Timer text
+    ctx.fillStyle = blinkOn ? '#ffcc00' : '#ff8844';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(tnt.timer.toFixed(1) + 's', tnt.pos.x, tnt.pos.y - 12);
+  }
+
   // ── GRENADES ──
   for (const g of state.grenades) {
     const bob = Math.sin(state.time * 15) * 2;

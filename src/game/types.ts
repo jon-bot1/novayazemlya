@@ -68,6 +68,13 @@ export interface Bullet {
   elevated?: boolean; // bullet from elevated enemy, ignores walls
   sourceId?: string; // enemy id who fired this bullet
   sourceType?: string; // enemy type (soldier, heavy, boss, sniper, etc.)
+  weaponName?: string; // weapon that fired this bullet (for Mosin bonuses etc.)
+}
+
+export interface PlacedTNT {
+  pos: Vec2;
+  timer: number; // seconds until detonation
+  maxTimer: number;
 }
 
 export interface Particle {
@@ -210,6 +217,7 @@ export interface GameState {
   enemies: Enemy[];
   bullets: Bullet[];
   grenades: Grenade[];
+  placedTNTs: PlacedTNT[];
   particles: Particle[];
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
