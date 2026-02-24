@@ -1807,6 +1807,29 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillText('⭐', sx, sy);
       }
       ctx.font = '14px sans-serif';
+    } else if ((enemy as any)._panicTimer > 0) {
+      // Panic state — red/yellow flashing aura + screaming icon
+      const panicPulse = 0.5 + Math.sin(state.time * 12) * 0.5;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, ${Math.floor(100 + panicPulse * 155)}, 0, ${0.2 + panicPulse * 0.15})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 50, 0, ${panicPulse * 0.6})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 12);
+      // Exclamation marks flying off
+      for (let pi = 0; pi < 2; pi++) {
+        const pa = state.time * 6 + pi * Math.PI;
+        const px = enemy.pos.x + Math.cos(pa) * 16;
+        const py = enemy.pos.y - R - 14 + Math.sin(pa) * 5;
+        ctx.font = '7px sans-serif';
+        ctx.fillStyle = `rgba(255, 50, 0, ${panicPulse})`;
+        ctx.fillText('!', px, py);
+      }
+      ctx.font = '14px sans-serif';
     } else if (enemy.state === 'attack') {
       ctx.fillText('💢', enemy.pos.x, enemy.pos.y - R - 12);
     } else if (enemy.state === 'chase') {
