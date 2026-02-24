@@ -119,38 +119,42 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         )}
 
-        {/* Weapon slots — CLEAR display */}
-        <div className="flex flex-col items-end gap-1">
-          {/* Active weapon — large and prominent */}
-          <div className="bg-card/80 backdrop-blur-sm border border-border rounded px-3 py-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-foreground font-display text-sm">
-                🔫 {player.equippedWeapon?.name || '—'}
-              </span>
-              <span className="text-lg font-display text-glow-amber text-foreground">{player.currentAmmo}</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{player.ammoType}</span>
+        {/* Weapon slots — LARGE and CLEAR */}
+        <div className="flex flex-col items-end gap-1.5">
+          {/* Active weapon — big prominent card */}
+          <div className="bg-card/90 backdrop-blur-sm border-2 border-accent/60 rounded-md px-4 py-2.5 shadow-lg min-w-[180px]">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <span className="text-foreground font-display text-base leading-tight">
+                  🔫 {player.equippedWeapon?.name || '—'}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{player.ammoType}</span>
+              </div>
+              <span className="text-2xl font-display text-accent text-glow-green tabular-nums">{player.currentAmmo}</span>
             </div>
           </div>
-          {/* Weapon slots */}
-          <div className="flex gap-1">
-            <div className={`px-2 py-1 rounded border text-[11px] font-mono ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent' : 'bg-card/50 border-border/40 text-muted-foreground'}`}>
+          {/* Weapon slot buttons */}
+          <div className="flex gap-1.5">
+            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[90px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
               [1] {player.sidearm?.name || '—'}
             </div>
-            <div className={`px-2 py-1 rounded border text-[11px] font-mono ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent' : 'bg-card/50 border-border/40 text-muted-foreground'}`}>
+            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[90px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
               [2] {player.primaryWeapon?.name || '—'}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-mono ${player.inventory.filter(i => i.category === 'grenade').length > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
+          {/* Grenades & TNT */}
+          <div className="flex items-center gap-3 bg-card/60 border border-border/40 rounded px-3 py-1">
+            <span className={`text-sm font-mono ${player.inventory.filter(i => i.category === 'grenade').length > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               💣 {player.inventory.filter(i => i.category === 'grenade').length} <span className="text-[9px] text-muted-foreground">[G]</span>
             </span>
             {player.inventory.some(i => i.name === 'TNT Charge') && (
-              <span className="text-xs font-mono text-warning">
+              <span className="text-sm font-mono text-warning">
                 🧨 {player.inventory.filter(i => i.name === 'TNT Charge').length}
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground font-mono">☠ {killCount}</span>
+          {/* Kill count & docs */}
+          <span className="text-sm text-foreground/80 font-mono">☠ {killCount}</span>
           <button 
             className="text-xs font-mono text-accent/80 hover:text-accent pointer-events-auto flex items-center gap-1"
             onClick={onViewDocuments}
@@ -158,11 +162,12 @@ export const HUD: React.FC<HUDProps> = ({
             📄 {documentsFound}/{totalDocuments}
             {codesFound.length > 0 && <span className="text-warning">☢{codesFound.length}</span>}
           </button>
-          <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot animate-pulse-glow' : 'text-muted-foreground/60'}`}>
-            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ACQUIRED' : 'USB MISSING'}
+          {/* Mission items — prominent */}
+          <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot bg-loot/10 border border-loot/30 animate-pulse-glow' : 'text-muted-foreground/50'}`}>
+            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ✓' : 'USB —'}
           </div>
-          <div className={`text-xs font-mono flex items-center gap-1 ${player.inventory.some(i => i.id === 'nuclear_codebook') ? 'text-warning animate-pulse-glow' : 'text-muted-foreground/60'}`}>
-            ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ACQUIRED' : 'CODES MISSING'}
+          <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded ${player.inventory.some(i => i.id === 'nuclear_codebook') ? 'text-warning bg-warning/10 border border-warning/30 animate-pulse-glow' : 'text-muted-foreground/50'}`}>
+            ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ✓' : 'CODES —'}
           </div>
         </div>
       </div>

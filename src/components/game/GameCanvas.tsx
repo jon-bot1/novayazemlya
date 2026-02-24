@@ -315,18 +315,43 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         <>
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.2 — 2026-02-24</div>
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.3 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Sniper Tuman relocates 0.5s after being hit (smoke + teleport)</li>
-                  <li>• Sniper immune to critical headshots</li>
+                  <li>• Larger, clearer weapon & item HUD</li>
+                  <li>• Improved loot pickup popup with icon, name & value</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
-                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1 — 2026-03-24</div>
+                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.2 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Initial release</li>
+                  <li>• Sniper Tuman: relocates 0.5s after hit (smoke + teleport)</li>
+                  <li>• Sniper Tuman: immune to critical headshots</li>
+                  <li>• Sniper Tuman: tree-to-tree movement with invisibility</li>
+                  <li>• Boss Osipovitj: 3-phase fight with flashbangs & minion spawns</li>
+                  <li>• Boss heals with injector (+35 HP) when in cover</li>
+                  <li>• Bodyguards ZAPAD & VOSTOK with wide vision arc</li>
+                  <li>• Officers with Mosin-Nagant, extended range & valuable loot</li>
+                  <li>• Heavy enemies with suppressive fire role</li>
+                  <li>• Turret emplacements at watchtowers</li>
+                  <li>• Tactical AI: flanking, suppression, radio comms</li>
+                  <li>• Enemies lose target when line-of-sight breaks</li>
+                  <li>• Cover system (Q/Space) with peek-fire</li>
+                  <li>• Movement modes: sneak / walk / sprint</li>
+                  <li>• Dual weapon slots (sidearm + primary)</li>
+                  <li>• TNT charges to breach perimeter walls</li>
+                  <li>• Medical system: bandages, medkits, morphine, bleeding</li>
+                  <li>• Intel documents & nuclear codes</li>
+                  <li>• Extraction zone with 5s hold timer</li>
+                  <li>• Highscore board & feedback widget</li>
+                  <li>• Reinforcement waves from northern zones</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
+                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Initial release — base map, soldiers, scavs, basic combat</li>
                 </ul>
               </div>
             </div>

@@ -13,7 +13,7 @@ interface LootPopupProps {
 
 export const LootPopup: React.FC<LootPopupProps> = ({ notifications }) => {
   return (
-    <div className="absolute bottom-36 right-3 flex flex-col-reverse gap-1.5 pointer-events-none z-10 max-w-[200px]">
+    <div className="absolute bottom-36 right-3 flex flex-col-reverse gap-2 pointer-events-none z-10 max-w-[260px]">
       {notifications.map((n) => (
         <LootPopupItem key={n.id} notification={n} />
       ))}
@@ -30,24 +30,29 @@ const LootPopupItem: React.FC<{ notification: LootNotification }> = ({ notificat
 
   const item = notification.item;
   const catColors: Record<string, string> = {
-    weapon: 'border-accent/60 bg-accent/10',
-    ammo: 'border-warning/60 bg-warning/10',
-    medical: 'border-safe/60 bg-safe/10',
-    armor: 'border-primary/60 bg-primary/10',
-    valuable: 'border-loot/60 bg-loot/10',
+    weapon: 'border-accent/70 bg-accent/15',
+    ammo: 'border-warning/70 bg-warning/15',
+    medical: 'border-safe/70 bg-safe/15',
+    armor: 'border-primary/70 bg-primary/15',
+    valuable: 'border-loot/70 bg-loot/15',
+    grenade: 'border-warning/70 bg-warning/15',
+    key_item: 'border-loot/70 bg-loot/20',
   };
 
   return (
     <div
-      className={`flex items-center gap-2 px-2.5 py-1.5 rounded border backdrop-blur-sm transition-all duration-300 ${
-        catColors[item.category] || 'border-border bg-card/80'
-      } ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
+      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-md border-2 backdrop-blur-md shadow-lg transition-all duration-300 ${
+        catColors[item.category] || 'border-border bg-card/90'
+      } ${visible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-12 scale-90'}`}
     >
-      <span className="text-base">{item.icon}</span>
-      <div className="flex flex-col min-w-0">
-        <span className="text-[11px] font-mono text-foreground truncate">{item.name}</span>
-        <span className="text-[9px] font-mono text-muted-foreground">{item.description}</span>
+      <span className="text-2xl flex-shrink-0">{item.icon}</span>
+      <div className="flex flex-col min-w-0 flex-1">
+        <span className="text-sm font-display text-foreground truncate">{item.name}</span>
+        <span className="text-[10px] font-mono text-muted-foreground leading-tight">{item.description}</span>
       </div>
+      {item.value > 0 && (
+        <span className="text-xs font-mono text-loot flex-shrink-0">{item.value}₽</span>
+      )}
     </div>
   );
 };
