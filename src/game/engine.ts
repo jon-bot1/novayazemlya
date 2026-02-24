@@ -1340,37 +1340,48 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue;
     }
 
-    // Sniper Tuman: hides in trees, teleports between them toward the player
+    // Sniper Tuman: stalks the player using any cover, teleports between positions
     if (enemy.type === 'sniper') {
       if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 4 + Math.random() * 4;
       (enemy as any)._sniperTeleportTimer -= dt;
 
-      // --- Scanning behavior: sniper looks around searching for the player ---
-      if (!(enemy as any)._sniperScanDir) (enemy as any)._sniperScanDir = 1;
-      if (!(enemy as any)._sniperScanTimer) (enemy as any)._sniperScanTimer = 2 + Math.random() * 3;
+      // Helper: find cover props (trees, bushes, barriers, wrecks, crates, barrels)
+      const isCoverProp = (p: { type: string }) =>
+        p.type === 'tree' || p.type === 'pine_tree' || p.type === 'bush' ||
+        p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
+        p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
+
       const sniperDistToPlayer = dist(enemy.pos, state.player.pos);
       const sniperHasLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
 
-      // If player not in LOS or out of range, scan by rotating
+      // --- Active hunting: if player not in range, move toward them ---
       if (!sniperHasLos || sniperDistToPlayer > enemy.shootRange) {
+        // Scan while moving
+        if (!(enemy as any)._sniperScanDir) (enemy as any)._sniperScanDir = 1;
+        if (!(enemy as any)._sniperScanTimer) (enemy as any)._sniperScanTimer = 2 + Math.random() * 3;
         (enemy as any)._sniperScanTimer -= dt;
         if ((enemy as any)._sniperScanTimer <= 0) {
           (enemy as any)._sniperScanDir *= -1;
           (enemy as any)._sniperScanTimer = 1.5 + Math.random() * 2.5;
         }
-        // Rotate scanning — wider sweeps to find the player
-        enemy.angle += (enemy as any)._sniperScanDir * 1.2 * dt;
+        // Actively move toward player (not just scan)
+        const huntSpeed = enemy.speed * 1.8; // faster when hunting
+        const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * huntSpeed * dt * 60, toPlayer.y * huntSpeed * dt * 60, 8);
+        // Look in movement direction with slight scan wobble
+        enemy.angle = Math.atan2(toPlayer.y, toPlayer.x) + (enemy as any)._sniperScanDir * 0.3;
+        enemy.state = 'chase';
       }
 
       // --- Proximity threat / under fire: sniper should always flee when shot ---
       const playerTooClose = sniperDistToPlayer < 200;
       const underFire = (enemy as any)._sniperRelocateDelay > 0;
       const fleeCooldownActive = (enemy as any)._sniperFleeCooldown > 0;
-      const shouldFleeFromShot = underFire; // always true on hit, even during cooldown
+      const shouldFleeFromShot = underFire;
       const shouldFleeFromProximity = playerTooClose && !fleeCooldownActive;
 
       if ((shouldFleeFromShot || shouldFleeFromProximity) && !(enemy as any)._sniperInvisible) {
-        // Throw flashbang only when cooldown is free (avoid spam)
+        // Throw flashbang only when cooldown is free
         if (!fleeCooldownActive) {
           const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           const throwSpeed = 3.5;
@@ -1388,54 +1399,50 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._sniperFleeCooldown = 12;
         }
 
-        // Immediately start fleeing — teleport to a far tree
-        let fleeTrees = state.props.filter(p =>
-          (p.type === 'tree' || p.type === 'pine_tree') &&
-          dist(p.pos, state.player.pos) > 400 && dist(p.pos, enemy.pos) > 100
+        // Flee to any cover prop far from player
+        let fleeCovers = state.props.filter(p =>
+          isCoverProp(p) &&
+          dist(p.pos, state.player.pos) > 350 && dist(p.pos, enemy.pos) > 80
         );
-        // Fallback: if no far trees, accept any tree away from current pos
-        if (fleeTrees.length === 0) {
-          fleeTrees = state.props.filter(p =>
-            (p.type === 'tree' || p.type === 'pine_tree') &&
-            dist(p.pos, enemy.pos) > 80
+        if (fleeCovers.length === 0) {
+          fleeCovers = state.props.filter(p =>
+            isCoverProp(p) && dist(p.pos, enemy.pos) > 60
           );
         }
-        if (fleeTrees.length > 0) {
-          fleeTrees.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos)); // farthest from player
-          const fleeTree = fleeTrees[Math.floor(Math.random() * Math.min(3, fleeTrees.length))];
-          (enemy as any)._sniperTargetTree = { x: fleeTree.pos.x, y: fleeTree.pos.y };
+        if (fleeCovers.length > 0) {
+          fleeCovers.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
+          const target = fleeCovers[Math.floor(Math.random() * Math.min(3, fleeCovers.length))];
+          (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
           (enemy as any)._sniperInvisible = 2.5;
-          // Smoke at departure
           for (let si = 0; si < 15; si++) {
             state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
           }
         } else {
-          // No trees at all — physically run away from player
+          // No cover at all — physically run away
           const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
-          const runDist = 250;
+          const runDist = 300;
           enemy.investigateTarget = {
-            x: enemy.pos.x + Math.cos(awayAngle) * runDist,
-            y: enemy.pos.y + Math.sin(awayAngle) * runDist,
+            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * runDist)),
+            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * runDist)),
           };
           enemy.state = 'investigate';
           enemy.speed = Math.max(enemy.speed, 3.0);
         }
-        (enemy as any)._sniperRelocateDelay = 0; // consumed by immediate flee
+        (enemy as any)._sniperRelocateDelay = 0;
         continue;
       }
       // Decrement flee cooldown
       if ((enemy as any)._sniperFleeCooldown > 0) (enemy as any)._sniperFleeCooldown -= dt;
 
-      // Relocate delay after being hit (original behavior)
+      // Relocate delay after being hit (fallback)
       if ((enemy as any)._sniperRelocateDelay > 0) {
         (enemy as any)._sniperRelocateDelay -= dt;
         if ((enemy as any)._sniperRelocateDelay <= 0 && !(enemy as any)._sniperInvisible) {
-          const trees = state.props.filter(p => (p.type === 'tree' || p.type === 'pine_tree') && dist(p.pos, enemy.pos) > 150);
-          if (trees.length > 0) {
-            // Sort farthest from player so sniper actually retreats
-            trees.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
-            const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)];
-            (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
+          const covers = state.props.filter(p => isCoverProp(p) && dist(p.pos, enemy.pos) > 120);
+          if (covers.length > 0) {
+            covers.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
+            const target = covers[Math.min(Math.floor(Math.random() * 3), covers.length - 1)];
+            (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
             (enemy as any)._sniperInvisible = 2.0;
             for (let si = 0; si < 12; si++) {
               state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
@@ -1449,10 +1456,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._sniperInvisible > 0) {
         (enemy as any)._sniperInvisible -= dt;
         if ((enemy as any)._sniperInvisible <= 0) {
-          const targetTree = (enemy as any)._sniperTargetTree;
-          if (targetTree) {
-            enemy.pos = { x: targetTree.x, y: targetTree.y };
-            // Smoke cloud at arrival
+          const targetPos = (enemy as any)._sniperTargetTree;
+          if (targetPos) {
+            enemy.pos = { x: targetPos.x, y: targetPos.y };
             for (let si = 0; si < 12; si++) {
               const sa = Math.random() * Math.PI * 2;
               const sr = 5 + Math.random() * 20;
@@ -1466,30 +1472,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               });
             }
           }
-          // Face toward player after repositioning
           enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
           addMessage(state, '🔭 Sniper Tuman repositioned!', 'warning');
         }
         continue;
       }
 
-      // Teleport to a tree closer to the player
+      // Proactive teleport toward player using cover
       if ((enemy as any)._sniperTeleportTimer <= 0) {
         const playerDist = dist(enemy.pos, state.player.pos);
-        // Find trees within 500px that are closer to player than current position
-        const trees = state.props.filter(p =>
-          (p.type === 'tree' || p.type === 'pine_tree') &&
+        const covers = state.props.filter(p =>
+          isCoverProp(p) &&
           dist(enemy.pos, p.pos) > 40 && dist(enemy.pos, p.pos) < 500 &&
-          dist(p.pos, state.player.pos) < playerDist // must be closer to player
+          dist(p.pos, state.player.pos) < playerDist
         );
-        if (trees.length > 0) {
-          // Pick the tree closest to the player
-          trees.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
-          const targetTree = trees[Math.min(Math.floor(Math.random() * 3), trees.length - 1)]; // one of 3 closest
-          (enemy as any)._sniperTargetTree = { x: targetTree.pos.x, y: targetTree.pos.y };
+        if (covers.length > 0) {
+          covers.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
+          const target = covers[Math.min(Math.floor(Math.random() * 3), covers.length - 1)];
+          (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
           (enemy as any)._sniperInvisible = 2.5;
-          (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 3; // slightly faster teleports
-          // Smoke cloud at departure
+          (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 3;
           for (let si = 0; si < 12; si++) {
             const sa = Math.random() * Math.PI * 2;
             const sr = 5 + Math.random() * 20;
@@ -1504,19 +1506,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           continue;
         } else {
-          // No good trees — just reset timer and walk
           (enemy as any)._sniperTeleportTimer = 3;
         }
       }
 
-      // Between teleports: slowly advance toward player
+      // In range with LOS — attack
       const dtp = dist(enemy.pos, state.player.pos);
       const sniperLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
       if (dtp <= enemy.shootRange && sniperLos) {
         enemy.state = 'attack';
-        // Snap aim toward player when in attack range
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
       } else {
+        // Keep advancing
         enemy.state = 'chase';
         const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
         enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * enemy.speed * dt * 60, toPlayer.y * enemy.speed * dt * 60, 8);
