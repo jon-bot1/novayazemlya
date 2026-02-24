@@ -1638,12 +1638,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.state = 'attack';
         enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
       } else {
-        // Keep advancing
-        enemy.state = 'chase';
-        const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-        enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * enemy.speed * dt * 60, toPlayer.y * enemy.speed * dt * 60, 8);
-        enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
-        continue;
+        // Out of range — stay still, wait for teleport timer to reposition
+        enemy.state = 'idle';
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
       }
       // Fall through to attack state
     }
