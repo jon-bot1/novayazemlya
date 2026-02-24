@@ -4,6 +4,36 @@ import { LoreDocument } from '../../game/lore';
 import { FeedbackWidget } from './FeedbackWidget';
 import { HighscoreList, submitHighscore } from './HighscoreList';
 
+interface AchievementStats {
+  mosinKills: number;
+  grenadeKills: number;
+  tntKills: number;
+  longShots: number;
+  headshotKills: number;
+  sneakKills: number;
+  knifeDistanceKills: number;
+  noHitsTaken: boolean;
+  killCount: number;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  icon: string;
+  check: (s: AchievementStats) => boolean;
+}
+
+export const ACHIEVEMENTS: Achievement[] = [
+  { id: 'mosin10', name: 'Mosin Master', icon: '🎯', check: s => s.mosinKills >= 10 },
+  { id: 'nade10', name: 'Bombardier', icon: '💣', check: s => s.grenadeKills >= 10 },
+  { id: 'tnt10', name: 'Demolitionist', icon: '🧨', check: s => s.tntKills >= 10 },
+  { id: 'longshot10', name: 'Sharpshooter', icon: '🔭', check: s => s.longShots >= 10 },
+  { id: 'headshot10', name: 'Headhunter', icon: '💀', check: s => s.headshotKills >= 10 },
+  { id: 'close10', name: 'Up Close', icon: '🗡️', check: s => s.knifeDistanceKills >= 10 },
+  { id: 'nohit', name: 'Ghost', icon: '👻', check: s => s.noHitsTaken && s.killCount > 0 },
+  { id: 'kills25', name: 'One Man Army', icon: '🪖', check: s => s.killCount >= 25 },
+];
+
 interface HUDProps {
   player: Player;
   killCount: number;
@@ -23,11 +53,13 @@ interface HUDProps {
   timeLimit?: number;
   playerName?: string;
   deathCause?: string;
+  exfilRevealed?: string;
+  achievementStats?: AchievementStats;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit, playerName, deathCause 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats 
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -47,9 +79,13 @@ export const HUD: React.FC<HUDProps> = ({
         result = 'mia';
       }
       const lootValue = player.inventory.reduce((s, i) => s + i.value, 0);
-      submitHighscore(playerName, killCount, time, result, lootValue);
+      // Compute achievements
+      const earned = achievementStats
+        ? ACHIEVEMENTS.filter(a => a.check(achievementStats)).map(a => a.id)
+        : [];
+      submitHighscore(playerName, killCount, time, result, lootValue, earned.join(','));
     }
-  }, [gameOver, extracted, playerName, hasExtractionCode, killCount, time, player.inventory]);
+  }, [gameOver, extracted, playerName, hasExtractionCode, killCount, time, player.inventory, achievementStats]);
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const hpColor = hpPercent > 60 ? 'bg-safe' : hpPercent > 30 ? 'bg-warning' : 'bg-danger';
 
@@ -179,6 +215,12 @@ export const HUD: React.FC<HUDProps> = ({
               ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ✓' : 'CODES'}
             </div>
           </div>
+          {/* Exfil revealed indicator */}
+          {exfilRevealed && (
+            <div className="text-sm font-mono font-bold flex items-center gap-1 px-2.5 py-1 rounded-md text-accent bg-accent/15 border-2 border-accent/40 animate-pulse-glow">
+              🚁 EXFIL: {exfilRevealed}
+            </div>
+          )}
         </div>
       </div>
       {/* Extraction progress */}
@@ -282,6 +324,23 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
+              {/* Achievements */}
+              {achievementStats && (() => {
+                const earned = ACHIEVEMENTS.filter(a => a.check(achievementStats));
+                return earned.length > 0 ? (
+                  <div className="mt-2 border-t border-border pt-2">
+                    <span className="text-xs font-mono text-accent">🏅 ACHIEVEMENTS:</span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {earned.map(a => (
+                        <div key={a.id} className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 border border-accent/30">
+                          <span className="text-sm">{a.icon}</span>
+                          <span className="text-[10px] font-mono text-accent">{a.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             <HighscoreList currentName={playerName} />
