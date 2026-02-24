@@ -156,7 +156,7 @@ export const HUD: React.FC<HUDProps> = ({
             <span className={`text-sm font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               🧨 {tntCount}
             </span>
-            <span className="text-[9px] text-muted-foreground font-mono">[E wall]</span>
+            <span className="text-[9px] text-muted-foreground font-mono">[T wall]</span>
           </div>
           {/* Kill count & docs */}
           <div className="flex items-center gap-3">

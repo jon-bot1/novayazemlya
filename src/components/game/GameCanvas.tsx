@@ -300,7 +300,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
               <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
-              <span className="text-muted-foreground">E (near wall)</span><span className="text-foreground">Place TNT 🧨</span>
+              <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨</span>
               <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
               <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
             </div>
@@ -312,7 +312,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
               <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
               <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
-              <li>• 🧨 <span className="text-warning">TNT charges</span> can be found in loot — use <span className="text-accent">E near perimeter walls</span> to breach fences and create new entry points</li>
+              <li>• 🧨 <span className="text-warning">TNT charges</span> can be found in loot — press <span className="text-accent">T near any wall</span> to breach it</li>
               <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
               <li>• Guards outside the base may carry an <span className="text-loot">Access Card</span> to open the main gate</li>
               <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
@@ -403,7 +403,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -442,6 +442,7 @@ export const GameCanvas: React.FC = () => {
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       keys.add(e.key.toLowerCase());
       if (e.key === 'e') inputRef.current.interact = true;
+      if (e.key === 't') inputRef.current.useTNT = true;
       if (e.key === 'h') inputRef.current.heal = true;
       if (e.key === 'g') inputRef.current.throwGrenade = true;
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }

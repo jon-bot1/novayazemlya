@@ -495,12 +495,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // TNT wall breach — player can blow a hole in any wall
+  }
+
+  // TNT wall breach — separate from interact, uses T key
+  if (input.useTNT) {
+    input.useTNT = false;
     if (state.player.tntCount > 0) {
+      let breached = false;
       for (let wi = state.walls.length - 1; wi >= 0; wi--) {
         const w = state.walls[wi];
-        // Skip gate wall (special color) — use keycard instead
-        if (w.color === '#aa4444') continue;
+        if (w.color === '#aa4444') continue; // gate uses keycard
         const wx = w.x + w.w / 2;
         const wy = w.y + w.h / 2;
         if (dist(state.player.pos, { x: wx, y: wy }) < 60) {
@@ -511,11 +515,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, wx, wy, '#ff8833', 20);
           spawnParticles(state, wx, wy, '#ffcc44', 15);
           state.soundEvents.push({ pos: { x: wx, y: wy }, radius: 500, time: state.time });
+          breached = true;
           break;
         }
       }
+      if (!breached) {
+        addMessage(state, '⚠ No wall nearby to breach!', 'warning');
+      }
+    } else {
+      addMessage(state, '⚠ No TNT charges!', 'warning');
     }
+  }
 
+  // Interact (E key) — looting, keycard, terminals
+  if (input.interact) {
     // Loot containers — require line of sight (no looting through walls)
     for (const lc of state.lootContainers) {
       if (!lc.looted && dist(state.player.pos, lc.pos) < 70 && hasLineOfSight(state, state.player.pos, lc.pos)) {
@@ -542,7 +555,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Auto-pickup TNT
           if (item.name === 'TNT Charge') {
             state.player.tntCount++;
-            addMessage(state, '🧨 TNT acquired! Use E near perimeter wall to breach!', 'intel');
+            addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
           // Auto-equip weapon to primary slot (sidearm stays as pistol)
           if (item.category === 'weapon' && item.damage) {
@@ -612,7 +625,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Auto-pickup TNT from enemy bodies
           if (item.name === 'TNT Charge') {
             state.player.tntCount++;
-            addMessage(state, '🧨 TNT acquired! Use E near perimeter wall to breach!', 'intel');
+            addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
           if (item.category === 'weapon' && item.damage) {
             if (!state.player.primaryWeapon || item.damage > (state.player.primaryWeapon.damage || 0)) {
