@@ -2,7 +2,7 @@ import React from 'react';
 import { Player, GameMessage } from '../../game/types';
 import { LoreDocument } from '../../game/lore';
 import { FeedbackWidget } from './FeedbackWidget';
-import { HighscoreList, submitHighscore } from './HighscoreList';
+import { HighscoreList, submitHighscore, calculateScore } from './HighscoreList';
 
 interface AchievementStats {
   mosinKills: number;
@@ -365,6 +365,18 @@ export const HUD: React.FC<HUDProps> = ({
                   {gameOver ? 'FAILED' : hasExtractionCode ? 'SUCCESS' : 'INCOMPLETE'}
                 </span>
               </div>
+              {/* Total Score */}
+              {(() => {
+                const result = extracted ? (hasExtractionCode ? 'success' : 'almost') : gameOver ? 'kia' : 'mia';
+                const earned = achievementStats ? getHighestTierAchievements(achievementStats).map(a => a.id) : [];
+                const totalScore = calculateScore(killCount, time, result, earned.join(','));
+                return (
+                  <div className="flex justify-between text-sm font-mono mt-1 pt-1 border-t border-border">
+                    <span className="text-accent font-bold">TOTAL SCORE:</span>
+                    <span className="text-accent font-display text-lg">{totalScore}</span>
+                  </div>
+                );
+              })()}
               {codesFound.length > 0 && (
                 <div className="mt-2 border-t border-border pt-2">
                   <span className="text-xs font-mono text-warning">☢ CODES FOUND:</span>
