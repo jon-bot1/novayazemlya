@@ -849,6 +849,8 @@ export function createInitialPlayer() {
     fireRate: 400,
     inCover: false,
     coverObject: null,
+    coverQuality: 0,
+    coverLabel: '',
     peeking: false,
     lastGrenadeTime: 0,
     tntCount: 0,

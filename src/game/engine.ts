@@ -324,6 +324,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (state.player.inCover) {
       state.player.inCover = false;
       state.player.coverObject = null;
+      state.player.coverQuality = 0;
+      state.player.coverLabel = '';
       state.player.peeking = false;
     }
     
@@ -332,6 +334,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   let nearCover = false;
   let nearestCoverPos: { x: number; y: number } | null = null;
   let nearestCoverDist = Infinity;
+  let nearestCoverLabel = '';
+  const coverQualityMap: Record<string, { quality: number; label: string }> = {
+    concrete_barrier: { quality: 0.90, label: 'Hard' },
+    sandbags:         { quality: 0.85, label: 'Hard' },
+    vehicle_wreck:    { quality: 0.85, label: 'Hard' },
+    guard_booth:      { quality: 0.85, label: 'Hard' },
+    watchtower:       { quality: 0.80, label: 'Hard' },
+    metal_shelf:      { quality: 0.75, label: 'Medium' },
+    barrel_stack:     { quality: 0.70, label: 'Medium' },
+    wood_crate:       { quality: 0.65, label: 'Medium' },
+    equipment_table:  { quality: 0.55, label: 'Light' },
+    tree:             { quality: 0.50, label: 'Soft' },
+    pine_tree:        { quality: 0.50, label: 'Soft' },
+    bush:             { quality: 0.30, label: 'Concealment' },
+    fence_h:          { quality: 0.25, label: 'Concealment' },
+    fence_v:          { quality: 0.25, label: 'Concealment' },
+  };
   if (!state.player.inCover) {
     for (const prop of state.props) {
       const d = dist(state.player.pos, prop.pos);
@@ -339,6 +358,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         nearCover = true;
         nearestCoverPos = prop.pos;
         nearestCoverDist = d;
+        const cq = coverQualityMap[prop.type];
+        nearestCoverLabel = cq ? cq.label : 'Cover';
       }
     }
     if (!nearCover) {
@@ -350,12 +371,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           nearCover = true;
           nearestCoverPos = { x: wx, y: wy };
           nearestCoverDist = d;
+          nearestCoverLabel = 'Hard';
         }
       }
     }
   }
   state.coverNearby = nearCover;
   (state as any)._nearestCoverPos = nearestCoverPos;
+  (state as any)._nearestCoverLabel = nearestCoverLabel;
   
   playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
@@ -371,20 +394,44 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Toggle off
       state.player.inCover = false;
       state.player.coverObject = null;
+      state.player.coverQuality = 0;
+      state.player.coverLabel = '';
       state.player.peeking = false;
       addMessage(state, '🧍 Leaving cover', 'info');
     } else {
+      // Cover quality by prop type
+      const coverQualityMap: Record<string, { quality: number; label: string }> = {
+        concrete_barrier: { quality: 0.90, label: 'Hard cover' },
+        sandbags:         { quality: 0.85, label: 'Hard cover' },
+        vehicle_wreck:    { quality: 0.85, label: 'Hard cover' },
+        guard_booth:      { quality: 0.85, label: 'Hard cover' },
+        watchtower:       { quality: 0.80, label: 'Hard cover' },
+        metal_shelf:      { quality: 0.75, label: 'Medium cover' },
+        barrel_stack:     { quality: 0.70, label: 'Medium cover' },
+        wood_crate:       { quality: 0.65, label: 'Medium cover' },
+        equipment_table:  { quality: 0.55, label: 'Light cover' },
+        tree:             { quality: 0.50, label: 'Soft cover' },
+        pine_tree:        { quality: 0.50, label: 'Soft cover' },
+        bush:             { quality: 0.30, label: 'Concealment' },
+        fence_h:          { quality: 0.25, label: 'Concealment' },
+        fence_v:          { quality: 0.25, label: 'Concealment' },
+      };
       // Find nearest cover object (props or walls within 40px)
       let bestDist = 40;
       let bestPos: Vec2 | null = null;
+      let bestQuality = 0.80;
+      let bestLabel = 'Hard cover';
       for (const prop of state.props) {
         const d = dist(state.player.pos, prop.pos);
         if (d < bestDist) {
           bestDist = d;
           bestPos = { ...prop.pos };
+          const cq = coverQualityMap[prop.type];
+          bestQuality = cq ? cq.quality : 0.60;
+          bestLabel = cq ? cq.label : 'Cover';
         }
       }
-      // Also check walls as cover
+      // Also check walls as cover (always hard)
       for (const wall of state.walls) {
         const wx = wall.x + wall.w / 2;
         const wy = wall.y + wall.h / 2;
@@ -392,13 +439,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (d < bestDist + 20) {
           bestDist = d;
           bestPos = { x: wx, y: wy };
+          bestQuality = 0.90;
+          bestLabel = 'Wall (hard)';
         }
       }
       if (bestPos) {
         state.player.inCover = true;
         state.player.coverObject = bestPos;
+        state.player.coverQuality = bestQuality;
+        state.player.coverLabel = bestLabel;
         state.player.peeking = false;
-        addMessage(state, '🛡️ In cover! Shoot to peek', 'info');
+        const pct = Math.round(bestQuality * 100);
+        addMessage(state, `🛡️ ${bestLabel} (${pct}%) — shoot to peek`, 'info');
       } else {
         addMessage(state, '⚠ No cover nearby!', 'warning');
       }
@@ -1367,6 +1419,36 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
+    // ALL combat enemies throw grenades at player in cover (or occasionally otherwise)
+    if (enemy.type !== 'turret' && enemy.type !== 'sniper' && !(enemy as any)._isBodyguard &&
+        (enemy.state === 'chase' || enemy.state === 'attack') &&
+        distToPlayer < enemy.shootRange * 1.3 && distToPlayer > 60) {
+      if (!(enemy as any)._grenadeSupply) (enemy as any)._grenadeSupply = enemy.type === 'heavy' ? 4 : enemy.type === 'soldier' ? 3 : 2;
+      if (!(enemy as any)._enemyGrenadeTimer) (enemy as any)._enemyGrenadeTimer = 4 + Math.random() * 4;
+      (enemy as any)._enemyGrenadeTimer -= dt;
+      // Throw much more often when player is in cover
+      const throwInterval = state.player.inCover ? 3 + Math.random() * 2 : 8 + Math.random() * 6;
+      if ((enemy as any)._enemyGrenadeTimer <= 0 && (enemy as any)._grenadeSupply > 0) {
+        (enemy as any)._grenadeSupply--;
+        (enemy as any)._enemyGrenadeTimer = throwInterval;
+        const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        // Lead the target slightly
+        const leadDist = distToPlayer * 0.1;
+        state.grenades.push({
+          pos: { x: enemy.pos.x, y: enemy.pos.y },
+          vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
+          timer: 1.8,
+          radius: 100,
+          damage: 60,
+          fromPlayer: false,
+          sourceId: enemy.id,
+          sourceType: enemy.type,
+        });
+        addMessage(state, `💣 ${enemy.type.toUpperCase()} throws GRENADE!`, 'warning');
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff8833', 3);
+      }
+    }
+
     // Decay timers
     if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
     if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
@@ -2318,9 +2400,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     } else {
       if (dist(b.pos, state.player.pos) < 12) {
-        // Cover reduces hit chance: full cover = 80% miss, peeking = 40% miss
+        // Cover reduces hit chance based on cover quality
         if (state.player.inCover) {
-          const missChance = state.player.peeking ? 0.4 : 0.8;
+          const missChance = state.player.peeking ? state.player.coverQuality * 0.5 : state.player.coverQuality;
           if (Math.random() < missChance) {
             // Bullet deflected by cover
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 3);
