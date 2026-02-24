@@ -512,6 +512,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       fromPlayer: true,
       life: bulletLife,
       weaponName: wpn?.name,
+      weaponFireMode: wpn?.fireMode,
     });
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
@@ -2295,6 +2296,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead') continue;
         if (dist(b.pos, enemy.pos) < hitRadius) {
+          // Sniper is untouchable during vanish window to prevent free DPS while teleporting
+          if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) {
+            spawnParticles(state, b.pos.x, b.pos.y, '#999', 2);
+            return false;
+          }
+
           // Elevated enemies have concealment bonus — 40% miss chance
           if (enemy.elevated && Math.random() < 0.4) {
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
@@ -2353,6 +2360,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
                 p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
 
+              const heroAutoWeapon = b.weaponFireMode === 'auto';
+              const teleportDelay = heroAutoWeapon ? 0.12 : 0.45 + Math.random() * 0.55;
+
               const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
               const throwSpeed = 3.5;
               state.grenades.push({
@@ -2386,13 +2396,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 };
               }
 
-              (enemy as any)._sniperInvisible = 2.0;
+              (enemy as any)._sniperInvisible = teleportDelay;
               (enemy as any)._sniperShouldFlee = false;
-              (enemy as any)._sniperFleeCooldown = 12;
+              (enemy as any)._sniperFleeCooldown = heroAutoWeapon ? 4 : 8;
               for (let si = 0; si < 14; si++) {
                 state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
               }
-              addMessage(state, '💫 Sniper Tuman hit — flashbang + teleport!', 'warning');
+              addMessage(state, heroAutoWeapon ? '💨 Sniper Tuman flies instantly from auto fire!' : '💫 Sniper Tuman hit — flashbang + tactical reposition!', 'warning');
             }
           }
           return false;

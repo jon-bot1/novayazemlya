@@ -69,6 +69,7 @@ export interface Bullet {
   sourceId?: string; // enemy id who fired this bullet
   sourceType?: string; // enemy type (soldier, heavy, boss, sniper, etc.)
   weaponName?: string; // weapon that fired this bullet (for Mosin bonuses etc.)
+  weaponFireMode?: 'single' | 'auto'; // player fire mode at shot time (used by sniper reaction AI)
 }
 
 export interface PlacedTNT {
