@@ -1589,7 +1589,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (repositionCovers.length > 0) {
             const target = repositionCovers[Math.floor(Math.random() * Math.min(4, repositionCovers.length))];
             (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
-            (enemy as any)._sniperInvisible = 2.0;
+            (enemy as any)._sniperInvisible = 0.35;
             for (let si = 0; si < 12; si++) {
               state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }, life: 1.5, maxLife: 1.5, color: '#888', size: 4 + Math.random() * 3 });
             }
@@ -1649,7 +1649,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           };
         }
         // Smoke at departure
-        (enemy as any)._sniperInvisible = 2.0;
+        (enemy as any)._sniperInvisible = 0.3;
         for (let si = 0; si < 15; si++) {
           state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
         }
@@ -1697,7 +1697,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           covers.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
           const target = covers[Math.min(Math.floor(Math.random() * 3), covers.length - 1)];
           (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
-          (enemy as any)._sniperInvisible = 2.5;
+          (enemy as any)._sniperInvisible = 0.4;
           (enemy as any)._sniperTeleportTimer = 5 + Math.random() * 3;
           for (let si = 0; si < 12; si++) {
             const sa = Math.random() * Math.PI * 2;
@@ -2384,7 +2384,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
 
               const heroAutoWeapon = b.weaponFireMode === 'auto';
-              const teleportDelay = heroAutoWeapon ? 0.12 : 0.45 + Math.random() * 0.55;
+              const teleportDelay = heroAutoWeapon ? 0.02 : 0.25 + Math.random() * 0.25;
 
               const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
               const throwSpeed = 3.5;
@@ -2406,22 +2406,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 fleeCovers = state.props.filter(p => isCoverProp(p) && dist(p.pos, enemy.pos) > 60);
               }
 
+              let targetPos: Vec2;
               if (fleeCovers.length > 0) {
                 fleeCovers.sort((a, b) => dist(b.pos, state.player.pos) - dist(a.pos, state.player.pos));
                 const target = fleeCovers[Math.floor(Math.random() * Math.min(3, fleeCovers.length))];
-                (enemy as any)._sniperTargetTree = { x: target.pos.x, y: target.pos.y };
+                targetPos = { x: target.pos.x, y: target.pos.y };
               } else {
                 const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
                 const teleportDist = 300 + Math.random() * 200;
-                (enemy as any)._sniperTargetTree = {
+                targetPos = {
                   x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * teleportDist)),
                   y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * teleportDist)),
                 };
               }
 
-              (enemy as any)._sniperInvisible = teleportDelay;
+              // Auto-vapen: i praktiken direkt teleport
+              if (heroAutoWeapon) {
+                enemy.pos = { ...targetPos };
+                enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+                (enemy as any)._sniperInvisible = 0.12;
+              } else {
+                (enemy as any)._sniperTargetTree = { ...targetPos };
+                (enemy as any)._sniperInvisible = teleportDelay;
+              }
               (enemy as any)._sniperShouldFlee = false;
-              (enemy as any)._sniperFleeCooldown = heroAutoWeapon ? 4 : 8;
+              (enemy as any)._sniperFleeCooldown = heroAutoWeapon ? 3 : 6;
               for (let si = 0; si < 14; si++) {
                 state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
               }
