@@ -425,6 +425,7 @@ export const GameCanvas: React.FC = () => {
     movementMode: 'walk' as 'sneak' | 'walk' | 'sprint',
     inCover: false,
     peeking: false,
+    deathCause: undefined as string | undefined,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -685,6 +686,7 @@ export const GameCanvas: React.FC = () => {
       if (state.time >= TIME_LIMIT && !state.gameOver && !state.extracted && !reinforcementsSpawned) {
         reinforcementsSpawned = true;
         state.gameOver = true;
+        state.deathCause = `⏱ Time ran out (${Math.floor(TIME_LIMIT / 60)}:${String(Math.floor(TIME_LIMIT % 60)).padStart(2, '0')}) — overwhelmed by reinforcements`;
         state.messages.push({ text: '🚨 REINFORCEMENTS ARRIVED — YOU ARE OVERWHELMED!', time: state.time, type: 'damage' });
       }
 
@@ -731,6 +733,7 @@ export const GameCanvas: React.FC = () => {
           movementMode: inputRef.current.movementMode,
           inCover: state.player.inCover,
           peeking: state.player.peeking,
+          deathCause: state.deathCause,
         });
       }
 
@@ -775,6 +778,7 @@ export const GameCanvas: React.FC = () => {
           onViewDocuments={() => { setShowIntel(true); }}
           timeLimit={TIME_LIMIT}
           playerName={playerName}
+          deathCause={hudState.deathCause}
         />
 
         <LootPopup notifications={lootNotifications} />

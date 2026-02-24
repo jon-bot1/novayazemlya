@@ -66,6 +66,8 @@ export interface Bullet {
   fromPlayer: boolean;
   life: number;
   elevated?: boolean; // bullet from elevated enemy, ignores walls
+  sourceId?: string; // enemy id who fired this bullet
+  sourceType?: string; // enemy type (soldier, heavy, boss, sniper, etc.)
 }
 
 export interface Particle {
@@ -84,6 +86,8 @@ export interface Grenade {
   damage: number;
   radius: number; // explosion radius
   fromPlayer: boolean;
+  sourceId?: string;
+  sourceType?: string;
 }
 
 export type TacticalRole = 'assault' | 'flanker' | 'suppressor' | 'none';
@@ -238,6 +242,7 @@ export interface GameState {
   reinforcementTimer: number; // countdown to next reinforcement wave
   reinforcementsSpawned: number; // total reinforcements spawned so far
   coverNearby: boolean; // true when player is near a cover object
+  deathCause?: string; // what killed the player
 }
 
 export interface SoundEvent {

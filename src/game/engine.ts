@@ -294,6 +294,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (mz && rectContains(mz.x, mz.y, mz.w, mz.h, newPos.x, newPos.y, 6)) {
       state.player.hp = 0;
       state.gameOver = true;
+      state.deathCause = '💥 Stepped on a landmine';
       addMessage(state, '💥 MINE! You stepped on a landmine!', 'damage');
       playExplosion();
       spawnParticles(state, newPos.x, newPos.y, '#ff4400', 25);
@@ -593,6 +594,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
             state.gameOver = true;
+            state.deathCause = '🧨 Killed by own TNT explosion';
             addMessage(state, '☠ DEAD', 'damage');
           }
         }
@@ -838,6 +840,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (state.player.hp <= 0) {
     state.player.hp = 0;
     state.gameOver = true;
+    if (!state.deathCause) state.deathCause = state.player.bleedRate > 0 ? '🩸 Bled out' : '☠ Killed in action';
     addMessage(state, '☠ DEAD', 'damage');
     return state;
   }
@@ -1216,6 +1219,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         radius: 180,
         damage: -1,
         fromPlayer: false,
+        sourceId: enemy.id,
+        sourceType: enemy.type,
       });
       addMessage(state, '💫 HEAVY throws FLASHBANG!', 'warning');
       spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 4);
@@ -1295,6 +1300,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
             damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
+            sourceId: enemy.id, sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
@@ -1343,9 +1349,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
             vel: { x: Math.cos(fbAngle) * throwSpeed, y: Math.sin(fbAngle) * throwSpeed },
             timer: 0.6,
-            damage: -1, // flashbang marker
+            damage: -1,
             radius: 200,
             fromPlayer: false,
+            sourceId: enemy.id, sourceType: 'sniper',
           });
           addMessage(state, '💫 Sniper Tuman throws a flashbang and flees!', 'warning');
           playExplosion();
@@ -1680,6 +1687,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
             damage: enemy.damage * 0.7, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
+            sourceId: enemy.id, sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
@@ -1700,6 +1708,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
             damage: enemy.damage * 0.6, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
+            sourceId: enemy.id, sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
@@ -1760,6 +1769,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             fromPlayer: false,
             life: enemy.type === 'sniper' ? 80 : 50,
             elevated: enemy.elevated,
+            sourceId: enemy.id,
+            sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
@@ -1786,8 +1797,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 vel: { x: Math.cos(gAngle) * gSpeed, y: Math.sin(gAngle) * gSpeed },
                 timer: 1.0,
                 radius: 200,
-                damage: -1, // flashbang marker
+                damage: -1,
                 fromPlayer: false,
+                sourceId: enemy.id,
+                sourceType: 'boss',
               });
               addMessage(state, '💫 OSIPOVITJ throws FLASHBANG!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
@@ -1799,6 +1812,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 radius: 80,
                 damage: 25,
                 fromPlayer: false,
+                sourceId: enemy.id,
+                sourceType: 'boss',
               });
               addMessage(state, '💣 OSIPOVITJ throws grenade!', 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
@@ -1946,6 +1961,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
             state.gameOver = true;
+            const srcLabel = g.sourceType === 'boss' ? 'Commandant Osipovitj' : g.sourceType ? g.sourceType.toUpperCase() : 'unknown';
+            state.deathCause = g.fromPlayer ? '💣 Killed by own grenade' : `💣 Grenade from ${srcLabel}`;
             addMessage(state, '☠ DEAD', 'damage');
           }
         }
@@ -2105,6 +2122,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
           state.gameOver = true;
+          const srcLabel = b.sourceType === 'boss' ? 'Commandant Osipovitj' : b.sourceType === 'sniper' ? 'Sniper Tuman' : b.sourceType ? b.sourceType.toUpperCase() : 'unknown';
+          state.deathCause = `🔫 Shot by ${srcLabel}`;
           addMessage(state, '☠ DEAD', 'damage');
         }
         return false;
