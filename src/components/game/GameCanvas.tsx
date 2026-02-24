@@ -69,6 +69,14 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </label>
       </div>
 
+      <button
+        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
+        onClick={handleStart}
+        disabled={!anonymous && name.trim().length === 0}
+      >
+        ▶ BEGIN OPERATION
+      </button>
+
       {/* Tabs */}
       <div className="flex gap-0 border-b border-border">
         <button
@@ -388,13 +396,6 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </>
       )}
 
-      <button
-        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
-        onClick={handleStart}
-        disabled={!anonymous && name.trim().length === 0}
-      >
-        ▶ BEGIN OPERATION
-      </button>
     </div>
   </div>
   );
