@@ -2501,8 +2501,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
                 p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
 
-              const heroAutoWeapon = b.weaponFireMode === 'auto';
-              const teleportDelay = heroAutoWeapon ? 0.02 : 0.25 + Math.random() * 0.25;
+              const teleportDelay = 0.02;
 
               const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
               const throwSpeed = 3.5;
@@ -2518,10 +2517,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               playExplosion();
 
               let fleeCovers = state.props.filter(p =>
-                isCoverProp(p) && dist(p.pos, state.player.pos) > 300 && dist(p.pos, enemy.pos) > 80
+                isCoverProp(p) &&
+                dist(p.pos, state.player.pos) > 320 &&
+                dist(p.pos, enemy.pos) > 140
               );
               if (fleeCovers.length === 0) {
-                fleeCovers = state.props.filter(p => isCoverProp(p) && dist(p.pos, enemy.pos) > 60);
+                fleeCovers = state.props.filter(p =>
+                  isCoverProp(p) &&
+                  dist(p.pos, enemy.pos) > 120
+                );
               }
 
               let targetPos: Vec2;
@@ -2531,28 +2535,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 targetPos = { x: target.pos.x, y: target.pos.y };
               } else {
                 const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
-                const teleportDist = 300 + Math.random() * 200;
+                const teleportDist = 380 + Math.random() * 260;
                 targetPos = {
                   x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * teleportDist)),
                   y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * teleportDist)),
                 };
               }
 
-              // Auto-vapen: i praktiken direkt teleport
-              if (heroAutoWeapon) {
-                enemy.pos = { ...targetPos };
-                enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-                (enemy as any)._sniperInvisible = 0.12;
-              } else {
-                (enemy as any)._sniperTargetTree = { ...targetPos };
-                (enemy as any)._sniperInvisible = teleportDelay;
-              }
+              // Always teleport immediately on hit to avoid getting pinned in one cover spot.
+              enemy.pos = { ...targetPos };
+              enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+              (enemy as any)._sniperTargetTree = { ...targetPos };
+              (enemy as any)._sniperInvisible = teleportDelay;
               (enemy as any)._sniperShouldFlee = false;
-              (enemy as any)._sniperFleeCooldown = heroAutoWeapon ? 3 : 6;
+              (enemy as any)._sniperFleeCooldown = 2.5;
               for (let si = 0; si < 14; si++) {
                 state.particles.push({ pos: { x: enemy.pos.x, y: enemy.pos.y }, vel: { x: (Math.random() - 0.5) * 2.5, y: (Math.random() - 0.5) * 2.5 }, life: 2, maxLife: 2, color: '#777', size: 5 + Math.random() * 4 });
               }
-              addMessage(state, heroAutoWeapon ? '💨 Sniper Tuman flies instantly from auto fire!' : '💫 Sniper Tuman hit — flashbang + tactical reposition!', 'warning');
+              addMessage(state, '💫 Sniper Tuman hit — flashbang + instant reposition!', 'warning');
             }
           }
           return false;
