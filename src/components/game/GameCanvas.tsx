@@ -148,14 +148,13 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           {/* Sniper */}
           <div className="border border-accent/40 rounded p-3 bg-accent/5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-display text-accent">🎯 Sniper Tuman</span>
+              <span className="text-sm font-display text-accent">🎯 Sniper</span>
               <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">SEMI-BOSS</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
-              The soldiers call him "Tuman" — Fog. He earned the name because of the smoke clouds 
-              he leaves behind when he vanishes between the trees. 
+              Nobody knows his real name. The soldiers call him "Tuman" — Fog. 
               He appeared at Objekt 47 three months ago with no transfer papers. 
-              Operates alone in the perimeter forest with a scoped Mosin-Nagant.
+              Operates alone in the perimeter forest with a scoped Mosin-Nagant. 
               His kills are clean — one round, center mass, no witnesses. 
               Some say he was the one who silenced Group Cedar. If you hear nothing, he's already aiming.
             </p>
