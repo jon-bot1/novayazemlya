@@ -1878,7 +1878,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Soldiers have +15% headshot chance (weaker helmets)
           const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
           const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus);
-          const isCrit = enemy.type !== 'boss' && Math.random() < critChance;
+          const isCrit = enemy.type !== 'boss' && enemy.type !== 'sniper' && Math.random() < critChance;
           
           if (isCrit) {
             enemy.hp = 0;
