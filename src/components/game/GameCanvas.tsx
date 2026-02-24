@@ -292,6 +292,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
               <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
+              <span className="text-muted-foreground">E (near wall)</span><span className="text-foreground">Place TNT 🧨</span>
               <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
               <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
             </div>

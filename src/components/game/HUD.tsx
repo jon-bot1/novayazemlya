@@ -57,72 +57,73 @@ export const HUD: React.FC<HUDProps> = ({
   const seconds = timeRemaining !== null ? Math.floor(timeRemaining % 60) : 0;
   const timeUrgent = timeRemaining !== null && timeRemaining < 60;
 
+  const grenadeCount = player.inventory.filter(i => i.category === 'grenade').length;
+  const flashbangCount = player.inventory.filter(i => i.category === 'flashbang').length;
+  const tntCount = player.tntCount || 0;
+  const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
+  const medkits = player.inventory.filter(i => i.medicalType === 'medkit').length;
+  const morphine = player.inventory.filter(i => i.medicalType === 'morphine').length;
+
   return (
     <div className="absolute inset-0 pointer-events-none">
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-start justify-between p-3">
-        {/* HP */}
-        <div className="flex flex-col gap-1">
+      <div className="absolute top-0 left-0 right-0 flex items-start justify-between p-3 gap-2">
+        {/* LEFT PANEL — HP, Medical, Movement */}
+        <div className="flex flex-col gap-1.5 bg-card/70 backdrop-blur-sm rounded-md p-2.5 border border-border/40">
+          {/* HP bar — large and clear */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-foreground/70 font-mono">HP</span>
-            <div className="w-28 h-3 bg-secondary rounded-sm overflow-hidden border border-border/40">
+            <span className="text-sm font-display text-foreground/80">HP</span>
+            <div className="w-36 h-4 bg-secondary rounded-sm overflow-hidden border border-border/50">
               <div className={`h-full ${hpColor} transition-all duration-200`} style={{ width: `${Math.min(100, hpPercent)}%` }} />
             </div>
-            <span className="text-xs text-foreground font-mono">{Math.floor(player.hp)}</span>
+            <span className="text-sm font-display text-foreground tabular-nums min-w-[32px] text-right">{Math.floor(player.hp)}</span>
           </div>
           {player.bleedRate > 0 && (
-            <span className="text-xs text-danger animate-pulse-glow font-mono">🩸 BLEEDING</span>
+            <span className="text-sm text-danger animate-pulse-glow font-display">🩸 BLEEDING</span>
           )}
-          <div className="flex items-center gap-2 mt-0.5">
-            {(() => {
-              const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
-              const medkits = player.inventory.filter(i => i.medicalType === 'medkit').length;
-              const morphine = player.inventory.filter(i => i.medicalType === 'morphine').length;
-              return (
-                <>
-                  <span className={`text-[10px] font-mono ${bandages > 0 ? 'text-foreground/70' : 'text-foreground/30'}`}>🩹{bandages}</span>
-                  <span className={`text-[10px] font-mono ${medkits > 0 ? 'text-foreground/70' : 'text-foreground/30'}`}>🏥{medkits}</span>
-                  <span className={`text-[10px] font-mono ${morphine > 0 ? 'text-loot' : 'text-foreground/30'}`}>💉{morphine}</span>
-                  <span className="text-[9px] text-muted-foreground font-mono">[H]</span>
-                </>
-              );
-            })()}
+          {/* Medical supplies */}
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-mono ${bandages > 0 ? 'text-foreground' : 'text-foreground/30'}`}>🩹 {bandages}</span>
+            <span className={`text-xs font-mono ${medkits > 0 ? 'text-foreground' : 'text-foreground/30'}`}>🏥 {medkits}</span>
+            <span className={`text-xs font-mono ${morphine > 0 ? 'text-loot' : 'text-foreground/30'}`}>💉 {morphine}</span>
+            <span className="text-[10px] text-muted-foreground font-mono">[H] heal</span>
           </div>
-          <div className="hidden sm:flex items-center gap-1 mt-0.5">
+          {/* Movement & Cover */}
+          <div className="hidden sm:flex items-center gap-2">
             {(() => {
               const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
               const labels = { sneak: 'SNEAK', walk: 'WALK', sprint: 'SPRINT' };
-              const colors = { sneak: 'text-accent', walk: 'text-foreground/60', sprint: 'text-warning' };
+              const colors = { sneak: 'text-accent', walk: 'text-foreground/70', sprint: 'text-warning' };
               return (
-                <span className={`text-[10px] font-mono ${colors[movementMode]}`}>
+                <span className={`text-xs font-mono ${colors[movementMode]}`}>
                   {icons[movementMode]} {labels[movementMode]}
                 </span>
               );
             })()}
             {inCover && (
-              <span className={`text-[10px] font-mono ${peeking ? 'text-warning animate-pulse-glow' : 'text-accent'}`}>
-                | {peeking ? '🔫 PEEK' : '🛡️ COVER'}
+              <span className={`text-xs font-mono ${peeking ? 'text-warning animate-pulse-glow' : 'text-accent'}`}>
+                {peeking ? '🔫 PEEK' : '🛡️ COVER'}
               </span>
             )}
           </div>
         </div>
 
-        {/* Timer */}
+        {/* CENTER — Timer */}
         {timeRemaining !== null && (
-          <div className={`text-center ${timeUrgent ? 'animate-pulse-glow' : ''}`}>
-            <span className={`font-display text-2xl ${timeUrgent ? 'text-danger text-glow-red' : 'text-foreground'}`}>
+          <div className={`text-center bg-card/70 backdrop-blur-sm rounded-md px-4 py-2 border border-border/40 ${timeUrgent ? 'border-danger/50' : ''}`}>
+            <span className={`font-display text-2xl ${timeUrgent ? 'text-danger text-glow-red animate-pulse-glow' : 'text-foreground'}`}>
               ⏱ {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </span>
             <div className={`text-[10px] font-mono ${timeUrgent ? 'text-danger' : 'text-muted-foreground'}`}>
-              {timeUrgent ? '⚠ HURRY! Time = death!' : 'Reinforcements arrive at 00:00'}
+              {timeUrgent ? '⚠ HURRY!' : 'Time limit'}
             </div>
           </div>
         )}
 
-        {/* Weapon slots — LARGE and CLEAR */}
+        {/* RIGHT PANEL — Weapons, Equipment, Mission */}
         <div className="flex flex-col items-end gap-1.5">
           {/* Active weapon — big prominent card */}
-          <div className="bg-card/90 backdrop-blur-sm border-2 border-accent/60 rounded-md px-4 py-2.5 shadow-lg min-w-[180px]">
+          <div className="bg-card/90 backdrop-blur-sm border-2 border-accent/60 rounded-md px-4 py-2.5 shadow-lg min-w-[200px]">
             <div className="flex items-center justify-between gap-3">
               <div className="flex flex-col">
                 <span className="text-foreground font-display text-base leading-tight">
@@ -135,60 +136,68 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
           {/* Weapon slot buttons */}
           <div className="flex gap-1.5">
-            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[90px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
+            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[95px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
               [1] {player.sidearm?.name || '—'}
             </div>
-            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[90px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
+            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[95px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
               [2] {player.primaryWeapon?.name || '—'}
             </div>
           </div>
-          {/* Grenades & TNT */}
-          <div className="flex items-center gap-3 bg-card/60 border border-border/40 rounded px-3 py-1">
-            <span className={`text-sm font-mono ${player.inventory.filter(i => i.category === 'grenade').length > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
-              💣 {player.inventory.filter(i => i.category === 'grenade').length} <span className="text-[9px] text-muted-foreground">[G]</span>
+          {/* Grenades, Flashbangs & TNT — always visible */}
+          <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
+            <span className={`text-sm font-mono ${grenadeCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
+              💣 {grenadeCount}
             </span>
-            {player.inventory.some(i => i.name === 'TNT Charge') && (
-              <span className="text-sm font-mono text-warning">
-                🧨 {player.inventory.filter(i => i.name === 'TNT Charge').length}
-              </span>
-            )}
+            <span className={`text-sm font-mono ${flashbangCount > 0 ? 'text-foreground' : 'text-muted-foreground/40'}`}>
+              💫 {flashbangCount}
+            </span>
+            <span className="text-[9px] text-muted-foreground font-mono">[G]</span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className={`text-sm font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
+              🧨 {tntCount}
+            </span>
+            <span className="text-[9px] text-muted-foreground font-mono">[E wall]</span>
           </div>
           {/* Kill count & docs */}
-          <span className="text-sm text-foreground/80 font-mono">☠ {killCount}</span>
-          <button 
-            className="text-xs font-mono text-accent/80 hover:text-accent pointer-events-auto flex items-center gap-1"
-            onClick={onViewDocuments}
-          >
-            📄 {documentsFound}/{totalDocuments}
-            {codesFound.length > 0 && <span className="text-warning">☢{codesFound.length}</span>}
-          </button>
-          {/* Mission items — prominent */}
-          <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot bg-loot/10 border border-loot/30 animate-pulse-glow' : 'text-muted-foreground/50'}`}>
-            💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ✓' : 'USB —'}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-foreground/80 font-mono">☠ {killCount}</span>
+            <button 
+              className="text-sm font-mono text-accent/80 hover:text-accent pointer-events-auto flex items-center gap-1"
+              onClick={onViewDocuments}
+            >
+              📄 {documentsFound}/{totalDocuments}
+              {codesFound.length > 0 && <span className="text-warning ml-1">☢{codesFound.length}</span>}
+            </button>
           </div>
-          <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded ${player.inventory.some(i => i.id === 'nuclear_codebook') ? 'text-warning bg-warning/10 border border-warning/30 animate-pulse-glow' : 'text-muted-foreground/50'}`}>
-            ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ✓' : 'CODES —'}
+          {/* Mission items — prominent cards */}
+          <div className="flex gap-1.5">
+            <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2.5 py-1 rounded-md ${player.inventory.some(i => i.id === 'boss_usb') ? 'text-loot bg-loot/15 border-2 border-loot/40 animate-pulse-glow' : 'text-muted-foreground/40 bg-card/50 border border-border/30'}`}>
+              💾 {player.inventory.some(i => i.id === 'boss_usb') ? 'USB ✓' : 'USB'}
+            </div>
+            <div className={`text-sm font-mono font-bold flex items-center gap-1 px-2.5 py-1 rounded-md ${player.inventory.some(i => i.id === 'nuclear_codebook') ? 'text-warning bg-warning/15 border-2 border-warning/40 animate-pulse-glow' : 'text-muted-foreground/40 bg-card/50 border border-border/30'}`}>
+              ☢ {player.inventory.some(i => i.id === 'nuclear_codebook') ? 'CODES ✓' : 'CODES'}
+            </div>
           </div>
         </div>
       </div>
       {/* Extraction progress */}
       {extractionProgress > 0 && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-          <span className="text-xs text-loot font-mono text-glow-green animate-pulse-glow">EXTRACTING...</span>
-          <div className="w-40 h-2 bg-secondary rounded-sm overflow-hidden border border-loot/40">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 bg-card/80 backdrop-blur-sm rounded-md px-6 py-2 border border-loot/40">
+          <span className="text-sm text-loot font-display text-glow-green animate-pulse-glow tracking-wider">EXTRACTING...</span>
+          <div className="w-48 h-3 bg-secondary rounded-sm overflow-hidden border border-loot/40">
             <div className="h-full bg-loot transition-all duration-100" style={{ width: `${(extractionProgress / 5) * 100}%` }} />
           </div>
         </div>
       )}
 
-      {/* Messages */}
-      <div className="absolute bottom-32 left-3 flex flex-col gap-1 max-w-xs">
+      {/* Messages — larger and more readable */}
+      <div className="absolute bottom-32 left-3 flex flex-col gap-1.5 max-w-sm">
         {messages.slice(-6).map((msg, i) => {
           const age = time - msg.time;
           if (age > 8) return null;
           const opacity = age > 5 ? (8 - age) / 3 : 1;
           const colors: Record<string, string> = {
-            info: 'text-foreground/80',
+            info: 'text-foreground/90',
             warning: 'text-warning',
             loot: 'text-loot',
             damage: 'text-danger',
@@ -198,7 +207,7 @@ export const HUD: React.FC<HUDProps> = ({
           return (
             <div
               key={`${msg.time}-${i}`}
-              className={`text-xs font-mono ${colors[msg.type] || 'text-foreground'}`}
+              className={`text-sm font-mono ${colors[msg.type] || 'text-foreground'} drop-shadow-md`}
               style={{ opacity }}
             >
               {'>'} {msg.text}
