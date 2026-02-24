@@ -14,6 +14,11 @@ interface AchievementStats {
   knifeDistanceKills: number;
   noHitsTaken: boolean;
   killCount: number;
+  bodiesLooted: number;
+  cachesLooted: number;
+  wallsBreached: number;
+  documentsCollected: number;
+  terminalsHacked: number;
 }
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold';
@@ -62,6 +67,11 @@ export const ACHIEVEMENTS: Achievement[] = [
   ...tierAchievements('headshot', 'Headhunter', '💀', 'headshot kills', 'headshotKills', [5, 15, 25]),
   ...tierAchievements('close', 'Up Close', '🗡️', 'kills at close range', 'knifeDistanceKills', [5, 15, 25]),
   ...tierAchievements('kills', 'One Man Army', '🪖', 'kills in a single raid', 'killCount', [15, 25, 40]),
+  ...tierAchievements('bodies', 'Scavenger', '🦴', 'bodies looted', 'bodiesLooted', [3, 8, 15]),
+  ...tierAchievements('caches', 'Treasure Hunter', '📦', 'caches looted', 'cachesLooted', [3, 7, 12]),
+  ...tierAchievements('breach', 'Breacher', '🧱', 'walls breached with TNT', 'wallsBreached', [1, 2, 3]),
+  ...tierAchievements('docs', 'Archivist', '📜', 'documents collected', 'documentsCollected', [2, 4, 6]),
+  ...tierAchievements('hacks', 'Hackerman', '💻', 'terminals hacked', 'terminalsHacked', [1, 2, 3]),
   { id: 'nohit', name: 'Ghost 👻', icon: '👻', desc: 'Complete a raid without taking damage', tier: 'gold', check: s => s.noHitsTaken && s.killCount > 0 },
 ];
 

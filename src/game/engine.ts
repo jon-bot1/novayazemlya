@@ -186,6 +186,11 @@ export function createGameState(): GameState {
     sneakKills: 0,
     knifeDistanceKills: 0,
     noHitsTaken: true,
+    bodiesLooted: 0,
+    cachesLooted: 0,
+    wallsBreached: 0,
+    documentsCollected: 0,
+    terminalsHacked: 0,
   };
 }
 
@@ -613,6 +618,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.walls.splice(bestIdx, 1, ...newSegments);
     }
 
+    if (bestIdx >= 0) state.wallsBreached++;
     addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
     playExplosion();
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 24);
@@ -694,6 +700,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     for (const lc of state.lootContainers) {
       if (!lc.looted && dist(state.player.pos, lc.pos) < 70 && hasLineOfSight(state, state.player.pos, lc.pos)) {
         lc.looted = true;
+        state.cachesLooted++;
         for (const item of lc.items) {
           state.player.inventory.push(item);
           if (item.id === 'extraction_code') {
@@ -747,6 +754,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     for (const dp of state.documentPickups) {
       if (!dp.collected && dist(state.player.pos, dp.pos) < 70 && hasLineOfSight(state, state.player.pos, dp.pos)) {
         dp.collected = true;
+        state.documentsCollected++;
         const doc = LORE_DOCUMENTS.find(d => d.id === dp.loreDocId);
         if (doc) {
           doc.found = true;
@@ -766,6 +774,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.state !== 'dead' || enemy.looted) continue;
       if (dist(state.player.pos, enemy.pos) < 70 && hasLineOfSight(state, state.player.pos, enemy.pos)) {
         enemy.looted = true;
+        state.bodiesLooted++;
         for (const item of enemy.loot) {
           state.player.inventory.push(item);
           if (item.id === 'extraction_code') {
@@ -821,6 +830,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         panel.hackProgress += 0.04;
         if (panel.hackProgress >= 1) {
           panel.hacked = true;
+          state.terminalsHacked++;
           spawnParticles(state, panel.pos.x, panel.pos.y, '#44ffaa', 10);
 
           if (panel.id === 'alarm_intel') {
@@ -2130,8 +2140,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
-          } else {
-            enemy.hp -= b.damage;
+           } else {
+            // Boss and bodyguard body armor: 33% damage reduction
+            const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
+            enemy.hp -= b.damage * armorReduction;
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
           }
@@ -2208,7 +2220,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
           } else {
-            enemy.hp -= b.damage;
+            // Boss and bodyguard body armor: 33% damage reduction
+            const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
+            enemy.hp -= b.damage * armorReduction;
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
           }
