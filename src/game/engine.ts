@@ -1045,35 +1045,118 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue;
     }
 
-    // === PANIC STATE — random shooting, running, friendly fire ===
+    // === PANIC STATE — random shooting, running everywhere, friendly fire ===
     if ((enemy as any)._panicTimer > 0) {
       (enemy as any)._panicTimer -= dt;
-      // Spin around wildly
-      enemy.angle += (Math.random() - 0.5) * 8 * dt;
-      // Run in random direction
-      const panicDir = { x: Math.cos(enemy.angle + (Math.random() - 0.5) * 2), y: Math.sin(enemy.angle + (Math.random() - 0.5) * 2) };
-      const panicSpeed = enemy.speed * dt * 60 * 1.5;
-      enemy.pos = tryMoveEnemy(state, enemy.pos, panicDir.x * panicSpeed, panicDir.y * panicSpeed, 10);
-      // Panic fire — random bullets (can hit other enemies = friendly fire)
-      if (Math.random() < 0.15) {
-        const panicAngle = enemy.angle + (Math.random() - 0.5) * 1.5;
+      // Spin around wildly — completely random direction changes
+      enemy.angle += (Math.random() - 0.5) * 12 * dt;
+      // Run in chaotic random directions (change direction frequently)
+      if (!(enemy as any)._panicDirTimer || (enemy as any)._panicDirTimer <= 0) {
+        (enemy as any)._panicAngle = Math.random() * Math.PI * 2;
+        (enemy as any)._panicDirTimer = 0.3 + Math.random() * 0.5;
+      }
+      (enemy as any)._panicDirTimer -= dt;
+      const pAngle = (enemy as any)._panicAngle || 0;
+      const panicSpeed = enemy.speed * dt * 60 * 2.0;
+      enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(pAngle) * panicSpeed, Math.sin(pAngle) * panicSpeed, 10);
+      // Panic fire — random bullets in all directions (friendly fire!)
+      if (Math.random() < 0.18) {
+        const panicAngle = Math.random() * Math.PI * 2; // completely random direction
         state.bullets.push({
           pos: { x: enemy.pos.x + Math.cos(panicAngle) * 14, y: enemy.pos.y + Math.sin(panicAngle) * 14 },
           vel: { x: Math.cos(panicAngle) * 5, y: Math.sin(panicAngle) * 5 },
           damage: enemy.damage * 0.5, damageType: 'bullet', fromPlayer: false, life: 35,
           sourceId: enemy.id, sourceType: enemy.type,
         });
-        state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
+        state.soundEvents.push({ pos: { ...enemy.pos }, radius: 250, time: state.time });
         playGunshot('rifle');
       }
-      // Spawn panic particles
-      if (Math.random() < 0.2) {
-        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffff44', 1);
+      // Yellow panic particles
+      if (Math.random() < 0.25) {
+        spawnParticles(state, enemy.pos.x + (Math.random() - 0.5) * 10, enemy.pos.y + (Math.random() - 0.5) * 10, '#ffff44', 1);
       }
       if ((enemy as any)._panicTimer <= 0) {
-        // Recover from panic — flee state
         enemy.state = 'investigate';
         enemy.investigateTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
+      }
+      continue;
+    }
+
+    // === BERSERK STATE — charges player, double HP, 10 seconds ===
+    if ((enemy as any)._berserkTimer > 0) {
+      (enemy as any)._berserkTimer -= dt;
+      // Rush toward player at high speed
+      const toPlayer = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+      enemy.angle = Math.atan2(toPlayer.y, toPlayer.x);
+      const berserkSpeed = ((enemy as any)._originalSpeed || enemy.speed) * dt * 60 * 2.5;
+      enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * berserkSpeed, toPlayer.y * berserkSpeed, 10);
+      // Rapid fire toward player
+      if (state.time - enemy.lastShot > enemy.fireRate / 1000 * 0.5 && dist(enemy.pos, state.player.pos) < enemy.shootRange * 1.5) {
+        const spread = (Math.random() - 0.5) * 0.25;
+        const angle = enemy.angle + spread;
+        state.bullets.push({
+          pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+          vel: { x: Math.cos(angle) * 7, y: Math.sin(angle) * 7 },
+          damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50,
+          sourceId: enemy.id, sourceType: enemy.type,
+        });
+        enemy.lastShot = state.time;
+        state.soundEvents.push({ pos: { ...enemy.pos }, radius: 250, time: state.time });
+        playGunshot('rifle');
+      }
+      // Red berserk particles
+      if (Math.random() < 0.3) {
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff2222', 1);
+      }
+      if ((enemy as any)._berserkTimer <= 0) {
+        // Berserk ends — restore original HP
+        enemy.maxHp = (enemy as any)._preBerserkMaxHp || enemy.maxHp;
+        enemy.hp = Math.min(enemy.hp, enemy.maxHp);
+        enemy.state = 'chase';
+      }
+      continue;
+    }
+
+    // === PRONE STATE — lying in grass, harder to hit ===
+    if ((enemy as any)._proneTimer > 0) {
+      (enemy as any)._proneTimer -= dt;
+      // Almost no movement while prone
+      enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+      // Can still shoot while prone (slowly)
+      if (state.time - enemy.lastShot > enemy.fireRate / 1000 * 1.5 && dist(enemy.pos, state.player.pos) < enemy.shootRange && hasLineOfSight(state, enemy.pos, state.player.pos, enemy.elevated)) {
+        const spread = (Math.random() - 0.5) * 0.12;
+        const angle = enemy.angle + spread;
+        state.bullets.push({
+          pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
+          vel: { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 },
+          damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50,
+          sourceId: enemy.id, sourceType: enemy.type,
+        });
+        enemy.lastShot = state.time;
+        state.soundEvents.push({ pos: { ...enemy.pos }, radius: 150, time: state.time });
+        playGunshot('rifle');
+      }
+      if ((enemy as any)._proneTimer <= 0) {
+        // Getting up — speed penalty for 2 seconds
+        (enemy as any)._proneGetUpTimer = 2.0;
+        enemy.state = 'attack';
+      }
+      continue;
+    }
+    // Prone get-up speed penalty
+    if ((enemy as any)._proneGetUpTimer > 0) {
+      (enemy as any)._proneGetUpTimer -= dt;
+      if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.25;
+      if ((enemy as any)._proneGetUpTimer <= 0) {
+        if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed;
+      }
+    }
+    // Prone go-down speed penalty
+    if ((enemy as any)._proneGoDownTimer > 0) {
+      (enemy as any)._proneGoDownTimer -= dt;
+      if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.25;
+      if ((enemy as any)._proneGoDownTimer <= 0) {
+        (enemy as any)._proneTimer = 4 + Math.random() * 4; // stay prone 4-8s
       }
       continue;
     }
@@ -2323,6 +2406,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             return false; // bullet missed due to concealment
           }
 
+          // Prone enemies — 50% miss chance (shots go over them)
+          if ((enemy as any)._proneTimer > 0 && Math.random() < 0.5) {
+            spawnParticles(state, b.pos.x, b.pos.y, '#6a8a4a', 2);
+            return false; // bullet went over prone enemy
+          }
+
           // Critical hit / headshot — chance scales with kill count (skill)
           // Soldiers have +15% headshot chance (weaker helmets)
           // Mosin-Nagant has +20% headshot bonus
@@ -2368,12 +2457,41 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
-            // Panic chance on taking damage (not boss, sniper, bodyguard, turret)
-            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer) {
-              const panicChance = enemy.hp / enemy.maxHp < 0.3 ? 0.25 : enemy.hp / enemy.maxHp < 0.5 ? 0.12 : 0.05;
-              if (Math.random() < panicChance) {
-                (enemy as any)._panicTimer = 2 + Math.random() * 2;
+            // Panic or Berserk chance on taking damage (not boss, sniper, bodyguard, turret)
+            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
+              const hpPct = enemy.hp / enemy.maxHp;
+              const panicChance = hpPct < 0.3 ? 0.25 : hpPct < 0.5 ? 0.12 : 0.05;
+              const berserkChance = hpPct < 0.3 ? 0.15 : hpPct < 0.5 ? 0.08 : 0.02;
+              const roll = Math.random();
+              if (roll < panicChance) {
+                (enemy as any)._panicTimer = 3 + Math.random() * 3;
                 addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS!`, 'warning');
+              } else if (roll < panicChance + berserkChance) {
+                (enemy as any)._berserkTimer = 10;
+                (enemy as any)._preBerserkMaxHp = enemy.maxHp;
+                enemy.maxHp *= 2;
+                enemy.hp = Math.min(enemy.hp + enemy.maxHp * 0.3, enemy.maxHp);
+                if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
+                addMessage(state, `🔥 ${enemy.type.toUpperCase()} goes BERSERK!`, 'warning');
+              }
+            }
+            // Prone trigger — soldiers/scavs in grass terrain go prone when hit
+            if ((enemy.type === 'soldier' || enemy.type === 'scav') && !(enemy as any)._proneTimer && !(enemy as any)._proneGoDownTimer && !(enemy as any)._proneGetUpTimer) {
+              // Check if in grass/forest terrain
+              let inGrass = false;
+              for (const tz of state.terrainZones) {
+                if ((tz.type === 'grass' || tz.type === 'forest') &&
+                    enemy.pos.x >= tz.x && enemy.pos.x <= tz.x + tz.w &&
+                    enemy.pos.y >= tz.y && enemy.pos.y <= tz.y + tz.h) {
+                  inGrass = true;
+                  break;
+                }
+              }
+              if (inGrass && Math.random() < 0.20) {
+                // Go down to prone — 1s speed penalty first
+                (enemy as any)._proneGoDownTimer = 1.0;
+                if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
+                addMessage(state, `🌿 ${enemy.type.toUpperCase()} drops prone in the grass!`, 'info');
               }
             }
             // Sniper Tuman: flee immediately on hit (same frame)
