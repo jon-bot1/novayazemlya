@@ -7,6 +7,7 @@ import { LoreDocument } from '../../game/lore';
 import { ActionButton } from './TouchControls';
 import { unlockSpeech } from '../../game/voice';
 import { HUD } from './HUD';
+import { HighscoreList } from './HighscoreList';
 import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
@@ -36,7 +37,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
     return () => window.removeEventListener('keydown', handler);
   }, [handleStart]);
 
-  const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates'>('briefing');
+  const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
   <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
@@ -96,6 +97,12 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           onClick={() => setTab('updates')}
         >
           📡 Updates
+        </button>
+        <button
+          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'highscores' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setTab('highscores')}
+        >
+          🏆 Highscores
         </button>
       </div>
 
@@ -328,6 +335,17 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.7 — 2026-02-24</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• Boss & bodyguards now have body armor (+33% bullet resistance)</li>
+                  <li>• 5 new achievement types: Scavenger, Treasure Hunter, Breacher, Archivist, Hackerman</li>
+                  <li>• Traveller achievement: tracks total distance walked (bronze/silver/gold)</li>
+                  <li>• Tourist achievement: visit all 3 exfil points in one raid</li>
+                  <li>• Highscores tab added to intro screen</li>
+                  <li>• Scores rounded up (no decimals)</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
                 <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.6 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• Enemies flee from placed TNT charges</li>
@@ -419,6 +437,12 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             </ul>
           </div>
         </>
+      )}
+
+      {tab === 'highscores' && (
+        <div>
+          <HighscoreList />
+        </div>
       )}
 
     </div>
