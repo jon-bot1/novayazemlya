@@ -1676,6 +1676,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
       case 'patrol': {
         if (enemy.type === 'turret') break;
+        if (enemy.type === 'sniper') { enemy.state = 'idle'; break; } // Snipers never patrol — stay still
         // Bodyguards follow their boss during patrol
         if ((enemy as any)._bodyguardOf) {
           const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
@@ -1738,6 +1739,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (Math.random() < 0.01) enemy.state = 'idle';
           break;
         }
+        if (enemy.type === 'sniper') { enemy.state = 'idle'; break; } // Snipers don't walk to investigate
         if (enemy.investigateTarget) {
           const dToTarget = dist(enemy.pos, enemy.investigateTarget);
           if (dToTarget < 30) {
