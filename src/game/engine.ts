@@ -399,6 +399,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   (state as any)._nearestCoverPos = bestCoverPos;
   (state as any)._nearestCoverLabel = bestCoverLabel;
   (state as any)._coverType = bestCoverType;
+
+  // Check if player CAN hide (near a tree/bush but not already hiding)
+  const hideProps = ['tree', 'pine_tree', 'bush'];
+  let canHideNow = false;
+  if (!(state as any)._playerHiding) {
+    for (const prop of state.props) {
+      if (!hideProps.includes(prop.type)) continue;
+      if (dist(state.player.pos, prop.pos) < 45) { canHideNow = true; break; }
+    }
+  }
+  (state as any)._canHide = canHideNow;
+  (state as any)._isHiding = !!(state as any)._playerHiding;
   
   playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
@@ -1726,7 +1738,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       // --- Flee when shot or player too close ---
       const playerTooClose = sniperDistToPlayer < 200;
-      const shouldFlee = (enemy as any)._sniperShouldFlee || (playerTooClose && !(enemy as any)._sniperFleeCooldown);
+      // Flee on hit (_sniperShouldFlee) OR proximity — proximity ignores flee cooldown
+      const shouldFlee = (enemy as any)._sniperShouldFlee || playerTooClose;
 
       if (shouldFlee && !(enemy as any)._sniperInvisible) {
         (enemy as any)._sniperShouldFlee = false;
