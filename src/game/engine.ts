@@ -1218,7 +1218,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         lastRadioCall: state.time, radioGroup: 99, radioAlert: 2,
         tacticalRole: rt === 'heavy' ? 'suppressor' : 'assault',
         flankTarget: undefined, suppressTimer: 0, callForHelpTimer: 0,
-        lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
+        lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
       };
       state.enemies.push(re);
       state.reinforcementsSpawned++;
@@ -1230,6 +1230,61 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Update enemies
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
+
+    // Friendly timer countdown
+    if (enemy.friendly) {
+      enemy.friendlyTimer -= dt;
+      if (enemy.friendlyTimer <= 0) {
+        enemy.friendly = false;
+        enemy.friendlyTimer = 0;
+        enemy.state = 'chase'; // turn hostile again
+        addMessage(state, `⚠ ${enemy.type.toUpperCase()} is no longer friendly!`, 'warning');
+      } else {
+        // Friendly AI: attack nearest non-friendly enemy
+        let nearestHostile: Enemy | null = null;
+        let nearestDist = enemy.shootRange;
+        for (const other of state.enemies) {
+          if (other === enemy || other.state === 'dead' || other.friendly) continue;
+          const d = dist(enemy.pos, other.pos);
+          if (d < nearestDist) { nearestHostile = other; nearestDist = d; }
+        }
+        if (nearestHostile) {
+          enemy.angle = Math.atan2(nearestHostile.pos.y - enemy.pos.y, nearestHostile.pos.x - enemy.pos.x);
+          if (nearestDist > 100) {
+            // Move towards target
+            const mv = normalize({ x: nearestHostile.pos.x - enemy.pos.x, y: nearestHostile.pos.y - enemy.pos.y });
+            enemy.pos = tryMoveEnemy(state, enemy.pos, mv.x * enemy.speed * dt * 60, mv.y * enemy.speed * dt * 60, 10);
+          }
+          // Shoot at hostile enemy
+          const now = performance.now();
+          if (now - enemy.lastShot > enemy.fireRate) {
+            enemy.lastShot = now;
+            const spread = (Math.random() - 0.5) * 0.15;
+            state.bullets.push({
+              pos: { ...enemy.pos },
+              vel: { x: Math.cos(enemy.angle + spread) * 6, y: Math.sin(enemy.angle + spread) * 6 },
+              damage: enemy.damage,
+              damageType: 'bullet',
+              fromPlayer: false,
+              life: 40,
+              sourceId: enemy.id,
+              sourceType: 'friendly',
+            });
+          }
+        } else {
+          // Follow player
+          const dToPlayer = dist(enemy.pos, state.player.pos);
+          if (dToPlayer > 80) {
+            const mv = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+            enemy.pos = tryMoveEnemy(state, enemy.pos, mv.x * enemy.speed * dt * 60, mv.y * enemy.speed * dt * 60, 10);
+          }
+          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        }
+        // Green particles to show friendly status
+        if (Math.random() < 0.05) spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff44', 1);
+        continue;
+      }
+    }
 
     // Stunned enemies can't act
     if (enemy.stunTimer > 0) {
@@ -2437,7 +2492,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             lastShot: 0, angle: Math.random() * Math.PI * 2,
             type: 'scav', eyeBlink: 3, loot: [], looted: false,
             lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
-            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false,
+            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
           };
           state.enemies.push(minion);
           addMessage(state, '📻 Osipovitj calls reinforcements!', 'warning');
@@ -2487,8 +2542,34 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     if (g.timer <= 0) {
       const isFlashbang = g.damage === -1;
+      const isGas = g.damage === -2;
 
-      if (isFlashbang) {
+      if (isGas) {
+        // GAS GRENADE — convert nearest enemy within small radius to friendly
+        addMessage(state, '☁️ GAS GRENADE!', 'warning');
+        spawnParticles(state, g.pos.x, g.pos.y, '#88ff88', 20);
+        spawnParticles(state, g.pos.x, g.pos.y, '#44cc44', 15);
+        state.soundEvents.push({ pos: { ...g.pos }, radius: 200, time: state.time });
+        const gasRadius = 60; // small radius — only hits 1 enemy
+        let closest: Enemy | null = null;
+        let closestDist = gasRadius;
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead' || enemy.type === 'boss' || enemy.type === 'turret' || enemy.friendly) continue;
+          const d = dist(g.pos, enemy.pos);
+          if (d < closestDist && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+            closest = enemy;
+            closestDist = d;
+          }
+        }
+        if (closest) {
+          closest.friendly = true;
+          closest.friendlyTimer = 20;
+          closest.state = 'chase'; // start fighting for player
+          addMessage(state, `☁️ ${closest.type.toUpperCase()} CONVERTED — fights for you for 20s!`, 'info');
+        } else {
+          addMessage(state, '☁️ Gas dissipated — no target hit', 'info');
+        }
+      } else if (isFlashbang) {
         // FLASHBANG — stun enemies, blind player
         addMessage(state, '💫 FLASHBANG!', 'warning');
         spawnParticles(state, g.pos.x, g.pos.y, '#ffffcc', 25);
@@ -2595,7 +2676,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Check elevated enemy hits BEFORE wall collision so bullets can reach wall guards
     if (b.fromPlayer) {
       for (const enemy of state.enemies) {
-        if (enemy.state === 'dead' || !enemy.elevated) continue;
+        if (enemy.state === 'dead' || !enemy.elevated || enemy.friendly) continue;
         if (dist(b.pos, enemy.pos) < 28) { // larger hitbox — guards are on walls
           if (Math.random() < 0.25) {
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
@@ -2666,7 +2747,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const isMosin = b.weaponName === 'Mosin-Nagant';
       const hitRadius = isMosin ? 21 : 16; // base 14+2, Mosin 19+2 forgiving hitbox
       for (const enemy of state.enemies) {
-        if (enemy.state === 'dead') continue;
+        if (enemy.state === 'dead' || enemy.friendly) continue; // don't hit friendly enemies
         // Sniper near-miss: bullets within 3px of hitbox trigger flee (no damage)
         if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
           const nearMissRadius = hitRadius + 3;
@@ -2825,6 +2906,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
       }
+
+      // Friendly bullets don't hit player
+      if (b.sourceType === 'friendly') return true;
 
       if (dist(b.pos, state.player.pos) < 12) {
         // Cover reduces hit chance based on cover quality

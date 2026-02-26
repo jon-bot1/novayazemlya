@@ -14,7 +14,8 @@ import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
 import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
-import { getUpgradeLevel, getUpgradeCost, UPGRADES } from '../../game/upgrades';
+import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
+import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES } from '../../game/items';
 import { supabase } from '@/integrations/supabase/client';
 
 const TIME_LIMIT = 300; // 5 minutes
@@ -450,6 +451,8 @@ async function syncStashToDb(playerName: string, stash: StashState) {
         extraction_count: stash.extractionCount,
         stash_items: stash.items as any,
         upgrades: stash.upgrades as any,
+        xp: stash.xp,
+        level: stash.level,
       }).eq('player_name', name);
     } else {
       await supabase.from('player_progress').insert({
@@ -459,6 +462,8 @@ async function syncStashToDb(playerName: string, stash: StashState) {
         extraction_count: stash.extractionCount,
         stash_items: stash.items as any,
         upgrades: stash.upgrades as any,
+        xp: stash.xp,
+        level: stash.level,
       });
     }
   } catch (e) {
@@ -478,6 +483,8 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
         raidCount: data.raid_count,
         extractionCount: data.extraction_count,
         upgrades: (data.upgrades as any) || {},
+        xp: (data as any).xp || 0,
+        level: (data as any).level || 1,
       };
     }
   } catch (e) {
@@ -969,13 +976,23 @@ export const GameCanvas: React.FC = () => {
       });
       setObjectives(completedObjectives);
       const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
+      const objectiveXp = completedObjectives.filter(o => o.completed).reduce((s, o) => s + Math.floor(o.reward / 2), 0);
+      // XP: kills (10 each), extraction bonus (50), loot value (1 per 50₽), objectives
+      const killXp = state.killCount * 10;
+      const extractionXp = 50;
+      const lootXp = Math.floor(lootValue / 50);
+      const totalXp = killXp + extractionXp + lootXp + objectiveXp;
 
       setStash(prev => {
+        const newXp = prev.xp + totalXp;
+        const newLevel = getLevelForXp(newXp);
         const updated = {
           ...prev,
           items: [...prev.items, ...lootItems],
           extractionCount: prev.extractionCount + 1,
           rubles: prev.rubles + objectiveReward,
+          xp: newXp,
+          level: newLevel,
         };
         saveStash(updated);
         syncStashToDb(playerName, updated);
@@ -1095,6 +1112,42 @@ export const GameCanvas: React.FC = () => {
                 ...prev,
                 rubles: prev.rubles - cost,
                 upgrades: { ...prev.upgrades, [upgradeId]: currentLevel + 1 },
+              };
+              saveStash(updated);
+              syncStashToDb(playerName, updated);
+              return updated;
+            });
+          }}
+          onBuyTraderItem={(itemId) => {
+            setStash(prev => {
+              const traderItem = TRADER_ITEMS.find(t => t.id === itemId);
+              if (!traderItem || prev.rubles < traderItem.cost) return prev;
+              let newItem: Item;
+              switch (itemId) {
+                case 'buy_bandage': newItem = createMedical('Bandage', 10, '🩹', 'bandage', 3); break;
+                case 'buy_medkit': newItem = createMedical('Medkit', 40, '🏥', 'medkit', 1); break;
+                case 'buy_morphine': newItem = createMedical('Morphine', 100, '💉', 'morphine', 5, 8); break;
+                case 'buy_frag': newItem = createGrenade(); break;
+                case 'buy_flashbang': newItem = createFlashbang(); break;
+                case 'buy_gas': newItem = createGasGrenade(); break;
+                case 'buy_tnt': newItem = createTNT(); break;
+                case 'buy_ammo_545': newItem = createAmmo('5.45x39', 20); break;
+                case 'buy_ammo_762': newItem = createAmmo('7.62x39', 15); break;
+                case 'buy_ammo_54r': newItem = createAmmo('7.62x54R', 10); break;
+                case 'buy_armor': newItem = createArmor(); break;
+                case 'buy_helmet': newItem = createHelmet(); break;
+                case 'buy_goggles': newItem = createGoggles(); break;
+                case 'buy_backpack': newItem = createBackpack(); break;
+                case 'buy_knife': newItem = WEAPON_TEMPLATES.knife(); break;
+                case 'buy_ak74': newItem = WEAPON_TEMPLATES.ak74(); break;
+                case 'buy_mosin': newItem = WEAPON_TEMPLATES.mosin(); break;
+                case 'buy_toz': newItem = WEAPON_TEMPLATES.toz(); break;
+                default: return prev;
+              }
+              const updated = {
+                ...prev,
+                rubles: prev.rubles - traderItem.cost,
+                items: [...prev.items, newItem],
               };
               saveStash(updated);
               syncStashToDb(playerName, updated);

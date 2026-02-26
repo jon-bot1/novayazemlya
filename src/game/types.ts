@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee' | 'electric'
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'key' | 'backpack';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -140,6 +140,8 @@ export interface Enemy {
   lastTacticalSwitch: number; // prevent rapid role switching
   stunTimer: number; // flashbang stun duration remaining
   elevated: boolean; // on raised platform, can shoot over walls
+  friendly: boolean; // converted by gas grenade — fights for player
+  friendlyTimer: number; // seconds remaining as friendly
 }
 
 export interface Player {
