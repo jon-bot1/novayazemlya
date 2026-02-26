@@ -34,10 +34,17 @@ function countBackpackSlotsUsed(state: GameState): number {
 }
 
 function canPickupItem(state: GameState, item: Item): boolean {
-  // Keys, quest items, and ammo always fit
+  // Keys, quest items, access cards, and ammo always fit
   if (item.category === 'key' || item.category === 'ammo' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
   // Throwables do not consume backpack slots
-  if (item.category === 'grenade' || item.category === 'flashbang' || item.category === 'gas_grenade') return true;
+  if (item.category === 'grenade' || item.category === 'flashbang' || item.category === 'gas_grenade') {
+    // Max 5 total grenades (frag + gas, not counting flashbangs)
+    const totalGrenades = state.player.inventory.filter(i => i.category === 'grenade' || i.category === 'gas_grenade').length;
+    if (item.category === 'grenade' || item.category === 'gas_grenade') {
+      return totalGrenades < 5;
+    }
+    return true;
+  }
   const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
   return countBackpackSlotsUsed(state) < maxSlots;
 }
@@ -2610,7 +2617,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     // Enemies see incoming grenade and flee (player grenades only)
-    if (g.fromPlayer && g.timer > 0.3 && g.timer < 1.5) {
+    if (g.fromPlayer && g.timer > 0.3 && g.timer < 1.5 && g.damage !== -2) {
+      // Gas grenades do NOT cause enemies to flee
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
@@ -2638,7 +2646,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         let closest: Enemy | null = null;
         let closestDist = gasRadius;
         for (const enemy of state.enemies) {
-          if (enemy.state === 'dead' || enemy.type === 'boss' || enemy.type === 'turret' || enemy.friendly) continue;
+          if (enemy.state === 'dead' || enemy.type === 'boss' || enemy.type === 'turret' || enemy.type === 'sniper' || (enemy as any)._isBodyguard || enemy.friendly) continue;
           const d = dist(g.pos, enemy.pos);
           if (d < closestDist && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             closest = enemy;
