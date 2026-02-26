@@ -883,13 +883,14 @@ export function generateMap() {
 
 export function createInitialPlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
+  const knife = WEAPON_TEMPLATES.knife();
   return {
     pos: { x: 1510, y: MAP_H - 150 },
     hp: 100,
     maxHp: 100,
     speed: 1.875,
     angle: -Math.PI / 2,
-    inventory: [weapon, createAmmo('9x18', 24), createGrenade(), createGrenade()],
+    inventory: [weapon, knife, createAmmo('9x18', 24), createGrenade(), createGrenade()],
     equippedWeapon: weapon,
     sidearm: weapon,
     primaryWeapon: null as any,
@@ -908,5 +909,6 @@ export function createInitialPlayer() {
     peeking: false,
     lastGrenadeTime: 0,
     tntCount: 0,
+    meleeWeapon: knife, // always available melee weapon
   };
 }

@@ -681,12 +681,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       addMessage(state, `⚠ ${wpn!.name} is BROKEN! Find a new weapon!`, 'warning');
     }
   } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
-    // Init durability on first shot if not set (sidearms skip durability)
-    if (wpn && !isSidearm && (wpn as any)._durability === undefined) {
-      // Durability based on weapon type: melee=30, rifles=120
-      const isMelee = (wpn.weaponRange || 60) <= 10;
-      (wpn as any)._durability = isMelee ? 30 : 120;
-      (wpn as any)._maxDurability = (wpn as any)._durability;
+    // Init durability on first shot if not set (sidearms and melee skip durability)
+    const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
+    if (wpn && !isSidearm && !isMelee && (wpn as any)._durability === undefined) {
+      // Durability based on weapon type: rifles=120
+      (wpn as any)._durability = 120;
+      (wpn as any)._maxDurability = 120;
     }
     
     // Degradation penalties: accuracy worsens (not Mosin, not sidearms)
@@ -714,8 +714,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
     
-    // Reduce durability (sidearms skip)
-    if (wpn && !isSidearm) {
+    // Reduce durability (sidearms and melee skip)
+    if (wpn && !isSidearm && !isMelee) {
       (wpn as any)._durability = Math.max(0, ((wpn as any)._durability || 120) - 1);
       if ((wpn as any)._durability === 10) {
         addMessage(state, `⚠ ${wpn.name} is wearing out! Accuracy & fire rate degraded!`, 'warning');
@@ -2761,6 +2761,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
 
+        // Grenade near airplane → sabotage
+        if (g.fromPlayer) {
+          for (const prop of state.props) {
+            if (prop.type === 'airplane' && dist(g.pos, prop.pos) < 150 && !(state as any)._tntOnPlane) {
+              (state as any)._tntOnPlane = true;
+              addMessage(state, '✈️ Aircraft destroyed by grenade! Sabotage objective complete!', 'intel');
+              spawnParticles(state, prop.pos.x, prop.pos.y, '#ff8833', 15);
+            }
+          }
+        }
+
         // Damage player if in radius AND line of sight
         const d = dist(g.pos, state.player.pos);
         if (d < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
@@ -2789,6 +2800,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     b.life--;
 
     if (b.life <= 0) return false;
+
+    // Melee bullets can sabotage airplane
+    if (b.fromPlayer && b.weaponName && (b.weaponName === 'Combat Knife' || b.weaponName === 'Baton') && !(state as any)._tntOnPlane) {
+      for (const prop of state.props) {
+        if (prop.type === 'airplane' && dist(b.pos, prop.pos) < 80) {
+          (state as any)._tntOnPlane = true;
+          addMessage(state, '✈️ Aircraft sabotaged with melee! Objective complete!', 'intel');
+          spawnParticles(state, prop.pos.x, prop.pos.y, '#ff8833', 10);
+        }
+      }
+    }
 
     // Check elevated enemy hits BEFORE wall collision so bullets can reach wall guards
     if (b.fromPlayer) {
