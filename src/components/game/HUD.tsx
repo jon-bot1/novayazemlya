@@ -173,6 +173,7 @@ export const HUD: React.FC<HUDProps> = ({
   const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
   const medkits = player.inventory.filter(i => i.medicalType === 'medkit').length;
   const morphine = player.inventory.filter(i => i.medicalType === 'morphine').length;
+  const injectorCount = player.inventory.filter(i => i.id === 'emergency_injector' || i.name === 'Emergency Injector').length;
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -197,6 +198,22 @@ export const HUD: React.FC<HUDProps> = ({
             <span className={`text-xs font-mono ${medkits > 0 ? 'text-foreground' : 'text-foreground/30'}`}>🏥 {medkits}</span>
             <span className={`text-xs font-mono ${morphine > 0 ? 'text-loot' : 'text-foreground/30'}`}>💉 {morphine}</span>
             <span className="text-[10px] text-muted-foreground font-mono">[H] heal</span>
+          </div>
+          {/* Emergency Injector status — prominent indicator */}
+          <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border ${
+            injectorCount > 0
+              ? 'bg-accent/15 border-accent/40 text-accent'
+              : 'bg-destructive/15 border-destructive/40 text-destructive'
+          }`}>
+            <span className="text-xs font-display">
+              {injectorCount > 0 ? '💉' : '⚠'}
+            </span>
+            <span className={`text-[10px] font-mono font-bold ${injectorCount > 0 ? '' : 'animate-pulse'}`}>
+              {injectorCount > 0
+                ? `INJECTOR ×${injectorCount}`
+                : 'NO INJECTOR'}
+            </span>
+            <span className="text-[8px] text-muted-foreground font-mono">auto</span>
           </div>
           {/* Movement & Cover */}
           <div className="hidden sm:flex items-center gap-2">
