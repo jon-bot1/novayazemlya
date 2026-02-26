@@ -4,6 +4,7 @@ import { LoreDocument } from '../../game/lore';
 import { FeedbackWidget } from './FeedbackWidget';
 import { HighscoreList, submitHighscore, calculateScore } from './HighscoreList';
 import { MissionObjective } from '../../game/objectives';
+import { UPGRADES, UpgradeState, getUpgradeLevel } from '../../game/upgrades';
 
 interface AchievementStats {
   mosinKills: number;
@@ -126,11 +127,12 @@ interface HUDProps {
   achievementStats?: AchievementStats;
   onReturnToBase?: () => void;
   objectives?: MissionObjective[];
+  activeUpgrades?: UpgradeState;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -313,6 +315,16 @@ export const HUD: React.FC<HUDProps> = ({
           {exfilRevealed && (
             <div className="text-sm font-mono font-bold flex items-center gap-1 px-2.5 py-1 rounded-md text-accent bg-accent/15 border-2 border-accent/40 animate-pulse-glow">
               🚁 EXFIL: {exfilRevealed}
+            </div>
+          )}
+          {/* Active upgrades */}
+          {activeUpgrades && Object.keys(activeUpgrades).length > 0 && (
+            <div className="flex items-center gap-1 bg-card/60 border border-border/30 rounded-md px-2 py-1">
+              {UPGRADES.filter(u => getUpgradeLevel(activeUpgrades, u.id) > 0).map(u => (
+                <span key={u.id} className="text-xs" title={`${u.name} Lv${getUpgradeLevel(activeUpgrades, u.id)}`}>
+                  {u.icon}
+                </span>
+              ))}
             </div>
           )}
         </div>
