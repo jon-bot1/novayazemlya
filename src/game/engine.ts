@@ -2034,9 +2034,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       if (!(enemy as any)._sniperTeleportTimer) (enemy as any)._sniperTeleportTimer = 2.8 + Math.random() * 1.8;
       if (!(enemy as any)._sniperFlashCooldown) (enemy as any)._sniperFlashCooldown = 0;
+      if (!(enemy as any)._sniperTeleportCooldown) (enemy as any)._sniperTeleportCooldown = 0;
 
       (enemy as any)._sniperTeleportTimer -= dt;
       (enemy as any)._sniperFlashCooldown = Math.max(0, ((enemy as any)._sniperFlashCooldown || 0) - dt);
+      (enemy as any)._sniperTeleportCooldown = Math.max(0, ((enemy as any)._sniperTeleportCooldown || 0) - dt);
 
       if ((enemy as any)._sniperInvisible > 0) {
         (enemy as any)._sniperInvisible -= dt;
@@ -2064,7 +2066,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Sniper no longer throws flashbangs — just teleports away when pressured
 
       const mustTeleport = tookHit || playerTooClose || lostPressure || (enemy as any)._sniperTeleportTimer <= 0;
-      if (mustTeleport) {
+      // Enforce minimum 3 second cooldown between teleports
+      if (mustTeleport && (enemy as any)._sniperTeleportCooldown <= 0) {
         const target = pickSniperTeleportTarget(!playerTooClose);
         if (target) {
           beginSniperTeleport(
@@ -2072,11 +2075,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tookHit ? '💨 Träff! Sniper Tuman bryter kontakt.' : undefined
           );
           (enemy as any)._sniperShouldFlee = false;
+          (enemy as any)._sniperTeleportCooldown = 3.0; // minimum 3s between teleports
           (enemy as any)._sniperTeleportTimer = playerTooClose || tookHit
-            ? 1.2 + Math.random() * 1.2
-            : 2.4 + Math.random() * 2.0;
+            ? Math.max(3.0, 1.2 + Math.random() * 1.2)
+            : Math.max(3.0, 2.4 + Math.random() * 2.0);
           continue;
         }
+      } else if (mustTeleport && (enemy as any)._sniperTeleportCooldown > 0) {
+        // Can't teleport yet — just mark flee as handled so we don't spam
+        (enemy as any)._sniperShouldFlee = false;
       }
 
       // Keep pressure: aim and shoot, but no normal walk movement
