@@ -21,7 +21,7 @@ const categoryColors: Record<string, string> = {
   valuable: 'border-loot/50 bg-loot/8',
   grenade: 'border-danger/40 bg-danger/8',
   flashbang: 'border-warning/40 bg-warning/8',
-  gas_grenade: 'border-muted-foreground/40 bg-muted/20',
+  gas_grenade: 'border-safe/50 bg-safe/10',
   backpack: 'border-accent/40 bg-accent/8',
   key: 'border-warning/60 bg-warning/10',
 };
@@ -244,7 +244,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropIte
       <div className="px-2 py-1 border-t border-border/40 text-[8px] font-mono text-muted-foreground/70">
         <div className="flex justify-between">
           <span>💊{items.filter(i => i.category === 'medical').length}</span>
-          <span>💣{items.filter(i => i.category === 'grenade' || i.category === 'flashbang' || i.category === 'gas_grenade').length}</span>
+          <span>💣{items.filter(i => i.category === 'grenade').length}</span>
+          <span>☣️{items.filter(i => i.category === 'gas_grenade').length}</span>
+          <span>💫{items.filter(i => i.category === 'flashbang').length}</span>
           <span>🔑{items.filter(i => i.category === 'key').length}</span>
           <span>💉{items.filter(i => i.id === 'emergency_injector').length}</span>
         </div>
