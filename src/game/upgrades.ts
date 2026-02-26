@@ -103,6 +103,7 @@ export interface TraderItem {
 }
 
 export const TRADER_ITEMS: TraderItem[] = [
+  { id: 'buy_injector', name: 'Emergency Injector', icon: '💉', description: 'Auto-revive to 75 HP on lethal hit', cost: 350, category: 'medical' },
   { id: 'buy_bandage', name: 'Bandage', icon: '🩹', description: 'Stops bleeding, heals 10 HP', cost: 50, category: 'medical' },
   { id: 'buy_medkit', name: 'Medkit', icon: '🏥', description: 'Heals 40 HP', cost: 150, category: 'medical' },
   { id: 'buy_morphine', name: 'Morphine', icon: '💉', description: 'Full restore + speed boost', cost: 400, category: 'medical' },
