@@ -1273,6 +1273,9 @@ export const GameCanvas: React.FC = () => {
                     const st = stateRef.current;
                     if (st.pendingWeapon) {
                       const pw = st.pendingWeapon;
+                      if (!st.player.inventory.includes(pw.item)) {
+                        st.player.inventory.push(pw.item);
+                      }
                       if (pw.slot === 'primary') {
                         st.player.primaryWeapon = pw.item;
                         st.player.activeSlot = 2;
@@ -1284,6 +1287,7 @@ export const GameCanvas: React.FC = () => {
                       }
                       if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
                       st.pendingWeapon = null;
+                      delete (st as any)._pendingWeaponPos;
                     }
                   }}
                 >
@@ -1291,7 +1295,23 @@ export const GameCanvas: React.FC = () => {
                 </button>
                 <button
                   className="px-4 py-1.5 bg-destructive text-destructive-foreground rounded font-mono text-sm hover:bg-destructive/80"
-                  onClick={() => { stateRef.current.pendingWeapon = null; }}
+                  onClick={() => {
+                    const st = stateRef.current;
+                    if (st.pendingWeapon) {
+                      const pw = st.pendingWeapon;
+                      const pos = (st as any)._pendingWeaponPos || { ...st.player.pos };
+                      st.lootContainers.push({
+                        id: `declined_weapon_${Date.now()}`,
+                        pos: { x: pos.x + (Math.random() - 0.5) * 10, y: pos.y + (Math.random() - 0.5) * 10 },
+                        size: 20,
+                        items: [pw.item],
+                        looted: false,
+                        type: 'body',
+                      });
+                      st.pendingWeapon = null;
+                      delete (st as any)._pendingWeaponPos;
+                    }
+                  }}
                 >
                   [N] Skip
                 </button>
