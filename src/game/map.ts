@@ -345,8 +345,8 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_NE, 'soldier'),
     rz(ZONE_OUTSIDE_NE, 'scav'),
 
-    // === SNIPER — spawn in N/NE/NW zones (not south), minimum 1200px from player ===
-    rz(pick([ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_OUTSIDE_NW]), 'sniper', undefined, 1200),
+    // === SNIPER — spawn in N/NE/NW zones, minimum 1800px from player ===
+    rz(pick([ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_OUTSIDE_NW]), 'sniper', undefined, 1800),
 
     // === SHOCKERS — electric melee enemies ===
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
@@ -891,11 +891,11 @@ export function createInitialPlayer() {
     speed: 1.875,
     angle: -Math.PI / 2,
     inventory: [weapon, knife, createAmmo('9x18', 24), createGrenade(), createGrenade()],
-    equippedWeapon: knife,
+    equippedWeapon: weapon,
     meleeWeapon: knife,
     sidearm: weapon,
     primaryWeapon: null as any,
-    activeSlot: 1 as 1 | 2 | 3,
+    activeSlot: 2 as 1 | 2 | 3,
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
