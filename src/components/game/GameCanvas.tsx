@@ -520,6 +520,8 @@ export const GameCanvas: React.FC = () => {
     movementMode: 'walk' as 'sneak' | 'walk' | 'sprint',
     inCover: false,
     peeking: false,
+    canHide: false,
+    isHiding: false,
     deathCause: undefined as string | undefined,
     exfilRevealed: undefined as string | undefined,
     achievementStats: undefined as any,
@@ -855,6 +857,8 @@ export const GameCanvas: React.FC = () => {
           movementMode: inputRef.current.movementMode,
           inCover: state.player.inCover,
           peeking: state.player.peeking,
+          canHide: !!(state as any)._canHide,
+          isHiding: !!(state as any)._isHiding,
           deathCause: state.deathCause,
           exfilRevealed: state.exfilRevealed,
           achievementStats: {
@@ -917,6 +921,8 @@ export const GameCanvas: React.FC = () => {
           movementMode={hudState.movementMode}
           inCover={hudState.inCover}
           peeking={hudState.peeking}
+          canHide={hudState.canHide}
+          isHiding={hudState.isHiding}
           onViewDocuments={() => { setShowIntel(true); }}
           timeLimit={TIME_LIMIT}
           playerName={playerName}
