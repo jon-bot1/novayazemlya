@@ -989,6 +989,28 @@ export const GameCanvas: React.FC = () => {
           },
           pendingWeapon: state.pendingWeapon,
         });
+
+        // Live objective tracking
+        if (hudUpdateCounter % 18 === 0) {
+          const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
+          const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
+          const lootVal = state.player.inventory.reduce((s, i) => s + i.value, 0);
+          setObjectives(prev => checkObjectiveCompletion(prev, {
+            bossKilled,
+            sniperKilled,
+            terminalsHacked: state.terminalsHacked,
+            documentsCollected: state.documentsCollected,
+            killCount: state.killCount,
+            headshotKills: state.headshotKills,
+            lootValue: lootVal,
+            alarmTriggered: state.alarmActive,
+            bodiesLooted: state.bodiesLooted,
+            timeSeconds: state.time,
+            tntPlacedOnPlane: !!(state as any)._tntOnPlane,
+            foundSecret: !!(state as any)._foundSecret,
+            alarmsHacked: state.terminalsHacked,
+          }));
+        }
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -1104,6 +1126,9 @@ export const GameCanvas: React.FC = () => {
                 weight: 0.6, value: 80, damage: 80, description: 'Frag grenade',
               });
             }
+            // Red dot sight — store as flag on game state for engine to use
+            const redDotLvl = getUpgradeLevel(ups, 'red_dot');
+            if (redDotLvl > 0) (st as any)._bulletSpeedBonus = 0.25;
 
             lastTimeRef.current = 0;
             extractedRef.current = false;
@@ -1196,9 +1221,12 @@ export const GameCanvas: React.FC = () => {
           deathCause={hudState.deathCause}
           exfilRevealed={hudState.exfilRevealed}
           achievementStats={hudState.achievementStats}
+          objectives={objectives}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
+            // Reroll objectives for next raid
+            setObjectives(generateMissionObjectives());
           }}
         />
 
