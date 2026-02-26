@@ -160,8 +160,8 @@ export const createHelmet = (): Item => ({
 export const WEAPON_TEMPLATES = {
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
   makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
-  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   248,   'auto'); w.weaponSlot = 'primary'; return w; },
-  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   345,   'auto'); w.weaponSlot = 'primary'; return w; },
+  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   273,   'auto'); w.weaponSlot = 'primary'; return w; },
+  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   380,   'auto'); w.weaponSlot = 'primary'; return w; },
   toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'); w.weaponSlot = 'primary'; return w; },
   mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'); w.weaponSlot = 'primary'; return w; },
   ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'); w.weaponSlot = 'primary'; return w; },
