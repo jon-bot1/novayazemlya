@@ -370,6 +370,18 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.13 — 2026-02-26</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🗡️ <span className="text-accent">3-Slot Weapon System</span> — [1] Melee, [2] Secondary, [3] Primary</li>
+                  <li>• 🗡️ <span className="text-accent">Permanent melee weapon</span> — Combat Knife always available, never breaks</li>
+                  <li>• ✈️ <span className="text-warning">Airplane sabotage</span> — can now be destroyed with grenades or melee, not just TNT</li>
+                  <li>• 💳 <span className="text-warning">Access Card consumed</span> on gate use — plan your route carefully</li>
+                  <li>• 🚪 <span className="text-accent">Secret passage hint</span> — "Something feels different..." when nearby</li>
+                  <li>• 🎯 Sniper spawn distance fully randomized across northern zones</li>
+                  <li>• ☠️ Death screen now shows both "Return to Base" and "Main Menu" buttons</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.12 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 💉 <span className="text-accent">Emergency Injector</span> — auto-revives you at 0 HP, restoring 75 HP & stopping bleed</li>
