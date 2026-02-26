@@ -1291,6 +1291,8 @@ export const GameCanvas: React.FC = () => {
 
       <InventoryPanel
         items={hudState.player.inventory}
+        inCover={hudState.inCover}
+        maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
         onDropItem={(idx) => {
           if (stateRef.current) {
             const dropped = stateRef.current.player.inventory.splice(idx, 1);
