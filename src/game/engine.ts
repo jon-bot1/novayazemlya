@@ -2975,7 +2975,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead' || enemy.id === b.sourceId) continue;
           if (dist(b.pos, enemy.pos) < 14) {
-            enemy.hp -= b.damage;
+            enemy.hp -= b.damage * 0.5; // 50% reduced friendly fire damage
             spawnParticles(state, b.pos.x, b.pos.y, '#ffaa00', 4);
             playHit();
             addMessage(state, `🔥 FRIENDLY FIRE — ${enemy.type.toUpperCase()} hit!`, 'info');
