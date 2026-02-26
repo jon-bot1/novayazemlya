@@ -25,16 +25,27 @@ function addMessage(state: GameState, text: string, type: GameMessage['type']) {
 
 const BASE_INVENTORY_SLOTS = 12;
 
+function countBackpackSlotsUsed(state: GameState): number {
+  return state.player.inventory.filter((item) => {
+    const isEquippedWeapon = item === state.player.primaryWeapon || item === state.player.sidearm;
+    const isThrowable = item.category === 'grenade' || item.category === 'flashbang';
+    return !isEquippedWeapon && !isThrowable;
+  }).length;
+}
+
 function canPickupItem(state: GameState, item: Item): boolean {
   // Keys, quest items, and ammo always fit
   if (item.category === 'key' || item.category === 'ammo' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
+  // Equipped weapons and throwables do not consume backpack slots
+  if (item.category === 'grenade' || item.category === 'flashbang') return true;
   const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
-  return state.player.inventory.length < maxSlots;
+  return countBackpackSlotsUsed(state) < maxSlots;
 }
 
 function tryPickupItem(state: GameState, item: Item): boolean {
   if (!canPickupItem(state, item)) {
-    addMessage(state, '⚠ Inventory full! (12 slots)', 'warning');
+    const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
+    addMessage(state, `⚠ Backpack full! (${maxSlots} slots)`, 'warning');
     return false;
   }
   state.player.inventory.push(item);
@@ -156,20 +167,24 @@ function generateEnemyLoot(enemy: Enemy) {
 
   // === WEAPON DROPS — enemies actually carry weapons (rates reduced 15%) ===
   if (enemy.type === 'heavy') {
-    if (Math.random() < 0.51) baseLoot.push(WEAPON_TEMPLATES.akm());
-    else if (Math.random() < 0.425) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    const roll = Math.random();
+    if (roll < 0.51) baseLoot.push(WEAPON_TEMPLATES.akm());
+    else if (roll < 0.51 + 0.425) baseLoot.push(WEAPON_TEMPLATES.ak74());
     if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.toz());
   } else if (enemy.type === 'soldier') {
-    if (Math.random() < 0.34) baseLoot.push(WEAPON_TEMPLATES.ak74());
-    else if (Math.random() < 0.30) baseLoot.push(WEAPON_TEMPLATES.akm());
+    const roll = Math.random();
+    if (roll < 0.34) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    else if (roll < 0.34 + 0.30) baseLoot.push(WEAPON_TEMPLATES.akm());
     if (Math.random() < 0.13) baseLoot.push(WEAPON_TEMPLATES.makarov());
   } else if (enemy.type === 'scav') {
-    if (Math.random() < 0.21) baseLoot.push(WEAPON_TEMPLATES.makarov());
-    else if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.toz());
-    else if (Math.random() < 0.13) baseLoot.push(WEAPON_TEMPLATES.ppsh());
+    const roll = Math.random();
+    if (roll < 0.21) baseLoot.push(WEAPON_TEMPLATES.makarov());
+    else if (roll < 0.21 + 0.17) baseLoot.push(WEAPON_TEMPLATES.toz());
+    else if (roll < 0.21 + 0.17 + 0.13) baseLoot.push(WEAPON_TEMPLATES.ppsh());
   } else if (enemy.type === 'shocker') {
-    if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.baton());
-    else if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.knife());
+    const roll = Math.random();
+    if (roll < 0.17) baseLoot.push(WEAPON_TEMPLATES.baton());
+    else if (roll < 0.34) baseLoot.push(WEAPON_TEMPLATES.knife());
   }
 
   // Shockers always drop goggles (50% chance)

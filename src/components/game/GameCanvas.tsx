@@ -1184,6 +1184,17 @@ export const GameCanvas: React.FC = () => {
   }
 
   // Phase: playing
+  const equippedWeaponRefs = new Set<Item>(
+    [hudState.player.primaryWeapon, hudState.player.sidearm].filter((w): w is Item => Boolean(w))
+  );
+  const backpackEntries = hudState.player.inventory.reduce<Array<{ item: Item; originalIndex: number }>>((acc, item, originalIndex) => {
+    const isEquippedWeapon = item.category === 'weapon' && equippedWeaponRefs.has(item);
+    const isThrowable = item.category === 'grenade' || item.category === 'flashbang';
+    if (!isEquippedWeapon && !isThrowable) acc.push({ item, originalIndex });
+    return acc;
+  }, []);
+  const backpackItems = backpackEntries.map((entry) => entry.item);
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
       <div className="relative w-full h-full">
@@ -1308,25 +1319,25 @@ export const GameCanvas: React.FC = () => {
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
           WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1/2 switch weapon
         </div>
-        {/* Inventory Panel — always visible on right */}
-        <div className="absolute top-0 right-0 h-full z-30">
+        {/* Inventory Panel — always visible, compact overlay */}
+        <div className="absolute top-3 right-3 z-30">
           <InventoryPanel
-            items={hudState.player.inventory}
+            items={backpackItems}
             inCover={hudState.inCover}
             maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
             onDropItem={(idx) => {
-              if (stateRef.current) {
-                const dropped = stateRef.current.player.inventory.splice(idx, 1);
-                if (dropped.length > 0) {
-                  stateRef.current.lootContainers.push({
-                    id: `drop_${Date.now()}`,
-                    pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
-                    size: 20,
-                    items: dropped,
-                    looted: false,
-                    type: 'body',
-                  });
-                }
+              const entry = backpackEntries[idx];
+              if (!entry || !stateRef.current) return;
+              const dropped = stateRef.current.player.inventory.splice(entry.originalIndex, 1);
+              if (dropped.length > 0) {
+                stateRef.current.lootContainers.push({
+                  id: `drop_${Date.now()}`,
+                  pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
+                  size: 20,
+                  items: dropped,
+                  looted: false,
+                  type: 'body',
+                });
               }
             }}
           />

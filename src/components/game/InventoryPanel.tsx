@@ -84,7 +84,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropIte
   const fillPercent = Math.min(100, (items.length / maxSlots) * 100);
 
   return (
-    <div ref={panelRef} className="w-52 h-full bg-card/95 backdrop-blur-sm border-l border-border flex flex-col pointer-events-auto select-none">
+    <div ref={panelRef} className="w-44 h-[62vh] bg-card/55 backdrop-blur-md border border-border/40 rounded-lg shadow-xl flex flex-col pointer-events-auto select-none overflow-hidden">
       {/* Backpack header with shape */}
       <div className="px-2 pt-2 pb-1">
         <div className="relative mx-auto w-36">
