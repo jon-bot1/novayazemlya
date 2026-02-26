@@ -1795,6 +1795,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.font = 'bold 7px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('⚡ SHOCKER', enemy.pos.x, enemy.pos.y - R - 10);
+        // Walking sparks
+        if (enemyMoving && Math.random() < 0.2) {
+          const sparkA = Math.random() * Math.PI * 2;
+          const sparkR = R + Math.random() * 5;
+          ctx.strokeStyle = '#44ffff';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(enemy.pos.x + Math.cos(sparkA) * sparkR, enemy.pos.y + Math.sin(sparkA) * sparkR);
+          ctx.lineTo(enemy.pos.x + Math.cos(sparkA) * (sparkR + 4), enemy.pos.y + Math.sin(sparkA) * (sparkR + 4));
+          ctx.stroke();
+        }
         // Electric arcs when close to player
         if (Math.sqrt((enemy.pos.x - state.player.pos.x) ** 2 + (enemy.pos.y - state.player.pos.y) ** 2) < 60) {
           ctx.strokeStyle = `rgba(68, 221, 255, ${0.3 + Math.random() * 0.5})`;
