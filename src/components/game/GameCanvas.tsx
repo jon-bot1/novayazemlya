@@ -1358,7 +1358,7 @@ export const GameCanvas: React.FC = () => {
           WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1/2 switch weapon
         </div>
         {/* Inventory Panel — always visible, compact overlay */}
-        <div className="absolute top-3 right-3 z-30">
+        <div className="absolute top-[340px] right-3 z-30">
           <InventoryPanel
             items={backpackItems}
             inCover={hudState.inCover}
