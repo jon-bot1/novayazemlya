@@ -152,9 +152,10 @@ export interface Player {
   angle: number;
   inventory: Item[];
   equippedWeapon: Item | null;
+  meleeWeapon: Item | null;
   sidearm: Item | null;
   primaryWeapon: Item | null;
-  activeSlot: 1 | 2;
+  activeSlot: 1 | 2 | 3;
   currentAmmo: number;
   maxAmmo: number;
   ammoType: AmmoType;
@@ -310,6 +311,6 @@ export interface InputState {
   movementMode: MovementMode;
   moveTarget?: Vec2 | null;
   takeCover: boolean;
-  switchWeapon?: 1 | 2;
+  switchWeapon?: 1 | 2 | 3;
   useTNT: boolean;
 }

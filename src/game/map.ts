@@ -891,10 +891,11 @@ export function createInitialPlayer() {
     speed: 1.875,
     angle: -Math.PI / 2,
     inventory: [weapon, knife, createAmmo('9x18', 24), createGrenade(), createGrenade()],
-    equippedWeapon: weapon,
+    equippedWeapon: knife,
+    meleeWeapon: knife,
     sidearm: weapon,
     primaryWeapon: null as any,
-    activeSlot: 1 as const,
+    activeSlot: 1 as 1 | 2 | 3,
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
@@ -909,6 +910,5 @@ export function createInitialPlayer() {
     peeking: false,
     lastGrenadeTime: 0,
     tntCount: 0,
-    meleeWeapon: knife, // always available melee weapon
   };
 }
