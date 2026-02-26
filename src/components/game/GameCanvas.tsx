@@ -13,6 +13,9 @@ import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
 import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
+import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
+import { getUpgradeLevel, getUpgradeCost, UPGRADES } from '../../game/upgrades';
+import { supabase } from '@/integrations/supabase/client';
 
 const TIME_LIMIT = 300; // 5 minutes
 
@@ -516,6 +519,55 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
   </div>
   );
 };
+// Sync stash to database
+async function syncStashToDb(playerName: string, stash: StashState) {
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return;
+  try {
+    const name = playerName.trim().slice(0, 20);
+    const { data } = await supabase.from('player_progress').select('id').eq('player_name', name).maybeSingle();
+    if (data) {
+      await supabase.from('player_progress').update({
+        rubles: stash.rubles,
+        raid_count: stash.raidCount,
+        extraction_count: stash.extractionCount,
+        stash_items: stash.items as any,
+        upgrades: stash.upgrades as any,
+      }).eq('player_name', name);
+    } else {
+      await supabase.from('player_progress').insert({
+        player_name: name,
+        rubles: stash.rubles,
+        raid_count: stash.raidCount,
+        extraction_count: stash.extractionCount,
+        stash_items: stash.items as any,
+        upgrades: stash.upgrades as any,
+      });
+    }
+  } catch (e) {
+    console.error('Failed to sync stash to DB:', e);
+  }
+}
+
+async function loadStashFromDb(playerName: string): Promise<StashState | null> {
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return null;
+  try {
+    const name = playerName.trim().slice(0, 20);
+    const { data } = await supabase.from('player_progress').select('*').eq('player_name', name).maybeSingle();
+    if (data) {
+      return {
+        items: (data.stash_items as any) || [],
+        rubles: data.rubles,
+        raidCount: data.raid_count,
+        extractionCount: data.extraction_count,
+        upgrades: (data.upgrades as any) || {},
+      };
+    }
+  } catch (e) {
+    console.error('Failed to load stash from DB:', e);
+  }
+  return null;
+}
+
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
@@ -528,7 +580,9 @@ export const GameCanvas: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
+  const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
   const extractedRef = useRef(false); // prevent double extraction
+  const dbSyncedRef = useRef(false); // track if we loaded from DB
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -947,19 +1001,44 @@ export const GameCanvas: React.FC = () => {
     };
   }, [started]);
 
-  // Handle extraction → transfer loot to stash
+  // Handle extraction → transfer loot to stash + check objectives
   useEffect(() => {
     if (hudState.extracted && !extractedRef.current) {
       extractedRef.current = true;
       const state = stateRef.current;
       const lootItems = state.player.inventory.filter(i => i.category !== 'weapon');
+      const lootValue = lootItems.reduce((s, i) => s + i.value, 0);
+
+      // Check objective completion
+      const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
+      const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
+      const completedObjectives = checkObjectiveCompletion(objectives, {
+        bossKilled,
+        sniperKilled,
+        terminalsHacked: state.terminalsHacked,
+        documentsCollected: state.documentsCollected,
+        killCount: state.killCount,
+        headshotKills: state.headshotKills,
+        lootValue,
+        alarmTriggered: state.alarmActive,
+        bodiesLooted: state.bodiesLooted,
+        timeSeconds: state.time,
+        tntPlacedOnPlane: !!(state as any)._tntOnPlane,
+        foundSecret: !!(state as any)._foundSecret,
+        alarmsHacked: state.terminalsHacked,
+      });
+      setObjectives(completedObjectives);
+      const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
+
       setStash(prev => {
         const updated = {
           ...prev,
           items: [...prev.items, ...lootItems],
           extractionCount: prev.extractionCount + 1,
+          rubles: prev.rubles + objectiveReward,
         };
         saveStash(updated);
+        syncStashToDb(playerName, updated);
         return updated;
       });
     }
@@ -969,8 +1048,14 @@ export const GameCanvas: React.FC = () => {
   if (gamePhase === 'intro') {
     return (
       <div className="relative w-screen h-screen overflow-hidden bg-background">
-        <IntroScreen onStart={(name) => {
+        <IntroScreen onStart={async (name) => {
           setPlayerName(name);
+          // Try loading from DB first
+          const dbStash = await loadStashFromDb(name);
+          if (dbStash) {
+            setStash(dbStash);
+            saveStash(dbStash); // sync to localStorage too
+          }
           setGamePhase('homebase');
         }} />
       </div>
@@ -984,14 +1069,48 @@ export const GameCanvas: React.FC = () => {
         <HomeBase
           playerName={playerName}
           stash={stash}
+          objectives={objectives}
           onDeploy={() => {
-            // Reset game state for new raid
+            // Apply upgrades to game state
             stateRef.current = createGameState();
+            const st = stateRef.current;
+            const ups = stash.upgrades;
+            // Backpack upgrade
+            st.backpackCapacity = getUpgradeLevel(ups, 'backpack') * 4;
+            // Helmet/armor upgrade
+            st.player.armor = getUpgradeLevel(ups, 'helmet') * 10;
+            // Extended mag
+            st.player.maxAmmo += getUpgradeLevel(ups, 'ext_mag') * 10;
+            st.player.currentAmmo = st.player.maxAmmo;
+            // Speed boost
+            const speedLvl = getUpgradeLevel(ups, 'sprint_boots');
+            if (speedLvl > 0) st.player.speed *= (1 + speedLvl * 0.08);
+            // Fire rate (ergonomics)
+            const ergoLvl = getUpgradeLevel(ups, 'ergonomics');
+            if (ergoLvl > 0) st.player.fireRate *= (1 - ergoLvl * 0.10);
+            // Medkit on deploy
+            if (getUpgradeLevel(ups, 'medkit_upgrade') > 0) {
+              st.player.inventory.push({
+                id: 'medkit', name: 'Medkit', category: 'medical', icon: '🏥',
+                weight: 0.5, value: 50, healAmount: 40, medicalType: 'medkit',
+                description: 'Heals 40 HP',
+              });
+            }
+            // Grenade vest
+            const grenadeLvl = getUpgradeLevel(ups, 'grenade_vest');
+            for (let i = 0; i < grenadeLvl; i++) {
+              st.player.inventory.push({
+                id: 'frag_grenade', name: 'F-1 Grenade', category: 'grenade', icon: '💣',
+                weight: 0.6, value: 80, damage: 80, description: 'Frag grenade',
+              });
+            }
+
             lastTimeRef.current = 0;
             extractedRef.current = false;
             setStash(prev => {
               const updated = { ...prev, raidCount: prev.raidCount + 1 };
               saveStash(updated);
+              syncStashToDb(playerName, updated);
               return updated;
             });
             setStarted(true);
@@ -1008,6 +1127,7 @@ export const GameCanvas: React.FC = () => {
                 rubles: prev.rubles + item.value,
               };
               saveStash(updated);
+              syncStashToDb(playerName, updated);
               return updated;
             });
           }}
@@ -1016,8 +1136,30 @@ export const GameCanvas: React.FC = () => {
               const total = prev.items.reduce((s, i) => s + i.value, 0);
               const updated = { ...prev, items: [], rubles: prev.rubles + total };
               saveStash(updated);
+              syncStashToDb(playerName, updated);
               return updated;
             });
+          }}
+          onBuyUpgrade={(upgradeId) => {
+            setStash(prev => {
+              const upgrade = UPGRADES.find(u => u.id === upgradeId);
+              if (!upgrade) return prev;
+              const currentLevel = prev.upgrades[upgradeId] || 0;
+              if (currentLevel >= upgrade.maxLevel) return prev;
+              const cost = getUpgradeCost(upgrade, currentLevel);
+              if (prev.rubles < cost) return prev;
+              const updated = {
+                ...prev,
+                rubles: prev.rubles - cost,
+                upgrades: { ...prev.upgrades, [upgradeId]: currentLevel + 1 },
+              };
+              saveStash(updated);
+              syncStashToDb(playerName, updated);
+              return updated;
+            });
+          }}
+          onRerollObjectives={() => {
+            setObjectives(generateMissionObjectives());
           }}
         />
       </div>
