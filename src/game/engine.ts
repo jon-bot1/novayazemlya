@@ -585,12 +585,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   // Player shooting — weapon-specific stats + fire modes + durability
   const wpn = state.player.equippedWeapon;
-  const fireRate = wpn?.weaponFireRate || state.player.fireRate;
+  const baseFireRate = wpn?.weaponFireRate || state.player.fireRate;
   const isAutoFire = wpn?.fireMode === 'auto';
   const canFire = isAutoFire ? input.shooting : input.shootPressed;
   
-  // Check weapon durability
-  const weaponBroken = wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
+  // Check weapon durability — sidearms never break
+  const isSidearm = wpn?.weaponSlot === 'secondary';
+  const isMosinWpn = wpn?.name?.toLowerCase().includes('mosin');
+  
+  // Compute durability ratio for fire rate degradation
+  const durRatioForRate = (wpn && !isSidearm && (wpn as any)._maxDurability)
+    ? (wpn as any)._durability / (wpn as any)._maxDurability
+    : 1;
+  const fireRate = isMosinWpn ? baseFireRate : baseFireRate * (1 + (1 - durRatioForRate) * 0.6); // up to 60% slower
+  
+  const weaponBroken = !isSidearm && wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
   
   if (weaponBroken) {
     if (canFire && state.time - state.player.lastShot > 0.5) {
@@ -598,16 +607,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       addMessage(state, `⚠ ${wpn!.name} is BROKEN! Find a new weapon!`, 'warning');
     }
   } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
-    // Init durability on first shot if not set
-    if (wpn && (wpn as any)._durability === undefined) {
-      // Durability based on weapon type: melee=30, pistols=60, rifles=120
-      const isSecondary = wpn.weaponSlot === 'secondary';
+    // Init durability on first shot if not set (sidearms skip durability)
+    if (wpn && !isSidearm && (wpn as any)._durability === undefined) {
+      // Durability based on weapon type: melee=30, rifles=120
       const isMelee = (wpn.weaponRange || 60) <= 10;
-      (wpn as any)._durability = isMelee ? 30 : isSecondary ? 60 : 120;
+      (wpn as any)._durability = isMelee ? 30 : 120;
       (wpn as any)._maxDurability = (wpn as any)._durability;
     }
     
-    const spread = (Math.random() - 0.5) * 0.08;
+    // Degradation penalties: accuracy worsens (not Mosin, not sidearms)
+    const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
+      ? (wpn as any)._durability / (wpn as any)._maxDurability 
+      : 1;
+    const degradedSpread = isMosinWpn ? 0.08 : 0.08 + (1 - durRatio) * 0.22;
+    
+    const spread = (Math.random() - 0.5) * degradedSpread;
     const angle = state.player.angle + spread;
     const baseBulletSpeed = wpn?.bulletSpeed || 8;
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
@@ -626,11 +640,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
     
-    // Reduce durability
-    if (wpn) {
+    // Reduce durability (sidearms skip)
+    if (wpn && !isSidearm) {
       (wpn as any)._durability = Math.max(0, ((wpn as any)._durability || 120) - 1);
       if ((wpn as any)._durability === 10) {
-        addMessage(state, `⚠ ${wpn.name} is wearing out!`, 'warning');
+        addMessage(state, `⚠ ${wpn.name} is wearing out! Accuracy & fire rate degraded!`, 'warning');
       }
       if ((wpn as any)._durability <= 0) {
         addMessage(state, `💥 ${wpn.name} BROKE! Find a replacement!`, 'damage');
