@@ -196,40 +196,70 @@ function pickMany<T>(items: [T, number][]): T[] {
 
 type LootPoolType = 'common' | 'military' | 'medical' | 'intel' | 'body';
 
+// 20 random valuable items for loot variety
+const RANDOM_VALUABLES = [
+  () => createValuable('Cigarettes', 50, '🚬'),
+  () => createValuable('Vodka Bottle', 80, '🍾'),
+  () => createValuable('Military Watch', 150, '⌚'),
+  () => createValuable('Gold Ring', 200, '💍'),
+  () => createValuable('Compass', 60, '🧭'),
+  () => createValuable('Radio Parts', 120, '📻'),
+  () => createValuable('Camera Film', 90, '📷'),
+  () => createValuable('Silver Chain', 170, '⛓️'),
+  () => createValuable('Ration Pack', 40, '🥫'),
+  () => createValuable('Lighter', 30, '🔥'),
+  () => createValuable('Old Coins', 110, '🪙'),
+  () => createValuable('Binoculars', 140, '🔭'),
+  () => createValuable('Pocket Knife', 55, '🔪'),
+  () => createValuable('Flask', 45, '🫗'),
+  () => createValuable('Battery Pack', 70, '🔋'),
+  () => createValuable('Transistor', 95, '🔌'),
+  () => createValuable('Dog Tags', 130, '🏷️'),
+  () => createValuable('Propaganda Poster', 35, '📜'),
+  () => createValuable('Broken Phone', 65, '📱'),
+  () => createValuable('Fuel Canister', 100, '⛽'),
+];
+
+function randomValuable(): Item {
+  return RANDOM_VALUABLES[Math.floor(Math.random() * RANDOM_VALUABLES.length)]();
+}
+
 // Context-aware loot pools based on container type
 export const LOOT_POOLS = {
   common: (): Item[] => {
     return pickMany<Item>([
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
-      [createValuable('Cigarettes', 50, '🚬'), 0.3],
-      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.15],
-      [createGrenade(), 0.1],
-      [createTNT(), 0.25],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.35],
+      [randomValuable(), 0.5],
+      [randomValuable(), 0.3],
+      [createAmmo('5.45x39', 5 + Math.floor(Math.random() * 5)), 0.08],
+      [createGrenade(), 0.08],
+      [createTNT(), 0.2],
     ]);
   },
   military: (): Item[] => {
     return pickMany<Item>([
-      [createAmmo('5.45x39', 15 + Math.floor(Math.random() * 15)), 0.5],
-      [createAmmo('7.62x39', 10 + Math.floor(Math.random() * 10)), 0.4],
-      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.3],
-      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.08],
-      [WEAPON_TEMPLATES.ak74(), 0.15],
-      [createValuable('Dogtags', 200, '🏷️'), 0.1],
-      [createGrenade(), 0.3],
-      [createTNT(), 0.30],
+      [createAmmo('5.45x39', 8 + Math.floor(Math.random() * 8)), 0.25],
+      [createAmmo('7.62x39', 5 + Math.floor(Math.random() * 5)), 0.2],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.25],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.06],
+      [WEAPON_TEMPLATES.ak74(), 0.1],
+      [randomValuable(), 0.35],
+      [randomValuable(), 0.2],
+      [createGrenade(), 0.2],
+      [createTNT(), 0.25],
     ]);
   },
   medical: (): Item[] => {
     return pickMany<Item>([
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.6],
-      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.4],
-      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.15],
-      [createValuable('Painkillers', 100, '💊'), 0.2],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.55],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.35],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.12],
+      [randomValuable(), 0.3],
     ]);
   },
   intel: (): Item[] => {
     return pickMany<Item>([
-      [createValuable('Notes', 80, '📝'), 0.7],
+      [randomValuable(), 0.6],
       [createValuable('Map', 300, '🗺️'), 0.15],
       [createKey('Storage Key', 'key_storage'), 0.12],
       [createKey('Security Key', 'key_security'), 0.08],
@@ -237,16 +267,17 @@ export const LOOT_POOLS = {
   },
   body: (): Item[] => {
     return pickMany<Item>([
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.4],
-      [createValuable('Dogtags', 200, '🏷️'), 0.15],
-      [createGrenade(), 0.2],
-      [createFlashbang(), 0.25],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.35],
+      [randomValuable(), 0.4],
+      [randomValuable(), 0.25],
+      [createGrenade(), 0.15],
+      [createFlashbang(), 0.2],
       [createKey('Locker Key', 'key_cabinet'), 0.1],
-      [WEAPON_TEMPLATES.makarov(), 0.1],
-      [createBackpack(), 0.12],
-      [createArmor(), 0.15],
-      [createHelmet(), 0.1],
-      [createTNT(), 0.18],
+      [WEAPON_TEMPLATES.makarov(), 0.08],
+      [createBackpack(), 0.1],
+      [createArmor(), 0.12],
+      [createHelmet(), 0.08],
+      [createTNT(), 0.15],
     ]);
   },
 };

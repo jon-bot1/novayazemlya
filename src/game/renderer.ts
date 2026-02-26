@@ -1032,6 +1032,89 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.strokeRect(left, top, w, h);
       break;
     }
+    case 'toxic_barrel': {
+      // Toxic/poison barrel — green glow
+      const tbr = w * 0.45;
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + tbr * 0.5, tbr * 1.1, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.arc(x, y, tbr, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2a4a22';
+      ctx.beginPath(); ctx.arc(x, y, tbr - 2, 0, Math.PI * 2); ctx.fill();
+      // Toxic symbol
+      ctx.fillStyle = '#88ff44';
+      ctx.font = `bold ${tbr * 1.2}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('☠', x, y + tbr * 0.4);
+      // Green glow
+      const tglow = ctx.createRadialGradient(x, y, 0, x, y, tbr * 2);
+      tglow.addColorStop(0, 'rgba(100, 255, 50, 0.15)');
+      tglow.addColorStop(1, 'rgba(100, 255, 50, 0)');
+      ctx.fillStyle = tglow;
+      ctx.beginPath(); ctx.arc(x, y, tbr * 2, 0, Math.PI * 2); ctx.fill();
+      // Rim
+      ctx.strokeStyle = '#5a8a40';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, tbr, 0, Math.PI * 2); ctx.stroke();
+      // Dripping effect
+      const drip = Math.sin(Date.now() * 0.003 + x) * 3;
+      ctx.fillStyle = 'rgba(100, 255, 50, 0.5)';
+      ctx.beginPath(); ctx.arc(x + 4, y + tbr + 2 + drip, 2, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+    case 'airplane': {
+      // Parked airplane — top-down view
+      ctx.save();
+      ctx.translate(x, y);
+      // Fuselage
+      ctx.fillStyle = '#8a8a80';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, w * 0.12, h * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Wings
+      ctx.fillStyle = '#7a7a70';
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.5, h * 0.05);
+      ctx.lineTo(-w * 0.08, -h * 0.05);
+      ctx.lineTo(w * 0.08, -h * 0.05);
+      ctx.lineTo(w * 0.5, h * 0.05);
+      ctx.lineTo(w * 0.08, h * 0.08);
+      ctx.lineTo(-w * 0.08, h * 0.08);
+      ctx.closePath();
+      ctx.fill();
+      // Tail
+      ctx.fillStyle = '#6a6a60';
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.18, h * 0.4);
+      ctx.lineTo(0, h * 0.3);
+      ctx.lineTo(w * 0.18, h * 0.4);
+      ctx.lineTo(0, h * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      // Cockpit
+      ctx.fillStyle = 'rgba(100, 140, 180, 0.5)';
+      ctx.beginPath();
+      ctx.ellipse(0, -h * 0.3, w * 0.07, h * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Engine circles
+      ctx.fillStyle = '#5a5a50';
+      ctx.beginPath(); ctx.arc(-w * 0.2, h * 0.02, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w * 0.2, h * 0.02, 4, 0, Math.PI * 2); ctx.fill();
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.beginPath();
+      ctx.ellipse(3, 3, w * 0.5, h * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Star marking
+      ctx.fillStyle = 'rgba(200, 50, 50, 0.4)';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('★', 0, 5);
+      ctx.restore();
+      break;
+    }
   }
   ctx.restore();
 }
@@ -2133,12 +2216,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cover prompt — show on nearest cover object when player is near but not in cover
   if (state.coverNearby && !state.player.inCover && (state as any)._nearestCoverPos) {
     const cp = (state as any)._nearestCoverPos as { x: number; y: number };
-    const label = (state as any)._nearestCoverLabel as string || 'Cover';
+    const coverType = (state as any)._coverType as string || 'low';
+    const coverIcon = coverType === 'high' ? '🛡️' : '🪨';
     const colorMap: Record<string, string> = {
-      'Hard': '#50b4ff', 'Medium': '#88cc55', 'Light': '#cccc44',
-      'Soft': '#cc9944', 'Concealment': '#cc6644',
+      'high': '#50b4ff', 'low': '#a0c850',
     };
-    const color = colorMap[label] || '#50b4ff';
+    const color = colorMap[coverType] || '#50b4ff';
     ctx.save();
     const pulse = 0.6 + Math.sin(state.time * 4) * 0.3;
     ctx.globalAlpha = pulse;
@@ -2147,7 +2230,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = color;
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 4;
-    ctx.fillText(`🛡️ [Q] ${label}`, cp.x, cp.y - 20);
+    ctx.fillText(`${coverIcon} [auto] ${coverType === 'high' ? 'HIGH' : 'LOW'} COVER`, cp.x, cp.y - 20);
     ctx.restore();
   }
 
@@ -2173,14 +2256,40 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Label
-    ctx.fillStyle = state.player.peeking ? 'rgba(255, 200, 60, 0.9)' : 'rgba(80, 180, 255, 0.9)';
+    // Label — show LOW/HIGH cover type with distinct icons
+    const coverType = (state as any)._coverType as string || 'low';
+    const coverIcon = coverType === 'high' ? '🛡️' : '🪨';
+    const coverText = state.player.peeking ? '🔫 PEEKING' : `${coverIcon} ${coverType === 'high' ? 'HIGH' : 'LOW'} COVER`;
+    ctx.fillStyle = state.player.peeking ? 'rgba(255, 200, 60, 0.9)' : coverType === 'high' ? 'rgba(80, 180, 255, 0.9)' : 'rgba(160, 200, 80, 0.9)';
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(
-      state.player.peeking ? '🔫 PEEKING' : '🛡️ IN COVER',
-      state.player.pos.x, state.player.pos.y - R - 34
-    );
+    ctx.fillText(coverText, state.player.pos.x, state.player.pos.y - R - 34);
+    ctx.restore();
+  }
+
+  // Hide prompt — show near player when they can hide
+  if ((state as any)._canHide && !(state as any)._isHiding) {
+    ctx.save();
+    const hidePulse = 0.6 + Math.sin(state.time * 5) * 0.3;
+    ctx.globalAlpha = hidePulse;
+    ctx.fillStyle = 'rgba(80, 220, 100, 0.95)';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.fillText('🌲 [Q] HIDE', state.player.pos.x, state.player.pos.y + R + 22);
+    ctx.restore();
+  }
+  if ((state as any)._isHiding) {
+    ctx.save();
+    const hidePulse = 0.7 + Math.sin(state.time * 3) * 0.2;
+    ctx.globalAlpha = hidePulse;
+    ctx.fillStyle = 'rgba(80, 220, 100, 0.95)';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.fillText('🌲 HIDDEN', state.player.pos.x, state.player.pos.y + R + 22);
     ctx.restore();
   }
 

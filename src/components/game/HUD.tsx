@@ -114,6 +114,7 @@ interface HUDProps {
   movementMode: 'sneak' | 'walk' | 'sprint';
   inCover: boolean;
   peeking: boolean;
+  coverType?: 'high' | 'low';
   canHide?: boolean;
   isHiding?: boolean;
   onViewDocuments: () => void;
@@ -126,7 +127,7 @@ interface HUDProps {
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats 
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -210,15 +211,11 @@ export const HUD: React.FC<HUDProps> = ({
               </span>
             )}
             {inCover && !isHiding && (
-              <span className={`text-xs font-mono ${peeking ? 'text-warning animate-pulse-glow' : 'text-accent'}`}>
-                {peeking ? '🔫 PEEK' : '🛡️ COVER'}
+              <span className={`text-xs font-mono ${peeking ? 'text-warning animate-pulse-glow' : coverType === 'high' ? 'text-accent' : 'text-accent/70'}`}>
+                {peeking ? '🔫 PEEK' : coverType === 'high' ? '🛡️ HIGH COVER' : '🪨 LOW COVER'}
               </span>
             )}
-            {canHide && !isHiding && (
-              <span className="text-xs font-mono text-accent/80 animate-pulse">
-                🌲 Press Q to hide
-              </span>
-            )}
+            {/* Hide prompt moved to renderer — shows at player position */}
           </div>
         </div>
 
