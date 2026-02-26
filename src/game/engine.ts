@@ -579,7 +579,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Auto-dismiss weapon swap popup when player walks too far from loot source
   if (state.pendingWeapon && (state as any)._pendingWeaponPos) {
     const wpnPos = (state as any)._pendingWeaponPos as Vec2;
-    if (dist(state.player.pos, wpnPos) > 120) {
+    if (dist(state.player.pos, wpnPos) > 85) {
       state.lootContainers.push({
         id: `pending_weapon_${Date.now()}`,
         pos: { x: wpnPos.x + (Math.random() - 0.5) * 8, y: wpnPos.y + (Math.random() - 0.5) * 8 },
