@@ -2048,6 +2048,36 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.restore();
     }
 
+    // Healing indicator — visible at enemy position
+    if ((enemy as any)._healingTimer > 0) {
+      ctx.save();
+      const healPulse = 0.6 + Math.sin(state.time * 6) * 0.4;
+      // Green cross circle
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(50, 200, 80, ${healPulse * 0.3})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(50, 220, 80, ${healPulse * 0.7})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Healing icon + progress bar
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(enemy.type === 'boss' ? '💉' : '🩹', enemy.pos.x, enemy.pos.y - R - 14);
+      ctx.font = 'bold 7px sans-serif';
+      ctx.fillStyle = `rgba(50, 220, 80, ${healPulse})`;
+      ctx.fillText('HEALING', enemy.pos.x, enemy.pos.y + R + 22);
+      // Progress bar
+      const healMax = enemy.type === 'boss' ? 2.5 : 3.0;
+      const healPct = 1 - (enemy as any)._healingTimer / healMax;
+      const barW = 28;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y + R + 24, barW + 2, 4);
+      ctx.fillStyle = '#44ff66';
+      ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y + R + 25, barW * healPct, 2);
+      ctx.restore();
+    }
+
     // HP bar
     if (enemy.hp < enemy.maxHp) {
       const barW = 28;
