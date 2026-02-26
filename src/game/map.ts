@@ -129,7 +129,7 @@ export function generateMap() {
     makeWall(2900, 280, FT, 1570, FENCE),
 
     // === HANGAR BUILDING (offset by HX, HY) ===
-    // Outer walls with door gaps
+    // Outer walls with door gaps — non-rectangular shape with extensions
     // Top wall — door gap at HX+500 to HX+560
     makeWall(HX, HY, 500, T, WD),
     makeWall(HX + 560, HY, HW - 560, T, WD),
@@ -139,8 +139,17 @@ export function generateMap() {
     // Left wall — door gap at HY+400 to HY+470
     makeWall(HX, HY, T, 400, WD),
     makeWall(HX, HY + 470, T, HH - 470, WD),
-    // Right wall — solid
-    makeWall(HX + HW - T, HY, T, HH, WD),
+    // Right wall — solid with extension bump-out
+    makeWall(HX + HW - T, HY, T, 300, WD),
+    makeWall(HX + HW - T, HY + 400, T, HH - 400, WD),
+    // Right-side extension (bump-out room, 100x100)
+    makeWall(HX + HW - T, HY + 300, 100, T, WD),      // extension top
+    makeWall(HX + HW - T, HY + 400, 100, T, WD),      // extension bottom
+    makeWall(HX + HW + 100 - T - T, HY + 300, T, 100, WD), // extension right wall
+    // Bottom-left extension (loading bay, 80x120)
+    makeWall(HX - 80, HY + HH - 120, T, 120, WD),     // extension left wall
+    makeWall(HX - 80, HY + HH - 120, 80, T, WD),      // extension top
+    makeWall(HX - 80, HY + HH - T, 80, T, WD),        // extension bottom
 
     // Hangar south wall gaps (entrance doors)
     // Gap at HX+300 to HX+380
@@ -756,6 +765,17 @@ export function generateMap() {
       pos: { x: 410 + Math.random() * 330, y: 1410 + Math.random() * 280 },
       w: 8, h: 8, type: 'mine' as Prop['type'],
     })),
+
+    // === TOXIC BARRELS ===
+    { pos: { x: HX + 450, y: HY + 800 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+    { pos: { x: 2550, y: 750 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+    { pos: { x: 700, y: 950 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+    { pos: { x: 1900, y: 1400 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+    { pos: { x: HX + 850, y: HY + 700 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+    { pos: { x: 550, y: 1600 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
+
+    // === AIRPLANE (parked outside hangar) ===
+    { pos: { x: HX + HW + 160, y: HY + 200 }, w: 120, h: 80, type: 'airplane' as Prop['type'] },
   ];
 
   // ══════════════════════════════════════

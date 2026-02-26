@@ -520,6 +520,7 @@ export const GameCanvas: React.FC = () => {
     movementMode: 'walk' as 'sneak' | 'walk' | 'sprint',
     inCover: false,
     peeking: false,
+    coverType: 'low' as 'high' | 'low',
     canHide: false,
     isHiding: false,
     deathCause: undefined as string | undefined,
@@ -857,6 +858,7 @@ export const GameCanvas: React.FC = () => {
           movementMode: inputRef.current.movementMode,
           inCover: state.player.inCover,
           peeking: state.player.peeking,
+          coverType: ((state as any)._coverType as 'high' | 'low') || 'low',
           canHide: !!(state as any)._canHide,
           isHiding: !!(state as any)._isHiding,
           deathCause: state.deathCause,
@@ -921,6 +923,7 @@ export const GameCanvas: React.FC = () => {
           movementMode={hudState.movementMode}
           inCover={hudState.inCover}
           peeking={hudState.peeking}
+          coverType={hudState.coverType}
           canHide={hudState.canHide}
           isHiding={hudState.isHiding}
           onViewDocuments={() => { setShowIntel(true); }}

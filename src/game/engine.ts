@@ -318,6 +318,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
     }
+    // TOXIC BARREL CHECK — poison damage over time when near
+    for (const prop of state.props) {
+      if (prop.type !== 'toxic_barrel') continue;
+      const toxDist = dist(newPos, prop.pos);
+      if (toxDist < 30) {
+        state.player.hp -= 0.15 * dt * 60; // ~9 HP/sec when standing on it
+        if (Math.random() < 0.1) {
+          spawnParticles(state, newPos.x, newPos.y, '#88ff44', 1);
+        }
+        if (!state.gameOver && state.player.hp <= 0) {
+          state.gameOver = true;
+          state.deathCause = '☠ Toxic exposure from chemical barrel';
+        }
+      }
+    }
     // Track distance travelled
     state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
@@ -1740,6 +1755,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const playerTooClose = sniperDistToPlayer < 200;
       // Flee on hit (_sniperShouldFlee) OR proximity — proximity ignores flee cooldown
       const shouldFlee = (enemy as any)._sniperShouldFlee || playerTooClose;
+
+      // If player is dangerously close, cancel invisibility to allow immediate flee
+      if (playerTooClose && (enemy as any)._sniperInvisible > 0) {
+        // Complete pending teleport first
+        const pendingTarget = (enemy as any)._sniperTargetTree;
+        if (pendingTarget) {
+          enemy.pos = { x: pendingTarget.x, y: pendingTarget.y };
+        }
+        (enemy as any)._sniperInvisible = 0;
+      }
 
       if (shouldFlee && !(enemy as any)._sniperInvisible) {
         (enemy as any)._sniperShouldFlee = false;
