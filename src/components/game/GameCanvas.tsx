@@ -600,16 +600,29 @@ export const GameCanvas: React.FC = () => {
       if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
       if (showInventory || showIntel || readingDoc) return;
       if (e.button === 2) {
-        // Right-click = throw grenade
+        // Right-click hold = charge grenade throw
         e.preventDefault();
-        inputRef.current.throwGrenade = true;
+        (stateRef.current as any)._grenadeChargeStart = performance.now();
         return;
       }
       inputRef.current.shooting = true;
       inputRef.current.shootPressed = true;
     };
     const onContextMenu = (e: Event) => { e.preventDefault(); };
-    const onMouseUp = () => { inputRef.current.shooting = false; inputRef.current.shootPressed = false; };
+    const onMouseUp = (e: MouseEvent) => {
+      if (e.button === 2) {
+        // Right-click release = throw grenade with charged power
+        const chargeStart = (stateRef.current as any)._grenadeChargeStart;
+        if (chargeStart) {
+          const chargeTime = Math.min(2.0, (performance.now() - chargeStart) / 1000); // max 2s
+          (stateRef.current as any)._grenadeChargePower = chargeTime;
+          delete (stateRef.current as any)._grenadeChargeStart;
+          inputRef.current.throwGrenade = true;
+        }
+        return;
+      }
+      inputRef.current.shooting = false; inputRef.current.shootPressed = false;
+    };
     const onMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;

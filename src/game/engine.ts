@@ -601,7 +601,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const grenadeItem = state.player.inventory[grenadeIdx];
         isFlashbang = grenadeItem.category === 'flashbang';
         const angle = state.player.angle;
-        const throwSpeed = 4;
+        const chargePower = (state as any)._grenadeChargePower || 0;
+        delete (state as any)._grenadeChargePower;
+        // Base speed 4, charged up to 8 (2x) over 2 seconds
+        const throwSpeed = 4 + (chargePower / 2.0) * 4;
         state.grenades.push({
           pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
           vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
