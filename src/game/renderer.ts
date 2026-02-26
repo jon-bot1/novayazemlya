@@ -2308,7 +2308,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // Character
+  // Grenade charge indicator
+  if ((state as any)._grenadeChargeStart) {
+    const chargeTime = Math.min(2.0, (performance.now() - (state as any)._grenadeChargeStart) / 1000);
+    const chargePct = chargeTime / 2.0;
+    ctx.save();
+    const barW = 40;
+    const barH = 5;
+    const bx = state.player.pos.x - barW / 2;
+    const by = state.player.pos.y - R - 18;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(bx, by, barW, barH);
+    const r = Math.floor(255 * chargePct);
+    const g = Math.floor(200 * (1 - chargePct));
+    ctx.fillStyle = `rgb(${r},${g},50)`;
+    ctx.fillRect(bx, by, barW * chargePct, barH);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx, by, barW, barH);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('💣 CHARGE', state.player.pos.x, by - 3);
+    ctx.restore();
+  }
+
   const playerBlink = Math.sin(state.time * 0.8) > 0.95;
   const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
   (state as any)._prevPx = state.player.pos.x;
