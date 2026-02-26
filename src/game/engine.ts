@@ -359,6 +359,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Track distance travelled
     state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
+
+    // Secret passage discovery — deep storage area (bottom-right of map)
+    if (!(state as any)._foundSecret) {
+      const secretZone = { x: 2100, y: 1900, w: 150, h: 150 };
+      if (newPos.x > secretZone.x && newPos.x < secretZone.x + secretZone.w &&
+          newPos.y > secretZone.y && newPos.y < secretZone.y + secretZone.h) {
+        (state as any)._foundSecret = true;
+        addMessage(state, '🚪 SECRET PASSAGE DISCOVERED! Hidden tunnel found!', 'intel');
+      }
+    }
     
     // Moving breaks hiding (not auto-cover)
     if ((state as any)._playerHiding) {
@@ -722,6 +732,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
         addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
         state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
+
+        // Check if TNT placed near airplane → objective trigger
+        for (const prop of state.props) {
+          if (prop.type === 'airplane' && dist(impact, prop.pos) < 150) {
+            (state as any)._tntOnPlane = true;
+            addMessage(state, '✈️ TNT planted on the aircraft! Sabotage objective complete!', 'intel');
+          }
+        }
       } else {
         addMessage(state, '⚠ No wall nearby to breach!', 'warning');
       }
@@ -1426,6 +1444,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (dToPanel < 40) {
           panel.activated = true;
           state.alarmActive = true;
+          (state as any)._alarmEverTriggered = true;
           addMessage(state, '🚨 ALARM TRIGGERED! All enemies alerted!', 'warning');
           // Alarm is intentionally silent
           // Alert ALL enemies on the map
@@ -1487,6 +1506,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Elevated wall guards trigger base-wide alarm via radio
         if (enemy.elevated && !state.alarmActive) {
           state.alarmActive = true;
+          (state as any)._alarmEverTriggered = true;
           addMessage(state, '🚨 PLATFORM GUARD ALERTS THE BASE!', 'warning');
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
@@ -1899,7 +1919,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
 
         const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
-        const teleportDist = 260 + Math.random() * 220;
+        const teleportDist = 350 + Math.random() * 280;
         return {
           x: Math.max(60, Math.min(state.mapWidth - 60, enemy.pos.x + Math.cos(awayAngle) * teleportDist)),
           y: Math.max(60, Math.min(state.mapHeight - 60, enemy.pos.y + Math.sin(awayAngle) * teleportDist)),

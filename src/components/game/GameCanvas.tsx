@@ -1003,7 +1003,7 @@ export const GameCanvas: React.FC = () => {
             killCount: state.killCount,
             headshotKills: state.headshotKills,
             lootValue: lootVal,
-            alarmTriggered: state.alarmActive,
+            alarmTriggered: !!(state as any)._alarmEverTriggered,
             bodiesLooted: state.bodiesLooted,
             timeSeconds: state.time,
             tntPlacedOnPlane: !!(state as any)._tntOnPlane,
@@ -1042,7 +1042,7 @@ export const GameCanvas: React.FC = () => {
         killCount: state.killCount,
         headshotKills: state.headshotKills,
         lootValue,
-        alarmTriggered: state.alarmActive,
+        alarmTriggered: !!(state as any)._alarmEverTriggered,
         bodiesLooted: state.bodiesLooted,
         timeSeconds: state.time,
         tntPlacedOnPlane: !!(state as any)._tntOnPlane,
@@ -1222,6 +1222,7 @@ export const GameCanvas: React.FC = () => {
           exfilRevealed={hudState.exfilRevealed}
           achievementStats={hudState.achievementStats}
           objectives={objectives}
+          activeUpgrades={stash.upgrades}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');

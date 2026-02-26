@@ -343,8 +343,8 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_NE, 'soldier'),
     rz(ZONE_OUTSIDE_NE, 'scav'),
 
-    // === SNIPER — random spawn, minimum 1200px from player ===
-    rz(allOutsideZones[Math.floor(Math.random() * allOutsideZones.length)], 'sniper', undefined, 1200),
+    // === SNIPER — spawn in N/NE/NW zones (not south), minimum 1200px from player ===
+    rz(pick([ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_OUTSIDE_NW]), 'sniper', undefined, 1200),
 
     // === SHOCKERS — electric melee enemies ===
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
