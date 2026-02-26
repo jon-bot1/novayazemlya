@@ -1310,28 +1310,26 @@ export const GameCanvas: React.FC = () => {
         </div>
       </div>
 
-      {showInventory && (
-        <InventoryPanel
-          items={hudState.player.inventory}
-          inCover={hudState.inCover}
-          maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
-          onDropItem={(idx) => {
-            if (stateRef.current) {
-              const dropped = stateRef.current.player.inventory.splice(idx, 1);
-              if (dropped.length > 0) {
-                stateRef.current.lootContainers.push({
-                  id: `drop_${Date.now()}`,
-                  pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
-                  size: 20,
-                  items: dropped,
-                  looted: false,
-                  type: 'body',
-                });
-              }
+      <InventoryPanel
+        items={hudState.player.inventory}
+        inCover={hudState.inCover}
+        maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
+        onDropItem={(idx) => {
+          if (stateRef.current) {
+            const dropped = stateRef.current.player.inventory.splice(idx, 1);
+            if (dropped.length > 0) {
+              stateRef.current.lootContainers.push({
+                id: `drop_${Date.now()}`,
+                pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
+                size: 20,
+                items: dropped,
+                looted: false,
+                type: 'body',
+              });
             }
-          }}
-        />
-      )}
+          }
+        }}
+      />
 
       <IntelPanel
         open={showIntel}
