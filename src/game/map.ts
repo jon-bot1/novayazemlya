@@ -345,8 +345,8 @@ export function generateMap() {
     rz(ZONE_OUTSIDE_NE, 'soldier'),
     rz(ZONE_OUTSIDE_NE, 'scav'),
 
-    // === SNIPER — spawn in N/NE/NW zones, minimum 1800px from player ===
-    rz(pick([ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_OUTSIDE_NW]), 'sniper', undefined, 1800),
+    // === SNIPER — spawn in N/NE/NW zones, no minimum distance ===
+    rz(pick([ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE, ZONE_OUTSIDE_NW]), 'sniper'),
 
     // === SHOCKERS — electric melee enemies ===
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
