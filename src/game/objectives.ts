@@ -20,7 +20,7 @@ interface ObjectiveTemplate {
 const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'kill_boss', name: 'Eliminate Commandant', icon: '💀', description: 'Kill Commandant Osipovitj and retrieve his USB drive', reward: 500, isMain: true },
   { id: 'hack_terminals', name: 'Hack Intel Terminal', icon: '💻', description: 'Hack the nuclear codebook terminal', reward: 400, isMain: true },
-  { id: 'plant_bomb', name: 'Sabotage Aircraft', icon: '✈️', description: 'Plant a TNT charge on the airplane in the hangar area', reward: 450, isMain: true },
+  { id: 'plant_bomb', name: 'Sabotage Aircraft', icon: '✈️', description: 'Destroy the airplane with TNT, grenades, or melee', reward: 450, isMain: true },
   { id: 'collect_documents', name: 'Recover Intel', icon: '📄', description: 'Find and collect 3 classified documents', reward: 350, isMain: true },
   { id: 'find_secret', name: 'Find Secret Passage', icon: '🚪', description: 'Discover the hidden passage in the underground labs', reward: 400, isMain: true },
 ];
