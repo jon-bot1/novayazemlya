@@ -136,6 +136,17 @@ export const createArmor = (name: string = 'Body Armor', armor: number = 30, ico
   description: `${name} — +${armor} protection`,
 });
 
+export const createGasGrenade = (): Item => ({
+  id: nextId(),
+  name: 'Gas Grenade',
+  category: 'grenade',
+  icon: '☁️',
+  weight: 0.5,
+  value: 400,
+  damage: -2, // -2 marker = gas grenade (different from -1 flashbang)
+  description: 'Converts one enemy to fight for you for 20s — small radius',
+});
+
 export const createTNT = (): Item => ({
   id: nextId(),
   name: 'TNT Charge',

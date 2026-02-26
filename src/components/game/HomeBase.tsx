@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Item } from '../../game/types';
-import { UPGRADES, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade } from '../../game/upgrades';
+import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
 
 export interface StashState {
@@ -9,6 +9,8 @@ export interface StashState {
   raidCount: number;
   extractionCount: number;
   upgrades: UpgradeState;
+  xp: number;
+  level: number;
 }
 
 const EMPTY_STASH: StashState = {
@@ -17,6 +19,8 @@ const EMPTY_STASH: StashState = {
   raidCount: 0,
   extractionCount: 0,
   upgrades: {},
+  xp: 0,
+  level: 1,
 };
 
 export function loadStash(): StashState {
@@ -42,13 +46,16 @@ interface HomeBaseProps {
   onSellItem: (index: number) => void;
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
+  onBuyTraderItem: (itemId: string) => void;
   onRerollObjectives: () => void;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onRerollObjectives }) => {
-  const [tab, setTab] = useState<'stash' | 'trader' | 'mission'>('mission');
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives }) => {
+  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
+  const level = getLevelForXp(stash.xp);
+  const xpInfo = getXpForNextLevel(stash.xp);
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
@@ -62,19 +69,34 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           <div className="flex gap-4 justify-center mt-2 text-[10px] font-mono text-muted-foreground">
             <span>Raids: {stash.raidCount}</span>
             <span>Extracted: {stash.extractionCount}</span>
+            <span className="text-accent">Lv.{level}</span>
+          </div>
+          {/* XP Bar */}
+          <div className="mt-2 mx-auto max-w-xs">
+            <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground">
+              <span>XP</span>
+              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent transition-all duration-500"
+                  style={{ width: `${Math.min(100, xpInfo.progress * 100)}%` }}
+                />
+              </div>
+              <span>{xpInfo.current}/{xpInfo.needed}</span>
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-border">
           {([
-            { key: 'mission', label: '🎯 Mission', },
+            { key: 'mission', label: '🎯 Mission' },
             { key: 'stash', label: '📦 Stash' },
-            { key: 'trader', label: '🏪 Trader' },
+            { key: 'trader', label: '⬆ Upgrades' },
+            { key: 'shop', label: '🏪 Shop' },
           ] as const).map(t => (
             <button
               key={t.key}
-              className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === t.key ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-3 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === t.key ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
               onClick={() => setTab(t.key)}
             >
               {t.label}
@@ -116,7 +138,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     </span>
                   </div>
                   <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{obj.description}</p>
-                  <p className="text-[10px] font-mono text-warning mt-0.5">Reward: {obj.reward}₽</p>
+                  <p className="text-[10px] font-mono text-warning mt-0.5">Reward: {obj.reward}₽ + {Math.floor(obj.reward / 2)} XP</p>
                 </div>
               </div>
             ))}
@@ -162,14 +184,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
-        {/* Trader Tab */}
+        {/* Upgrades Tab (permanent) */}
         {tab === 'trader' && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">🏪</span>
+              <span className="text-lg">⬆</span>
               <div>
-                <span className="text-xs font-display text-foreground">Trader Sidorov</span>
-                <p className="text-[10px] font-mono text-muted-foreground italic">"What are you buying, stranger?"</p>
+                <span className="text-xs font-display text-foreground">Permanent Upgrades</span>
+                <p className="text-[10px] font-mono text-muted-foreground italic">These persist across all raids</p>
               </div>
             </div>
             <div className="grid gap-2 max-h-[400px] overflow-y-auto">
@@ -214,6 +236,44 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                         </span>
                       </div>
                     )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Shop Tab (consumables) */}
+        {tab === 'shop' && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🏪</span>
+              <div>
+                <span className="text-xs font-display text-foreground">Trader Sidorov's Shop</span>
+                <p className="text-[10px] font-mono text-muted-foreground italic">"Items go to your stash. Equip before deploying."</p>
+              </div>
+            </div>
+            <div className="grid gap-1.5 max-h-[400px] overflow-y-auto">
+              {TRADER_ITEMS.map(item => {
+                const affordable = stash.rubles >= item.cost;
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 p-2.5 rounded border transition-colors ${
+                      affordable
+                        ? 'border-warning/40 bg-warning/5 hover:bg-warning/10 cursor-pointer'
+                        : 'border-border/30 bg-secondary/10 opacity-50'
+                    }`}
+                    onClick={() => affordable && onBuyTraderItem(item.id)}
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-display text-foreground">{item.name}</span>
+                      <p className="text-[10px] font-mono text-muted-foreground">{item.description}</p>
+                    </div>
+                    <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
+                      {item.cost}₽
+                    </span>
                   </div>
                 );
               })}

@@ -57,6 +57,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     lastTacticalSwitch: 0,
     stunTimer: 0,
     elevated: false,
+    friendly: false,
+    friendlyTimer: 0,
   };
   if (type === 'boss') {
     enemy.bossPhase = 0;
