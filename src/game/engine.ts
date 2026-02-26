@@ -1922,21 +1922,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const lostPressure = !sniperHasLos || sniperDistToPlayer > enemy.shootRange || sniperPlayerHidden;
       const tookHit = !!(enemy as any)._sniperShouldFlee;
 
-      if (playerTooClose && (enemy as any)._sniperFlashCooldown <= 0) {
-        const fbAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-        state.grenades.push({
-          pos: { x: enemy.pos.x + Math.cos(fbAngle) * 16, y: enemy.pos.y + Math.sin(fbAngle) * 16 },
-          vel: { x: Math.cos(fbAngle) * 3.5, y: Math.sin(fbAngle) * 3.5 },
-          timer: 0.6,
-          damage: -1,
-          radius: 200,
-          fromPlayer: false,
-          sourceId: enemy.id,
-          sourceType: 'sniper',
-        });
-        (enemy as any)._sniperFlashCooldown = 20;
-        addMessage(state, '💫 Sniper Tuman flashar och försvinner!', 'warning');
-      }
+      // Sniper no longer throws flashbangs — just teleports away when pressured
 
       const mustTeleport = tookHit || playerTooClose || lostPressure || (enemy as any)._sniperTeleportTimer <= 0;
       if (mustTeleport) {
