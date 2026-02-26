@@ -244,7 +244,7 @@ export function generateMap() {
   const ZONE_YARD_N = { x: 1300, y: 300, w: 400, h: 200 };
 
   const PLAYER_SPAWN = { x: 1510, y: MAP_H - 150 };
-  const MIN_SPAWN_DIST = 400; // minimum distance from player spawn
+  const MIN_SPAWN_DIST = 700; // minimum distance from player spawn
 
   const randInFarFromPlayer = (zone: { x: number; y: number; w: number; h: number }) => {
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -269,9 +269,9 @@ export function generateMap() {
   };
 
   // === OUTSIDE ZONES for random spawns ===
-  const ZONE_OUTSIDE_SW = { x: 300, y: 1900, w: 500, h: 400 };
-  const ZONE_OUTSIDE_SE = { x: 2200, y: 1900, w: 500, h: 400 };
-  const ZONE_OUTSIDE_S  = { x: 800, y: 2000, w: 600, h: 300 };
+  const ZONE_OUTSIDE_SW = { x: 200, y: 1500, w: 500, h: 400 };
+  const ZONE_OUTSIDE_SE = { x: 2400, y: 1500, w: 500, h: 400 };
+  const ZONE_OUTSIDE_S  = { x: 800, y: 1700, w: 600, h: 300 };
   const ZONE_OUTSIDE_NW = { x: 200, y: 1500, w: 400, h: 300 };
   const ZONE_OUTSIDE_N  = { x: 800, y: 100, w: 1600, h: 180 };
   const ZONE_OUTSIDE_NE = { x: 2500, y: 100, w: 400, h: 300 };
