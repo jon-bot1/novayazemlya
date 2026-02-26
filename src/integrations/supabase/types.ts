@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      player_progress: {
+        Row: {
+          created_at: string
+          extraction_count: number
+          id: string
+          player_name: string
+          raid_count: number
+          rubles: number
+          stash_items: Json
+          updated_at: string
+          upgrades: Json
+        }
+        Insert: {
+          created_at?: string
+          extraction_count?: number
+          id?: string
+          player_name: string
+          raid_count?: number
+          rubles?: number
+          stash_items?: Json
+          updated_at?: string
+          upgrades?: Json
+        }
+        Update: {
+          created_at?: string
+          extraction_count?: number
+          id?: string
+          player_name?: string
+          raid_count?: number
+          rubles?: number
+          stash_items?: Json
+          updated_at?: string
+          upgrades?: Json
+        }
+        Relationships: []
+      }
       tester_feedback: {
         Row: {
           comment: string | null

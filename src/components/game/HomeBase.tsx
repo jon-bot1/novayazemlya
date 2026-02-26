@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Item } from '../../game/types';
+import { UPGRADES, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade } from '../../game/upgrades';
+import { MissionObjective } from '../../game/objectives';
 
 export interface StashState {
   items: Item[];
   rubles: number;
   raidCount: number;
   extractionCount: number;
+  upgrades: UpgradeState;
 }
 
 const EMPTY_STASH: StashState = {
@@ -13,12 +16,16 @@ const EMPTY_STASH: StashState = {
   rubles: 0,
   raidCount: 0,
   extractionCount: 0,
+  upgrades: {},
 };
 
 export function loadStash(): StashState {
   try {
     const raw = localStorage.getItem('nz_stash');
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...EMPTY_STASH, ...parsed };
+    }
   } catch {}
   return { ...EMPTY_STASH };
 }
@@ -30,13 +37,16 @@ export function saveStash(stash: StashState) {
 interface HomeBaseProps {
   playerName: string;
   stash: StashState;
+  objectives: MissionObjective[];
   onDeploy: () => void;
   onSellItem: (index: number) => void;
   onSellAll: () => void;
+  onBuyUpgrade: (upgradeId: string) => void;
+  onRerollObjectives: () => void;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, onDeploy, onSellItem, onSellAll }) => {
-  const [tab, setTab] = useState<'stash' | 'trader'>('stash');
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onRerollObjectives }) => {
+  const [tab, setTab] = useState<'stash' | 'trader' | 'mission'>('mission');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
 
@@ -47,7 +57,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, onDeploy,
         <div className="text-center border-b border-border pb-4">
           <h1 className="text-2xl font-display text-accent text-glow-green tracking-wider">🏠 SAFE HOUSE</h1>
           <p className="text-xs font-mono text-muted-foreground mt-1">
-            Agent <span className="text-foreground">{displayName}</span> — {stash.rubles}₽
+            Agent <span className="text-foreground">{displayName}</span> — <span className="text-warning">{stash.rubles}₽</span>
           </p>
           <div className="flex gap-4 justify-center mt-2 text-[10px] font-mono text-muted-foreground">
             <span>Raids: {stash.raidCount}</span>
@@ -57,20 +67,63 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, onDeploy,
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-border">
-          <button
-            className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'stash' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setTab('stash')}
-          >
-            📦 Stash
-          </button>
-          <button
-            className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'trader' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setTab('trader')}
-          >
-            🏪 Trader
-          </button>
+          {([
+            { key: 'mission', label: '🎯 Mission', },
+            { key: 'stash', label: '📦 Stash' },
+            { key: 'trader', label: '🏪 Trader' },
+          ] as const).map(t => (
+            <button
+              key={t.key}
+              className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === t.key ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
+        {/* Mission Tab */}
+        {tab === 'mission' && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-display text-accent uppercase tracking-wider">Mission Briefing</span>
+              <button
+                className="px-2 py-1 text-[10px] font-mono text-muted-foreground border border-border rounded hover:text-foreground hover:border-foreground/30 transition-colors"
+                onClick={onRerollObjectives}
+              >
+                🔄 New Mission
+              </button>
+            </div>
+            {objectives.map(obj => (
+              <div
+                key={obj.id}
+                className={`flex items-start gap-3 p-3 rounded border ${
+                  obj.type === 'main'
+                    ? 'border-warning/40 bg-warning/5'
+                    : 'border-border/50 bg-secondary/20'
+                }`}
+              >
+                <span className="text-lg">{obj.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-display text-foreground">{obj.name}</span>
+                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                      obj.type === 'main'
+                        ? 'bg-warning/20 text-warning border border-warning/30'
+                        : 'bg-secondary/40 text-muted-foreground border border-border/30'
+                    }`}>
+                      {obj.type === 'main' ? 'MAIN' : 'BONUS'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{obj.description}</p>
+                  <p className="text-[10px] font-mono text-warning mt-0.5">Reward: {obj.reward}₽</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Stash Tab */}
         {tab === 'stash' && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -109,16 +162,62 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, onDeploy,
           </div>
         )}
 
+        {/* Trader Tab */}
         {tab === 'trader' && (
-          <div className="text-center py-8">
-            <div className="text-4xl mb-3">🏪</div>
-            <p className="text-sm font-mono text-muted-foreground mb-2">Trader Sidorov</p>
-            <p className="text-xs font-mono text-muted-foreground/60 italic">
-              "Come back when you have more rubles, friend. I have many things for sale..."
-            </p>
-            <p className="text-[10px] font-mono text-accent/60 mt-4">
-              ⚙ Upgrades shop coming soon
-            </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🏪</span>
+              <div>
+                <span className="text-xs font-display text-foreground">Trader Sidorov</span>
+                <p className="text-[10px] font-mono text-muted-foreground italic">"What are you buying, stranger?"</p>
+              </div>
+            </div>
+            <div className="grid gap-2 max-h-[400px] overflow-y-auto">
+              {UPGRADES.map(upgrade => {
+                const currentLevel = getUpgradeLevel(stash.upgrades, upgrade.id);
+                const maxed = currentLevel >= upgrade.maxLevel;
+                const cost = getUpgradeCost(upgrade, currentLevel);
+                const affordable = canBuyUpgrade(stash.upgrades, upgrade.id, stash.rubles);
+
+                return (
+                  <div
+                    key={upgrade.id}
+                    className={`flex items-center gap-3 p-3 rounded border transition-colors ${
+                      maxed
+                        ? 'border-accent/30 bg-accent/5 opacity-60'
+                        : affordable
+                        ? 'border-warning/40 bg-warning/5 hover:bg-warning/10 cursor-pointer'
+                        : 'border-border/30 bg-secondary/10 opacity-50'
+                    }`}
+                    onClick={() => !maxed && affordable && onBuyUpgrade(upgrade.id)}
+                  >
+                    <span className="text-2xl">{upgrade.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-display text-foreground">{upgrade.name}</span>
+                        {maxed && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 bg-accent/20 text-accent border border-accent/30 rounded">MAX</span>
+                        )}
+                        {!maxed && (
+                          <span className="text-[9px] font-mono text-muted-foreground">
+                            Lv {currentLevel}/{upgrade.maxLevel}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] font-mono text-muted-foreground">{upgrade.description}</p>
+                      <p className="text-[9px] font-mono text-accent">{upgrade.effect}</p>
+                    </div>
+                    {!maxed && (
+                      <div className="text-right">
+                        <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
+                          {cost}₽
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
