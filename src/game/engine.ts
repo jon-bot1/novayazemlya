@@ -322,65 +322,83 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
     
-    // Moving breaks cover
-    if (state.player.inCover) {
-      state.player.inCover = false;
-      state.player.coverObject = null;
-      state.player.coverQuality = 0;
-      state.player.coverLabel = '';
+    // Moving breaks hiding (not auto-cover)
+    if ((state as any)._playerHiding) {
+      (state as any)._playerHiding = false;
       state.player.peeking = false;
+      addMessage(state, '🧍 No longer hidden', 'info');
     }
     
     // Footstep sounds + sound propagation
-  // Cover proximity detection — show hint when near cover objects
-  let nearCover = false;
-  let nearestCoverPos: { x: number; y: number } | null = null;
-  let nearestCoverDist = Infinity;
-  let nearestCoverLabel = '';
-  const coverQualityMap: Record<string, { quality: number; label: string }> = {
-    concrete_barrier: { quality: 0.90, label: 'Hard' },
-    sandbags:         { quality: 0.85, label: 'Hard' },
-    vehicle_wreck:    { quality: 0.85, label: 'Hard' },
-    guard_booth:      { quality: 0.85, label: 'Hard' },
-    watchtower:       { quality: 0.80, label: 'Hard' },
-    metal_shelf:      { quality: 0.75, label: 'Medium' },
-    barrel_stack:     { quality: 0.70, label: 'Medium' },
-    wood_crate:       { quality: 0.65, label: 'Medium' },
-    equipment_table:  { quality: 0.55, label: 'Light' },
-    tree:             { quality: 0.50, label: 'Soft' },
-    pine_tree:        { quality: 0.50, label: 'Soft' },
-    bush:             { quality: 0.30, label: 'Concealment' },
-    fence_h:          { quality: 0.25, label: 'Concealment' },
-    fence_v:          { quality: 0.25, label: 'Concealment' },
+  // === AUTO-COVER: automatically apply cover when near obstacles ===
+  const coverQualityMap: Record<string, { quality: number; label: string; coverType: 'high' | 'low' }> = {
+    concrete_barrier: { quality: 0.90, label: 'HIGH COVER', coverType: 'high' },
+    sandbags:         { quality: 0.85, label: 'HIGH COVER', coverType: 'high' },
+    vehicle_wreck:    { quality: 0.85, label: 'HIGH COVER', coverType: 'high' },
+    guard_booth:      { quality: 0.85, label: 'HIGH COVER', coverType: 'high' },
+    watchtower:       { quality: 0.80, label: 'HIGH COVER', coverType: 'high' },
+    metal_shelf:      { quality: 0.75, label: 'HIGH COVER', coverType: 'high' },
+    barrel_stack:     { quality: 0.70, label: 'LOW COVER', coverType: 'low' },
+    wood_crate:       { quality: 0.65, label: 'LOW COVER', coverType: 'low' },
+    equipment_table:  { quality: 0.55, label: 'LOW COVER', coverType: 'low' },
+    tree:             { quality: 0.50, label: 'LOW COVER', coverType: 'low' },
+    pine_tree:        { quality: 0.50, label: 'LOW COVER', coverType: 'low' },
+    bush:             { quality: 0.30, label: 'CONCEALMENT', coverType: 'low' },
+    fence_h:          { quality: 0.25, label: 'CONCEALMENT', coverType: 'low' },
+    fence_v:          { quality: 0.25, label: 'CONCEALMENT', coverType: 'low' },
   };
-  if (!state.player.inCover) {
-    for (const prop of state.props) {
-      const d = dist(state.player.pos, prop.pos);
-      if (d < 40 && d < nearestCoverDist) {
-        nearCover = true;
-        nearestCoverPos = prop.pos;
-        nearestCoverDist = d;
-        const cq = coverQualityMap[prop.type];
-        nearestCoverLabel = cq ? cq.label : 'Cover';
-      }
-    }
-    if (!nearCover) {
-      for (const wall of state.walls) {
-        const wx = wall.x + wall.w / 2;
-        const wy = wall.y + wall.h / 2;
-        const d = dist(state.player.pos, { x: wx, y: wy });
-        if (d < 60 && d < nearestCoverDist) {
-          nearCover = true;
-          nearestCoverPos = { x: wx, y: wy };
-          nearestCoverDist = d;
-          nearestCoverLabel = 'Hard';
-        }
-      }
+
+  // Find nearest cover object
+  let bestCoverDist = 40;
+  let bestCoverPos: Vec2 | null = null;
+  let bestCoverQuality = 0;
+  let bestCoverLabel = '';
+  let bestCoverType: 'high' | 'low' = 'low';
+  for (const prop of state.props) {
+    const d = dist(state.player.pos, prop.pos);
+    if (d < bestCoverDist) {
+      bestCoverDist = d;
+      bestCoverPos = { ...prop.pos };
+      const cq = coverQualityMap[prop.type];
+      bestCoverQuality = cq ? cq.quality : 0.60;
+      bestCoverLabel = cq ? cq.label : 'COVER';
+      bestCoverType = cq ? cq.coverType : 'low';
     }
   }
-  state.coverNearby = nearCover;
-  (state as any)._nearestCoverPos = nearestCoverPos;
-  (state as any)._nearestCoverLabel = nearestCoverLabel;
+  // Also check walls
+  for (const wall of state.walls) {
+    const wx = wall.x + wall.w / 2;
+    const wy = wall.y + wall.h / 2;
+    const d = dist(state.player.pos, { x: wx, y: wy });
+    if (d < bestCoverDist + 20) {
+      bestCoverDist = d;
+      bestCoverPos = { x: wx, y: wy };
+      bestCoverQuality = 0.90;
+      bestCoverLabel = 'HIGH COVER';
+      bestCoverType = 'high';
+    }
+  }
+
+  // Auto-apply cover when near obstacles
+  if (bestCoverPos && !(state as any)._playerHiding) {
+    if (!state.player.inCover || state.player.coverLabel !== bestCoverLabel) {
+      state.player.inCover = true;
+      state.player.coverObject = bestCoverPos;
+      state.player.coverQuality = bestCoverQuality;
+      state.player.coverLabel = bestCoverLabel;
+    }
+  } else if (!bestCoverPos && !(state as any)._playerHiding) {
+    state.player.inCover = false;
+    state.player.coverObject = null;
+    state.player.coverQuality = 0;
+    state.player.coverLabel = '';
+    state.player.peeking = false;
+  }
+
+  state.coverNearby = !!bestCoverPos;
+  (state as any)._nearestCoverPos = bestCoverPos;
+  (state as any)._nearestCoverLabel = bestCoverLabel;
+  (state as any)._coverType = bestCoverType;
   
   playFootstep(input.movementMode);
     const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
@@ -389,79 +407,59 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Cover system
+  // === HIDE SYSTEM (Q key) — hide at trees/bushes, become invisible ===
   if (input.takeCover) {
     input.takeCover = false;
-    if (state.player.inCover) {
-      // Toggle off
-      state.player.inCover = false;
-      state.player.coverObject = null;
-      state.player.coverQuality = 0;
-      state.player.coverLabel = '';
+    if ((state as any)._playerHiding) {
+      // Stop hiding
+      (state as any)._playerHiding = false;
       state.player.peeking = false;
-      addMessage(state, '🧍 Leaving cover', 'info');
+      addMessage(state, '🧍 No longer hidden', 'info');
     } else {
-      // Cover quality by prop type
-      const coverQualityMap: Record<string, { quality: number; label: string }> = {
-        concrete_barrier: { quality: 0.90, label: 'Hard cover' },
-        sandbags:         { quality: 0.85, label: 'Hard cover' },
-        vehicle_wreck:    { quality: 0.85, label: 'Hard cover' },
-        guard_booth:      { quality: 0.85, label: 'Hard cover' },
-        watchtower:       { quality: 0.80, label: 'Hard cover' },
-        metal_shelf:      { quality: 0.75, label: 'Medium cover' },
-        barrel_stack:     { quality: 0.70, label: 'Medium cover' },
-        wood_crate:       { quality: 0.65, label: 'Medium cover' },
-        equipment_table:  { quality: 0.55, label: 'Light cover' },
-        tree:             { quality: 0.50, label: 'Soft cover' },
-        pine_tree:        { quality: 0.50, label: 'Soft cover' },
-        bush:             { quality: 0.30, label: 'Concealment' },
-        fence_h:          { quality: 0.25, label: 'Concealment' },
-        fence_v:          { quality: 0.25, label: 'Concealment' },
-      };
-      // Find nearest cover object (props or walls within 40px)
-      let bestDist = 40;
-      let bestPos: Vec2 | null = null;
-      let bestQuality = 0.80;
-      let bestLabel = 'Hard cover';
+      // Check for nearby tree, pine_tree, or bush to hide in
+      const hideProps = ['tree', 'pine_tree', 'bush'];
+      let bestHideDist = 45;
+      let bestHideProp: any = null;
       for (const prop of state.props) {
+        if (!hideProps.includes(prop.type)) continue;
         const d = dist(state.player.pos, prop.pos);
-        if (d < bestDist) {
-          bestDist = d;
-          bestPos = { ...prop.pos };
-          const cq = coverQualityMap[prop.type];
-          bestQuality = cq ? cq.quality : 0.60;
-          bestLabel = cq ? cq.label : 'Cover';
+        if (d < bestHideDist) {
+          bestHideDist = d;
+          bestHideProp = prop;
         }
       }
-      // Also check walls as cover (always hard)
-      for (const wall of state.walls) {
-        const wx = wall.x + wall.w / 2;
-        const wy = wall.y + wall.h / 2;
-        const d = dist(state.player.pos, { x: wx, y: wy });
-        if (d < bestDist + 20) {
-          bestDist = d;
-          bestPos = { x: wx, y: wy };
-          bestQuality = 0.90;
-          bestLabel = 'Wall (hard)';
-        }
-      }
-      if (bestPos) {
+      if (bestHideProp) {
+        (state as any)._playerHiding = true;
+        (state as any)._hidePos = { ...bestHideProp.pos };
+        (state as any)._hidePropType = bestHideProp.type;
         state.player.inCover = true;
-        state.player.coverObject = bestPos;
-        state.player.coverQuality = bestQuality;
-        state.player.coverLabel = bestLabel;
+        state.player.coverObject = { ...bestHideProp.pos };
+        state.player.coverQuality = 1.0;
+        state.player.coverLabel = 'HIDDEN';
         state.player.peeking = false;
-        const pct = Math.round(bestQuality * 100);
-        addMessage(state, `🛡️ ${bestLabel} (${pct}%) — shoot to peek`, 'info');
+        state.player.pos = { x: bestHideProp.pos.x, y: bestHideProp.pos.y };
+        addMessage(state, '🌲 HIDING — enemies cannot see you. Move or shoot to reveal.', 'info');
+        // Make enemies lose track
+        for (const enemy of state.enemies) {
+          if (enemy.state === 'dead') continue;
+          if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
+            enemy.state = 'investigate';
+            enemy.investigateTarget = { ...state.player.pos };
+          }
+        }
       } else {
-        addMessage(state, '⚠ No cover nearby!', 'warning');
+        addMessage(state, '⚠ No tree or bush nearby to hide in!', 'warning');
       }
     }
   }
 
-  // Peek fire — shooting while in cover
+  // Peek fire — shooting while in cover (breaks hiding)
   if (state.player.inCover) {
     state.player.peeking = input.shooting;
+    if ((state as any)._playerHiding && input.shooting) {
+      (state as any)._playerHiding = false;
+      addMessage(state, '⚠ Revealed by shooting!', 'warning');
+    }
   }
 
   // Speed boost countdown
@@ -753,7 +751,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'weapon' && item.damage) {
             const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
             const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            if (!currentInSlot) {
+            // Skip if player already has the same weapon
+            if (currentInSlot && currentInSlot.name === item.name) {
+              // Already have this weapon — don't show popup
+            } else if (!currentInSlot) {
               // Empty slot — auto-equip
               if (slot === 'primary') {
                 state.player.primaryWeapon = item;
@@ -769,7 +770,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             } else {
               // Slot occupied — ask for confirmation
               state.pendingWeapon = { item, slot, replacing: currentInSlot };
-              addMessage(state, `🔫 ${item.name} found! Press Y to swap, N to skip`, 'warning');
+              addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
             }
           }
         }
@@ -833,7 +834,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'weapon' && item.damage) {
             const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
             const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            if (!currentInSlot) {
+            // Skip if player already has the same weapon
+            if (currentInSlot && currentInSlot.name === item.name) {
+              // Already have this weapon — don't show popup
+            } else if (!currentInSlot) {
               if (slot === 'primary') {
                 state.player.primaryWeapon = item;
                 state.player.activeSlot = 2;
@@ -847,7 +851,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
             } else {
               state.pendingWeapon = { item, slot, replacing: currentInSlot };
-              addMessage(state, `🔫 ${item.name} found! Press Y to swap, N to skip`, 'warning');
+              addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
             }
           }
           if (item.id === 'boss_usb') {
@@ -1249,12 +1253,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
           enemy.fireRate = 350;
-          enemy.speed = 2.2;
+          enemy.speed = 1.65; // 25% reduced
           enemy.damage = 35;
         }
         if (enemy.bossPhase === 2) {
           enemy.fireRate = 250;
-          enemy.speed = 2.8;
+          enemy.speed = 2.1; // 25% reduced
           enemy.damage = 40;
         }
       }
@@ -1318,7 +1322,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const isBehind = angleDiff > visionConfig.frontArc;
 
     const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
-    const canSeePlayer = distToPlayer < effectiveRange && los;
+    const playerIsHiding = !!(state as any)._playerHiding;
+    const canSeePlayer = !playerIsHiding && distToPlayer < effectiveRange && los;
 
     // Check for nearby sound events (gunshots, explosions)
     let heardSound: Vec2 | null = null;
@@ -1670,6 +1675,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         p.type === 'concrete_barrier' || p.type === 'vehicle_wreck' ||
         p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags';
 
+      // Minimum distance from player for any sniper teleport
+      const SNIPER_MIN_RELOCATE_DIST = 250;
+      // Filter out the tree the player is hiding in
+      const hidePos = (state as any)._hidePos;
+      const isNotPlayerHideSpot = (p: { pos: Vec2 }) => {
+        if (!hidePos) return true;
+        return dist(p.pos, hidePos) > 30;
+      };
+
       const sniperDistToPlayer = dist(enemy.pos, state.player.pos);
       const sniperHasLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
 
@@ -1690,9 +1704,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Periodically teleport closer when out of range
         if ((enemy as any)._sniperTeleportTimer <= 0 && !(enemy as any)._sniperInvisible) {
           const repositionCovers = state.props.filter(p =>
-            isCoverProp(p) &&
+            isCoverProp(p) && isNotPlayerHideSpot(p) &&
             dist(p.pos, state.player.pos) < enemy.shootRange * 0.9 &&
-            dist(p.pos, state.player.pos) > 150 &&
+            dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST &&
             dist(p.pos, enemy.pos) > 80
           );
           if (repositionCovers.length > 0) {
@@ -1737,12 +1751,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
         // Teleport to cover far from player
         let fleeCovers = state.props.filter(p =>
-          isCoverProp(p) &&
-          dist(p.pos, state.player.pos) > 350 && dist(p.pos, enemy.pos) > 80
+          isCoverProp(p) && isNotPlayerHideSpot(p) &&
+          dist(p.pos, state.player.pos) > Math.max(350, SNIPER_MIN_RELOCATE_DIST) && dist(p.pos, enemy.pos) > 80
         );
         if (fleeCovers.length === 0) {
           fleeCovers = state.props.filter(p =>
-            isCoverProp(p) && dist(p.pos, enemy.pos) > 60
+            isCoverProp(p) && isNotPlayerHideSpot(p) && dist(p.pos, enemy.pos) > 60 && dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST
           );
         }
         if (fleeCovers.length > 0) {
@@ -1830,9 +1844,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._sniperTeleportTimer <= 0) {
         const playerDist = dist(enemy.pos, state.player.pos);
         const covers = state.props.filter(p =>
-          isCoverProp(p) &&
+          isCoverProp(p) && isNotPlayerHideSpot(p) &&
           dist(enemy.pos, p.pos) > 40 && dist(enemy.pos, p.pos) < 500 &&
-          dist(p.pos, state.player.pos) < playerDist
+          dist(p.pos, state.player.pos) < playerDist &&
+          dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST
         );
         if (covers.length > 0) {
           covers.sort((a, b) => dist(a.pos, state.player.pos) - dist(b.pos, state.player.pos));
@@ -2591,14 +2606,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               playExplosion();
 
               let fleeCovers = state.props.filter(p =>
-                isCoverProp(p) &&
-                dist(p.pos, state.player.pos) > 320 &&
+                isCoverProp(p) && isNotPlayerHideSpot(p) &&
+                dist(p.pos, state.player.pos) > Math.max(320, SNIPER_MIN_RELOCATE_DIST) &&
                 dist(p.pos, enemy.pos) > 140
               );
               if (fleeCovers.length === 0) {
                 fleeCovers = state.props.filter(p =>
-                  isCoverProp(p) &&
-                  dist(p.pos, enemy.pos) > 120
+                  isCoverProp(p) && isNotPlayerHideSpot(p) && dist(p.pos, enemy.pos) > 120 && dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST
                 );
               }
 

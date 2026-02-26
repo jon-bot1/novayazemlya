@@ -527,8 +527,8 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'e') inputRef.current.interact = true;
       if (e.key === 't') inputRef.current.useTNT = true;
       if (e.key === 'h') inputRef.current.heal = true;
-      // Weapon confirmation: Y to accept, N to reject
-      if (e.key === 'y' || e.key === 'Y') {
+      // Weapon confirmation: Y or Enter to accept, N to reject
+      if (e.key === 'y' || e.key === 'Y' || e.key === 'Enter') {
         const st = stateRef.current;
         if (st.pendingWeapon) {
           const pw = st.pendingWeapon;
