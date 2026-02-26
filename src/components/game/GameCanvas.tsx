@@ -595,7 +595,20 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
     };
 
-    const onMouseDown = (e: MouseEvent) => { unlockSpeech(); if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return; if (!showInventory && !showIntel && !readingDoc) { inputRef.current.shooting = true; inputRef.current.shootPressed = true; } };
+    const onMouseDown = (e: MouseEvent) => {
+      unlockSpeech();
+      if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
+      if (showInventory || showIntel || readingDoc) return;
+      if (e.button === 2) {
+        // Right-click = throw grenade
+        e.preventDefault();
+        inputRef.current.throwGrenade = true;
+        return;
+      }
+      inputRef.current.shooting = true;
+      inputRef.current.shootPressed = true;
+    };
+    const onContextMenu = (e: Event) => { e.preventDefault(); };
     const onMouseUp = () => { inputRef.current.shooting = false; inputRef.current.shootPressed = false; };
     const onMouseMove = (e: MouseEvent) => {
       const canvas = canvasRef.current;
@@ -621,6 +634,7 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('contextmenu', onContextMenu);
 
     return () => {
       clearInterval(interval);
@@ -629,6 +643,7 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('contextmenu', onContextMenu);
     };
   }, [showInventory, showIntel, readingDoc]);
 

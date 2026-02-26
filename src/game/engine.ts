@@ -506,6 +506,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // Auto-dismiss weapon swap popup when player walks too far from loot source
+  if (state.pendingWeapon && (state as any)._pendingWeaponPos) {
+    const wpnPos = (state as any)._pendingWeaponPos as Vec2;
+    if (dist(state.player.pos, wpnPos) > 120) {
+      state.pendingWeapon = null;
+      delete (state as any)._pendingWeaponPos;
+      addMessage(state, '🔫 Moved away — weapon swap cancelled.', 'info');
+    }
+  }
+
   // Speed boost countdown
   if (state.speedBoostTimer > 0) {
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
@@ -814,6 +824,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             } else {
               // Slot occupied — ask for confirmation
               state.pendingWeapon = { item, slot, replacing: currentInSlot };
+              (state as any)._pendingWeaponPos = { ...lc.pos }; // track loot source position
               addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
             }
           }
@@ -895,6 +906,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
             } else {
               state.pendingWeapon = { item, slot, replacing: currentInSlot };
+              (state as any)._pendingWeaponPos = { ...enemy.pos }; // track loot source position
               addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
             }
           }
@@ -1109,6 +1121,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.stunTimer > 0) {
       enemy.stunTimer -= dt;
       enemy.state = 'idle';
+      continue;
+    }
+
+    // === GRENADE FLEE — enemies run from incoming grenades, can't shoot ===
+    if ((enemy as any)._grenadeFlee > 0) {
+      (enemy as any)._grenadeFlee -= dt;
+      const fleeAngle = (enemy as any)._grenadeFleeAngle || 0;
+      const fleeSpeed = enemy.speed * dt * 60 * 2.0;
+      enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(fleeAngle) * fleeSpeed, Math.sin(fleeAngle) * fleeSpeed, 10);
+      enemy.angle = fleeAngle;
+      // Yellow warning particles
+      if (Math.random() < 0.15) {
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffcc44', 1);
+      }
+      if ((enemy as any)._grenadeFlee <= 0) {
+        delete (enemy as any)._grenadeFlee;
+        delete (enemy as any)._grenadeFleeAngle;
+        enemy.state = 'investigate';
+        enemy.investigateTarget = { ...state.player.pos };
+      }
       continue;
     }
 
@@ -1482,6 +1514,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos }; // snapshot current pos as last known
         enemy.tacticalRole = 'none';
+        // Mark "just lost sight" for ? icon rendering
+        (enemy as any)._lostSightTime = state.time;
       } else if (distToPlayer > enemy.alertRange * 1.5) {
         // Too far but still has LOS — chase
         enemy.state = 'chase';
@@ -2262,6 +2296,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Stuck against wall — stop movement
       g.vel.x *= 0.1;
       g.vel.y *= 0.1;
+    }
+
+    // Enemies see incoming grenade and flee (player grenades only)
+    if (g.fromPlayer && g.timer > 0.3 && g.timer < 1.5) {
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
+        if ((enemy as any)._grenadeFlee) continue; // already fleeing
+        const dToGrenade = dist(g.pos, enemy.pos);
+        if (dToGrenade < g.radius * 1.5 && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+          // Set grenade flee state
+          (enemy as any)._grenadeFlee = 2.0; // flee for 2 seconds
+          const fleeAngle = Math.atan2(enemy.pos.y - g.pos.y, enemy.pos.x - g.pos.x) + (Math.random() - 0.5) * 0.6;
+          (enemy as any)._grenadeFleeAngle = fleeAngle;
+        }
+      }
     }
 
     if (g.timer <= 0) {
