@@ -12,6 +12,7 @@ import { InventoryPanel } from './InventoryPanel';
 import { DocumentReader } from './DocumentReader';
 import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
+import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 
 const TIME_LIMIT = 300; // 5 minutes
 
@@ -525,6 +526,9 @@ export const GameCanvas: React.FC = () => {
   const aimTouchRef = useRef<number | null>(null);
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
+  const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
+  const [stash, setStash] = useState<StashState>(loadStash);
+  const extractedRef = useRef(false); // prevent double extraction
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -943,14 +947,84 @@ export const GameCanvas: React.FC = () => {
     };
   }, [started]);
 
-  if (!started) {
+  // Handle extraction → transfer loot to stash
+  useEffect(() => {
+    if (hudState.extracted && !extractedRef.current) {
+      extractedRef.current = true;
+      const state = stateRef.current;
+      const lootItems = state.player.inventory.filter(i => i.category !== 'weapon');
+      setStash(prev => {
+        const updated = {
+          ...prev,
+          items: [...prev.items, ...lootItems],
+          extractionCount: prev.extractionCount + 1,
+        };
+        saveStash(updated);
+        return updated;
+      });
+    }
+  }, [hudState.extracted]);
+
+  // Phase: intro
+  if (gamePhase === 'intro') {
     return (
       <div className="relative w-screen h-screen overflow-hidden bg-background">
-        <IntroScreen onStart={(name) => { setPlayerName(name); setStarted(true); }} />
+        <IntroScreen onStart={(name) => {
+          setPlayerName(name);
+          setGamePhase('homebase');
+        }} />
       </div>
     );
   }
 
+  // Phase: homebase
+  if (gamePhase === 'homebase') {
+    return (
+      <div className="relative w-screen h-screen overflow-hidden bg-background">
+        <HomeBase
+          playerName={playerName}
+          stash={stash}
+          onDeploy={() => {
+            // Reset game state for new raid
+            stateRef.current = createGameState();
+            lastTimeRef.current = 0;
+            extractedRef.current = false;
+            setStash(prev => {
+              const updated = { ...prev, raidCount: prev.raidCount + 1 };
+              saveStash(updated);
+              return updated;
+            });
+            setStarted(true);
+            setGamePhase('playing');
+            setHudState(h => ({ ...h, gameOver: false, extracted: false }));
+          }}
+          onSellItem={(idx) => {
+            setStash(prev => {
+              const item = prev.items[idx];
+              if (!item) return prev;
+              const updated = {
+                ...prev,
+                items: prev.items.filter((_, i) => i !== idx),
+                rubles: prev.rubles + item.value,
+              };
+              saveStash(updated);
+              return updated;
+            });
+          }}
+          onSellAll={() => {
+            setStash(prev => {
+              const total = prev.items.reduce((s, i) => s + i.value, 0);
+              const updated = { ...prev, items: [], rubles: prev.rubles + total };
+              saveStash(updated);
+              return updated;
+            });
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Phase: playing
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background touch-none flex">
       <div className="relative flex-1 h-full">
@@ -980,6 +1054,10 @@ export const GameCanvas: React.FC = () => {
           deathCause={hudState.deathCause}
           exfilRevealed={hudState.exfilRevealed}
           achievementStats={hudState.achievementStats}
+          onReturnToBase={() => {
+            setStarted(false);
+            setGamePhase('homebase');
+          }}
         />
 
         <LootPopup notifications={lootNotifications} />
