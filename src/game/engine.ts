@@ -356,8 +356,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // MINEFIELD CHECK — instant death
     const mz = state.mineFieldZone;
     if (mz && rectContains(mz.x, mz.y, mz.w, mz.h, newPos.x, newPos.y, 6)) {
-      state.player.hp = 0;
-      state.gameOver = true;
+      state.player.hp = -50; // massive damage, injector can still save
       state.deathCause = '💥 Stepped on a landmine';
       addMessage(state, '💥 MINE! You stepped on a landmine!', 'damage');
       playExplosion();
@@ -375,7 +374,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, newPos.x, newPos.y, '#88ff44', 1);
         }
         if (!state.gameOver && state.player.hp <= 0) {
-          state.gameOver = true;
           state.deathCause = '☠ Toxic exposure from chemical barrel';
         }
       }
@@ -894,9 +892,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
       addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
       if (state.player.hp <= 0) {
-        state.gameOver = true;
         state.deathCause = '🧨 Killed by own TNT explosion';
-        addMessage(state, '☠ DEAD', 'damage');
       }
     }
 
@@ -1162,13 +1158,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Death check — clamp HP and trigger game over
-  if (state.player.hp <= 0) {
-    state.player.hp = 0;
-    state.gameOver = true;
-    if (!state.deathCause) state.deathCause = state.player.bleedRate > 0 ? '🩸 Bled out' : '☠ Killed in action';
-    addMessage(state, '☠ DEAD', 'damage');
-    return state;
+  // Death check — emergency injector saves from lethal damage
+  if (state.player.hp <= 0 && !state.gameOver) {
+    const injectorIdx = state.player.inventory.findIndex(i => i.id === 'emergency_injector' || i.name === 'Emergency Injector');
+    if (injectorIdx >= 0) {
+      state.player.inventory.splice(injectorIdx, 1);
+      state.player.hp = 75;
+      state.player.bleedRate = 0;
+      state.speedBoostTimer = Math.max(state.speedBoostTimer, 3);
+      addMessage(state, '💉 EMERGENCY INJECTOR! Revived to 75 HP!', 'info');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ff88', 15);
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ffffff', 10);
+    } else {
+      state.player.hp = 0;
+      state.gameOver = true;
+      if (!state.deathCause) state.deathCause = state.player.bleedRate > 0 ? '🩸 Bled out' : '☠ Killed in action';
+      addMessage(state, '☠ DEAD', 'damage');
+    }
+    if (state.gameOver) return state;
   }
 
   // Extraction check — need BOTH USB and nuclear codebook for full success
@@ -2427,7 +2434,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.soundEvents.push({ pos: { ...enemy.pos }, radius: 100, time: state.time });
             playHit();
             if (state.player.hp <= 0) {
-              state.gameOver = true;
               state.deathCause = `⚡ Electrocuted by Shocker`;
             }
           } else {
@@ -2678,10 +2684,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
           addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
-            state.gameOver = true;
             const srcLabel = g.sourceType === 'boss' ? 'Commandant Osipovitj' : g.sourceType ? g.sourceType.toUpperCase() : 'unknown';
             state.deathCause = g.fromPlayer ? '💣 Killed by own grenade' : `💣 Grenade from ${srcLabel}`;
-            addMessage(state, '☠ DEAD', 'damage');
           }
         }
       }
@@ -2960,10 +2964,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
-          state.gameOver = true;
           const srcLabel = b.sourceType === 'boss' ? 'Commandant Osipovitj' : b.sourceType === 'sniper' ? 'Sniper Tuman' : b.sourceType ? b.sourceType.toUpperCase() : 'unknown';
           state.deathCause = `🔫 Shot by ${srcLabel}`;
-          addMessage(state, '☠ DEAD', 'damage');
         }
         return false;
       }

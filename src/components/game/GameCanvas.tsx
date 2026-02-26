@@ -1061,6 +1061,12 @@ export const GameCanvas: React.FC = () => {
                 weight: 0.6, value: 80, damage: 80, description: 'Frag grenade',
               });
             }
+            // Emergency Injector — always start with one
+            st.player.inventory.push({
+              id: 'emergency_injector', name: 'Emergency Injector', category: 'medical', icon: '💉',
+              weight: 0.2, value: 350, healAmount: 75, medicalType: 'morphine',
+              description: 'Auto-revive to 75 HP when taking lethal damage. Stops bleeding.',
+            });
             // Red dot sight — store as flag on game state for engine to use
             const redDotLvl = getUpgradeLevel(ups, 'red_dot');
             if (redDotLvl > 0) (st as any)._bulletSpeedBonus = 0.25;
@@ -1127,6 +1133,7 @@ export const GameCanvas: React.FC = () => {
               if (!traderItem || prev.rubles < traderItem.cost) return prev;
               let newItem: Item;
               switch (itemId) {
+                case 'buy_injector': newItem = { id: 'emergency_injector', name: 'Emergency Injector', category: 'medical', icon: '💉', weight: 0.2, value: 350, healAmount: 75, medicalType: 'morphine', description: 'Auto-revive to 75 HP when taking lethal damage. Stops bleeding.' } as Item; break;
                 case 'buy_bandage': newItem = createMedical('Bandage', 10, '🩹', 'bandage', 3); break;
                 case 'buy_medkit': newItem = createMedical('Medkit', 40, '🏥', 'medkit', 1); break;
                 case 'buy_morphine': newItem = createMedical('Morphine', 100, '💉', 'morphine', 5, 8); break;
