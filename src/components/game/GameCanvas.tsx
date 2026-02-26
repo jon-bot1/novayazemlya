@@ -370,6 +370,17 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.12 — 2026-02-26</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 💉 <span className="text-accent">Emergency Injector</span> — auto-revives you at 0 HP, restoring 75 HP & stopping bleed</li>
+                  <li>• 💉 Start every raid with 1 injector — buy extras from Trader Sidorov (350₽)</li>
+                  <li>• 💉 <span className="text-warning">HUD indicator</span> shows injector status clearly (green = ready, red = empty)</li>
+                  <li>• 🩹 <span className="text-accent">Bleeding now stops naturally</span> — light bleeds ~3s, heavy bleeds ~10s</li>
+                  <li>• 🔫 <span className="text-warning">Weapon drop rates reduced 15%</span> across all enemy types for better balance</li>
+                  <li>• 🎒 <span className="text-accent">Backpack redesign</span> — visual backpack outline with clickable item slots</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.11 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 🏠 <span className="text-accent">Safe House</span> — persistent hideout between raids with stash, trader & missions</li>
