@@ -508,6 +508,23 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
+              {/* Return to Base — before achievements/highscores */}
+              {onReturnToBase ? (
+                <button
+                  className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2"
+                  onClick={onReturnToBase}
+                >
+                  🏠 RETURN TO BASE
+                </button>
+              ) : (
+                <button
+                  className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2"
+                  onClick={() => window.location.reload()}
+                >
+                  🔄 RESTART
+                </button>
+              )}
+
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
@@ -530,22 +547,6 @@ export const HUD: React.FC<HUDProps> = ({
             <HighscoreList currentName={playerName} />
 
             <FeedbackWidget playerName={playerName} />
-
-            {onReturnToBase ? (
-              <button
-                className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
-                onClick={onReturnToBase}
-              >
-                🏠 RETURN TO BASE
-              </button>
-            ) : (
-              <button
-                className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
-                onClick={() => window.location.reload()}
-              >
-                🔄 RESTART
-              </button>
-            )}
           </div>
         </div>
       )}
