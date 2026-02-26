@@ -154,26 +154,22 @@ function generateEnemyLoot(enemy: Enemy) {
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
   const baseLoot = [...existingLoot, ...LOOT_POOLS[poolType]()];
 
-  // === WEAPON DROPS — enemies actually carry weapons ===
+  // === WEAPON DROPS — enemies actually carry weapons (rates reduced 15%) ===
   if (enemy.type === 'heavy') {
-    // Heavies: 60% AKM, 30% AK-74, 20% TOZ
-    if (Math.random() < 0.6) baseLoot.push(WEAPON_TEMPLATES.akm());
-    else if (Math.random() < 0.5) baseLoot.push(WEAPON_TEMPLATES.ak74());
-    if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.toz());
+    if (Math.random() < 0.51) baseLoot.push(WEAPON_TEMPLATES.akm());
+    else if (Math.random() < 0.425) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.toz());
   } else if (enemy.type === 'soldier') {
-    // Soldiers: 40% AK-74, 20% AKM, 15% Makarov
-    if (Math.random() < 0.4) baseLoot.push(WEAPON_TEMPLATES.ak74());
-    else if (Math.random() < 0.35) baseLoot.push(WEAPON_TEMPLATES.akm());
-    if (Math.random() < 0.15) baseLoot.push(WEAPON_TEMPLATES.makarov());
+    if (Math.random() < 0.34) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    else if (Math.random() < 0.30) baseLoot.push(WEAPON_TEMPLATES.akm());
+    if (Math.random() < 0.13) baseLoot.push(WEAPON_TEMPLATES.makarov());
   } else if (enemy.type === 'scav') {
-    // Scavs: 25% Makarov, 15% TOZ, 10% PPSh
-    if (Math.random() < 0.25) baseLoot.push(WEAPON_TEMPLATES.makarov());
-    else if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.toz());
-    else if (Math.random() < 0.15) baseLoot.push(WEAPON_TEMPLATES.ppsh());
+    if (Math.random() < 0.21) baseLoot.push(WEAPON_TEMPLATES.makarov());
+    else if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.toz());
+    else if (Math.random() < 0.13) baseLoot.push(WEAPON_TEMPLATES.ppsh());
   } else if (enemy.type === 'shocker') {
-    // Shockers: 20% baton, 15% knife
-    if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.baton());
-    else if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.knife());
+    if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.baton());
+    else if (Math.random() < 0.17) baseLoot.push(WEAPON_TEMPLATES.knife());
   }
 
   // Shockers always drop goggles (50% chance)
