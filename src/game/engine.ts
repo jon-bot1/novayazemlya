@@ -406,11 +406,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Secret passage discovery — deep storage area (bottom-right of map)
     if (!(state as any)._foundSecret) {
-      const secretZone = { x: 2100, y: 1900, w: 150, h: 150 };
+      const secretZone = { x: 2100, y: 1900, w: 200, h: 200 };
       if (newPos.x > secretZone.x && newPos.x < secretZone.x + secretZone.w &&
           newPos.y > secretZone.y && newPos.y < secretZone.y + secretZone.h) {
         (state as any)._foundSecret = true;
         addMessage(state, '🚪 SECRET PASSAGE DISCOVERED! Hidden tunnel found!', 'intel');
+      }
+    }
+    // Hint when getting close to secret area
+    if (!(state as any)._foundSecret && !(state as any)._secretHint) {
+      if (newPos.x > 1900 && newPos.y > 1700) {
+        (state as any)._secretHint = true;
+        addMessage(state, '🔍 Something feels different in the southeast corner...', 'info');
       }
     }
     
@@ -783,8 +790,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (dist(state.player.pos, { x: gateCenterX, y: gateCenterY }) < 80) {
         const keycardIdx = state.player.inventory.findIndex(i => i.id === 'gate_keycard');
         if (keycardIdx >= 0) {
+          state.player.inventory.splice(keycardIdx, 1); // consume access card
           state.walls.splice(gateWallIdx, 1);
-          addMessage(state, '💳 GATE OPENED with access card!', 'intel');
+          addMessage(state, '💳 GATE OPENED with access card! (card consumed)', 'intel');
           spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
         } else {
           addMessage(state, '🔒 Gate is locked — you need an access card!', 'warning');
@@ -794,43 +802,62 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   }
 
-  // TNT wall breach — place charge with 5s fuse
+  // TNT wall breach — place charge with 5s fuse (also works on airplane)
   if (input.useTNT) {
     input.useTNT = false;
     if (state.player.tntCount > 0) {
-      // Find nearest wall
-      let bestIdx = -1;
-      let bestDist = Number.POSITIVE_INFINITY;
-      let impact = { x: state.player.pos.x, y: state.player.pos.y };
-      for (let wi = 0; wi < state.walls.length; wi++) {
-        const w = state.walls[wi];
-        if (w.color === '#aa4444') continue;
-        const cx = Math.max(w.x, Math.min(state.player.pos.x, w.x + w.w));
-        const cy = Math.max(w.y, Math.min(state.player.pos.y, w.y + w.h));
-        const d = dist(state.player.pos, { x: cx, y: cy });
-        if (d < bestDist) {
-          bestDist = d;
-          bestIdx = wi;
-          impact = { x: cx, y: cy };
+      // Check if near airplane prop first
+      let placedOnPlane = false;
+      for (const prop of state.props) {
+        if (prop.type === 'airplane' && dist(state.player.pos, prop.pos) < 120) {
+          state.player.tntCount--;
+          const placePos = { x: prop.pos.x, y: prop.pos.y };
+          state.placedTNTs.push({ pos: placePos, timer: 5.0, maxTimer: 5.0 });
+          addMessage(state, '🧨 TNT PLACED ON AIRCRAFT! 5 seconds to detonation — GET CLEAR!', 'warning');
+          state.soundEvents.push({ pos: { ...placePos }, radius: 150, time: state.time });
+          (state as any)._playerUsedTNT = true;
+          (state as any)._tntOnPlane = true;
+          addMessage(state, '✈️ Sabotage objective complete!', 'intel');
+          placedOnPlane = true;
+          break;
         }
       }
 
-      if (bestIdx >= 0 && bestDist < 70) {
-        state.player.tntCount--;
-        state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
-        addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
-        state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
-        (state as any)._playerUsedTNT = true;
-
-        // Check if TNT placed near airplane → objective trigger
-        for (const prop of state.props) {
-          if (prop.type === 'airplane' && dist(impact, prop.pos) < 150) {
-            (state as any)._tntOnPlane = true;
-            addMessage(state, '✈️ TNT planted on the aircraft! Sabotage objective complete!', 'intel');
+      if (!placedOnPlane) {
+        // Find nearest wall
+        let bestIdx = -1;
+        let bestDist = Number.POSITIVE_INFINITY;
+        let impact = { x: state.player.pos.x, y: state.player.pos.y };
+        for (let wi = 0; wi < state.walls.length; wi++) {
+          const w = state.walls[wi];
+          if (w.color === '#aa4444') continue;
+          const cx = Math.max(w.x, Math.min(state.player.pos.x, w.x + w.w));
+          const cy = Math.max(w.y, Math.min(state.player.pos.y, w.y + w.h));
+          const d = dist(state.player.pos, { x: cx, y: cy });
+          if (d < bestDist) {
+            bestDist = d;
+            bestIdx = wi;
+            impact = { x: cx, y: cy };
           }
         }
-      } else {
-        addMessage(state, '⚠ No wall nearby to breach!', 'warning');
+
+        if (bestIdx >= 0 && bestDist < 70) {
+          state.player.tntCount--;
+          state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
+          addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
+          state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
+          (state as any)._playerUsedTNT = true;
+
+          // Check if TNT placed near airplane → objective trigger
+          for (const prop of state.props) {
+            if (prop.type === 'airplane' && dist(impact, prop.pos) < 150) {
+              (state as any)._tntOnPlane = true;
+              addMessage(state, '✈️ TNT planted on the aircraft! Sabotage objective complete!', 'intel');
+            }
+          }
+        } else {
+          addMessage(state, '⚠ No wall or target nearby to breach!', 'warning');
+        }
       }
     } else {
       addMessage(state, '⚠ No TNT charges!', 'warning');
