@@ -241,6 +241,23 @@ export const HUD: React.FC<HUDProps> = ({
                   🔫 {player.equippedWeapon?.name || '—'}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{player.ammoType}</span>
+                {/* Durability bar */}
+                {player.equippedWeapon && (player.equippedWeapon as any)._durability !== undefined && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="w-[80px] h-[4px] bg-background/60 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-200"
+                        style={{
+                          width: `${Math.max(0, ((player.equippedWeapon as any)._durability / ((player.equippedWeapon as any)._maxDurability || 120)) * 100)}%`,
+                          backgroundColor: ((player.equippedWeapon as any)._durability / ((player.equippedWeapon as any)._maxDurability || 120)) > 0.3 ? '#7aaa5a' : ((player.equippedWeapon as any)._durability / ((player.equippedWeapon as any)._maxDurability || 120)) > 0.1 ? '#aa8a3a' : '#cc3a3a',
+                        }}
+                      />
+                    </div>
+                    <span className="text-[8px] text-muted-foreground font-mono">
+                      {(player.equippedWeapon as any)._durability <= 0 ? '💥BROKEN' : `${(player.equippedWeapon as any)._durability}`}
+                    </span>
+                  </div>
+                )}
               </div>
               <span className="text-2xl font-display text-accent text-glow-green tabular-nums">{player.currentAmmo}</span>
             </div>

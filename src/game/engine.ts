@@ -555,12 +555,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.angle = Math.atan2(moveY, moveX);
   }
 
-  // Player shooting — weapon-specific stats + fire modes
+  // Player shooting — weapon-specific stats + fire modes + durability
   const wpn = state.player.equippedWeapon;
   const fireRate = wpn?.weaponFireRate || state.player.fireRate;
   const isAutoFire = wpn?.fireMode === 'auto';
   const canFire = isAutoFire ? input.shooting : input.shootPressed;
-  if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
+  
+  // Check weapon durability
+  const weaponBroken = wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
+  
+  if (weaponBroken) {
+    if (canFire && state.time - state.player.lastShot > 0.5) {
+      state.player.lastShot = state.time;
+      addMessage(state, `⚠ ${wpn!.name} is BROKEN! Find a new weapon!`, 'warning');
+    }
+  } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
+    // Init durability on first shot if not set
+    if (wpn && (wpn as any)._durability === undefined) {
+      // Durability based on weapon type: melee=30, pistols=60, rifles=120
+      const isSecondary = wpn.weaponSlot === 'secondary';
+      const isMelee = (wpn.weaponRange || 60) <= 10;
+      (wpn as any)._durability = isMelee ? 30 : isSecondary ? 60 : 120;
+      (wpn as any)._maxDurability = (wpn as any)._durability;
+    }
+    
     const spread = (Math.random() - 0.5) * 0.08;
     const angle = state.player.angle + spread;
     const bulletSpeed = wpn?.bulletSpeed || 8;
@@ -577,6 +595,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     });
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
+    
+    // Reduce durability
+    if (wpn) {
+      (wpn as any)._durability = Math.max(0, ((wpn as any)._durability || 120) - 1);
+      if ((wpn as any)._durability === 10) {
+        addMessage(state, `⚠ ${wpn.name} is wearing out!`, 'warning');
+      }
+      if ((wpn as any)._durability <= 0) {
+        addMessage(state, `💥 ${wpn.name} BROKE! Find a replacement!`, 'damage');
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#886644', 5);
+      }
+    }
     
     // Sound event — gunshots alert enemies
     state.soundEvents.push({ pos: { ...state.player.pos }, radius: 300, time: state.time });
@@ -1278,6 +1308,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // === LOW HP EFFECTS ===
     const hpRatio = enemy.hp / enemy.maxHp;
+    // Blood drip from damaged enemies
+    if (hpRatio < 0.75 && enemy.type !== 'turret' && Math.random() < (hpRatio < 0.3 ? 0.08 : 0.03)) {
+      spawnParticles(state, enemy.pos.x + (Math.random() - 0.5) * 8, enemy.pos.y + (Math.random() - 0.5) * 8, '#991111', 1);
+    }
     // Speed penalty at <75% HP
     if (hpRatio < 0.75 && enemy.type !== 'turret' && enemy.type !== 'boss') {
       if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
@@ -1550,38 +1584,70 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // NOTE: removed unconditional patrol fallback (was a bug overriding investigate)
     }
 
-    // === ENEMY HEALING (officers, bodyguards, boss) ===
-    // Officers heal with bandage when in cover (not attacking/chasing)
-    if ((enemy as any)._isOfficer && !((enemy as any)._isBodyguard) && enemy.hp < enemy.maxHp * 0.5 && 
-        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert') &&
-        !(enemy as any)._healingTimer) {
-      (enemy as any)._healingTimer = 2.0;
-      addMessage(state, '🩹 Officer is bandaging wounds!', 'warning');
+    // === ENEMY HEALING — damaged enemies seek cover first, then heal ===
+    const wantsToHeal = (
+      ((enemy as any)._isOfficer || (enemy as any)._isBodyguard) && enemy.hp < enemy.maxHp * 0.5 && !(enemy as any)._healingTimer && !(enemy as any)._healDone
+    ) || (
+      enemy.type === 'boss' && enemy.hp < enemy.maxHp * 0.4 && !(enemy as any)._bossHealUsed && !(enemy as any)._healingTimer
+    );
+    
+    if (wantsToHeal && !(enemy as any)._seekingCover) {
+      // Find nearest cover to hide behind
+      (enemy as any)._seekingCover = true;
+      let bestCover: Vec2 | null = null;
+      let bestDist = 200;
+      const coverTypes = ['concrete_barrier', 'sandbags', 'vehicle_wreck', 'wood_crate', 'barrel_stack', 'tree', 'pine_tree'];
+      for (const prop of state.props) {
+        if (!coverTypes.includes(prop.type)) continue;
+        const d = dist(enemy.pos, prop.pos);
+        // Prefer cover that's away from player
+        const dFromPlayer = dist(prop.pos, state.player.pos);
+        if (d < bestDist && dFromPlayer > 100) {
+          bestDist = d;
+          bestCover = { ...prop.pos };
+        }
+      }
+      if (bestCover) {
+        enemy.investigateTarget = bestCover;
+        enemy.state = 'investigate';
+        (enemy as any)._healCoverTarget = bestCover;
+      } else {
+        // No cover — heal in place
+        (enemy as any)._seekingCover = false;
+      }
     }
-    // Bodyguards heal with bandage when in cover
-    if ((enemy as any)._isBodyguard && enemy.hp < enemy.maxHp * 0.5 && 
-        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert') &&
-        !(enemy as any)._healingTimer) {
-      (enemy as any)._healingTimer = 2.0;
-      addMessage(state, '🩹 Bodyguard is bandaging wounds!', 'warning');
+    
+    // Arrived at cover — start healing
+    if ((enemy as any)._seekingCover && (enemy as any)._healCoverTarget) {
+      const coverTarget = (enemy as any)._healCoverTarget as Vec2;
+      if (dist(enemy.pos, coverTarget) < 30) {
+        delete (enemy as any)._seekingCover;
+        delete (enemy as any)._healCoverTarget;
+        if (enemy.type === 'boss') {
+          (enemy as any)._healingTimer = 2.5;
+          (enemy as any)._bossHealUsed = true;
+          addMessage(state, '💉 OSIPOVITJ IS INJECTING HIMSELF!', 'warning');
+        } else {
+          (enemy as any)._healingTimer = 3.0;
+          (enemy as any)._healDone = true;
+          const label = (enemy as any)._isBodyguard ? 'Bodyguard' : 'Officer';
+          addMessage(state, `🩹 ${label} is bandaging wounds!`, 'warning');
+        }
+      }
     }
-    // Boss heals with injector
-    if (enemy.type === 'boss' && enemy.hp < enemy.maxHp * 0.4 && !(enemy as any)._bossHealUsed &&
-        (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'alert' || enemy.state === 'attack') &&
-        !(enemy as any)._healingTimer) {
-      (enemy as any)._healingTimer = 2.0;
-      (enemy as any)._bossHealUsed = true;
-      addMessage(state, '💉 OSIPOVITJ IS INJECTING HIMSELF!', 'warning');
-    }
-    // Process healing timer
+    
+    // Process healing timer — enemy stands still
     if ((enemy as any)._healingTimer > 0) {
       (enemy as any)._healingTimer -= dt;
+      // Force idle while healing
+      enemy.state = 'idle';
       // Animation: spawn green particles while healing
-      if (Math.random() < 0.3) {
-        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 1);
+      if (Math.random() < 0.4) {
+        spawnParticles(state, enemy.pos.x + (Math.random() - 0.5) * 8, enemy.pos.y + (Math.random() - 0.5) * 8, '#44ff66', 1);
       }
       if ((enemy as any)._healingTimer <= 0) {
         delete (enemy as any)._healingTimer;
+        delete (enemy as any)._seekingCover;
         if (enemy.type === 'boss') {
           enemy.hp = Math.min(enemy.maxHp, enemy.hp + 35);
           addMessage(state, '💉 Osipovitj healed +35HP!', 'damage');
@@ -1590,6 +1656,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.hp = Math.min(enemy.maxHp, enemy.hp + 20);
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 5);
         }
+        enemy.state = 'chase';
       }
     }
 
@@ -2360,7 +2427,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const dPlayer = dist(g.pos, state.player.pos);
         if (dPlayer < g.radius && hasLineOfSight(state, g.pos, state.player.pos)) {
           const intensity = 1 - (dPlayer / g.radius);
-          state.flashbangTimer = 3;
+          // Enemy flashbangs have random 50-100% effectiveness
+          const hasGogglesItem = state.player.inventory.some(i => i.id === 'goggles' || i.name === 'Tactical Goggles');
+          const baseFlashDuration = g.fromPlayer ? 3 : 3 * (0.5 + Math.random() * 0.5);
+          state.flashbangTimer = hasGogglesItem ? baseFlashDuration * 0.5 : baseFlashDuration;
           addMessage(state, '💫 STUNNED! Cannot move!', 'damage');
         }
       } else {
