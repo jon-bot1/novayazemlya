@@ -511,22 +511,21 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
-              {/* Return to Base — before achievements/highscores */}
-              {onReturnToBase ? (
+              {/* Return to Base + Main Menu */}
+              {onReturnToBase && (
                 <button
                   className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2"
                   onClick={onReturnToBase}
                 >
                   🏠 RETURN TO BASE
                 </button>
-              ) : (
-                <button
-                  className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2"
-                  onClick={() => window.location.reload()}
-                >
-                  🔄 RESTART
-                </button>
               )}
+              <button
+                className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-2"
+                onClick={() => window.location.reload()}
+              >
+                📋 MAIN MENU
+              </button>
 
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
