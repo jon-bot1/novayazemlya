@@ -310,11 +310,18 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
-              Infiltrate the abandoned military base <span className="text-accent">Objekt 47 "Severnyj Vektor"</span>. 
-              Locate and eliminate <span className="text-danger">Commandant Osipovitj</span>. 
-              Recover his <span className="text-loot">USB drive</span> and hack the <span className="text-warning">nuclear codebook terminal</span>. 
-              <strong>Both items are required</strong> for full mission success.
-              Extract before reinforcements arrive. You have <span className="text-warning">5 minutes</span>.
+              You operate from a <span className="text-accent">Safe House</span> between raids. 
+              Each mission, you deploy to <span className="text-accent">Objekt 47 "Severnyj Vektor"</span> with 
+              randomized <span className="text-warning">objectives</span> — main targets and bonus tasks that pay rubles.
+            </p>
+            <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
+              <span className="text-danger">Eliminate targets</span>, <span className="text-loot">recover intel</span>, 
+              <span className="text-warning">sabotage assets</span>, or <span className="text-accent">discover hidden passages</span>. 
+              Extract alive to bring loot back to your stash. Sell loot for rubles, buy <span className="text-warning">upgrades</span> from Trader Sidorov.
+            </p>
+            <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
+              Your gear persists between raids. Die and you lose everything you carried.
+              You have <span className="text-warning">5 minutes</span> per raid before reinforcements overrun the base.
             </p>
           </div>
 
@@ -325,14 +332,14 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">Mouse</span><span className="text-foreground">Aim & Shoot</span>
               <span className="text-muted-foreground">Shift</span><span className="text-foreground">Sprint</span>
               <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
-              <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Take Cover</span>
+              <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Hide near trees/bushes</span>
               <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
-              <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
+              <span className="text-muted-foreground">H</span><span className="text-foreground">Heal (auto at low HP)</span>
               <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
               <span className="text-muted-foreground">Hold Right-click</span><span className="text-foreground">Charge throw (2s max)</span>
-              <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨</span>
-              <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
+              <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨 — breach walls</span>
+              <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory (drop items)</span>
               <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
             </div>
           </div>
@@ -341,13 +348,16 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">⚠ Rules of Engagement</h2>
             <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
               <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
-              <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate</li>
+              <li>• <span className="text-accent">Hide</span> near trees/bushes with Q — become invisible to enemies</li>
+              <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate & call for backup</li>
               <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
-              <li>• 🧨 <span className="text-warning">TNT charges</span> can be found in loot — press <span className="text-accent">T near any wall</span> to breach it</li>
-              <li>• Officers carry <span className="text-loot">better loot</span> and have longer range</li>
-              <li>• Guards outside the base may carry an <span className="text-loot">Access Card</span> to open the main gate</li>
-              <li>• Use <span className="text-accent">cover</span> to reduce incoming damage by 80%</li>
-              <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — game over</li>
+              <li>• 🧨 <span className="text-warning">TNT charges</span> breach any wall — press <span className="text-accent">T near a wall</span> (5s fuse)</li>
+              <li>• Officers carry <span className="text-loot">keycards</span> to open the main gate & valuable loot</li>
+              <li>• Enemies heal with bandages when damaged — interrupt them!</li>
+              <li>• Use <span className="text-accent">cover</span> near obstacles to reduce incoming damage</li>
+              <li>• Look for <span className="text-accent">hidden passages</span> — unusual markings on the ground</li>
+              <li>• <span className="text-warning">Weapon durability</span> — guns degrade with use (except sidearms & Mosin accuracy)</li>
+              <li>• After <span className="text-danger">5 minutes</span>, reinforcements arrive — extract or die</li>
             </ul>
           </div>
         </>
@@ -359,152 +369,60 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.11 — 2026-02-26</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🏠 <span className="text-accent">Safe House</span> — persistent hideout between raids with stash, trader & missions</li>
+                  <li>• 🎯 <span className="text-warning">Dynamic Missions</span> — randomized main + bonus objectives each raid</li>
+                  <li>• 🏪 <span className="text-loot">Trader Sidorov</span> — buy upgrades: Red Dot, Tac Boots, Extended Mag & more</li>
+                  <li>• 📦 Inventory panel: drop items from your inventory during raids</li>
+                  <li>• 🔫 <span className="text-warning">Weapon durability</span> — guns degrade with use, losing fire rate & accuracy</li>
+                  <li>• 🔫 Sidearms have infinite durability, Mosin immune to accuracy loss</li>
+                  <li>• 🩹 <span className="text-accent">All enemies can heal</span> if they carry bandages — interrupt them!</li>
+                  <li>• 💡 Contextual hints for grenades & TNT when you haven't used them</li>
+                  <li>• 🚪 Secret passage area now has visual ground markings</li>
+                  <li>• 🎖️ Officers guaranteed outside walls with keycards</li>
+                  <li>• 👁️ Enemies no longer track players through walls</li>
+                  <li>• 🎯 Sniper spawns restricted to northern zones with longer flee distance</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.10 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• 💣 <span className="text-warning">Grenade charge throw</span>: hold right-click up to 2s for longer range (2x distance at full charge)</li>
-                  <li>• 💣 Right-click = throw grenade (tap for quick toss, hold for power throw)</li>
-                  <li>• 🥽 New item: <span className="text-loot">Tactical Goggles</span> — 50% flashbang protection (drops from Shockers)</li>
-                  <li>• 🔫 Sniper Tuman: reacts to near-misses (3px) — teleports without taking damage</li>
-                  <li>• 🔫 Sniper Tuman: can no longer see or shoot hidden players</li>
-                  <li>• 🔫 Sniper flashbang cooldown increased to 20s</li>
-                  <li>• 😱 Panic fire now shoots mostly AWAY from player (not random)</li>
-                  <li>• 🔥 Berserk charge speed reduced 25%</li>
-                  <li>• 💫 All enemy flashbang throw rates halved</li>
-                  <li>• ✈️ Airplane prop outside hangar</li>
-                  <li>• ☠️ Toxic barrels deal poison damage when nearby</li>
-                  <li>• 🛡️ Cover type indicators: high (🛡️) vs low (🪨)</li>
-                  <li>• 📦 20 new random loot items for variety</li>
-                  <li>• 🔫 Ammo drop rates reduced across all loot pools</li>
+                  <li>• 💣 Grenade charge throw: hold right-click for longer range</li>
+                  <li>• 🥽 Tactical Goggles — 50% flashbang protection (drops from Shockers)</li>
+                  <li>• 🔫 Sniper Tuman: reacts to near-misses, can't see hidden players</li>
+                  <li>• 😱 Panic fire shoots away from player</li>
+                  <li>• ✈️ Airplane prop, toxic barrels, cover indicators</li>
+                  <li>• 📦 20 new loot items, reduced ammo drop rates</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.9 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Auto-cover: get cover automatically near obstacles (low/high)</li>
-                  <li>• Hide mechanic (Q): become invisible near trees & bushes</li>
-                  <li>• All movement speeds reduced 25%</li>
-                  <li>• Can't pick up duplicate weapons (no popup)</li>
-                  <li>• Weapon swap popup: press Enter to confirm</li>
-                  <li>• Sniper Tuman: heals 20HP once per teleport (2s channel)</li>
-                  <li>• Sniper Tuman: fixed staying visible bug on hit</li>
-                  <li>• Sniper: minimum relocate distance from player (250px)</li>
-                  <li>• Berserk enemies stop 40px from player (no overlap)</li>
-                  <li>• Officers: at least 2 guaranteed outside walls</li>
-                  <li>• ⚡ Shocker troops: electric spark particles while moving</li>
+                  <li>• Auto-cover near obstacles, hide mechanic (Q near trees)</li>
+                  <li>• 25% movement speed reduction</li>
+                  <li>• Weapon swap popup with confirmation</li>
+                  <li>• Sniper healing on teleport, berserk stop distance</li>
+                  <li>• ⚡ Shocker troops with electric sparks</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.8 — 2026-02-24</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Weapon slot system: primary + secondary (pistol/revolver/baton/knife)</li>
-                  <li>• Weapon swap confirmation — press Y/N or click to accept/reject</li>
-                  <li>• AK fire rate reduced 15% (AK-74: 248ms, AKM: 345ms)</li>
-                  <li>• Officer spawn rate increased (3-5 per raid)</li>
-                  <li>• New enemy: ⚡ Shocker — electric melee, fast, short range</li>
-                  <li>• New secondary weapons: Nagant Revolver, Baton, Combat Knife</li>
+                  <li>• Weapon slot system: primary + secondary</li>
+                  <li>• New enemy: ⚡ Shocker, new secondary weapons</li>
+                  <li>• Officer spawn rate 3-5 per raid</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.7 — 2026-02-24</div>
+                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1–0.7</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Boss & bodyguards now have body armor (+33% bullet resistance)</li>
-                  <li>• 5 new achievement types: Scavenger, Treasure Hunter, Breacher, Archivist, Hackerman</li>
-                  <li>• Traveller achievement: tracks total distance walked (bronze/silver/gold)</li>
-                  <li>• Tourist achievement: visit all 3 exfil points in one raid</li>
-                  <li>• Highscores tab added to intro screen</li>
-                  <li>• Scores rounded up (no decimals)</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.6 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Enemies flee from placed TNT charges</li>
-                  <li>• Hacked intel terminal now shows active exfil in HUD</li>
-                  <li>• 🏅 Achievements system: 8 per-round achievements with icons</li>
-                  <li>• Achievements shown on death/extraction screen & in highscores</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.5 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Mosin-Nagant: +20% headshot bonus</li>
-                  <li>• Mosin-Nagant: fire rate increased (1450ms)</li>
-                  <li>• Mosin-Nagant: +5px forgiving hitbox — easier to land shots</li>
-                  <li>• TNT now has 5-second fuse delay with blinking indicator</li>
-                  <li>• TNT only breaches a wall section (~3-4 figures wide)</li>
-                  <li>• TNT deals grenade-level blast damage to nearby enemies & player</li>
-                  <li>• Death screen now shows cause of death (who/what killed you)</li>
-                  <li>• Survival time shown on death/extraction screen</li>
-                  <li>• Officers guaranteed to carry Access Cards</li>
-                  <li>• Sniper Tuman: relocates on every hit (no longer blocked by cooldown)</li>
-                  <li>• TNT keybind changed to T (no longer conflicts with looting)</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.4 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Fixed: TNT from enemy bodies now counts correctly</li>
-                  <li>• Sniper Tuman scans surroundings when player not in sight</li>
-                  <li>• Sniper throws flashbang & flees when player too close or under fire</li>
-                  <li>• Officers now spawn outdoors (yard & patrol zones)</li>
-                  <li>• Access cards can drop from regular guards (scav & soldier)</li>
-                  <li>• Access card carriers guaranteed to be outside the base</li>
-                  <li>• TNT drop rate increased across all loot tables</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.3 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Larger, clearer weapon & item HUD</li>
-                  <li>• Improved loot pickup popup with icon, name & value</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.2 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Sniper Tuman: relocates 0.5s after hit (smoke + teleport)</li>
-                  <li>• Sniper Tuman: immune to critical headshots</li>
-                  <li>• Sniper Tuman: tree-to-tree movement with invisibility</li>
-                  <li>• Boss Osipovitj: 3-phase fight with flashbangs & minion spawns</li>
-                  <li>• Boss heals with injector (+35 HP) when in cover</li>
-                  <li>• Bodyguards ZAPAD & VOSTOK with wide vision arc</li>
-                  <li>• Officers with Mosin-Nagant, extended range & valuable loot</li>
-                  <li>• Heavy enemies with suppressive fire role</li>
-                  <li>• Turret emplacements at watchtowers</li>
-                  <li>• Tactical AI: flanking, suppression, radio comms</li>
-                  <li>• Enemies lose target when line-of-sight breaks</li>
-                  <li>• Cover system (Q/Space) with peek-fire</li>
-                  <li>• Movement modes: sneak / walk / sprint</li>
-                  <li>• Dual weapon slots (sidearm + primary)</li>
-                  <li>• TNT charges to breach perimeter walls</li>
-                  <li>• Medical system: bandages, medkits, morphine, bleeding</li>
-                  <li>• Intel documents & nuclear codes</li>
-                  <li>• Extraction zone with 5s hold timer</li>
-                  <li>• Highscore board & feedback widget</li>
-                  <li>• Reinforcement waves from northern zones</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Initial release — base map, soldiers, scavs, basic combat</li>
+                  <li>• Core combat, boss fight, tactical AI, TNT breaching</li>
+                  <li>• Achievements, highscores, intel documents</li>
+                  <li>• Cover system, medical system, extraction zones</li>
                 </ul>
               </div>
             </div>
-          </div>
-
-          <div className="border-t border-border pt-4">
-            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">🗺️ Roadmap</h2>
-            <ul className="text-[11px] font-mono text-foreground/70 space-y-1.5">
-              <li>• Focus on the hidden intel you can find and weave them into gameplay</li>
-              <li>• Multiplayer?</li>
-              <li>• Extended map with new buildings</li>
-              <li>• New boss</li>
-              <li>• Expand Sniper Tuman's mechanics (semi-boss)</li>
-              <li>• Loot system that lets you keep and sell loot after raid</li>
-              <li>• Upgrades</li>
-              <li>• Finite ammunition</li>
-            </ul>
           </div>
         </>
       )}

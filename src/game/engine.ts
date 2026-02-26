@@ -157,6 +157,11 @@ function generateEnemyLoot(enemy: Enemy) {
   if (enemy.type === 'shocker' && Math.random() < 0.5) {
     baseLoot.push(createGoggles());
   }
+  // All non-turret/boss enemies have a chance to carry a bandage (for self-healing)
+  const bandageChance = enemy.type === 'soldier' ? 0.4 : enemy.type === 'heavy' ? 0.5 : 0.2;
+  if (Math.random() < bandageChance) {
+    baseLoot.push({ id: `bandage_${enemy.id}`, name: 'Bandage', category: 'medical' as const, icon: '🩹', weight: 0.3, value: 30, healAmount: 15, medicalType: 'bandage' as const, stopsBleeding: 1, description: 'Stops bleeding, restores 15 HP' });
+  }
   return baseLoot;
 }
 
@@ -188,7 +193,7 @@ export function createGameState(): GameState {
     extractionProgress: 0,
     killCount: 0,
     time: 0,
-    messages: [{ text: 'OPERATION STARTED — Eliminate Osipovitj, recover USB & hack nuclear codes!', time: 0, type: 'info' }],
+    messages: [{ text: 'MISSION STARTED — Complete objectives and extract alive!', time: 0, type: 'info' }],
     codesFound: [],
     documentsRead: [],
     hasExtractionCode: false,
@@ -554,6 +559,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
+  // === CONTEXTUAL HINTS — show tips for unused grenades/TNT after some time ===
+  if (!(state as any)._grenadeHintShown) {
+    const hasGrenades = state.player.inventory.some(i => i.category === 'grenade');
+    if (hasGrenades && state.time > 45 && !(state as any)._playerThrewGrenade) {
+      (state as any)._grenadeHintShown = true;
+      addMessage(state, '💡 TIP: Press G or Right-click to throw a grenade!', 'info');
+    }
+  }
+  if (!(state as any)._tntHintShown) {
+    if (state.player.tntCount > 0 && state.time > 60 && !(state as any)._playerUsedTNT) {
+      (state as any)._tntHintShown = true;
+      addMessage(state, '💡 TIP: Press T near a wall to place TNT and breach it!', 'info');
+    }
+  }
+
   // Flashbang blindness countdown (goggles reduce duration by 50%)
   if (state.flashbangTimer > 0) {
     const hasGoggles = state.player.inventory.some(i => i.id === 'goggles' || i.name === 'Tactical Goggles');
@@ -689,6 +709,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         });
         state.player.inventory.splice(grenadeIdx, 1);
         state.player.lastGrenadeTime = state.time;
+        (state as any)._playerThrewGrenade = true;
         addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : '💣 GRENADE THROWN!', 'warning');
         spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
       } else {
@@ -746,6 +767,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
         addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
         state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
+        (state as any)._playerUsedTNT = true;
 
         // Check if TNT placed near airplane → objective trigger
         for (const prop of state.props) {
@@ -1638,11 +1660,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // NOTE: removed unconditional patrol fallback (was a bug overriding investigate)
     }
 
-    // === ENEMY HEALING — damaged enemies seek cover first, then heal ===
+    // === ENEMY HEALING — ALL enemies can heal if they have medical items in loot ===
+    const hasMedicalLoot = enemy.loot.some(i => i.category === 'medical');
     const wantsToHeal = (
-      ((enemy as any)._isOfficer || (enemy as any)._isBodyguard) && enemy.hp < enemy.maxHp * 0.5 && !(enemy as any)._healingTimer && !(enemy as any)._healDone
-    ) || (
-      enemy.type === 'boss' && enemy.hp < enemy.maxHp * 0.4 && !(enemy as any)._bossHealUsed && !(enemy as any)._healingTimer
+      // Boss special heal
+      (enemy.type === 'boss' && enemy.hp < enemy.maxHp * 0.4 && !(enemy as any)._bossHealUsed && !(enemy as any)._healingTimer)
+      // Any enemy with medical items and below 60% HP
+      || (hasMedicalLoot && enemy.hp < enemy.maxHp * 0.6 && !(enemy as any)._healingTimer && !(enemy as any)._healDone && enemy.type !== 'turret')
     );
     
     if (wantsToHeal && !(enemy as any)._seekingCover) {
@@ -1684,7 +1708,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else {
           (enemy as any)._healingTimer = 3.0;
           (enemy as any)._healDone = true;
-          const label = (enemy as any)._isBodyguard ? 'Bodyguard' : 'Officer';
+          // Consume the medical item from loot
+          const medIdx = enemy.loot.findIndex(i => i.category === 'medical');
+          const medItem = medIdx >= 0 ? enemy.loot[medIdx] : null;
+          if (medIdx >= 0) enemy.loot.splice(medIdx, 1);
+          const label = (enemy as any)._isBodyguard ? 'Bodyguard' : (enemy as any)._isOfficer ? 'Officer' : enemy.type.toUpperCase();
           addMessage(state, `🩹 ${label} is bandaging wounds!`, 'warning');
         }
       }
@@ -1707,7 +1735,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addMessage(state, '💉 Osipovitj healed +35HP!', 'damage');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 8);
         } else {
-          enemy.hp = Math.min(enemy.maxHp, enemy.hp + 20);
+          const healAmt = Math.min(25, enemy.maxHp - enemy.hp);
+          enemy.hp = Math.min(enemy.maxHp, enemy.hp + healAmt);
+          addMessage(state, `🩹 Enemy healed +${healAmt}HP!`, 'info');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 5);
         }
         enemy.state = 'chase';
