@@ -325,7 +325,8 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal</span>
-              <span className="text-muted-foreground">G</span><span className="text-foreground">Throw Grenade</span>
+              <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
+              <span className="text-muted-foreground">Hold Right-click</span><span className="text-foreground">Charge throw (2s max)</span>
               <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨</span>
               <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory</span>
               <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
@@ -353,6 +354,25 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.10 — 2026-02-26</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 💣 <span className="text-warning">Grenade charge throw</span>: hold right-click up to 2s for longer range (2x distance at full charge)</li>
+                  <li>• 💣 Right-click = throw grenade (tap for quick toss, hold for power throw)</li>
+                  <li>• 🥽 New item: <span className="text-loot">Tactical Goggles</span> — 50% flashbang protection (drops from Shockers)</li>
+                  <li>• 🔫 Sniper Tuman: reacts to near-misses (3px) — teleports without taking damage</li>
+                  <li>• 🔫 Sniper Tuman: can no longer see or shoot hidden players</li>
+                  <li>• 🔫 Sniper flashbang cooldown increased to 20s</li>
+                  <li>• 😱 Panic fire now shoots mostly AWAY from player (not random)</li>
+                  <li>• 🔥 Berserk charge speed reduced 25%</li>
+                  <li>• 💫 All enemy flashbang throw rates halved</li>
+                  <li>• ✈️ Airplane prop outside hangar</li>
+                  <li>• ☠️ Toxic barrels deal poison damage when nearby</li>
+                  <li>• 🛡️ Cover type indicators: high (🛡️) vs low (🪨)</li>
+                  <li>• 📦 20 new random loot items for variety</li>
+                  <li>• 🔫 Ammo drop rates reduced across all loot pools</li>
+                </ul>
+              </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.9 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
