@@ -28,7 +28,7 @@ const BASE_INVENTORY_SLOTS = 12;
 function countBackpackSlotsUsed(state: GameState): number {
   return state.player.inventory.filter((item) => {
     const isEquippedWeapon = item === state.player.primaryWeapon || item === state.player.sidearm;
-    const isThrowable = item.category === 'grenade' || item.category === 'flashbang';
+    const isThrowable = item.category === 'grenade' || item.category === 'flashbang' || item.category === 'gas_grenade';
     return !isEquippedWeapon && !isThrowable;
   }).length;
 }
@@ -36,8 +36,8 @@ function countBackpackSlotsUsed(state: GameState): number {
 function canPickupItem(state: GameState, item: Item): boolean {
   // Keys, quest items, and ammo always fit
   if (item.category === 'key' || item.category === 'ammo' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
-  // Equipped weapons and throwables do not consume backpack slots
-  if (item.category === 'grenade' || item.category === 'flashbang') return true;
+  // Throwables do not consume backpack slots
+  if (item.category === 'grenade' || item.category === 'flashbang' || item.category === 'gas_grenade') return true;
   const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
   return countBackpackSlotsUsed(state) < maxSlots;
 }
@@ -580,9 +580,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (state.pendingWeapon && (state as any)._pendingWeaponPos) {
     const wpnPos = (state as any)._pendingWeaponPos as Vec2;
     if (dist(state.player.pos, wpnPos) > 120) {
+      state.lootContainers.push({
+        id: `pending_weapon_${Date.now()}`,
+        pos: { x: wpnPos.x + (Math.random() - 0.5) * 8, y: wpnPos.y + (Math.random() - 0.5) * 8 },
+        size: 20,
+        items: [state.pendingWeapon.item],
+        looted: false,
+        type: 'body',
+      });
       state.pendingWeapon = null;
       delete (state as any)._pendingWeaponPos;
-      addMessage(state, '🔫 Moved away — weapon swap cancelled.', 'info');
+      addMessage(state, '🔫 Moved away — weapon remains on the ground.', 'info');
     }
   }
 
@@ -716,16 +724,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       addMessage(state, '⚠ Wait before throwing again!', 'warning');
       input.throwGrenade = false;
     } else {
-      // Try flashbang first if no grenades
+      // Try frag first, then gas grenade, then flashbang
       let grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
       let isFlashbang = false;
+      let isGasGrenade = false;
+      if (grenadeIdx < 0) {
+        grenadeIdx = state.player.inventory.findIndex(i => i.category === 'gas_grenade');
+        isGasGrenade = grenadeIdx >= 0;
+      }
       if (grenadeIdx < 0) {
         grenadeIdx = state.player.inventory.findIndex(i => i.category === 'flashbang');
-        isFlashbang = true;
+        isFlashbang = grenadeIdx >= 0;
       }
       if (grenadeIdx >= 0) {
         const grenadeItem = state.player.inventory[grenadeIdx];
         isFlashbang = grenadeItem.category === 'flashbang';
+        isGasGrenade = grenadeItem.category === 'gas_grenade';
         const angle = state.player.angle;
         const chargePower = (state as any)._grenadeChargePower || 0;
         delete (state as any)._grenadeChargePower;
@@ -735,15 +749,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },
           vel: { x: Math.cos(angle) * throwSpeed, y: Math.sin(angle) * throwSpeed },
           timer: isFlashbang ? 1.0 : 1.5,
-          damage: isFlashbang ? -1 : (grenadeItem.damage || 200), // -1 = flashbang marker
-          radius: isFlashbang ? 200 : 150,
+          damage: isFlashbang ? -1 : isGasGrenade ? -2 : (grenadeItem.damage || 200),
+          radius: isFlashbang ? 200 : isGasGrenade ? 180 : 150,
           fromPlayer: true,
         });
         state.player.inventory.splice(grenadeIdx, 1);
         state.player.lastGrenadeTime = state.time;
         (state as any)._playerThrewGrenade = true;
-        addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : '💣 GRENADE THROWN!', 'warning');
-        spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : '#886644', 3);
+        addMessage(state, isFlashbang ? '💫 FLASHBANG THROWN!' : isGasGrenade ? '☣️ GAS GRENADE THROWN!' : '💣 GRENADE THROWN!', 'warning');
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, isFlashbang ? '#ffffaa' : isGasGrenade ? '#66dd66' : '#886644', 3);
       } else {
         addMessage(state, '⚠ No grenades!', 'warning');
       }
@@ -949,9 +963,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'weapon' && item.damage) {
             const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
             const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            // Skip if player already has the same weapon
+            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
+
+            // Skip if player already has the same weapon equipped in that slot
             if (currentInSlot && currentInSlot.name === item.name) {
-              // Already have this weapon — don't show popup
+              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
             } else if (!currentInSlot) {
               // Empty slot — auto-equip
               if (slot === 'primary') {
@@ -966,10 +982,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if (item.ammoType) state.player.ammoType = item.ammoType;
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
             } else {
-              // Slot occupied — ask for confirmation
-              state.pendingWeapon = { item, slot, replacing: currentInSlot };
-              (state as any)._pendingWeaponPos = { ...lc.pos }; // track loot source position
-              addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
+              // Slot occupied — ask for confirmation (max 3 times per weapon instance)
+              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+              const prompts = ((item as any)._swapPrompts || 0) as number;
+              if (prompts >= 3) {
+                addMessage(state, `🔫 ${item.name} ignored (max prompts reached).`, 'info');
+              } else {
+                (item as any)._swapPrompts = prompts + 1;
+                state.pendingWeapon = { item, slot, replacing: currentInSlot };
+                (state as any)._pendingWeaponPos = { ...lc.pos }; // track loot source position
+                addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip (${(item as any)._swapPrompts}/3)`, 'warning');
+              }
             }
           }
         }
@@ -1033,9 +1056,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'weapon' && item.damage) {
             const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
             const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            // Skip if player already has the same weapon
+            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
+
             if (currentInSlot && currentInSlot.name === item.name) {
-              // Already have this weapon — don't show popup
+              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
             } else if (!currentInSlot) {
               if (slot === 'primary') {
                 state.player.primaryWeapon = item;
@@ -1049,9 +1073,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if (item.ammoType) state.player.ammoType = item.ammoType;
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
             } else {
-              state.pendingWeapon = { item, slot, replacing: currentInSlot };
-              (state as any)._pendingWeaponPos = { ...enemy.pos }; // track loot source position
-              addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip`, 'warning');
+              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+              const prompts = ((item as any)._swapPrompts || 0) as number;
+              if (prompts >= 3) {
+                addMessage(state, `🔫 ${item.name} ignored (max prompts reached).`, 'info');
+              } else {
+                (item as any)._swapPrompts = prompts + 1;
+                state.pendingWeapon = { item, slot, replacing: currentInSlot };
+                (state as any)._pendingWeaponPos = { ...enemy.pos }; // track loot source position
+                addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip (${(item as any)._swapPrompts}/3)`, 'warning');
+              }
             }
           }
           if (item.id === 'boss_usb') {

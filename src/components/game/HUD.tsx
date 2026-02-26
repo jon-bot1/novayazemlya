@@ -168,6 +168,7 @@ export const HUD: React.FC<HUDProps> = ({
   const timeUrgent = timeRemaining !== null && timeRemaining < 60;
 
   const grenadeCount = player.inventory.filter(i => i.category === 'grenade').length;
+  const gasGrenadeCount = player.inventory.filter(i => i.category === 'gas_grenade').length;
   const flashbangCount = player.inventory.filter(i => i.category === 'flashbang').length;
   const tntCount = player.tntCount || 0;
   const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
@@ -309,6 +310,9 @@ export const HUD: React.FC<HUDProps> = ({
           <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
             <span className={`text-sm font-mono ${grenadeCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               💣 {grenadeCount}
+            </span>
+            <span className={`text-sm font-mono ${gasGrenadeCount > 0 ? 'text-safe' : 'text-muted-foreground/40'}`}>
+              ☣️ {gasGrenadeCount}
             </span>
             <span className={`text-sm font-mono ${flashbangCount > 0 ? 'text-foreground' : 'text-muted-foreground/40'}`}>
               💫 {flashbangCount}

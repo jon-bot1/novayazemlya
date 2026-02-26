@@ -139,12 +139,12 @@ export const createArmor = (name: string = 'Body Armor', armor: number = 30, ico
 export const createGasGrenade = (): Item => ({
   id: nextId(),
   name: 'Gas Grenade',
-  category: 'grenade',
-  icon: '☁️',
+  category: 'gas_grenade',
+  icon: '☣️',
   weight: 0.5,
   value: 400,
   damage: -2, // -2 marker = gas grenade (different from -1 flashbang)
-  description: 'Converts one enemy to fight for you for 20s — small radius',
+  description: 'Tactical gas grenade — converts one enemy for 20s in a green cloud',
 });
 
 export const createTNT = (): Item => ({
@@ -268,7 +268,7 @@ export const LOOT_POOLS = {
       [randomValuable(), 0.35],
       [randomValuable(), 0.2],
       [createGrenade(), 0.2],
-      [createGasGrenade(), 0.04],
+      [createGasGrenade(), 0.16],
       [createTNT(), 0.25],
     ]);
   },
@@ -295,7 +295,7 @@ export const LOOT_POOLS = {
       [randomValuable(), 0.25],
       [createGrenade(), 0.15],
       [createFlashbang(), 0.2],
-      [createGasGrenade(), 0.06],
+      [createGasGrenade(), 0.18],
       [createKey('Locker Key', 'key_cabinet'), 0.1],
       [WEAPON_TEMPLATES.makarov(), 0.08],
       [createBackpack(), 0.1],
@@ -319,7 +319,7 @@ export const LOOT_POOLS = {
       [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.40],
       [createAmmo('7.62x39', 8 + Math.floor(Math.random() * 8)), 0.35],
       [createAmmo('7.62x54R', 5 + Math.floor(Math.random() * 5)), 0.15],
-      [createGasGrenade(), 0.08],
+      [createGasGrenade(), 0.22],
     ]);
   },
 };
