@@ -81,6 +81,15 @@ export const UPGRADES: Upgrade[] = [
     maxLevel: 2,
     effect: '+1 grenade per level on deploy',
   },
+  {
+    id: 'match_barrel',
+    name: 'Match-Grade Barrel',
+    icon: '🎯',
+    description: 'Precision barrel — increases critical hit chance',
+    cost: 550,
+    maxLevel: 3,
+    effect: '+5% critical hit chance per level',
+  },
 ];
 
 // Consumable items for sale at trader
