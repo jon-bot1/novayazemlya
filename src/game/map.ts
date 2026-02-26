@@ -268,13 +268,13 @@ export function generateMap() {
     return makeEnemy(p.x, p.y, type, angle);
   };
 
-  // === OUTSIDE ZONES for random spawns ===
-  const ZONE_OUTSIDE_SW = { x: 200, y: 1500, w: 500, h: 400 };
-  const ZONE_OUTSIDE_SE = { x: 2400, y: 1500, w: 500, h: 400 };
-  const ZONE_OUTSIDE_S  = { x: 800, y: 1850, w: 600, h: 300 };
-  const ZONE_OUTSIDE_NW = { x: 200, y: 1500, w: 400, h: 300 };
-  const ZONE_OUTSIDE_N  = { x: 800, y: 100, w: 1600, h: 180 };
-  const ZONE_OUTSIDE_NE = { x: 2500, y: 100, w: 400, h: 300 };
+  // === OUTSIDE ZONES for random spawns (truly outside perimeter fence: N<280, S>1858, W<300, E>2908) ===
+  const ZONE_OUTSIDE_SW = { x: 50, y: 1870, w: 600, h: 300 };
+  const ZONE_OUTSIDE_SE = { x: 2500, y: 1870, w: 450, h: 300 };
+  const ZONE_OUTSIDE_S  = { x: 800, y: 1870, w: 600, h: 300 };
+  const ZONE_OUTSIDE_NW = { x: 50, y: 50, w: 500, h: 220 };
+  const ZONE_OUTSIDE_N  = { x: 800, y: 50, w: 1600, h: 220 };
+  const ZONE_OUTSIDE_NE = { x: 2500, y: 50, w: 500, h: 220 };
 
   const allInsideZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_CORRIDOR, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B];
   const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];

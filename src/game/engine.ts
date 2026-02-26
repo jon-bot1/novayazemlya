@@ -2151,7 +2151,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           break;
         }
-        const dir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        // Chase toward player if LOS, otherwise toward investigateTarget or last known pos
+        const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
+        const dir = normalize({ x: chaseTarget.x - enemy.pos.x, y: chaseTarget.y - enemy.pos.y });
         // Gradual turning while chasing
         const chaseTargetAngle = Math.atan2(dir.y, dir.x);
         const CHASE_TURN = 3.5 * dt;
@@ -2180,8 +2182,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'flank': {
-        // Move to flank position while staying aware of player
-        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        // Move to flank position — only face player if LOS, otherwise face movement direction
+        if (los) {
+          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        } else if (enemy.flankTarget) {
+          enemy.angle = Math.atan2(enemy.flankTarget.y - enemy.pos.y, enemy.flankTarget.x - enemy.pos.x);
+        }
         if (enemy.flankTarget) {
           const dToFlank = dist(enemy.pos, enemy.flankTarget);
           if (dToFlank < 25) {
@@ -2211,8 +2217,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'suppress': {
-        // Stay in place, rapid fire toward player to pin them down
-        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        // Stay in place, rapid fire toward player — only face if LOS
+        if (los) {
+          enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        } else {
+          // No LOS — drop to investigate
+          enemy.state = 'investigate';
+          enemy.investigateTarget = { ...state.player.pos };
+          break;
+        }
         // Rapid suppressive fire with wide spread — only if player is in arc
         const suppressRate = enemy.fireRate / 1000 * 0.5; // fire twice as fast
         if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange * 1.3) {
@@ -2238,10 +2251,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'attack': {
+        // If no LOS, drop to chase/investigate — don't track player through walls
+        if (!los && enemy.type !== 'turret') {
+          enemy.state = 'chase';
+          enemy.investigateTarget = { ...state.player.pos };
+          break;
+        }
         const targetAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
         if (enemy.type === 'turret' || enemy.type === 'sniper') {
           if (isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
-            // Slow aim for sniper
             const ta = targetAngle;
             const turnRate = (enemy.type === 'sniper' ? 2.0 : 99) * dt;
             let td = ta - enemy.angle;
@@ -2256,7 +2274,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Gradual turning — enemies must physically rotate toward player
           const TURN_SPEED = enemy.type === 'boss' ? 4.5 : enemy.type === 'heavy' ? 3.0 : 4.0;
           let angleDelta = targetAngle - enemy.angle;
-          // Normalize to -PI..PI
           while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
           while (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
           const maxTurn = TURN_SPEED * dt;
