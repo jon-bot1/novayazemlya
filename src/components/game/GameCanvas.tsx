@@ -334,7 +334,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">Shift</span><span className="text-foreground">Sprint</span>
               <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
               <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Hide near trees/bushes</span>
-              <span className="text-muted-foreground">1 / 2</span><span className="text-foreground">Switch Weapon</span>
+              <span className="text-muted-foreground">1 / 2 / 3</span><span className="text-foreground">Melee / Sidearm / Primary</span>
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal (auto at low HP)</span>
               <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
@@ -570,11 +570,11 @@ export const GameCanvas: React.FC = () => {
           }
           if (pw.slot === 'primary') {
             st.player.primaryWeapon = pw.item;
-            st.player.activeSlot = 2;
+            st.player.activeSlot = 3;
             st.player.equippedWeapon = pw.item;
           } else {
             st.player.sidearm = pw.item;
-            st.player.activeSlot = 1;
+            st.player.activeSlot = 2;
             st.player.equippedWeapon = pw.item;
           }
           if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
@@ -606,6 +606,7 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (e.key === '1') inputRef.current.switchWeapon = 1;
       if (e.key === '2') inputRef.current.switchWeapon = 2;
+      if (e.key === '3') inputRef.current.switchWeapon = 3;
       if (e.key === 'Shift') inputRef.current.movementMode = 'sprint';
       if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'sneak';
       if (e.key === 'Tab' || e.key === 'i') {
@@ -1278,11 +1279,11 @@ export const GameCanvas: React.FC = () => {
                       }
                       if (pw.slot === 'primary') {
                         st.player.primaryWeapon = pw.item;
-                        st.player.activeSlot = 2;
+                        st.player.activeSlot = 3;
                         st.player.equippedWeapon = pw.item;
                       } else {
                         st.player.sidearm = pw.item;
-                        st.player.activeSlot = 1;
+                        st.player.activeSlot = 2;
                         st.player.equippedWeapon = pw.item;
                       }
                       if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
@@ -1355,7 +1356,7 @@ export const GameCanvas: React.FC = () => {
         </div>
 
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1/2 switch weapon
+          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1 melee | 2 sidearm | 3 primary
         </div>
         {/* Inventory Panel — always visible, compact overlay */}
         <div className="absolute top-[340px] right-3 z-30">

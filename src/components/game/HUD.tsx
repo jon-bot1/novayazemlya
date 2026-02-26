@@ -299,11 +299,14 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
           {/* Weapon slot buttons */}
           <div className="flex gap-1.5">
-            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[95px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
-              [1] {player.sidearm?.name || '—'}
+            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
+              [1] {(player as any).meleeWeapon?.name || '🗡️'}
             </div>
-            <div className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono min-w-[95px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
-              [2] {player.primaryWeapon?.name || '—'}
+            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
+              [2] {player.sidearm?.name || '—'}
+            </div>
+            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 3 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
+              [3] {player.primaryWeapon?.name || '—'}
             </div>
           </div>
           {/* Grenades, Flashbangs & TNT — always visible */}

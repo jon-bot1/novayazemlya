@@ -635,17 +635,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.flashbangTimer = Math.max(0, state.flashbangTimer - flashDecay);
   }
 
-  // Weapon slot switching (1 = sidearm, 2 = primary)
+  // Weapon slot switching (1 = melee, 2 = secondary, 3 = primary)
   if (input.switchWeapon) {
     const slot = input.switchWeapon;
-    const wpnForSlot = slot === 1 ? state.player.sidearm : state.player.primaryWeapon;
+    const wpnForSlot = slot === 1 ? state.player.meleeWeapon : slot === 2 ? state.player.sidearm : state.player.primaryWeapon;
     if (wpnForSlot) {
       state.player.activeSlot = slot;
       state.player.equippedWeapon = wpnForSlot;
       if (wpnForSlot.ammoType) state.player.ammoType = wpnForSlot.ammoType;
       addMessage(state, `🔫 ${wpnForSlot.name} [${slot}]`, 'info');
-    } else if (slot === 2) {
+    } else if (slot === 3) {
       addMessage(state, '⚠ No primary weapon!', 'warning');
+    } else if (slot === 2) {
+      addMessage(state, '⚠ No sidearm!', 'warning');
     }
     input.switchWeapon = undefined;
   }
@@ -1004,17 +1006,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
             } else if (!currentInSlot) {
               // Empty slot — auto-equip
-              if (slot === 'primary') {
+            if (slot === 'primary') {
                 state.player.primaryWeapon = item;
-                state.player.activeSlot = 2;
+                state.player.activeSlot = 3;
                 state.player.equippedWeapon = item;
               } else {
                 state.player.sidearm = item;
-                state.player.activeSlot = 1;
+                state.player.activeSlot = 2;
                 state.player.equippedWeapon = item;
               }
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
             } else {
               // Slot occupied — ask for confirmation (max 3 times per weapon instance)
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
@@ -1095,17 +1097,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (currentInSlot && currentInSlot.name === item.name) {
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
             } else if (!currentInSlot) {
-              if (slot === 'primary') {
+            if (slot === 'primary') {
                 state.player.primaryWeapon = item;
-                state.player.activeSlot = 2;
+                state.player.activeSlot = 3;
                 state.player.equippedWeapon = item;
               } else {
                 state.player.sidearm = item;
-                state.player.activeSlot = 1;
+                state.player.activeSlot = 2;
                 state.player.equippedWeapon = item;
               }
               if (item.ammoType) state.player.ammoType = item.ammoType;
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 2 : 1}]!`, 'info');
+              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
             } else {
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
               const prompts = ((item as any)._swapPrompts || 0) as number;
