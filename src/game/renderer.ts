@@ -1991,10 +1991,25 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     } else if (enemy.state === 'chase') {
       ctx.fillText('❗', enemy.pos.x, enemy.pos.y - R - 12);
     } else if (enemy.state === 'investigate') {
-      const pulse = 0.6 + Math.sin(state.time * 4) * 0.4;
-      ctx.globalAlpha = pulse;
-      ctx.fillText('❓', enemy.pos.x, enemy.pos.y - R - 12);
-      ctx.globalAlpha = 1;
+      // Show big ? when enemy just lost sight of player
+      const lostSightTime = (enemy as any)._lostSightTime || 0;
+      const timeSinceLost = state.time - lostSightTime;
+      if (timeSinceLost < 3) {
+        const bigPulse = 0.8 + Math.sin(state.time * 6) * 0.2;
+        ctx.globalAlpha = bigPulse;
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#ffcc44';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
+        ctx.fillText('?', enemy.pos.x, enemy.pos.y - R - 14);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      } else {
+        const pulse = 0.6 + Math.sin(state.time * 4) * 0.4;
+        ctx.globalAlpha = pulse;
+        ctx.fillText('❓', enemy.pos.x, enemy.pos.y - R - 12);
+        ctx.globalAlpha = 1;
+      }
     } else if (enemy.state === 'alert') {
       const pulse = 0.5 + Math.sin(state.time * 6) * 0.5;
       ctx.globalAlpha = pulse;
