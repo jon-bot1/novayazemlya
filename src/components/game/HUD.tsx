@@ -123,11 +123,12 @@ interface HUDProps {
   deathCause?: string;
   exfilRevealed?: string;
   achievementStats?: AchievementStats;
+  onReturnToBase?: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase 
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -451,12 +452,21 @@ export const HUD: React.FC<HUDProps> = ({
 
             <FeedbackWidget playerName={playerName} />
 
-            <button
-              className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
-              onClick={() => window.location.reload()}
-            >
-              🔄 RESTART
-            </button>
+            {onReturnToBase ? (
+              <button
+                className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
+                onClick={onReturnToBase}
+              >
+                🏠 RETURN TO BASE
+              </button>
+            ) : (
+              <button
+                className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors"
+                onClick={() => window.location.reload()}
+              >
+                🔄 RESTART
+              </button>
+            )}
           </div>
         </div>
       )}

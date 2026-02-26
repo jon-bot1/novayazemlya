@@ -23,6 +23,24 @@ function addMessage(state: GameState, text: string, type: GameMessage['type']) {
   if (state.messages.length > 10) state.messages.shift();
 }
 
+const BASE_INVENTORY_SLOTS = 12;
+
+function canPickupItem(state: GameState, item: Item): boolean {
+  // Keys, quest items, and ammo always fit
+  if (item.category === 'key' || item.category === 'ammo' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
+  const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
+  return state.player.inventory.length < maxSlots;
+}
+
+function tryPickupItem(state: GameState, item: Item): boolean {
+  if (!canPickupItem(state, item)) {
+    addMessage(state, '⚠ Inventory full! (12 slots)', 'warning');
+    return false;
+  }
+  state.player.inventory.push(item);
+  return true;
+}
+
 function spawnParticles(state: GameState, x: number, y: number, color: string, count: number) {
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
@@ -818,7 +836,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         lc.looted = true;
         state.cachesLooted++;
         for (const item of lc.items) {
-          state.player.inventory.push(item);
+          if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
@@ -905,7 +923,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.looted = true;
         state.bodiesLooted++;
         for (const item of enemy.loot) {
-          state.player.inventory.push(item);
+          if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
