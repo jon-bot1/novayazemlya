@@ -3,6 +3,7 @@ import { Item } from '../../game/types';
 
 interface InventoryPanelProps {
   items: Item[];
+  onDropItem?: (index: number) => void;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -29,7 +30,7 @@ const categoryIcons: Record<string, string> = {
   key: '🔑',
 };
 
-export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
+export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropItem }) => {
   const categories = ['weapon', 'ammo', 'medical', 'armor', 'grenade', 'flashbang', 'backpack', 'valuable', 'key'] as const;
   const totalValue = items.reduce((s, i) => s + i.value, 0);
   const totalWeight = items.reduce((s, i) => s + i.weight, 0);
@@ -47,7 +48,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
 
       <div className="flex-1 overflow-y-auto p-1.5 scrollbar-thin">
         {categories.map(cat => {
-          const catItems = items.filter(i => i.category === cat);
+          const catItems = items
+            .map((item, idx) => ({ item, idx }))
+            .filter(({ item }) => item.category === cat);
           if (catItems.length === 0) return null;
           return (
             <div key={cat} className="mb-2">
@@ -55,11 +58,20 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items }) => {
                 <span>{categoryIcons[cat]}</span>
                 {categoryLabels[cat] || cat}
               </h3>
-              {catItems.map((item, i) => (
-                <div key={`${item.id}-${i}`} className="flex items-center gap-1.5 px-1.5 py-1 rounded-sm hover:bg-secondary/50 text-xs">
+              {catItems.map(({ item, idx }) => (
+                <div key={`${item.id}-${idx}`} className="group flex items-center gap-1.5 px-1.5 py-1 rounded-sm hover:bg-secondary/50 text-xs">
                   <span className="text-[11px]">{item.icon}</span>
                   <span className="flex-1 font-mono text-[10px] text-foreground truncate">{item.name}</span>
-                  <span className="text-[9px] text-muted-foreground">{item.value}₽</span>
+                  <span className="text-[9px] text-muted-foreground group-hover:hidden">{item.value}₽</span>
+                  {onDropItem && (
+                    <button
+                      onClick={() => onDropItem(idx)}
+                      className="hidden group-hover:block text-[9px] text-destructive hover:text-destructive-foreground hover:bg-destructive/60 rounded px-1"
+                      title="Drop item"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
