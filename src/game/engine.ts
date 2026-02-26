@@ -1,7 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
-import { LOOT_POOLS, createFlashbang, createTNT, isSecondaryWeapon } from './items';
+import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
@@ -134,7 +134,12 @@ function generateEnemyLoot(enemy: Enemy) {
     ];
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
-  return [...existingLoot, ...LOOT_POOLS[poolType]()];
+  const baseLoot = [...existingLoot, ...LOOT_POOLS[poolType]()];
+  // Shockers always drop goggles (50% chance)
+  if (enemy.type === 'shocker' && Math.random() < 0.5) {
+    baseLoot.push(createGoggles());
+  }
+  return baseLoot;
 }
 
 export function createGameState(): GameState {
@@ -521,9 +526,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
-  // Flashbang blindness countdown
+  // Flashbang blindness countdown (goggles reduce duration by 50%)
   if (state.flashbangTimer > 0) {
-    state.flashbangTimer = Math.max(0, state.flashbangTimer - dt);
+    const hasGoggles = state.player.inventory.some(i => i.id === 'goggles' || i.name === 'Tactical Goggles');
+    const flashDecay = hasGoggles ? dt * 2 : dt; // goggles = double decay = 50% duration
+    state.flashbangTimer = Math.max(0, state.flashbangTimer - flashDecay);
   }
 
   // Weapon slot switching (1 = sidearm, 2 = primary)
@@ -1190,7 +1197,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const distToPlayer = dist(enemy.pos, state.player.pos);
       const MIN_BERSERK_DIST = 40; // don't run on top of the player
       if (distToPlayer > MIN_BERSERK_DIST) {
-        const berserkSpeed = ((enemy as any)._originalSpeed || enemy.speed) * dt * 60 * 2.5;
+        const berserkSpeed = ((enemy as any)._originalSpeed || enemy.speed) * dt * 60 * 1.875; // 25% reduced
         // Slow down when approaching minimum distance
         const approachFactor = Math.min(1, (distToPlayer - MIN_BERSERK_DIST) / 60);
         enemy.pos = tryMoveEnemy(state, enemy.pos, toPlayer.x * berserkSpeed * approachFactor, toPlayer.y * berserkSpeed * approachFactor, 10);
@@ -1583,9 +1590,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Heavy throws flashbangs
+    // Heavy throws flashbangs (halved rate)
     if (enemy.type === 'heavy' && enemy.state === 'attack' && !(enemy as any)._heavyFlashUsed &&
-        distToPlayer < enemy.shootRange && distToPlayer > 60 && Math.random() < 0.002) {
+        distToPlayer < enemy.shootRange && distToPlayer > 60 && Math.random() < 0.001) {
       (enemy as any)._heavyFlashUsed = true;
       const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
       state.grenades.push({
@@ -1840,8 +1847,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
       const sniperDistToPlayer = dist(enemy.pos, state.player.pos);
       const sniperHasLos = hasLineOfSight(state, enemy.pos, state.player.pos, false);
+      const sniperPlayerHidden = !!(state as any)._playerHiding;
       const playerTooClose = sniperDistToPlayer < 170;
-      const lostPressure = !sniperHasLos || sniperDistToPlayer > enemy.shootRange;
+      const lostPressure = !sniperHasLos || sniperDistToPlayer > enemy.shootRange || sniperPlayerHidden;
       const tookHit = !!(enemy as any)._sniperShouldFlee;
 
       if (playerTooClose && (enemy as any)._sniperFlashCooldown <= 0) {
@@ -1856,7 +1864,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           sourceId: enemy.id,
           sourceType: 'sniper',
         });
-        (enemy as any)._sniperFlashCooldown = 6;
+        (enemy as any)._sniperFlashCooldown = 12; // doubled cooldown (halved flash rate)
         addMessage(state, '💫 Sniper Tuman flashar och försvinner!', 'warning');
       }
 
@@ -1877,8 +1885,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
 
       // Keep pressure: aim and shoot, but no normal walk movement
-      enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-      enemy.state = sniperDistToPlayer <= enemy.shootRange && sniperHasLos ? 'attack' : 'chase';
+      // Sniper cannot see or shoot hidden player
+      if (sniperPlayerHidden) {
+        enemy.state = 'idle';
+        // Scan around looking for player
+        enemy.angle += Math.sin(state.time * 1.5 + enemy.pos.x * 0.01) * 0.02;
+      } else {
+        enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+        enemy.state = sniperDistToPlayer <= enemy.shootRange && sniperHasLos ? 'attack' : 'chase';
+      }
       // Fall through to attack/chase state handling (aim only, no walking)
     }
 
@@ -2207,7 +2222,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.type === 'boss') {
           // Alternate between frag grenades and flashbangs
           if ((enemy.bossChargeTimer || 0) <= 0 && distToPlayer < enemy.shootRange * 1.2 && distToPlayer > 80) {
-            const throwFlashbang = Math.random() < 0.4; // 40% chance flashbang
+            const throwFlashbang = Math.random() < 0.2; // 20% chance flashbang (halved)
             enemy.bossChargeTimer = throwFlashbang ? 5 + Math.random() * 3 : 6 + Math.random() * 4;
             const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
             const gSpeed = 4;

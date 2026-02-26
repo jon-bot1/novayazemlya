@@ -157,6 +157,17 @@ export const createHelmet = (): Item => ({
   description: 'Head protection — +15 armor',
 });
 
+export const createGoggles = (): Item => ({
+  id: 'goggles',
+  name: 'Tactical Goggles',
+  category: 'armor',
+  icon: '🥽',
+  weight: 0.3,
+  value: 300,
+  damage: 0,
+  description: 'Protects against flashbangs — 50% reduced blind duration',
+});
+
 export const WEAPON_TEMPLATES = {
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
   makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
@@ -278,6 +289,7 @@ export const LOOT_POOLS = {
       [createArmor(), 0.12],
       [createHelmet(), 0.08],
       [createTNT(), 0.15],
+      [createGoggles(), 0.08],
     ]);
   },
 };
