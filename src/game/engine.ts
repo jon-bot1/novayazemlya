@@ -599,7 +599,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     
     const spread = (Math.random() - 0.5) * 0.08;
     const angle = state.player.angle + spread;
-    const bulletSpeed = wpn?.bulletSpeed || 8;
+    const baseBulletSpeed = wpn?.bulletSpeed || 8;
+    const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
+    const bulletSpeed = baseBulletSpeed * (1 + bulletSpeedBonus);
     const bulletLife = wpn?.weaponRange || 60;
     state.bullets.push({
       pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },

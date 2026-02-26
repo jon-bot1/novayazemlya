@@ -3,6 +3,7 @@ import { Player, GameMessage } from '../../game/types';
 import { LoreDocument } from '../../game/lore';
 import { FeedbackWidget } from './FeedbackWidget';
 import { HighscoreList, submitHighscore, calculateScore } from './HighscoreList';
+import { MissionObjective } from '../../game/objectives';
 
 interface AchievementStats {
   mosinKills: number;
@@ -124,11 +125,12 @@ interface HUDProps {
   exfilRevealed?: string;
   achievementStats?: AchievementStats;
   onReturnToBase?: () => void;
+  objectives?: MissionObjective[];
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase 
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives
 }) => {
   const scoreSubmittedRef = React.useRef(false);
 
@@ -351,6 +353,22 @@ export const HUD: React.FC<HUDProps> = ({
         })}
       </div>
 
+      {/* Mission Objectives — bottom left */}
+      {objectives && objectives.length > 0 && !gameOver && !extracted && (
+        <div className="absolute bottom-16 sm:bottom-12 left-3 flex flex-col gap-1 bg-card/70 backdrop-blur-sm rounded-md p-2 border border-border/40 max-w-[220px]">
+          <span className="text-[10px] font-display text-accent uppercase tracking-wider">🎯 Objectives</span>
+          {objectives.map(obj => (
+            <div key={obj.id} className="flex items-center gap-1.5">
+              <span className="text-xs">{obj.completed ? '✅' : obj.type === 'main' ? '⬜' : '▫️'}</span>
+              <span className={`text-[10px] font-mono ${obj.completed ? 'text-accent line-through' : obj.type === 'main' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {obj.name}
+              </span>
+              {obj.type === 'bonus' && <span className="text-[8px] text-muted-foreground/50">(bonus)</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Game Over / Extracted overlay */}
       {(gameOver || extracted) && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
@@ -428,7 +446,23 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
-              {/* Achievements */}
+              {/* Mission Objectives Summary */}
+              {objectives && objectives.length > 0 && (
+                <div className="mt-2 border-t border-border pt-2">
+                  <span className="text-xs font-mono text-accent">🎯 OBJECTIVES:</span>
+                  <div className="flex flex-col gap-1 mt-1">
+                    {objectives.map(obj => (
+                      <div key={obj.id} className="flex items-center justify-between text-[11px] font-mono">
+                        <span className={obj.completed ? 'text-accent' : 'text-muted-foreground'}>
+                          {obj.completed ? '✅' : '❌'} {obj.name}
+                          {obj.type === 'bonus' && <span className="text-muted-foreground/50 ml-1">(bonus)</span>}
+                        </span>
+                        {obj.completed && <span className="text-warning">+{obj.reward}₽</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
