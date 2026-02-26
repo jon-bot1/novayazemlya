@@ -1150,9 +1150,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     input.heal = false;
   }
 
-  // Bleeding
+  // Bleeding — gradually heals itself over time
   if (state.player.bleedRate > 0) {
     state.player.hp -= state.player.bleedRate * dt;
+    // Bleed decays naturally: ~0.15/sec, so a 0.5 bleed stops in ~3s, a 1.5 bleed in ~10s
+    state.player.bleedRate = Math.max(0, state.player.bleedRate - 0.15 * dt);
+    if (state.player.bleedRate <= 0.05) {
+      state.player.bleedRate = 0;
+      addMessage(state, '🩹 Bleeding stopped on its own', 'info');
+    }
     if (Math.random() < 0.1) {
       spawnParticles(state, state.player.pos.x + (Math.random()-0.5)*10, state.player.pos.y + (Math.random()-0.5)*10, '#cc3333', 1);
     }
