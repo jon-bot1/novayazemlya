@@ -68,7 +68,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
   return enemy;
 };
 
-type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body';
+type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body' | 'weapon_cabinet';
 
 const makeLoot = (x: number, y: number, type: LootContainer['type'], pool: LootPoolType): LootContainer => ({
   id: `loot_${containerId++}`,
@@ -557,6 +557,13 @@ export function generateMap() {
     rLoot({ x: 1600, y: 2200, w: 150, h: 100 }, 'barrel', 'common'),
     // Secret passage area loot (draws player to the area)
     rLoot({ x: 2100, y: 1920, w: 100, h: 80 }, 'crate', 'valuable'),
+
+    // === WEAPON CABINETS — guaranteed weapon loot ===
+    rLoot(ZONE_STORAGE_A, 'locker', 'weapon_cabinet'),
+    rLoot(ZONE_STORAGE_B, 'locker', 'weapon_cabinet'),
+    rLoot({ x: 400, y: 520, w: 180, h: 120 }, 'locker', 'weapon_cabinet'), // barracks
+    rLoot({ x: 2520, y: 620, w: 110, h: 60 }, 'locker', 'weapon_cabinet'), // ammo bunker
+    rLoot(ZONE_OFFICES_BOT, 'locker', 'weapon_cabinet'), // office armory
   ];
 
   // ══════════════════════════════════════

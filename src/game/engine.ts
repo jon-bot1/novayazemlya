@@ -1,7 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
-import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon } from './items';
+import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 
 function dist(a: Vec2, b: Vec2) {
@@ -153,6 +153,29 @@ function generateEnemyLoot(enemy: Enemy) {
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
   const baseLoot = [...existingLoot, ...LOOT_POOLS[poolType]()];
+
+  // === WEAPON DROPS — enemies actually carry weapons ===
+  if (enemy.type === 'heavy') {
+    // Heavies: 60% AKM, 30% AK-74, 20% TOZ
+    if (Math.random() < 0.6) baseLoot.push(WEAPON_TEMPLATES.akm());
+    else if (Math.random() < 0.5) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.toz());
+  } else if (enemy.type === 'soldier') {
+    // Soldiers: 40% AK-74, 20% AKM, 15% Makarov
+    if (Math.random() < 0.4) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    else if (Math.random() < 0.35) baseLoot.push(WEAPON_TEMPLATES.akm());
+    if (Math.random() < 0.15) baseLoot.push(WEAPON_TEMPLATES.makarov());
+  } else if (enemy.type === 'scav') {
+    // Scavs: 25% Makarov, 15% TOZ, 10% PPSh
+    if (Math.random() < 0.25) baseLoot.push(WEAPON_TEMPLATES.makarov());
+    else if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.toz());
+    else if (Math.random() < 0.15) baseLoot.push(WEAPON_TEMPLATES.ppsh());
+  } else if (enemy.type === 'shocker') {
+    // Shockers: 20% baton, 15% knife
+    if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.baton());
+    else if (Math.random() < 0.2) baseLoot.push(WEAPON_TEMPLATES.knife());
+  }
+
   // Shockers always drop goggles (50% chance)
   if (enemy.type === 'shocker' && Math.random() < 0.5) {
     baseLoot.push(createGoggles());
@@ -2690,7 +2713,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             return false; // concealment miss (reduced from 40% to 25%)
           }
           const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
-          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus);
+          const critUpgradeBonus = (state as any)._critChanceBonus || 0;
+          const critChance = Math.min(0.60, 0.05 + state.killCount * 0.02 + soldierBonus + critUpgradeBonus);
           const isCrit = Math.random() < critChance;
           if (isCrit) {
             enemy.hp = 0;

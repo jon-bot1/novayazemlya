@@ -268,6 +268,7 @@ export const LOOT_POOLS = {
       [randomValuable(), 0.35],
       [randomValuable(), 0.2],
       [createGrenade(), 0.2],
+      [createGasGrenade(), 0.04],
       [createTNT(), 0.25],
     ]);
   },
@@ -294,6 +295,7 @@ export const LOOT_POOLS = {
       [randomValuable(), 0.25],
       [createGrenade(), 0.15],
       [createFlashbang(), 0.2],
+      [createGasGrenade(), 0.06],
       [createKey('Locker Key', 'key_cabinet'), 0.1],
       [WEAPON_TEMPLATES.makarov(), 0.08],
       [createBackpack(), 0.1],
@@ -301,6 +303,23 @@ export const LOOT_POOLS = {
       [createHelmet(), 0.08],
       [createTNT(), 0.15],
       [createGoggles(), 0.08],
+    ]);
+  },
+  // Weapon cabinet — high chance of finding weapons
+  weapon_cabinet: (): Item[] => {
+    return pickMany<Item>([
+      [WEAPON_TEMPLATES.ak74(), 0.30],
+      [WEAPON_TEMPLATES.akm(), 0.25],
+      [WEAPON_TEMPLATES.toz(), 0.20],
+      [WEAPON_TEMPLATES.mosin(), 0.10],
+      [WEAPON_TEMPLATES.ppsh(), 0.15],
+      [WEAPON_TEMPLATES.makarov(), 0.25],
+      [WEAPON_TEMPLATES.revolver(), 0.20],
+      [WEAPON_TEMPLATES.knife(), 0.15],
+      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.40],
+      [createAmmo('7.62x39', 8 + Math.floor(Math.random() * 8)), 0.35],
+      [createAmmo('7.62x54R', 5 + Math.floor(Math.random() * 5)), 0.15],
+      [createGasGrenade(), 0.08],
     ]);
   },
 };

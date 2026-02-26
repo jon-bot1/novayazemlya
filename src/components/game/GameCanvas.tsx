@@ -1064,6 +1064,9 @@ export const GameCanvas: React.FC = () => {
             // Red dot sight — store as flag on game state for engine to use
             const redDotLvl = getUpgradeLevel(ups, 'red_dot');
             if (redDotLvl > 0) (st as any)._bulletSpeedBonus = 0.25;
+            // Match-grade barrel — critical hit bonus
+            const matchBarrelLvl = getUpgradeLevel(ups, 'match_barrel');
+            if (matchBarrelLvl > 0) (st as any)._critChanceBonus = matchBarrelLvl * 0.05;
 
             lastTimeRef.current = 0;
             extractedRef.current = false;
