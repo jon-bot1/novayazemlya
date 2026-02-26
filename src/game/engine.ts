@@ -2605,14 +2605,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               });
               playExplosion();
 
+              const SNIPER_MIN_RELOCATE_DIST_HIT = 250;
+              const hitHidePos = (state as any)._hidePos;
+              const isNotPlayerHideSpotHit = (p: { pos: Vec2 }) => {
+                if (!hitHidePos) return true;
+                return dist(p.pos, hitHidePos) > 30;
+              };
               let fleeCovers = state.props.filter(p =>
-                isCoverProp(p) && isNotPlayerHideSpot(p) &&
-                dist(p.pos, state.player.pos) > Math.max(320, SNIPER_MIN_RELOCATE_DIST) &&
+                isCoverProp(p) && isNotPlayerHideSpotHit(p) &&
+                dist(p.pos, state.player.pos) > Math.max(320, SNIPER_MIN_RELOCATE_DIST_HIT) &&
                 dist(p.pos, enemy.pos) > 140
               );
               if (fleeCovers.length === 0) {
                 fleeCovers = state.props.filter(p =>
-                  isCoverProp(p) && isNotPlayerHideSpot(p) && dist(p.pos, enemy.pos) > 120 && dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST
+                  isCoverProp(p) && isNotPlayerHideSpotHit(p) && dist(p.pos, enemy.pos) > 120 && dist(p.pos, state.player.pos) > SNIPER_MIN_RELOCATE_DIST_HIT
                 );
               }
 
