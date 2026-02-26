@@ -2372,7 +2372,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Enemies see incoming grenade and flee (player grenades only)
     if (g.fromPlayer && g.timer > 0.3 && g.timer < 1.5) {
       for (const enemy of state.enemies) {
-        if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
+        if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
         const dToGrenade = dist(g.pos, enemy.pos);
         if (dToGrenade < g.radius * 1.5 && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
