@@ -1517,7 +1517,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const re: Enemy = {
         id: `reinf_${state.reinforcementsSpawned}_${ri}`, pos: rp,
         hp: rt === 'heavy' ? 120 : 56, maxHp: rt === 'heavy' ? 120 : 56,
-        speed: rt === 'heavy' ? 0.8 : 1.5, damage: rt === 'heavy' ? 25 : 15,
+        speed: rt === 'heavy' ? 0.72 : 1.35, damage: rt === 'heavy' ? 25 : 15,
         alertRange: 200, shootRange: 170, fireRate: rt === 'heavy' ? 1500 : 800,
         state: 'chase', patrolTarget: { x: state.mapWidth / 2, y: state.mapHeight / 2 },
         investigateTarget: { ...state.player.pos }, lastShot: 0,
@@ -1810,12 +1810,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
           enemy.fireRate = 350;
-          enemy.speed = 1.65; // 25% reduced
+          enemy.speed = 1.49;
           enemy.damage = 35;
         }
         if (enemy.bossPhase === 2) {
           enemy.fireRate = 250;
-          enemy.speed = 2.1; // 25% reduced
+          enemy.speed = 1.89;
           enemy.damage = 40;
         }
       }

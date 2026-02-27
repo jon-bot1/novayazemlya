@@ -371,6 +371,17 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.15 — 2026-02-27</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• ⚡ <span className="text-accent">Performance overhaul</span> — spatial hash grids, viewport culling, particle caps</li>
+                  <li>• 🐌 <span className="text-foreground">Movement speed -10%</span> — all units move slower for more tactical gameplay</li>
+                  <li>• 🔫 <span className="text-accent">Increased weapon drops</span> — more weapons in crates, cabinets and enemy bodies</li>
+                  <li>• 🎯 <span className="text-accent">10 new objectives</span> — Old Faithful, Pacifist, Demolitions Expert, Dog Whisperer & more</li>
+                  <li>• 🗡️ Silent Blade — kill 3 with knife | 📢 Hearts & Minds — convert an enemy who gets a kill</li>
+                  <li>• ⚡ Distant Thunder — 2 extreme range kills | 📚 Archivist — collect all documents</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.14 — 2026-02-27</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 🔫 <span className="text-accent">Shotgun (TOZ-34)</span> — fires 5 pellets in a cone, devastating at close range</li>
@@ -991,6 +1002,14 @@ export const GameCanvas: React.FC = () => {
             tntPlacedOnPlane: !!(state as any)._tntOnPlane,
             foundSecret: !!(state as any)._foundSecret,
             alarmsHacked: state.terminalsHacked,
+            mosinKills: state.mosinKills,
+            wallsBreached: state.wallsBreached,
+            grenadeKills: state.grenadeKills,
+            dogsNeutralized: state.dogsNeutralized,
+            longShots: state.longShots,
+            knifeDistanceKills: state.knifeDistanceKills,
+            cachesLooted: state.cachesLooted,
+            convertKill: !!(state as any)._convertKill,
           }));
         }
       }
@@ -1030,6 +1049,14 @@ export const GameCanvas: React.FC = () => {
         tntPlacedOnPlane: !!(state as any)._tntOnPlane,
         foundSecret: !!(state as any)._foundSecret,
         alarmsHacked: state.terminalsHacked,
+        mosinKills: state.mosinKills,
+        wallsBreached: state.wallsBreached,
+        grenadeKills: state.grenadeKills,
+        dogsNeutralized: state.dogsNeutralized,
+        longShots: state.longShots,
+        knifeDistanceKills: state.knifeDistanceKills,
+        cachesLooted: state.cachesLooted,
+        convertKill: !!(state as any)._convertKill,
       });
       setObjectives(completedObjectives);
       const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
