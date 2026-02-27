@@ -1631,6 +1631,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if ((enemy as any)._grenadeFlee <= 0) {
         delete (enemy as any)._grenadeFlee;
         delete (enemy as any)._grenadeFleeAngle;
+        delete (enemy as any)._grenadeFleeRolled;
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
       }
@@ -3004,18 +3005,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       g.vel.y *= 0.1;
     }
 
-    // Enemies see incoming grenade and flee (player grenades only)
+    // Enemies see incoming grenade and flee (player grenades only, random chance per type)
     if (g.fromPlayer && g.timer > 0.3 && g.timer < 1.5 && g.damage !== -2) {
       // Gas grenades do NOT cause enemies to flee
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
+        if ((enemy as any)._grenadeFleeRolled) continue; // already decided not to flee
         const dToGrenade = dist(g.pos, enemy.pos);
         if (dToGrenade < g.radius * 1.5 && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
-          // Set grenade flee state
-          (enemy as any)._grenadeFlee = 2.0; // flee for 2 seconds
-          const fleeAngle = Math.atan2(enemy.pos.y - g.pos.y, enemy.pos.x - g.pos.x) + (Math.random() - 0.5) * 0.6;
-          (enemy as any)._grenadeFleeAngle = fleeAngle;
+          // Random flee chance — bosses flee MORE often, others less
+          let fleeChance = 0.4; // default 40%
+          if (enemy.type === 'boss') fleeChance = 0.8;
+          else if (enemy.type === 'heavy' || (enemy as any)._isBodyguard) fleeChance = 0.6;
+          else if (enemy.type === 'scav') fleeChance = 0.3;
+          else if (enemy.type === 'sniper') fleeChance = 0.7;
+
+          if (Math.random() < fleeChance) {
+            (enemy as any)._grenadeFlee = 2.0; // flee for 2 seconds
+            const fleeAngle = Math.atan2(enemy.pos.y - g.pos.y, enemy.pos.x - g.pos.x) + (Math.random() - 0.5) * 0.6;
+            (enemy as any)._grenadeFleeAngle = fleeAngle;
+          } else {
+            (enemy as any)._grenadeFleeRolled = true; // don't re-roll for this grenade
+          }
         }
       }
     }
