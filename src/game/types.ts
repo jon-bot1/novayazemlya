@@ -56,7 +56,7 @@ export interface LootContainer {
   size: number;
   items: Item[];
   looted: boolean;
-  type: 'crate' | 'body' | 'cabinet' | 'barrel' | 'desk' | 'locker' | 'archive';
+  type: 'crate' | 'body' | 'cabinet' | 'barrel' | 'desk' | 'locker' | 'archive' | 'weapon_cabinet';
 }
 
 export interface AlarmPanel {

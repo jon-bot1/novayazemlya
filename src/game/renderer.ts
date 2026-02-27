@@ -1593,23 +1593,41 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('📦', lc.pos.x, lc.pos.y + 5);
     } else {
       const bob = Math.sin(state.time * 2 + lc.pos.x) * 2;
-      const icons: Record<string, string> = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️', desk: '🖥️', locker: '🔒', archive: '📁' };
+      const icons: Record<string, string> = { crate: '📦', body: '💀', cabinet: '🗄️', barrel: '🛢️', desk: '🖥️', locker: '🔒', archive: '📁', weapon_cabinet: '🔫' };
+
+      const isWeaponCab = lc.type === 'weapon_cabinet';
+      const glowColor = isWeaponCab ? 'rgba(255, 120, 40,' : 'rgba(220, 200, 60,';
+      const labelColor = isWeaponCab ? 'rgba(255, 140, 50, 0.9)' : 'rgba(220, 200, 60, 0.7)';
+
+      // Weapon cabinets get a bigger, pulsing outer ring
+      if (isWeaponCab) {
+        const pulse = 0.4 + Math.sin(state.time * 3) * 0.3;
+        ctx.beginPath();
+        ctx.arc(lc.pos.x, lc.pos.y + bob, lc.size * 1.3, 0, Math.PI * 2);
+        ctx.fillStyle = `${glowColor} ${pulse * 0.15})`;
+        ctx.fill();
+        ctx.strokeStyle = `${glowColor} ${pulse * 0.7})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
       ctx.beginPath();
       ctx.arc(lc.pos.x, lc.pos.y + bob, lc.size * 0.8, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(220, 200, 60, 0.12)';
+      ctx.fillStyle = `${glowColor} 0.12)`;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(220, 200, 60, 0.5)';
+      ctx.strokeStyle = `${glowColor} 0.5)`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      ctx.font = '18px sans-serif';
+      ctx.font = isWeaponCab ? '22px sans-serif' : '18px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(icons[lc.type] || '📦', lc.pos.x, lc.pos.y + bob + 6);
 
-      ctx.fillStyle = 'rgba(220, 200, 60, 0.7)';
-      ctx.font = 'bold 8px sans-serif';
-      ctx.fillText(lc.type.toUpperCase(), lc.pos.x, lc.pos.y + bob - 14);
+      ctx.fillStyle = labelColor;
+      ctx.font = isWeaponCab ? 'bold 9px sans-serif' : 'bold 8px sans-serif';
+      ctx.fillText(isWeaponCab ? 'WEAPONS' : lc.type.toUpperCase(), lc.pos.x, lc.pos.y + bob - 14);
     }
   }
 
