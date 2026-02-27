@@ -87,15 +87,21 @@ function tryPickupItem(state: GameState, item: Item): boolean {
   return true;
 }
 
+const MAX_PARTICLES = 200;
+
 function spawnParticles(state: GameState, x: number, y: number, color: string, count: number) {
-  for (let i = 0; i < count; i++) {
+  // Cap total particles to prevent lag
+  const available = MAX_PARTICLES - state.particles.length;
+  const actual = Math.min(count, available);
+  if (actual <= 0) return;
+  for (let i = 0; i < actual; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.5 + Math.random() * 2;
     state.particles.push({
       pos: { x, y },
       vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
-      life: 30 + Math.random() * 30,
-      maxLife: 60,
+      life: 20 + Math.random() * 20,
+      maxLife: 40,
       color,
       size: 1 + Math.random() * 2,
     });
@@ -409,13 +415,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
     }
-    // TOXIC BARREL CHECK — poison damage over time when near
+    // TOXIC BARREL CHECK — poison damage, use distSq
     for (const prop of state.props) {
       if (prop.type !== 'toxic_barrel') continue;
-      const toxDist = dist(newPos, prop.pos);
-      if (toxDist < 30) {
-        state.player.hp -= 0.15 * dt * 60; // ~9 HP/sec when standing on it
-        if (Math.random() < 0.1) {
+      const tdx = newPos.x - prop.pos.x, tdy = newPos.y - prop.pos.y;
+      if (tdx * tdx + tdy * tdy < 900) { // 30*30
+        state.player.hp -= 0.15 * dt * 60;
+        if (Math.random() < 0.04) {
           spawnParticles(state, newPos.x, newPos.y, '#88ff44', 1);
         }
         if (!state.gameOver && state.player.hp <= 0) {
@@ -470,34 +476,50 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     fence_v:          { quality: 0.25, label: 'CONCEALMENT', coverType: 'low' },
   };
 
-  // Find nearest cover object
-  let bestCoverDist = 40;
+  // Find nearest cover object — use distSq to avoid sqrt, throttle wall check
+  let bestCoverDistSq = 40 * 40;
   let bestCoverPos: Vec2 | null = null;
   let bestCoverQuality = 0;
   let bestCoverLabel = '';
   let bestCoverType: 'high' | 'low' = 'low';
+  const px = state.player.pos.x, py = state.player.pos.y;
   for (const prop of state.props) {
-    const d = dist(state.player.pos, prop.pos);
-    if (d < bestCoverDist) {
-      bestCoverDist = d;
-      bestCoverPos = { ...prop.pos };
+    const dx = px - prop.pos.x, dy = py - prop.pos.y;
+    const dsq = dx * dx + dy * dy;
+    if (dsq < bestCoverDistSq) {
+      bestCoverDistSq = dsq;
+      bestCoverPos = { x: prop.pos.x, y: prop.pos.y };
       const cq = coverQualityMap[prop.type];
       bestCoverQuality = cq ? cq.quality : 0.60;
       bestCoverLabel = cq ? cq.label : 'COVER';
       bestCoverType = cq ? cq.coverType : 'low';
     }
   }
-  // Also check walls
-  for (const wall of state.walls) {
-    const wx = wall.x + wall.w / 2;
-    const wy = wall.y + wall.h / 2;
-    const d = dist(state.player.pos, { x: wx, y: wy });
-    if (d < bestCoverDist + 20) {
-      bestCoverDist = d;
-      bestCoverPos = { x: wx, y: wy };
-      bestCoverQuality = 0.90;
-      bestCoverLabel = 'HIGH COVER';
-      bestCoverType = 'high';
+  // Wall cover — use spatial grid for fast lookup instead of iterating all walls
+  const nearbyWalls = getWallGrid(state);
+  const wallCheckDist = 60;
+  const minCx = Math.floor((px - wallCheckDist) / nearbyWalls.cellSize);
+  const maxCx = Math.floor((px + wallCheckDist) / nearbyWalls.cellSize);
+  const minCy = Math.floor((py - wallCheckDist) / nearbyWalls.cellSize);
+  const maxCy = Math.floor((py + wallCheckDist) / nearbyWalls.cellSize);
+  for (let ccx = minCx; ccx <= maxCx; ccx++) {
+    for (let ccy = minCy; ccy <= maxCy; ccy++) {
+      const key = `${ccx},${ccy}`;
+      const walls = nearbyWalls.cells.get(key);
+      if (!walls) continue;
+      for (const wall of walls) {
+        const wx = wall.x + wall.w / 2;
+        const wy = wall.y + wall.h / 2;
+        const dx = px - wx, dy = py - wy;
+        const dsq = dx * dx + dy * dy;
+        if (dsq < bestCoverDistSq) {
+          bestCoverDistSq = dsq;
+          bestCoverPos = { x: wx, y: wy };
+          bestCoverQuality = 0.90;
+          bestCoverLabel = 'HIGH COVER';
+          bestCoverType = 'high';
+        }
+      }
     }
   }
 
@@ -724,8 +746,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.propagandaTimer -= dt;
   }
 
-  // === DOG NEUTRALIZED TIMER ===
+  // === COMBINED ENEMY TIMER PASS (neutralized + friendly + speech bubbles) ===
   for (const e of state.enemies) {
+    if (e.state === 'dead') continue;
+    // Neutralized timer
     if (e.neutralized && e.neutralizedTimer !== undefined) {
       e.neutralizedTimer -= dt;
       if (e.neutralizedTimer <= 0) {
@@ -734,10 +758,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addMessage(state, '🐕 Neutralized dog wandered off.', 'info');
       }
     }
-  }
-
-  // === FRIENDLY TIMER COUNTDOWN ===
-  for (const e of state.enemies) {
+    // Friendly timer
     if (e.friendly && e.friendlyTimer > 0) {
       e.friendlyTimer -= dt;
       if (e.friendlyTimer <= 0) {
@@ -746,13 +767,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         e.speechBubble = '...HUH?!';
         e.speechBubbleTimer = 3;
         addMessage(state, `⚠ ${e.type.toUpperCase()} is no longer friendly!`, 'warning');
-        spawnParticles(state, e.pos.x, e.pos.y, '#ff4444', 6);
+        spawnParticles(state, e.pos.x, e.pos.y, '#ff4444', 4);
       }
     }
-  }
-
-  // === SPEECH BUBBLE TIMER ===
-  for (const e of state.enemies) {
+    // Speech bubble timer
     if (e.speechBubbleTimer && e.speechBubbleTimer > 0) {
       e.speechBubbleTimer -= dt;
       if (e.speechBubbleTimer <= 0) {
@@ -1728,7 +1746,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // === LOW HP EFFECTS ===
     const hpRatio = enemy.hp / enemy.maxHp;
     // Blood drip from damaged enemies
-    if (hpRatio < 0.75 && enemy.type !== 'turret' && Math.random() < (hpRatio < 0.3 ? 0.08 : 0.03)) {
+    if (hpRatio < 0.75 && enemy.type !== 'turret' && Math.random() < (hpRatio < 0.3 ? 0.03 : 0.01)) {
       spawnParticles(state, enemy.pos.x + (Math.random() - 0.5) * 8, enemy.pos.y + (Math.random() - 0.5) * 8, '#991111', 1);
     }
     // Speed penalty at <75% HP

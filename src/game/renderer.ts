@@ -33,13 +33,14 @@ function isOnScreen(x: number, y: number, cx: number, cy: number, w: number, h: 
   return x > cx - margin && x < cx + w + margin && y > cy - margin && y < cy + h + margin;
 }
 
-// Simple LOS check for renderer using spatial grid
+// Simple LOS check for renderer using spatial grid — larger step for speed
 function rendererLOS(state: GameState, a: Vec2, b: Vec2): boolean {
   const grid = getRendererWallGrid(state);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.sqrt(dx * dx + dy * dy);
-  const steps = Math.ceil(d / 20); // larger step for renderer (was 15)
+  if (d > 600) return false; // skip LOS for very far enemies
+  const steps = Math.ceil(d / 32); // step size ~32px (was 20px)
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     if (collidesWithWallsGrid(grid, a.x + dx * t, a.y + dy * t, 2)) return false;
@@ -1602,14 +1603,20 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
 
   // ── LIVING ENEMIES — viewport culled ──
+  // Pre-calculate player-to-enemy distances and LOS once
+  const playerPos = state.player.pos;
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
     if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) continue;
-    // Skip enemies far off screen (allow larger margin for vision cones)
-    if (!isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 450)) continue;
+    // Skip enemies far off screen — smaller margin, skip vision cones for far enemies
+    const enemyOnScreen = isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 200);
+    if (!enemyOnScreen) continue;
 
-    // Only show detection zone if player can see the enemy (not through walls)
-    if (rendererLOS(state, state.player.pos, enemy.pos)) {
+    // Only show detection zone if close enough AND player can see the enemy
+    const edx = playerPos.x - enemy.pos.x, edy = playerPos.y - enemy.pos.y;
+    const enemyDistSq = edx * edx + edy * edy;
+    const showVisionCone = enemyDistSq < 500 * 500; // skip vision cones for enemies >500px away
+    if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
       const fieldColor = enemy.state === 'patrol' || enemy.state === 'idle'
@@ -1646,8 +1653,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       // Clip vision cone to walls (non-elevated only)
       if (!enemy.elevated) {
-        // Cast rays along the arc and clip at wall hits
-        const rayCount = 10; // reduced from 20 for performance
+        // Cast rays along the arc — reduced count and increased step for speed
+        const rayCount = 6; // reduced from 10
         const startAngle = enemy.angle - visionArc;
         const endAngle = enemy.angle + visionArc;
         const grid = getRendererWallGrid(state);
@@ -1658,8 +1665,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           const dx = Math.cos(a);
           const dy = Math.sin(a);
           let rayLen = enemy.alertRange;
-          // Step along ray to find wall hit — larger steps for speed
-          for (let s = 15; s <= enemy.alertRange; s += 15) {
+          // Step along ray — 24px steps for speed
+          for (let s = 24; s <= enemy.alertRange; s += 24) {
             if (collidesWithWallsGrid(grid, enemy.pos.x + dx * s, enemy.pos.y + dy * s, 2)) { rayLen = s; break; }
           }
           ctx.lineTo(enemy.pos.x + dx * rayLen, enemy.pos.y + dy * rayLen);
@@ -2343,8 +2350,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText(g.timer.toFixed(1), g.pos.x, g.pos.y + bob - 12);
   }
 
-  // ── PARTICLES ──
+  // ── PARTICLES — viewport culled ──
   for (const p of state.particles) {
+    if (!isOnScreen(p.pos.x, p.pos.y, cx, cy, w, h, 10)) continue;
     const alpha = p.life / p.maxLife;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = p.color;
@@ -2354,27 +2362,20 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
   ctx.globalAlpha = 1;
 
-  // ── BULLETS ──
+  // ── BULLETS — viewport culled, simplified rendering ──
   for (const b of state.bullets) {
-    // Bullet shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.beginPath();
-    ctx.ellipse(b.pos.x, b.pos.y + 4, 3, 1.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
+    if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+    // Simplified bullet rendering — skip shadow for performance
     ctx.fillStyle = b.fromPlayer ? '#ffdd44' : '#ff5544';
     ctx.beginPath();
     ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.beginPath();
-    ctx.arc(b.pos.x, b.pos.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = b.fromPlayer ? 'rgba(255,220,60,0.25)' : 'rgba(255,80,60,0.25)';
-    ctx.fill();
-    ctx.strokeStyle = b.fromPlayer ? 'rgba(255,220,60,0.2)' : 'rgba(255,80,60,0.2)';
+    // Trail line only
+    ctx.strokeStyle = b.fromPlayer ? 'rgba(255,220,60,0.3)' : 'rgba(255,80,60,0.3)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(b.pos.x, b.pos.y);
-    ctx.lineTo(b.pos.x - b.vel.x * 4, b.pos.y - b.vel.y * 4);
+    ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
     ctx.stroke();
   }
 

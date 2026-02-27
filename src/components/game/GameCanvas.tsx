@@ -916,7 +916,7 @@ export const GameCanvas: React.FC = () => {
 
       hudUpdateCounter++;
       const forceUpdate = state.gameOver || state.extracted;
-      if (forceUpdate || hudUpdateCounter % 6 === 0) {
+      if (forceUpdate || hudUpdateCounter % 10 === 0) {
         const currentCount = state.player.inventory.length;
         if (currentCount > lastInventoryCountRef.current) {
           const newItems = state.player.inventory.slice(lastInventoryCountRef.current);
