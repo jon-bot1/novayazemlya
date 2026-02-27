@@ -985,24 +985,46 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.useTNT) {
     input.useTNT = false;
     if (state.player.tntCount > 0) {
-      // Check if near airplane prop first
-      let placedOnPlane = false;
+      // Check if near airplane, fuel depot, or ammo dump prop first
+      let placedOnTarget = false;
       for (const prop of state.props) {
-        if (prop.type === 'airplane' && dist(state.player.pos, prop.pos) < 120) {
+        const d = dist(state.player.pos, prop.pos);
+        if (prop.type === 'airplane' && d < 120 && !(state as any)._tntOnPlane) {
           state.player.tntCount--;
-          const placePos = { x: prop.pos.x, y: prop.pos.y };
-          state.placedTNTs.push({ pos: placePos, timer: 5.0, maxTimer: 5.0 });
-          addMessage(state, '🧨 TNT PLACED ON AIRCRAFT! 5 seconds to detonation — GET CLEAR!', 'warning');
-          state.soundEvents.push({ pos: { ...placePos }, radius: 150, time: state.time });
+          state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
+          addMessage(state, '🧨 TNT PLACED ON AIRCRAFT! 5 seconds — GET CLEAR!', 'warning');
+          state.soundEvents.push({ pos: { ...prop.pos }, radius: 150, time: state.time });
           (state as any)._playerUsedTNT = true;
           (state as any)._tntOnPlane = true;
           addMessage(state, '✈️ Sabotage objective complete!', 'intel');
-          placedOnPlane = true;
+          placedOnTarget = true;
+          break;
+        }
+        if (prop.type === 'fuel_depot' && d < 80 && !(state as any)._fuelDestroyed) {
+          state.player.tntCount--;
+          state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
+          addMessage(state, '🧨 TNT PLACED ON FUEL DEPOT! 5 seconds — GET CLEAR!', 'warning');
+          state.soundEvents.push({ pos: { ...prop.pos }, radius: 150, time: state.time });
+          (state as any)._playerUsedTNT = true;
+          (state as any)._fuelDestroyed = true;
+          addMessage(state, '🛢️ Fuel depot sabotaged!', 'intel');
+          placedOnTarget = true;
+          break;
+        }
+        if (prop.type === 'ammo_dump' && d < 80 && !(state as any)._ammoDestroyed) {
+          state.player.tntCount--;
+          state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
+          addMessage(state, '🧨 TNT PLACED ON AMMO DUMP! 5 seconds — GET CLEAR!', 'warning');
+          state.soundEvents.push({ pos: { ...prop.pos }, radius: 200, time: state.time });
+          (state as any)._playerUsedTNT = true;
+          (state as any)._ammoDestroyed = true;
+          addMessage(state, '💥 Ammo stockpile destroyed!', 'intel');
+          placedOnTarget = true;
           break;
         }
       }
 
-      if (!placedOnPlane) {
+      if (!placedOnTarget) {
         // Find nearest wall
         let bestIdx = -1;
         let bestDist = Number.POSITIVE_INFINITY;
@@ -1358,9 +1380,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               value: 10000,
               description: 'Missile activation codes — CRITICAL INTEL',
             });
+          } else if (panel.id === 'alarm_radio') {
+            // Radio tower — disable comms
+            (state as any)._radioDisabled = true;
+            addMessage(state, '📡 COMMUNICATIONS DISABLED! Enemy reinforcements cut off!', 'intel');
+            // Reduce all enemy alert ranges by 30%
+            for (const e of state.enemies) {
+              if (e.state !== 'dead') {
+                e.alertRange = Math.round(e.alertRange * 0.7);
+              }
+            }
           }
         } else {
-          const label = panel.id === 'alarm_intel' ? 'intel' : panel.id === 'alarm_disable' ? 'alarm' : 'codebook';
+          const label = panel.id === 'alarm_intel' ? 'intel' : panel.id === 'alarm_disable' ? 'alarm' : panel.id === 'alarm_radio' ? 'radio' : 'codebook';
           addMessage(state, `💻 Hacking ${label}... ${Math.floor(panel.hackProgress * 100)}%`, 'info');
         }
       }
@@ -3226,13 +3258,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
 
-        // Grenade near airplane → sabotage
+        // Grenade near sabotage targets → destroy
         if (g.fromPlayer) {
           for (const prop of state.props) {
-            if (prop.type === 'airplane' && dist(g.pos, prop.pos) < 150 && !(state as any)._tntOnPlane) {
+            const gd = dist(g.pos, prop.pos);
+            if (prop.type === 'airplane' && gd < 150 && !(state as any)._tntOnPlane) {
               (state as any)._tntOnPlane = true;
-              addMessage(state, '✈️ Aircraft destroyed by grenade! Sabotage objective complete!', 'intel');
+              addMessage(state, '✈️ Aircraft destroyed by grenade! Sabotage complete!', 'intel');
               spawnParticles(state, prop.pos.x, prop.pos.y, '#ff8833', 15);
+            }
+            if (prop.type === 'fuel_depot' && gd < 120 && !(state as any)._fuelDestroyed) {
+              (state as any)._fuelDestroyed = true;
+              addMessage(state, '🛢️ Fuel depot destroyed by grenade!', 'intel');
+              spawnParticles(state, prop.pos.x, prop.pos.y, '#ff6622', 15);
+            }
+            if (prop.type === 'ammo_dump' && gd < 120 && !(state as any)._ammoDestroyed) {
+              (state as any)._ammoDestroyed = true;
+              addMessage(state, '💥 Ammo dump destroyed by grenade!', 'intel');
+              spawnParticles(state, prop.pos.x, prop.pos.y, '#ffaa33', 15);
             }
           }
         }

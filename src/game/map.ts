@@ -288,15 +288,12 @@ export function generateMap() {
   const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
 
   const enemies: Enemy[] = [
-    // Inside base — random zone spawns (reduced ~20%)
+    // Inside base — reduced garrison
     rz(ZONE_HANGAR_A, 'scav'),
     rz(ZONE_HANGAR_B, 'scav'),
     rz(ZONE_CORRIDOR, 'soldier'),
-    rz(ZONE_OFFICES_TOP, 'soldier'),
-    rz(ZONE_OFFICES_BOT, 'soldier'),
     rz(ZONE_OFFICES_BOT, 'soldier'),
     rz(ZONE_STORAGE_A, 'soldier'),
-    rz(ZONE_STORAGE_B, 'heavy'),
     rz(ZONE_STORAGE_B, 'heavy'),
     // Sleepers — just woke up, underwear only, scav-armed (2x, random spawn)
     ...([0, 1].map(() => {
@@ -832,6 +829,15 @@ export function generateMap() {
     // === AIRPLANE (parked outside hangar) ===
     { pos: { x: HX + HW + 160, y: HY + 200 }, w: 120, h: 80, type: 'airplane' as Prop['type'] },
 
+    // === FUEL DEPOT (west yard — cluster of fuel tanks) ===
+    { pos: { x: 520, y: 1150 }, w: 60, h: 40, type: 'fuel_depot' as Prop['type'] },
+
+    // === RADIO TOWER (north compound) ===
+    { pos: { x: 1600, y: 380 }, w: 40, h: 40, type: 'radio_tower' as Prop['type'] },
+
+    // === AMMO DUMP (east yard — stockpile) ===
+    { pos: { x: 2550, y: 1100 }, w: 50, h: 50, type: 'ammo_dump' as Prop['type'] },
+
     // === SECRET PASSAGE MARKERS (visual hints near x:2100-2250, y:1900-2050) ===
     // Unusual props to draw player attention to the area
     { pos: { x: 2120, y: 1920 }, w: 22, h: 22, type: 'barrel_stack' },
@@ -850,6 +856,8 @@ export function generateMap() {
     { id: 'alarm_disable', pos: { x: HX + 965, y: HY + 250 }, activated: false, hacked: false, hackProgress: 0, hackTime: 5 },
     // Terminal 3: Nuclear codebook — prints launch codes (required for extraction)
     { id: 'alarm_codebook', pos: { x: HX + 850, y: HY + 500 }, activated: false, hacked: false, hackProgress: 0, hackTime: 6 },
+    // Terminal 4: Radio tower — disable communications
+    { id: 'alarm_radio', pos: { x: 1600, y: 380 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
   ];
 
   // ══════════════════════════════════════

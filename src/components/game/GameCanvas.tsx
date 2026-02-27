@@ -1034,6 +1034,9 @@ export const GameCanvas: React.FC = () => {
             knifeDistanceKills: state.knifeDistanceKills,
             cachesLooted: state.cachesLooted,
             convertKill: !!(state as any)._convertKill,
+            fuelDestroyed: !!(state as any)._fuelDestroyed,
+            ammoDestroyed: !!(state as any)._ammoDestroyed,
+            radioDisabled: !!(state as any)._radioDisabled,
           }));
         }
       }
@@ -1081,6 +1084,9 @@ export const GameCanvas: React.FC = () => {
         knifeDistanceKills: state.knifeDistanceKills,
         cachesLooted: state.cachesLooted,
         convertKill: !!(state as any)._convertKill,
+        fuelDestroyed: !!(state as any)._fuelDestroyed,
+        ammoDestroyed: !!(state as any)._ammoDestroyed,
+        radioDisabled: !!(state as any)._radioDisabled,
       });
       setObjectives(completedObjectives);
       const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);

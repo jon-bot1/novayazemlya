@@ -27,6 +27,9 @@ const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'breach_and_clear', name: 'Breach & Clear HQ', icon: '🧨', description: 'Breach 2 walls with TNT and kill 5 enemies inside', reward: 500, isMain: true },
   { id: 'ghost_extract', name: 'Ghost Extraction', icon: '👻', description: 'Extract without triggering any alarm and undetected', reward: 550, isMain: true },
   { id: 'wipe_garrison', name: 'Wipe the Garrison', icon: '☠️', description: 'Eliminate at least 15 enemies before extracting', reward: 500, isMain: true },
+  { id: 'destroy_fuel', name: 'Burn the Fuel', icon: '🛢️', description: 'Destroy the fuel depot with TNT or grenades', reward: 450, isMain: true },
+  { id: 'disable_comms', name: 'Silence the Tower', icon: '📡', description: 'Hack the radio tower to disable enemy communications', reward: 400, isMain: true },
+  { id: 'destroy_ammo', name: 'Detonate Ammo Dump', icon: '💥', description: 'Destroy the ammo stockpile with explosives', reward: 450, isMain: true },
 ];
 
 const BONUS_OBJECTIVES: ObjectiveTemplate[] = [
@@ -46,6 +49,8 @@ const BONUS_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'knife_kills', name: 'Silent Blade', icon: '🗡️', description: 'Kill 3 enemies with the combat knife', reward: 250, isMain: false },
   { id: 'loot_caches', name: 'Supply Runner', icon: '📦', description: 'Loot 8 containers in a single raid', reward: 200, isMain: false },
   { id: 'convert_enemy', name: 'Hearts & Minds', icon: '📢', description: 'Convert an enemy with propaganda and let them get a kill', reward: 350, isMain: false },
+  { id: 'scorched_earth', name: 'Scorched Earth', icon: '🔥', description: 'Destroy both fuel depot and ammo dump in one raid', reward: 400, isMain: false },
+  { id: 'total_sabotage', name: 'Total Sabotage', icon: '🧨', description: 'Sabotage the aircraft AND destroy the fuel depot', reward: 350, isMain: false },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -95,6 +100,9 @@ export function checkObjectiveCompletion(
     knifeDistanceKills: number;
     cachesLooted: number;
     convertKill: boolean;
+    fuelDestroyed: boolean;
+    ammoDestroyed: boolean;
+    radioDisabled: boolean;
   }
 ): MissionObjective[] {
   return objectives.map(obj => {
@@ -123,6 +131,11 @@ export function checkObjectiveCompletion(
       case 'knife_kills': completed = stats.knifeDistanceKills >= 3; break;
       case 'loot_caches': completed = stats.cachesLooted >= 8; break;
       case 'convert_enemy': completed = stats.convertKill; break;
+      case 'destroy_fuel': completed = stats.fuelDestroyed; break;
+      case 'disable_comms': completed = stats.radioDisabled; break;
+      case 'destroy_ammo': completed = stats.ammoDestroyed; break;
+      case 'scorched_earth': completed = stats.fuelDestroyed && stats.ammoDestroyed; break;
+      case 'total_sabotage': completed = stats.tntPlacedOnPlane && stats.fuelDestroyed; break;
       // Combined main objectives
       case 'breach_and_clear': completed = stats.wallsBreached >= 2 && stats.killCount >= 5; break;
       case 'ghost_extract': completed = !stats.alarmTriggered && stats.killCount === 0; break;
