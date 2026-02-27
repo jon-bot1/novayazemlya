@@ -292,10 +292,7 @@ export interface GameState {
   distanceTravelled: number; // total pixels walked
   exfilsVisited: Set<string>; // names of exfil points player has been near
   pendingWeapon: PendingWeapon | null; // weapon awaiting player confirmation
-  tunnelA?: Vec2; // secret tunnel entrance A
-  tunnelB?: Vec2; // secret tunnel entrance B
-  tunnelTimer: number; // teleport countdown (3s)
-  tunnelDirection?: 'a_to_b' | 'b_to_a'; // which way player is going
+  tunnelTimer: number; // (unused, kept for compat)
   propagandaTarget?: string; // enemy id being persuaded
   propagandaTimer: number; // propaganda effect countdown
   dogsNeutralized: number; // dogs neutralized with food

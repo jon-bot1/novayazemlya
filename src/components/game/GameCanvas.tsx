@@ -391,7 +391,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                   <li>• 🐕 <span className="text-warning">Guard Dogs</span> — fast melee companions that follow their redneck owner</li>
                   <li>• 🦴 <span className="text-accent">Dog Food</span> — neutralize dogs without killing (buy from trader)</li>
                   <li>• 📢 <span className="text-accent">Propaganda Leaflet</span> — convince an enemy to fight for you for 60s</li>
-                  <li>• 🚇 <span className="text-accent">Secret Tunnels</span> — two hidden tunnel entrances for fast travel (3s delay)</li>
+                  
                   <li>• 💬 <span className="text-foreground">Speech Bubbles</span> — enemies react with dialogue during combat</li>
                   <li>• 🎒 <span className="text-accent">Special Slot [X]</span> — new item slot for tactical items</li>
                 </ul>

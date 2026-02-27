@@ -1265,56 +1265,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── TUNNEL ENTRANCES ──
-  if (state.tunnelA) {
-    const tPulse = 0.4 + Math.sin(state.time * 2) * 0.2;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(state.tunnelA.x, state.tunnelA.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(100, 60, 160, ${tPulse * 0.3})`;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(140, 100, 200, ${tPulse})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.font = '16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🚇', state.tunnelA.x, state.tunnelA.y + 5);
-    ctx.fillStyle = `rgba(140, 100, 200, ${tPulse + 0.3})`;
-    ctx.font = 'bold 8px sans-serif';
-    ctx.fillText('TUNNEL', state.tunnelA.x, state.tunnelA.y - 18);
-    ctx.restore();
-  }
-  if (state.tunnelB) {
-    const tPulse = 0.4 + Math.sin(state.time * 2 + 1) * 0.2;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(state.tunnelB.x, state.tunnelB.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(100, 60, 160, ${tPulse * 0.3})`;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(140, 100, 200, ${tPulse})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.font = '16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🚇', state.tunnelB.x, state.tunnelB.y + 5);
-    ctx.fillStyle = `rgba(140, 100, 200, ${tPulse + 0.3})`;
-    ctx.font = 'bold 8px sans-serif';
-    ctx.fillText('TUNNEL', state.tunnelB.x, state.tunnelB.y - 18);
-    ctx.restore();
-  }
-  // Tunnel timer indicator near player
-  if (state.tunnelTimer > 0) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(140, 100, 200, 0.9)';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`🚇 ${state.tunnelTimer.toFixed(1)}s`, state.player.pos.x, state.player.pos.y - R - 40);
-    ctx.restore();
-  }
+
+
 
   // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
   for (const ep of state.extractionPoints) {
