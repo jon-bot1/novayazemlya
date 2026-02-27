@@ -61,6 +61,17 @@ function addMessage(state: GameState, text: string, type: GameMessage['type']) {
 
 const BASE_INVENTORY_SLOTS = 12;
 
+function consumeTNT(state: GameState): boolean {
+  const idx = state.player.specialSlot.findIndex(i => i.name === 'TNT Charge');
+  if (idx < 0) return false;
+  state.player.specialSlot.splice(idx, 1);
+  return true;
+}
+
+function getTNTCount(state: GameState): number {
+  return state.player.specialSlot.filter(i => i.name === 'TNT Charge').length;
+}
+
 function countBackpackSlotsUsed(state: GameState): number {
   return state.player.inventory.filter((item) => {
     const isEquippedWeapon = item === state.player.primaryWeapon || item === state.player.sidearm;
@@ -70,8 +81,10 @@ function countBackpackSlotsUsed(state: GameState): number {
 }
 
 function canPickupItem(state: GameState, item: Item): boolean {
-  // Keys, quest items, access cards, and ammo always fit
-  if (item.category === 'key' || item.category === 'ammo' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
+  // Keys, quest items, access cards always fit (ammo & TNT bypass inventory entirely)
+  if (item.category === 'key' || item.id === 'extraction_code' || item.id === 'boss_usb' || item.id === 'nuclear_codebook') return true;
+  if (item.category === 'ammo') return true; // goes to vest, not backpack
+  if (item.name === 'TNT Charge') return true; // goes to special slot
   // Throwables do not consume backpack slots
   if (item.category === 'grenade' || item.category === 'flashbang' || item.category === 'gas_grenade') {
     // Max 5 total grenades (frag + gas, not counting flashbangs)
@@ -90,6 +103,22 @@ function tryPickupItem(state: GameState, item: Item): boolean {
   if (item.id === 'gate_keycard') {
     state.player.keycardCount++;
     addMessage(state, `💳 Access Card acquired! (${state.player.keycardCount} held)`, 'intel');
+    return true;
+  }
+  // Ammo goes to vest reserves, not backpack
+  if (item.category === 'ammo' && item.ammoType && item.ammoCount) {
+    state.player.ammoReserves[item.ammoType] = (state.player.ammoReserves[item.ammoType] || 0) + item.ammoCount;
+    // Also add to currentAmmo if matching current weapon
+    if (item.ammoType === state.player.ammoType) {
+      state.player.currentAmmo += item.ammoCount;
+    }
+    addMessage(state, `🎯 +${item.ammoCount} ${item.ammoType} (vest)`, 'loot');
+    return true;
+  }
+  // TNT goes to special slot
+  if (item.name === 'TNT Charge') {
+    state.player.specialSlot.push(item);
+    addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
     return true;
   }
   if (!canPickupItem(state, item)) {
@@ -676,8 +705,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.useSpecial) {
     input.useSpecial = false;
     const specialItems = state.player.specialSlot;
-    if (specialItems.length > 0) {
-      const item = specialItems[0];
+    // Find first non-TNT special item for X key usage
+    const usableIdx = specialItems.findIndex(i => i.name !== 'TNT Charge');
+    if (usableIdx >= 0) {
+      const item = specialItems[usableIdx];
       if (item.name === 'Propaganda Leaflet') {
         // Find nearest non-friendly, non-boss enemy within 100px
         let closest: Enemy | null = null;
@@ -691,7 +722,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           closest.friendly = true;
           closest.friendlyTimer = 60;
           closest.state = 'chase';
-          specialItems.splice(0, 1);
+          specialItems.splice(usableIdx, 1);
           addMessage(state, `📢 ${closest.type.toUpperCase()} CONVINCED — fights for you for 60s!`, 'info');
           spawnParticles(state, closest.pos.x, closest.pos.y, '#44ff44', 12);
         } else {
@@ -711,7 +742,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           closest.neutralizedTimer = 20;
           closest.state = 'idle';
           closest.speed = 0.3;
-          specialItems.splice(0, 1);
+          specialItems.splice(usableIdx, 1);
           state.dogsNeutralized++;
           addMessage(state, '🦴 Dog neutralized — it loses interest!', 'info');
           spawnParticles(state, closest.pos.x, closest.pos.y, '#ffcc66', 8);
@@ -778,7 +809,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
   if (!(state as any)._tntHintShown) {
-    if (state.player.tntCount > 0 && state.time > 60 && !(state as any)._playerUsedTNT) {
+    if (getTNTCount(state) > 0 && state.time > 60 && !(state as any)._playerUsedTNT) {
       (state as any)._tntHintShown = true;
       addMessage(state, '💡 TIP: Press T near a wall to place TNT and breach it!', 'info');
     }
@@ -1003,13 +1034,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // TNT wall breach — place charge with 5s fuse (also works on airplane)
   if (input.useTNT) {
     input.useTNT = false;
-    if (state.player.tntCount > 0) {
+    const tntIdx = state.player.specialSlot.findIndex(i => i.name === 'TNT Charge');
+    if (tntIdx >= 0) {
       // Check if near airplane, fuel depot, or ammo dump prop first
       let placedOnTarget = false;
       for (const prop of state.props) {
         const d = dist(state.player.pos, prop.pos);
         if (prop.type === 'airplane' && d < 120 && !(state as any)._tntOnPlane) {
-          state.player.tntCount--;
+          consumeTNT(state);
           state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
           addMessage(state, '🧨 TNT PLACED ON AIRCRAFT! 5 seconds — GET CLEAR!', 'warning');
           state.soundEvents.push({ pos: { ...prop.pos }, radius: 150, time: state.time });
@@ -1020,7 +1052,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         if (prop.type === 'fuel_depot' && d < 80 && !(state as any)._fuelDestroyed) {
-          state.player.tntCount--;
+          consumeTNT(state);
           state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
           addMessage(state, '🧨 TNT PLACED ON FUEL DEPOT! 5 seconds — GET CLEAR!', 'warning');
           state.soundEvents.push({ pos: { ...prop.pos }, radius: 150, time: state.time });
@@ -1031,7 +1063,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         if (prop.type === 'ammo_dump' && d < 80 && !(state as any)._ammoDestroyed) {
-          state.player.tntCount--;
+          consumeTNT(state);
           state.placedTNTs.push({ pos: { ...prop.pos }, timer: 5.0, maxTimer: 5.0 });
           addMessage(state, '🧨 TNT PLACED ON AMMO DUMP! 5 seconds — GET CLEAR!', 'warning');
           state.soundEvents.push({ pos: { ...prop.pos }, radius: 200, time: state.time });
@@ -1062,7 +1094,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
 
         if (bestIdx >= 0 && bestDist < 70) {
-          state.player.tntCount--;
+          consumeTNT(state);
           state.placedTNTs.push({ pos: { ...impact }, timer: 5.0, maxTimer: 5.0 });
           addMessage(state, '🧨 TNT PLACED! 5 seconds to detonation — GET CLEAR!', 'warning');
           state.soundEvents.push({ pos: { ...impact }, radius: 150, time: state.time });
@@ -1197,9 +1229,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
-            state.player.currentAmmo += item.ammoCount;
-          }
+          // Ammo & TNT handled by tryPickupItem — no extra logic needed here
           // Auto-equip backpack
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
@@ -1209,11 +1239,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
-          }
-          // Auto-pickup TNT
-          if (item.name === 'TNT Charge') {
-            state.player.tntCount++;
-            addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
           // Weapon pickup with slot system & confirmation
           if (item.category === 'weapon' && item.damage) {
@@ -1293,9 +1318,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          if (item.category === 'ammo' && item.ammoType === state.player.ammoType && item.ammoCount) {
-            state.player.currentAmmo += item.ammoCount;
-          }
+          // Ammo & TNT handled by tryPickupItem
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
             addMessage(state, '🎒 Backpack equipped!', 'intel');
@@ -1303,11 +1326,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
-          }
-          // Auto-pickup TNT from enemy bodies
-          if (item.name === 'TNT Charge') {
-            state.player.tntCount++;
-            addMessage(state, '🧨 TNT acquired! Press T near any wall to breach!', 'intel');
           }
           if (item.category === 'weapon' && item.damage) {
             const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
