@@ -309,7 +309,7 @@ export const HUD: React.FC<HUDProps> = ({
               [3] {player.primaryWeapon?.name || '—'}
             </div>
           </div>
-          {/* Grenades, Flashbangs & TNT — always visible */}
+          {/* Throwables & Equipment */}
           <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
             <span className={`text-sm font-mono ${grenadeCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               💣 {grenadeCount}
@@ -325,17 +325,32 @@ export const HUD: React.FC<HUDProps> = ({
             <span className={`text-sm font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               🧨 {tntCount}
             </span>
-            <span className="text-[9px] text-muted-foreground font-mono">[T wall]</span>
-            {player.specialSlot && player.specialSlot.length > 0 && (
-              <>
-                <span className="text-muted-foreground/30">|</span>
-                <span className="text-sm font-mono text-accent">
-                  {player.specialSlot[0].icon} {player.specialSlot.length}
-                </span>
-                <span className="text-[9px] text-muted-foreground font-mono">[X]</span>
-              </>
-            )}
+            <span className="text-[9px] text-muted-foreground font-mono">[T]</span>
           </div>
+          {/* Special Slot — large & prominent */}
+          {player.specialSlot && player.specialSlot.length > 0 ? (
+            <div className="bg-card/90 backdrop-blur-sm border-2 border-loot/50 rounded-md px-4 py-2 min-w-[200px] shadow-md">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider">Special Item</span>
+                  <span className="text-foreground font-display text-base leading-tight mt-0.5">
+                    {player.specialSlot[0].icon} {player.specialSlot[0].name}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xl font-display text-loot">{player.specialSlot.length}</span>
+                  <span className="text-[10px] font-mono text-accent font-bold px-1.5 py-0.5 bg-accent/15 border border-accent/30 rounded">[X]</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-card/50 border border-dashed border-border/30 rounded-md px-4 py-2 min-w-[200px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-mono text-muted-foreground/40 uppercase tracking-wider">Special Item</span>
+                <span className="text-[10px] font-mono text-muted-foreground/30">[X] empty</span>
+              </div>
+            </div>
+          )}
           {/* Kill count & docs */}
           <div className="flex items-center gap-3">
             <span className="text-sm text-foreground/80 font-mono">☠ {killCount}</span>
