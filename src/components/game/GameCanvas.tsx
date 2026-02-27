@@ -714,6 +714,22 @@ export const GameCanvas: React.FC = () => {
       inputRef.current.moveY = my;
     };
 
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const dir = e.deltaY > 0 ? 1 : -1;
+      if (e.ctrlKey) {
+        // Ctrl+scroll = cycle grenades
+        inputRef.current.cycleThrowable = true;
+      } else {
+        // Scroll = cycle weapons
+        const st = stateRef.current;
+        const slots: Array<1 | 2 | 3> = [1, 2, 3];
+        const cur = slots.indexOf(st.player.activeSlot);
+        const next = slots[(cur + dir + slots.length) % slots.length];
+        inputRef.current.switchWeapon = next;
+      }
+    };
+
     const interval = setInterval(updateKeys, 16);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -721,6 +737,7 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('contextmenu', onContextMenu);
+    window.addEventListener('wheel', onWheel, { passive: false });
 
     return () => {
       clearInterval(interval);
@@ -730,6 +747,7 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('contextmenu', onContextMenu);
+      window.removeEventListener('wheel', onWheel);
     };
   }, [showInventory, showIntel, readingDoc]);
 
