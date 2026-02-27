@@ -326,6 +326,15 @@ export const HUD: React.FC<HUDProps> = ({
               🧨 {tntCount}
             </span>
             <span className="text-[9px] text-muted-foreground font-mono">[T wall]</span>
+            {player.specialSlot && player.specialSlot.length > 0 && (
+              <>
+                <span className="text-muted-foreground/30">|</span>
+                <span className="text-sm font-mono text-accent">
+                  {player.specialSlot[0].icon} {player.specialSlot.length}
+                </span>
+                <span className="text-[9px] text-muted-foreground font-mono">[X]</span>
+              </>
+            )}
           </div>
           {/* Kill count & docs */}
           <div className="flex items-center gap-3">
