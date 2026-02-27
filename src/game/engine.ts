@@ -1822,7 +1822,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
-          
+        }
+        // Phase transition speech bubbles
+        if (enemy.bossPhase === 1) {
+          enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!';
+          enemy.speechBubbleTimer = 3;
+        } else if (enemy.bossPhase === 2) {
+          enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!';
+          enemy.speechBubbleTimer = 3;
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
@@ -1837,12 +1844,50 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
 
+      // Boss combat taunts — random speech bubbles
+      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.002) {
+        const phase = enemy.bossPhase || 0;
+        const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
+        const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
+        const taunts2 = ['НЕЕЕТ!', 'ТЫ ОТВЕТИШЬ ЗА ЭТО!', 'Я ЕЩЁ СТОЮ!', 'НЕ СДАМСЯ...'];
+        const pool = phase === 2 ? taunts2 : phase === 1 ? taunts1 : taunts0;
+        enemy.speechBubble = pool[Math.floor(Math.random() * pool.length)];
+        enemy.speechBubbleTimer = 2.5;
+      }
+
+      // Boss orders bodyguards — tells them to attack/flank
+      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.0015) {
+        const bodyguards = state.enemies.filter(e => e.state !== 'dead' && (e as any)._isBodyguard);
+        if (bodyguards.length > 0) {
+          const orders = ['ФЛАНГ СЛЕВА!', 'ОБХОДИ СПРАВА!', 'ПРИКРОЙ МЕНЯ!', 'УБЕЙ ЕГО!', 'ВПЕРЁД!'];
+          enemy.speechBubble = orders[Math.floor(Math.random() * orders.length)];
+          enemy.speechBubbleTimer = 2.5;
+          (enemy as any)._orderingArm = 1.5; // arm gesture timer
+          // Bodyguards react
+          for (const bg of bodyguards) {
+            bg.state = 'chase';
+            bg.investigateTarget = { ...state.player.pos };
+            if (!bg.speechBubble) {
+              const replies = ['ДА, КОМАНДИР!', 'ЕСТЬ!', 'ВЫПОЛНЯЮ!', 'ПОНЯЛ!'];
+              bg.speechBubble = replies[Math.floor(Math.random() * replies.length)];
+              bg.speechBubbleTimer = 2;
+            }
+          }
+        }
+      }
+
       // Boss charge attack
       if (enemy.bossChargeTimer !== undefined) {
         enemy.bossChargeTimer = Math.max(0, (enemy.bossChargeTimer || 0) - dt);
       }
       if (enemy.bossSpawnTimer !== undefined) {
         enemy.bossSpawnTimer = Math.max(0, (enemy.bossSpawnTimer || 0) - dt);
+      }
+
+      // Decrement ordering arm timer
+      if ((enemy as any)._orderingArm > 0) {
+        (enemy as any)._orderingArm -= dt;
+        if ((enemy as any)._orderingArm <= 0) delete (enemy as any)._orderingArm;
       }
     }
 
@@ -2161,9 +2206,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         delete (enemy as any)._seekingCover;
         delete (enemy as any)._healCoverTarget;
         if (enemy.type === 'boss') {
-          (enemy as any)._healingTimer = 2.5;
+          (enemy as any)._healingTimer = 5.0; // slow stim — 5 seconds
           (enemy as any)._bossHealUsed = true;
-          addMessage(state, '💉 OSIPOVITJ IS INJECTING HIMSELF!', 'warning');
+          (enemy as any)._bossHealTotal = 50; // total HP to restore
+          (enemy as any)._bossHealGiven = 0;  // HP given so far
+          enemy.speechBubble = 'СТИМУЛЯТОР...';
+          enemy.speechBubbleTimer = 3;
+          addMessage(state, '💉 OSIPOVITJ IS INJECTING A STIM! (+50HP over 5s)', 'warning');
         } else {
           (enemy as any)._healingTimer = 3.0;
           (enemy as any)._healDone = true;
@@ -2182,6 +2231,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (enemy as any)._healingTimer -= dt;
       // Force idle while healing
       enemy.state = 'idle';
+      // Boss: gradual heal over time
+      if (enemy.type === 'boss' && (enemy as any)._bossHealTotal) {
+        const totalHeal = (enemy as any)._bossHealTotal as number;
+        const healPerSec = totalHeal / 5.0; // 50HP over 5s = 10HP/s
+        const tickHeal = healPerSec * dt;
+        enemy.hp = Math.min(enemy.maxHp, enemy.hp + tickHeal);
+        (enemy as any)._bossHealGiven = ((enemy as any)._bossHealGiven || 0) + tickHeal;
+      }
       // Animation: spawn green particles while healing
       if (Math.random() < 0.4) {
         spawnParticles(state, enemy.pos.x + (Math.random() - 0.5) * 8, enemy.pos.y + (Math.random() - 0.5) * 8, '#44ff66', 1);
@@ -2190,8 +2247,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         delete (enemy as any)._healingTimer;
         delete (enemy as any)._seekingCover;
         if (enemy.type === 'boss') {
-          enemy.hp = Math.min(enemy.maxHp, enemy.hp + 35);
-          addMessage(state, '💉 Osipovitj healed +35HP!', 'damage');
+          // Final heal burst — give remaining HP
+          const remaining = ((enemy as any)._bossHealTotal || 50) - ((enemy as any)._bossHealGiven || 0);
+          if (remaining > 0) {
+            enemy.hp = Math.min(enemy.maxHp, enemy.hp + remaining);
+          }
+          delete (enemy as any)._bossHealTotal;
+          delete (enemy as any)._bossHealGiven;
+          enemy.speechBubble = 'НАМНОГО ЛУЧШЕ!';
+          enemy.speechBubbleTimer = 2;
+          addMessage(state, '💉 Osipovitj healed +50HP!', 'damage');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 8);
         } else {
           const healAmt = Math.min(25, enemy.maxHp - enemy.hp);

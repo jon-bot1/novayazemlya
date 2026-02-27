@@ -1832,6 +1832,37 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.restore();
 
+      // Boss ordering arm — extended pointing arm when giving orders
+      if ((enemy as any)._orderingArm > 0) {
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle);
+        const armWave = Math.sin(state.time * 12) * 0.15;
+        // Extended right arm pointing forward
+        ctx.strokeStyle = bodyColor;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.3, -bossSize * 0.2);
+        ctx.lineTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
+        ctx.stroke();
+        // Fist
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(bossSize * 1.2, -bossSize * 0.5 + armWave * 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+        // Pointing indicator
+        ctx.strokeStyle = 'rgba(255, 200, 50, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
+        ctx.lineTo(bossSize * 2.5, -bossSize * 0.8);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
       // Boss name plate
       ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
       ctx.font = 'bold 10px sans-serif';
