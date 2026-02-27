@@ -300,6 +300,22 @@ export function generateMap() {
     rz(ZONE_STORAGE_A, 'soldier'),
     rz(ZONE_STORAGE_B, 'heavy'),
     rz(ZONE_STORAGE_B, 'heavy'),
+    // Sleeper — just woke up, underwear only, scav-armed
+    (() => {
+      const sleepZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP];
+      const sz = sleepZones[Math.floor(Math.random() * sleepZones.length)];
+      const sp = randIn(sz.x, sz.y, sz.w, sz.h);
+      const sleeper = makeEnemy(sp.x, sp.y, 'scav');
+      (sleeper as any)._isSleeper = true;
+      sleeper.state = 'idle';
+      sleeper.hp = 20;
+      sleeper.maxHp = 20;
+      sleeper.speed = 0.54; // groggy
+      sleeper.alertRange = 60; // half asleep
+      sleeper.speechBubble = '💤';
+      sleeper.speechBubbleTimer = 999;
+      return sleeper;
+    })(),
     // Turret inside hangar
     makeEnemy(HX + 720, HY + 430, 'turret', Math.PI * 0.5),
     // Boss — Commandant Osipovitj — random spawn inside base

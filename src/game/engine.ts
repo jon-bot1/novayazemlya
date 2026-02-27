@@ -1970,7 +1970,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
-        // Silent alert — no voice shout
+
+        // Sleeper wake-up reaction
+        if ((enemy as any)._isSleeper && prevState === 'idle') {
+          enemy.speechBubble = 'ЧТО?! КТО ТАМ?!';
+          enemy.speechBubbleTimer = 3;
+          enemy.speed = 0.81; // adrenaline kicks in
+          enemy.alertRange = 120; // fully awake now
+          (enemy as any)._isSleeper = false; // no longer sleeping
+          addMessage(state, '😱 Sleeper wakes up in panic!', 'warning');
+        }
 
         // Elevated wall guards trigger base-wide alarm via radio
         if (enemy.elevated && !state.alarmActive) {
@@ -2636,6 +2645,58 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           break;
         }
         // Chase toward player if LOS, otherwise toward investigateTarget or last known pos
+        // Some enemies may take cover instead of rushing (30% chance per chase start)
+        if (!(enemy as any)._coverDecided) {
+          (enemy as any)._coverDecided = true;
+          // Soldiers and heavies may seek cover instead of rushing
+          if ((enemy.type === 'soldier' || enemy.type === 'heavy') && Math.random() < 0.3) {
+            (enemy as any)._seekCover = true;
+            (enemy as any)._coverTimer = 30; // max 30s in cover
+          }
+        }
+
+        // Cover-seeking behavior: find nearby prop/wall and hold position
+        if ((enemy as any)._seekCover && (enemy as any)._coverTimer > 0) {
+          (enemy as any)._coverTimer -= dt;
+          // Find a cover position between enemy and player if not found yet
+          if (!(enemy as any)._coverPos) {
+            let bestCoverSq = Infinity;
+            let coverFound: Vec2 | null = null;
+            for (const prop of state.props) {
+              if (!prop.blocksPlayer) continue;
+              const pdx = prop.pos.x - enemy.pos.x, pdy = prop.pos.y - enemy.pos.y;
+              const dsq = pdx * pdx + pdy * pdy;
+              if (dsq < 150 * 150 && dsq < bestCoverSq) {
+                bestCoverSq = dsq;
+                coverFound = { x: prop.pos.x, y: prop.pos.y };
+              }
+            }
+            (enemy as any)._coverPos = coverFound || { x: enemy.pos.x, y: enemy.pos.y };
+          }
+          const cp = (enemy as any)._coverPos;
+          const dToCover = dist(enemy.pos, cp);
+          if (dToCover > 15) {
+            // Move toward cover
+            const dir = normalize({ x: cp.x - enemy.pos.x, y: cp.y - enemy.pos.y });
+            enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+            enemy.angle = Math.atan2(dir.y, dir.x);
+          } else {
+            // In cover — face player and shoot
+            enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+            // Fire from cover
+            if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
+              enemy.state = 'attack';
+            }
+          }
+          // After 30s, break cover and rush
+          if ((enemy as any)._coverTimer <= 0) {
+            (enemy as any)._seekCover = false;
+            (enemy as any)._coverPos = null;
+            (enemy as any)._coverDecided = false; // can re-roll next time
+          }
+          break;
+        }
+
         const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
         const dir = normalize({ x: chaseTarget.x - enemy.pos.x, y: chaseTarget.y - enemy.pos.y });
         // Gradual turning while chasing
