@@ -27,15 +27,15 @@ const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall =
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
   const stats: Record<string, any> = {
-    scav: { hp: 32, speed: 0.9, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
-    soldier: { hp: 56, speed: 1.125, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
-    heavy: { hp: 120, speed: 0.6, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
+    scav: { hp: 32, speed: 0.81, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
+    soldier: { hp: 56, speed: 1.01, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
+    heavy: { hp: 120, speed: 0.54, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
     turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
-    boss: { hp: 440, speed: 1.35, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
-    sniper: { hp: 70, speed: 0.45, damage: 68, alertRange: 400, shootRange: 350, fireRate: 5000 },
-    shocker: { hp: 56, speed: 1.35, damage: 35, alertRange: 150, shootRange: 45, fireRate: 600 },
-    redneck: { hp: 65, speed: 0.8, damage: 15, alertRange: 140, shootRange: 80, fireRate: 900 },
-    dog: { hp: 25, speed: 2.2, damage: 20, alertRange: 180, shootRange: 30, fireRate: 800 },
+    boss: { hp: 440, speed: 1.22, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
+    sniper: { hp: 70, speed: 0.41, damage: 68, alertRange: 400, shootRange: 350, fireRate: 5000 },
+    shocker: { hp: 56, speed: 1.22, damage: 35, alertRange: 150, shootRange: 45, fireRate: 600 },
+    redneck: { hp: 65, speed: 0.72, damage: 15, alertRange: 140, shootRange: 80, fireRate: 900 },
+    dog: { hp: 25, speed: 1.98, damage: 20, alertRange: 180, shootRange: 30, fireRate: 800 },
   };
   const s = stats[type] || stats.scav;
   const enemy: Enemy = {
@@ -918,7 +918,7 @@ export function createInitialPlayer() {
     pos: { x: 1510, y: MAP_H - 150 },
     hp: 100,
     maxHp: 100,
-    speed: 1.875,
+    speed: 1.69,
     angle: -Math.PI / 2,
     inventory: [weapon, knife, createAmmo('9x18', 24), createGrenade(), createGrenade()],
     equippedWeapon: weapon,

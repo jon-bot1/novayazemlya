@@ -34,6 +34,17 @@ const BONUS_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'speedrun', name: 'Speedrunner', icon: '⏱', description: 'Extract within 2 minutes', reward: 400, isMain: false },
   { id: 'loot_bodies', name: 'Body Checker', icon: '🔍', description: 'Loot 5 enemy bodies', reward: 150, isMain: false },
   { id: 'hack_alarm', name: 'Hackerman', icon: '🔓', description: 'Hack an alarm panel', reward: 200, isMain: false },
+  // New lore-driven objectives
+  { id: 'mosin_kills', name: 'Old Faithful', icon: '🔫', description: 'Kill 3 enemies with the Mosin-Nagant — the partizan way', reward: 300, isMain: false },
+  { id: 'no_kills', name: 'Pacifist Route', icon: '🕊️', description: 'Extract without killing anyone', reward: 500, isMain: false },
+  { id: 'breach_walls', name: 'Demolitions Expert', icon: '🧨', description: 'Breach 2 walls with TNT', reward: 250, isMain: false },
+  { id: 'grenade_kills', name: 'Fragmentation', icon: '💣', description: 'Kill 3 enemies with grenades', reward: 250, isMain: false },
+  { id: 'collect_all_docs', name: 'Archivist', icon: '📚', description: 'Collect every document on the map', reward: 400, isMain: false },
+  { id: 'neutralize_dogs', name: 'Dog Whisperer', icon: '🦴', description: 'Neutralize 2 dogs with dog food instead of killing them', reward: 300, isMain: false },
+  { id: 'long_shots', name: 'Distant Thunder', icon: '⚡', description: 'Get 2 kills at extreme range (>250px)', reward: 350, isMain: false },
+  { id: 'knife_kills', name: 'Silent Blade', icon: '🗡️', description: 'Kill 3 enemies with the combat knife at close range', reward: 350, isMain: false },
+  { id: 'loot_caches', name: 'Supply Runner', icon: '📦', description: 'Loot 8 containers in a single raid', reward: 200, isMain: false },
+  { id: 'convert_enemy', name: 'Hearts & Minds', icon: '📢', description: 'Convert an enemy with propaganda and let them get a kill', reward: 400, isMain: false },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -75,6 +86,14 @@ export function checkObjectiveCompletion(
     tntPlacedOnPlane: boolean;
     foundSecret: boolean;
     alarmsHacked: number;
+    mosinKills: number;
+    wallsBreached: number;
+    grenadeKills: number;
+    dogsNeutralized: number;
+    longShots: number;
+    knifeDistanceKills: number;
+    cachesLooted: number;
+    convertKill: boolean;
   }
 ): MissionObjective[] {
   return objectives.map(obj => {
@@ -93,6 +112,17 @@ export function checkObjectiveCompletion(
       case 'plant_bomb': completed = stats.tntPlacedOnPlane; break;
       case 'find_secret': completed = stats.foundSecret; break;
       case 'hack_alarm': completed = stats.alarmsHacked > 0; break;
+      // New objectives
+      case 'mosin_kills': completed = stats.mosinKills >= 3; break;
+      case 'no_kills': completed = stats.killCount === 0; break;
+      case 'breach_walls': completed = stats.wallsBreached >= 2; break;
+      case 'grenade_kills': completed = stats.grenadeKills >= 3; break;
+      case 'collect_all_docs': completed = stats.documentsCollected >= 5; break;
+      case 'neutralize_dogs': completed = stats.dogsNeutralized >= 2; break;
+      case 'long_shots': completed = stats.longShots >= 2; break;
+      case 'knife_kills': completed = stats.knifeDistanceKills >= 3; break;
+      case 'loot_caches': completed = stats.cachesLooted >= 8; break;
+      case 'convert_enemy': completed = stats.convertKill; break;
     }
     return { ...obj, completed };
   });
