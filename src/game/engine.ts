@@ -2144,9 +2144,35 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // State transitions with voice shouts + tactical role assignment
     const prevState = enemy.state;
+
+    // === REACTION DELAY — random 0-1s freeze on first state change ===
+    if ((enemy as any)._reactionDelay > 0) {
+      (enemy as any)._reactionDelay -= dt;
+      if ((enemy as any)._reactionDelay <= 0) {
+        // Apply pending state if set by radio alert
+        if ((enemy as any)._pendingState) {
+          enemy.state = (enemy as any)._pendingState;
+          delete (enemy as any)._pendingState;
+          setSpeech(enemy, pickLine(ALERT_LINES, enemy.type), 2.5);
+        }
+      }
+      continue; // frozen during reaction delay
+    }
+
     if (canSeePlayer) {
       // Assign tactical roles to engaged enemies
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
+        // Add random reaction delay (0-1s) for non-boss, non-turret enemies
+        if (!(enemy as any)._reactionDelayDone && enemy.type !== 'boss' && enemy.type !== 'turret') {
+          const delay = Math.random() * 1.0;
+          if (delay > 0.05) {
+            (enemy as any)._reactionDelay = delay;
+            (enemy as any)._reactionDelayDone = true;
+            continue;
+          }
+        }
+        (enemy as any)._reactionDelayDone = true;
+
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
 
@@ -2215,7 +2241,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = dist(ally.pos, enemy.pos) < 500;
           if (sameGroup || closeEnough) {
-            ally.state = 'chase';
+            // Add reaction delay for radio-alerted allies
+            if (ally.type !== 'boss' && ally.type !== 'turret') {
+              (ally as any)._reactionDelay = 0.3 + Math.random() * 0.7;
+              (ally as any)._reactionDelayDone = true;
+              (ally as any)._pendingState = 'chase';
+              ally.investigateTarget = { ...state.player.pos };
+            } else {
+              ally.state = 'chase';
+              ally.investigateTarget = { ...state.player.pos };
+            }
             assignTacticalRole(state, ally);
             ally.radioAlert = 2;
           }
@@ -2235,8 +2270,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
-              ally.state = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
+              if (ally.type !== 'boss' && ally.type !== 'turret') {
+                (ally as any)._reactionDelay = 0.2 + Math.random() * 0.8;
+                (ally as any)._reactionDelayDone = true;
+                (ally as any)._pendingState = 'chase';
+                ally.investigateTarget = { ...state.player.pos };
+              } else {
+                ally.state = 'chase';
+                ally.investigateTarget = { ...state.player.pos };
+              }
               assignTacticalRole(state, ally);
               ally.radioAlert = 1.5;
             } else if (ally.state === 'chase' || ally.state === 'flank') {
