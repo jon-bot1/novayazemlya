@@ -1,5 +1,5 @@
-import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable, createTNT } from './items';
+import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone, Item } from './types';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable, createTNT, createDogFood } from './items';
 
 // Full outdoor military base: 3200x2400
 // The hangar building sits at offset HX, HY within the larger map
@@ -26,7 +26,7 @@ const FENCE = '#8a8a7a';
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
-  const stats = {
+  const stats: Record<string, any> = {
     scav: { hp: 32, speed: 0.9, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
     soldier: { hp: 56, speed: 1.125, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
     heavy: { hp: 120, speed: 0.6, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
@@ -34,12 +34,15 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss: { hp: 440, speed: 1.35, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
     sniper: { hp: 70, speed: 0.45, damage: 68, alertRange: 400, shootRange: 350, fireRate: 5000 },
     shocker: { hp: 56, speed: 1.35, damage: 35, alertRange: 150, shootRange: 45, fireRate: 600 },
-  }[type];
+    redneck: { hp: 65, speed: 0.8, damage: 15, alertRange: 140, shootRange: 80, fireRate: 900 },
+    dog: { hp: 25, speed: 2.2, damage: 20, alertRange: 180, shootRange: 30, fireRate: 800 },
+  };
+  const s = stats[type] || stats.scav;
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
-    ...stats,
-    maxHp: stats.hp,
+    ...s,
+    maxHp: s.hp,
     state: 'patrol',
     patrolTarget: { x: x + (Math.random() - 0.5) * 150, y: y + (Math.random() - 0.5) * 150 },
     lastShot: 0,
@@ -64,6 +67,9 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     enemy.bossPhase = 0;
     enemy.bossChargeTimer = 0;
     enemy.bossSpawnTimer = 0;
+  }
+  if (type === 'redneck') {
+    enemy.loot = [WEAPON_TEMPLATES.toz(), createDogFood()];
   }
   return enemy;
 };
@@ -352,6 +358,24 @@ export function generateMap() {
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
     ...(Math.random() < 0.5 ? [rz(pick(allInsideZones), 'shocker')] : []),
+
+    // === REDNECKS WITH DOGS — spawn outside, shotgun + companion dog ===
+    ...(() => {
+      const redneckZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_NE];
+      const count = 2 + Math.floor(Math.random() * 2); // 2-3
+      const result: Enemy[] = [];
+      for (let i = 0; i < count; i++) {
+        const zone = redneckZones[Math.floor(Math.random() * redneckZones.length)];
+        const redneck = rz(zone, 'redneck');
+        result.push(redneck);
+        // Companion dog
+        const dog = makeEnemy(redneck.pos.x + (Math.random() - 0.5) * 40, redneck.pos.y + (Math.random() - 0.5) * 40, 'dog');
+        dog.ownerId = redneck.id;
+        dog.radioGroup = redneck.radioGroup;
+        result.push(dog);
+      }
+      return result;
+    })(),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)
@@ -878,7 +902,13 @@ export function generateMap() {
     { x: 1540, y: 410, w: 40, h: 12, direction: 'south' },
   ];
 
-  return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H };
+  // ══════════════════════════════════════
+  // SECRET TUNNEL — random positions
+  // ══════════════════════════════════════
+  const tunnelA = { x: 300 + Math.floor(Math.random() * 600), y: 1900 + Math.floor(Math.random() * 300) };
+  const tunnelB = { x: 2400 + Math.floor(Math.random() * 400), y: 300 + Math.floor(Math.random() * 400) };
+
+  return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H, tunnelA, tunnelB };
 }
 
 export function createInitialPlayer() {
@@ -910,5 +940,6 @@ export function createInitialPlayer() {
     peeking: false,
     lastGrenadeTime: 0,
     tntCount: 0,
+    specialSlot: [] as Item[],
   };
 }
