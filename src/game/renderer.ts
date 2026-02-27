@@ -1170,6 +1170,91 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.restore();
       break;
     }
+    case 'fuel_depot': {
+      // Fuel storage tanks — cylindrical top-down
+      ctx.save();
+      ctx.translate(x, y);
+      // Tank 1
+      ctx.fillStyle = '#6a4a3a';
+      ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Tank 2
+      ctx.fillStyle = '#7a5a4a';
+      ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.stroke();
+      // Fuel label
+      ctx.fillStyle = '#ffcc33';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('FUEL', 0, -16);
+      // Hazard stripe
+      ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
+      ctx.fillRect(-w * 0.5, h * 0.4, w, 4);
+      ctx.restore();
+      break;
+    }
+    case 'radio_tower': {
+      // Radio/comms tower — lattice structure
+      ctx.save();
+      ctx.translate(x, y);
+      // Base
+      ctx.fillStyle = '#5a5a5a';
+      ctx.fillRect(-4, -4, 8, 8);
+      // Tower legs
+      ctx.strokeStyle = '#7a7a7a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-12, 12); ctx.lineTo(0, -18); ctx.lineTo(12, 12);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-8, 6); ctx.lineTo(8, 6);
+      ctx.moveTo(-6, 0); ctx.lineTo(6, 0);
+      ctx.moveTo(-4, -6); ctx.lineTo(4, -6);
+      ctx.stroke();
+      // Antenna
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(0, -26); ctx.stroke();
+      // Blink light
+      const blink = Math.sin(_frameTime * 4) > 0;
+      if (blink) {
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath(); ctx.arc(0, -26, 2, 0, Math.PI * 2); ctx.fill();
+      }
+      // Label
+      ctx.fillStyle = '#aaa';
+      ctx.font = 'bold 7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('📡 COMMS', 0, 20);
+      ctx.restore();
+      break;
+    }
+    case 'ammo_dump': {
+      // Ammo stockpile — stacked crates with markings
+      ctx.save();
+      ctx.translate(x, y);
+      // Bottom crates
+      ctx.fillStyle = '#4a5a3a';
+      ctx.fillRect(-18, -8, 16, 12);
+      ctx.fillRect(2, -8, 16, 12);
+      // Top crate
+      ctx.fillStyle = '#5a6a4a';
+      ctx.fillRect(-8, -18, 16, 12);
+      // Markings
+      ctx.strokeStyle = '#3a4a2a';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-18, -8, 16, 12);
+      ctx.strokeRect(2, -8, 16, 12);
+      ctx.strokeRect(-8, -18, 16, 12);
+      // Ammo symbol
+      ctx.fillStyle = '#ffaa33';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('💥 AMMO', 0, 16);
+      ctx.restore();
+      break;
+    }
   }
   ctx.restore();
 }
