@@ -263,6 +263,11 @@ export function createGameState(): GameState {
     distanceTravelled: 0,
     exfilsVisited: new Set<string>(),
     pendingWeapon: null,
+    tunnelA: map.tunnelA,
+    tunnelB: map.tunnelB,
+    tunnelTimer: 0,
+    propagandaTimer: 0,
+    dogsNeutralized: 0,
   };
 }
 

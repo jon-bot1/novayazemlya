@@ -147,6 +147,26 @@ export const createGasGrenade = (): Item => ({
   description: 'Tactical gas grenade — converts one enemy for 20s in a green cloud',
 });
 
+export const createPropaganda = (): Item => ({
+  id: nextId(),
+  name: 'Propaganda Leaflet',
+  category: 'special',
+  icon: '📢',
+  weight: 0.1,
+  value: 200,
+  description: 'Convince a nearby enemy to fight for you for 60s. Press [X] to use.',
+});
+
+export const createDogFood = (): Item => ({
+  id: nextId(),
+  name: 'Dog Food',
+  category: 'special',
+  icon: '🦴',
+  weight: 0.3,
+  value: 50,
+  description: 'Neutralizes a dog — it loses interest and wanders off. Press [X] near dog.',
+});
+
 export const createTNT = (): Item => ({
   id: nextId(),
   name: 'TNT Charge',
@@ -184,7 +204,7 @@ export const WEAPON_TEMPLATES = {
   makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
   ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   273,   'auto'); w.weaponSlot = 'primary'; return w; },
   akm:     () => { const w = createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   380,   'auto'); w.weaponSlot = 'primary'; return w; },
-  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  45, '🔫',   6,       30,   900,   'single'); w.weaponSlot = 'primary'; return w; },
+  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  15, '🔫',   6,       25,   900,   'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.5; return w; },
   mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'); w.weaponSlot = 'primary'; return w; },
   ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'); w.weaponSlot = 'primary'; return w; },
   // Secondary weapons
