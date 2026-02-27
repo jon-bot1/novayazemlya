@@ -594,12 +594,13 @@ export const GameCanvas: React.FC = () => {
       // Don't capture game keys when typing in an input field
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      keys.add(e.key.toLowerCase());
-      if (e.key === 'e') inputRef.current.interact = true;
-      if (e.key === 't') inputRef.current.useTNT = true;
-      if (e.key === 'h') inputRef.current.heal = true;
+      const k = e.key.toLowerCase();
+      keys.add(k);
+      if (k === 'e') inputRef.current.interact = true;
+      if (k === 't') inputRef.current.useTNT = true;
+      if (k === 'h') inputRef.current.heal = true;
       // Weapon confirmation: Y or Enter to accept, N to reject
-      if (e.key === 'y' || e.key === 'Y' || e.key === 'Enter') {
+      if (k === 'y' || e.key === 'Enter') {
         const st = stateRef.current;
         if (st.pendingWeapon) {
           const pw = st.pendingWeapon;
@@ -620,7 +621,7 @@ export const GameCanvas: React.FC = () => {
           delete (st as any)._pendingWeaponPos;
         }
       }
-      if (e.key === 'n' || e.key === 'N') {
+      if (k === 'n') {
         const st = stateRef.current;
         if (st.pendingWeapon) {
           const pw = st.pendingWeapon;
@@ -640,32 +641,33 @@ export const GameCanvas: React.FC = () => {
       if (e.key === 'Escape') {
         setReadingDoc(null);
       }
-      if (e.key === 'g') inputRef.current.throwGrenade = true;
-      if (e.key === 'v') inputRef.current.cycleThrowable = true;
-      if (e.key === 'x') inputRef.current.useSpecial = true;
-      if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
-      if (e.key === '1') inputRef.current.switchWeapon = 1;
-      if (e.key === '2') inputRef.current.switchWeapon = 2;
-      if (e.key === '3') inputRef.current.switchWeapon = 3;
+      if (k === 'g') inputRef.current.throwGrenade = true;
+      if (k === 'v') inputRef.current.cycleThrowable = true;
+      if (k === 'x') inputRef.current.useSpecial = true;
+      if (k === 'q' || k === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
+      if (k === '1') inputRef.current.switchWeapon = 1;
+      if (k === '2') inputRef.current.switchWeapon = 2;
+      if (k === '3') inputRef.current.switchWeapon = 3;
       if (e.key === 'Shift') inputRef.current.movementMode = 'sprint';
-      if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'sneak';
-      if (e.key === 'Tab' || e.key === 'i') {
+      if (e.key === 'Control' || k === 'c') inputRef.current.movementMode = 'sneak';
+      if (e.key === 'Tab' || k === 'i') {
         e.preventDefault();
         setShowInventory(v => !v);
         setShowIntel(false);
         setReadingDoc(null);
       }
-      if (e.key === 'j' || e.key === 'J') {
+      if (k === 'j') {
         setShowIntel(v => !v);
         setShowInventory(false);
         setReadingDoc(null);
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      keys.delete(e.key.toLowerCase());
-      if (e.key === 'e') inputRef.current.interact = false;
+      const k = e.key.toLowerCase();
+      keys.delete(k);
+      if (k === 'e') inputRef.current.interact = false;
       if (e.key === 'Shift') inputRef.current.movementMode = 'walk';
-      if (e.key === 'Control' || e.key === 'c') inputRef.current.movementMode = 'walk';
+      if (e.key === 'Control' || k === 'c') inputRef.current.movementMode = 'walk';
     };
 
     const onMouseDown = (e: MouseEvent) => {
