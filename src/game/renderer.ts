@@ -675,12 +675,20 @@ function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
   ctx.strokeRect(x, y, w, h);
 }
 
+// Cache for shadeColor — prevents repeated string parsing
+const _shadeCache = new Map<string, string>();
 function shadeColor(hex: string, percent: number): string {
+  const key = hex + percent;
+  let cached = _shadeCache.get(key);
+  if (cached) return cached;
   const num = parseInt(hex.replace('#', ''), 16);
   const r = Math.min(255, Math.max(0, (num >> 16) + percent));
   const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + percent));
   const b = Math.min(255, Math.max(0, (num & 0x0000FF) + percent));
-  return `rgb(${r},${g},${b})`;
+  cached = `rgb(${r},${g},${b})`;
+  if (_shadeCache.size > 500) _shadeCache.clear(); // prevent unbounded growth
+  _shadeCache.set(key, cached);
+  return cached;
 }
 
 // Draw decorative prop with 3/4 perspective
@@ -1221,6 +1229,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
   ];
   for (const z of zoneLabels) {
+    if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue; // skip off-screen labels
     ctx.save();
     ctx.globalAlpha = 0.14;
     ctx.fillStyle = '#c8c8b4';
@@ -1288,6 +1297,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
   for (const ep of state.extractionPoints) {
+    if (!isOnScreen(ep.pos.x, ep.pos.y, cx, cy, w, h, ep.radius + 50)) continue;
     ctx.save();
     if (ep.active && (state as any)._exfilRevealed) {
       // Active + revealed: bright green pulsing
@@ -1352,8 +1362,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── WINDOWS on walls ──
+  // ── WINDOWS on walls — viewport culled ──
   for (const win of state.windows) {
+    if (!isOnScreen(win.x + win.w / 2, win.y + win.h / 2, cx, cy, w, h, 100)) continue;
     // Window frame
     ctx.fillStyle = 'rgba(140, 180, 220, 0.35)';
     ctx.fillRect(win.x, win.y, win.w, win.h);
@@ -2209,7 +2220,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = `rgba(50, 220, 80, ${healPulse})`;
       ctx.fillText('HEALING', enemy.pos.x, enemy.pos.y + R + 22);
       // Progress bar
-      const healMax = enemy.type === 'boss' ? 2.5 : 3.0;
+      const healMax = enemy.type === 'boss' ? 5.0 : 3.0;
       const healPct = 1 - (enemy as any)._healingTimer / healMax;
       const barW = 28;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -2584,9 +2595,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── INTERACTION PROMPTS ──
+  // ── INTERACTION PROMPTS — only check nearby items ──
   for (const lc of state.lootContainers) {
-    if (!lc.looted && dist2d(state.player.pos, lc.pos) < 70) {
+    if (lc.looted) continue;
+    if (dist2d(state.player.pos, lc.pos) < 70) {
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
