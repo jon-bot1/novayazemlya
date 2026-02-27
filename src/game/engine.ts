@@ -3026,7 +3026,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const fleeAngle = Math.atan2(enemy.pos.y - g.pos.y, enemy.pos.x - g.pos.x) + (Math.random() - 0.5) * 0.6;
             (enemy as any)._grenadeFleeAngle = fleeAngle;
           } else {
-            (enemy as any)._grenadeFleeRolled = true; // don't re-roll for this grenade
+            (enemy as any)._grenadeFleeRolled = true;
+            const taunts = ['Я НЕ БОЮСЬ!', 'ХА! МИМО!', 'НЕ УБЕЖУ!', 'ДАВАЙ СЮДА!', 'СТОЮ КРЕПКО!'];
+            enemy.speechBubble = taunts[Math.floor(Math.random() * taunts.length)];
+            enemy.speechBubbleTimer = 2.0;
           }
         }
       }
