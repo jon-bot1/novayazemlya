@@ -288,13 +288,11 @@ export function generateMap() {
   const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
 
   const enemies: Enemy[] = [
-    // Inside base — random zone spawns
-    rz(ZONE_HANGAR_A, 'scav'),
+    // Inside base — random zone spawns (reduced ~20%)
     rz(ZONE_HANGAR_A, 'scav'),
     rz(ZONE_HANGAR_B, 'scav'),
     rz(ZONE_CORRIDOR, 'soldier'),
     rz(ZONE_OFFICES_TOP, 'soldier'),
-    rz(ZONE_OFFICES_TOP, 'scav'),
     rz(ZONE_OFFICES_BOT, 'soldier'),
     rz(ZONE_OFFICES_BOT, 'soldier'),
     rz(ZONE_STORAGE_A, 'soldier'),
