@@ -1657,8 +1657,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (enemy as any)._grenadeFlee -= dt;
       const fleeAngle = (enemy as any)._grenadeFleeAngle || 0;
       const fleeSpeed = enemy.speed * dt * 60 * 2.0;
+      const oldPos = { ...enemy.pos };
       enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(fleeAngle) * fleeSpeed, Math.sin(fleeAngle) * fleeSpeed, 10);
       enemy.angle = fleeAngle;
+
+      // Detect if trapped (didn't move much → wall blocked)
+      const moved = dist(oldPos, enemy.pos);
+      if (moved < 0.5) {
+        (enemy as any)._fleeBlocked = ((enemy as any)._fleeBlocked || 0) + dt;
+      } else {
+        (enemy as any)._fleeBlocked = 0;
+      }
+      // If blocked for 0.3s+, enemy is trapped — rush the player instead
+      if ((enemy as any)._fleeBlocked > 0.3) {
+        delete (enemy as any)._grenadeFlee;
+        delete (enemy as any)._grenadeFleeAngle;
+        delete (enemy as any)._grenadeFleeRolled;
+        delete (enemy as any)._fleeBlocked;
+        enemy.state = 'chase';
+        enemy.speechBubble = 'ВПЕРЁД!';
+        enemy.speechBubbleTimer = 1.5;
+        addMessage(state, `⚔️ ${enemy.type.toUpperCase()} trapped — charging!`, 'info');
+        continue;
+      }
+
       // Yellow warning particles
       if (Math.random() < 0.15) {
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffcc44', 1);
@@ -1667,6 +1689,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         delete (enemy as any)._grenadeFlee;
         delete (enemy as any)._grenadeFleeAngle;
         delete (enemy as any)._grenadeFleeRolled;
+        delete (enemy as any)._fleeBlocked;
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos };
       }
@@ -3153,9 +3176,25 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             (enemy as any)._grenadeFleeAngle = fleeAngle;
           } else {
             (enemy as any)._grenadeFleeRolled = true;
-            const taunts = ['Я НЕ БОЮСЬ!', 'ХА! МИМО!', 'НЕ УБЕЖУ!', 'ДАВАЙ СЮДА!', 'СТОЮ КРЕПКО!'];
-            enemy.speechBubble = taunts[Math.floor(Math.random() * taunts.length)];
-            enemy.speechBubbleTimer = 2.0;
+            // Boss special: 50/50 go prone (damage reduction) or rush player
+            if (enemy.type === 'boss') {
+              if (Math.random() < 0.5) {
+                // Go prone — 50% grenade damage reduction
+                (enemy as any)._proneTimer = 3.0;
+                enemy.speechBubble = 'ЛОЖИСЬ!';
+                enemy.speechBubbleTimer = 2.0;
+                enemy.state = 'idle';
+              } else {
+                // Rush the player aggressively
+                enemy.state = 'chase';
+                enemy.speechBubble = 'НА ТЕБЯ!';
+                enemy.speechBubbleTimer = 1.5;
+              }
+            } else {
+              const taunts = ['Я НЕ БОЮСЬ!', 'ХА! МИМО!', 'НЕ УБЕЖУ!', 'ДАВАЙ СЮДА!', 'СТОЮ КРЕПКО!'];
+              enemy.speechBubble = taunts[Math.floor(Math.random() * taunts.length)];
+              enemy.speechBubbleTimer = 2.0;
+            }
           }
         }
       }
@@ -3236,11 +3275,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const d = dist(g.pos, enemy.pos);
           if (d < g.radius && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             if (enemy.type === 'boss') {
-              // Boss takes 25% grenade damage (75% grenade defense)
-              const dmg = enemy.maxHp * 0.25;
+              // Boss takes 25% grenade damage (75% defense), halved again if prone
+              const proneReduction = (enemy as any)._proneTimer > 0 ? 0.5 : 1.0;
+              const dmg = enemy.maxHp * 0.25 * proneReduction;
               enemy.hp -= dmg;
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
-              addMessage(state, `💥 Boss resists blast! -${Math.floor(dmg)}HP`, 'damage');
+              const proneText = (enemy as any)._proneTimer > 0 ? ' (PRONE — reduced!)' : '';
+              addMessage(state, `💥 Boss resists blast! -${Math.floor(dmg)}HP${proneText}`, 'damage');
               if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
             }
             // Bodyguards take 25% grenade damage (75% grenade defense)
