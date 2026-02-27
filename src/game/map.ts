@@ -599,12 +599,12 @@ export function generateMap() {
     // Secret passage area loot (draws player to the area)
     rLoot({ x: 2100, y: 1920, w: 100, h: 80 }, 'crate', 'valuable'),
 
-    // === WEAPON CABINETS — guaranteed weapon loot ===
-    rLoot(ZONE_STORAGE_A, 'locker', 'weapon_cabinet'),
-    rLoot(ZONE_STORAGE_B, 'locker', 'weapon_cabinet'),
-    rLoot({ x: 400, y: 520, w: 180, h: 120 }, 'locker', 'weapon_cabinet'), // barracks
-    rLoot({ x: 2520, y: 620, w: 110, h: 60 }, 'locker', 'weapon_cabinet'), // ammo bunker
-    rLoot(ZONE_OFFICES_BOT, 'locker', 'weapon_cabinet'), // office armory
+    // === WEAPON CABINETS — fixed positions, guaranteed weapon loot ===
+    makeLoot(HX + 180, HY + 400, 'weapon_cabinet', 'weapon_cabinet'),   // hangar A
+    makeLoot(HX + 900, HY + 650, 'weapon_cabinet', 'weapon_cabinet'),   // hangar B
+    makeLoot(450, 560, 'weapon_cabinet', 'weapon_cabinet'),              // barracks
+    makeLoot(2560, 650, 'weapon_cabinet', 'weapon_cabinet'),             // ammo bunker
+    makeLoot(HX + 750, HY + 820, 'weapon_cabinet', 'weapon_cabinet'),   // office armory
   ];
 
   // ══════════════════════════════════════
