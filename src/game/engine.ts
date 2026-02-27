@@ -618,6 +618,132 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
+  // === TUNNEL TELEPORTATION ===
+  if (state.tunnelA && state.tunnelB) {
+    const dA = dist(state.player.pos, state.tunnelA);
+    const dB = dist(state.player.pos, state.tunnelB);
+    if (state.tunnelTimer > 0) {
+      state.tunnelTimer -= dt;
+      if (state.tunnelTimer <= 0) {
+        // Teleport!
+        if (state.tunnelDirection === 'a_to_b') {
+          state.player.pos = { ...state.tunnelB };
+          addMessage(state, '🚇 Emerged from tunnel exit!', 'intel');
+        } else {
+          state.player.pos = { ...state.tunnelA };
+          addMessage(state, '🚇 Emerged from tunnel exit!', 'intel');
+        }
+        state.tunnelDirection = undefined;
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 12);
+      }
+    } else if (dA < 30 && !state.tunnelDirection) {
+      state.tunnelTimer = 3;
+      state.tunnelDirection = 'a_to_b';
+      addMessage(state, '🚇 Entering tunnel... 3 seconds...', 'info');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 8);
+    } else if (dB < 30 && !state.tunnelDirection) {
+      state.tunnelTimer = 3;
+      state.tunnelDirection = 'b_to_a';
+      addMessage(state, '🚇 Entering tunnel... 3 seconds...', 'info');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 8);
+    }
+  }
+
+  // === USE SPECIAL ITEM (X key) ===
+  if (input.useSpecial) {
+    input.useSpecial = false;
+    const specialItems = state.player.specialSlot;
+    if (specialItems.length > 0) {
+      const item = specialItems[0];
+      if (item.name === 'Propaganda Leaflet') {
+        // Find nearest non-friendly, non-boss enemy within 100px
+        let closest: Enemy | null = null;
+        let closestD = 100;
+        for (const e of state.enemies) {
+          if (e.state === 'dead' || e.type === 'boss' || e.type === 'turret' || e.type === 'sniper' || e.type === 'dog' || e.friendly || (e as any)._isBodyguard) continue;
+          const d = dist(state.player.pos, e.pos);
+          if (d < closestD) { closestD = d; closest = e; }
+        }
+        if (closest) {
+          closest.friendly = true;
+          closest.friendlyTimer = 60;
+          closest.state = 'chase';
+          specialItems.splice(0, 1);
+          addMessage(state, `📢 ${closest.type.toUpperCase()} CONVINCED — fights for you for 60s!`, 'info');
+          spawnParticles(state, closest.pos.x, closest.pos.y, '#44ff44', 12);
+        } else {
+          addMessage(state, '⚠ No enemy nearby to convince!', 'warning');
+        }
+      } else if (item.name === 'Dog Food') {
+        // Find nearest dog within 80px
+        let closest: Enemy | null = null;
+        let closestD = 80;
+        for (const e of state.enemies) {
+          if (e.state === 'dead' || e.type !== 'dog' || e.neutralized) continue;
+          const d = dist(state.player.pos, e.pos);
+          if (d < closestD) { closestD = d; closest = e; }
+        }
+        if (closest) {
+          closest.neutralized = true;
+          closest.neutralizedTimer = 20;
+          closest.state = 'idle';
+          closest.speed = 0.3;
+          specialItems.splice(0, 1);
+          state.dogsNeutralized++;
+          addMessage(state, '🦴 Dog neutralized — it loses interest!', 'info');
+          spawnParticles(state, closest.pos.x, closest.pos.y, '#ffcc66', 8);
+        } else {
+          addMessage(state, '⚠ No dog nearby!', 'warning');
+        }
+      }
+    } else {
+      addMessage(state, '⚠ No special items! Buy from trader.', 'warning');
+    }
+  }
+
+  // === PROPAGANDA TIMER ===
+  if (state.propagandaTimer > 0) {
+    state.propagandaTimer -= dt;
+  }
+
+  // === DOG NEUTRALIZED TIMER ===
+  for (const e of state.enemies) {
+    if (e.neutralized && e.neutralizedTimer !== undefined) {
+      e.neutralizedTimer -= dt;
+      if (e.neutralizedTimer <= 0) {
+        e.state = 'dead';
+        e.hp = 0;
+        addMessage(state, '🐕 Neutralized dog wandered off.', 'info');
+      }
+    }
+  }
+
+  // === FRIENDLY TIMER COUNTDOWN ===
+  for (const e of state.enemies) {
+    if (e.friendly && e.friendlyTimer > 0) {
+      e.friendlyTimer -= dt;
+      if (e.friendlyTimer <= 0) {
+        e.friendly = false;
+        e.state = 'chase';
+        e.speechBubble = '...HUH?!';
+        e.speechBubbleTimer = 3;
+        addMessage(state, `⚠ ${e.type.toUpperCase()} is no longer friendly!`, 'warning');
+        spawnParticles(state, e.pos.x, e.pos.y, '#ff4444', 6);
+      }
+    }
+  }
+
+  // === SPEECH BUBBLE TIMER ===
+  for (const e of state.enemies) {
+    if (e.speechBubbleTimer && e.speechBubbleTimer > 0) {
+      e.speechBubbleTimer -= dt;
+      if (e.speechBubbleTimer <= 0) {
+        e.speechBubble = undefined;
+        e.speechBubbleTimer = undefined;
+      }
+    }
+  }
+
   // === CONTEXTUAL HINTS — show tips for unused grenades/TNT after some time ===
   if (!(state as any)._grenadeHintShown) {
     const hasGrenades = state.player.inventory.some(i => i.category === 'grenade');
@@ -702,22 +828,45 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       : 1;
     const degradedSpread = isMosinWpn ? 0.08 : 0.08 + (1 - durRatio) * 0.22;
     
-    const spread = (Math.random() - 0.5) * degradedSpread;
-    const angle = state.player.angle + spread;
     const baseBulletSpeed = wpn?.bulletSpeed || 8;
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
     const bulletSpeed = baseBulletSpeed * (1 + bulletSpeedBonus);
     const bulletLife = wpn?.weaponRange || 60;
-    state.bullets.push({
-      pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
-      vel: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
-      damage: wpn?.damage || 10,
-      damageType: 'bullet',
-      fromPlayer: true,
-      life: bulletLife,
-      weaponName: wpn?.name,
-      weaponFireMode: wpn?.fireMode,
-    });
+
+    // BUCKSHOT — fire multiple pellets in a cone
+    if (wpn?.isBuckshot) {
+      const pelletCount = wpn.pelletCount || 5;
+      const coneAngle = wpn.coneAngle || 0.5;
+      const baseAngle = state.player.angle;
+      for (let p = 0; p < pelletCount; p++) {
+        const pelletSpread = (Math.random() - 0.5) * coneAngle + (Math.random() - 0.5) * degradedSpread;
+        const a = baseAngle + pelletSpread;
+        const pelletSpeed = bulletSpeed * (0.85 + Math.random() * 0.3);
+        state.bullets.push({
+          pos: { x: state.player.pos.x + Math.cos(a) * 16, y: state.player.pos.y + Math.sin(a) * 16 },
+          vel: { x: Math.cos(a) * pelletSpeed, y: Math.sin(a) * pelletSpeed },
+          damage: wpn.damage || 10,
+          damageType: 'bullet',
+          fromPlayer: true,
+          life: bulletLife,
+          weaponName: wpn.name,
+          weaponFireMode: wpn.fireMode,
+        });
+      }
+    } else {
+      const spread = (Math.random() - 0.5) * degradedSpread;
+      const angle = state.player.angle + spread;
+      state.bullets.push({
+        pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
+        vel: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
+        damage: wpn?.damage || 10,
+        damageType: 'bullet',
+        fromPlayer: true,
+        life: bulletLife,
+        weaponName: wpn?.name,
+        weaponFireMode: wpn?.fireMode,
+      });
+    }
     state.player.lastShot = state.time;
     spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
     
