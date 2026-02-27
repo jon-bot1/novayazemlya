@@ -76,8 +76,8 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
 
 // Assign tactical roles to enemies in combat — distribute flankers and suppressors
 function assignTacticalRole(state: GameState, enemy: Enemy) {
-  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav') {
-    enemy.tacticalRole = enemy.type === 'scav' ? 'assault' : 'none';
+  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav' || enemy.type === 'dog' || enemy.type === 'redneck') {
+    enemy.tacticalRole = (enemy.type === 'scav' || enemy.type === 'redneck') ? 'assault' : 'none';
     return;
   }
   // Count current roles in radio group
@@ -160,6 +160,12 @@ function generateEnemyLoot(enemy: Enemy) {
   const existingLoot = [...enemy.loot];
   
   if (enemy.type === 'turret') return [...existingLoot, ...LOOT_POOLS.military()];
+  if (enemy.type === 'dog') return [...existingLoot]; // dogs have no loot
+  if (enemy.type === 'redneck') {
+    const rLoot = [...existingLoot, ...LOOT_POOLS.common()];
+    if (Math.random() < 0.6) rLoot.push(WEAPON_TEMPLATES.toz());
+    return rLoot;
+  }
   if (enemy.type === 'boss') {
     return [
       ...existingLoot,
@@ -868,7 +874,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       });
     }
     state.player.lastShot = state.time;
-    spawnParticles(state, state.player.pos.x + Math.cos(angle) * 20, state.player.pos.y + Math.sin(angle) * 20, '#ffaa44', 3);
+    const muzzleAngle = state.player.angle;
+    spawnParticles(state, state.player.pos.x + Math.cos(muzzleAngle) * 20, state.player.pos.y + Math.sin(muzzleAngle) * 20, '#ffaa44', 3);
     
     // Reduce durability (sidearms and melee skip)
     if (wpn && !isSidearm && !isMelee) {
@@ -1820,6 +1827,74 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
+    // === DOG AI — follows owner, melee charges player ===
+    const playerIsHiding = !!(state as any)._playerHiding;
+    if (enemy.type === 'dog' && !enemy.neutralized) {
+      const owner = enemy.ownerId ? state.enemies.find(e => e.id === enemy.ownerId) : null;
+      const ownerAlive = owner && owner.state !== 'dead';
+      const dToPlayer = dist(enemy.pos, state.player.pos);
+      const playerVisible = !playerIsHiding && dToPlayer < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos, false);
+      
+      // Dog follows owner when idle, attacks when owner is fighting or player is close
+      const ownerFighting = ownerAlive && (owner!.state === 'chase' || owner!.state === 'attack');
+      const shouldAttack = playerVisible || ownerFighting || (!ownerAlive && dToPlayer < 150);
+      
+      if (shouldAttack && !enemy.friendly) {
+        enemy.state = 'chase';
+        const toP = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+        enemy.angle = Math.atan2(toP.y, toP.x);
+        const dogSpeed = enemy.speed * dt * 60;
+        enemy.pos = tryMoveEnemy(state, enemy.pos, toP.x * dogSpeed, toP.y * dogSpeed, 8);
+        
+        // Melee bite attack
+        if (dToPlayer < 30) {
+          const now = performance.now();
+          if (now - enemy.lastShot > enemy.fireRate) {
+            enemy.lastShot = now;
+            state.player.hp -= enemy.damage;
+            state.player.bleedRate = Math.min(2, state.player.bleedRate + 0.3);
+            addMessage(state, '🐕 Dog bite! -' + enemy.damage + 'HP', 'damage');
+            spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cc3333', 3);
+            playHit();
+          }
+        }
+      } else if (ownerAlive) {
+        // Follow owner
+        const dToOwner = dist(enemy.pos, owner!.pos);
+        if (dToOwner > 40) {
+          const toOwner = normalize({ x: owner!.pos.x - enemy.pos.x, y: owner!.pos.y - enemy.pos.y });
+          enemy.pos = tryMoveEnemy(state, enemy.pos, toOwner.x * enemy.speed * 0.8 * dt * 60, toOwner.y * enemy.speed * 0.8 * dt * 60, 8);
+          enemy.angle = Math.atan2(toOwner.y, toOwner.x);
+        }
+        enemy.state = 'patrol';
+      } else {
+        // Owner dead, wander
+        if (enemy.state !== 'investigate') {
+          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+          enemy.state = 'patrol';
+        }
+      }
+      
+      // Alert nearby redneck when dog sees player
+      if (playerVisible && ownerAlive && owner!.state !== 'chase' && owner!.state !== 'attack') {
+        owner!.state = 'chase';
+        owner!.investigateTarget = { ...state.player.pos };
+        if (!owner!.speechBubble) {
+          owner!.speechBubble = 'Sick \'em!';
+          owner!.speechBubbleTimer = 2;
+        }
+      }
+      
+      continue; // skip normal AI
+    }
+
+    // === REDNECK SPEECH BUBBLES ===
+    if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
+      const lines = ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
+      enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
+      enemy.speechBubbleTimer = 3;
+    }
+
     // Vision cone varies by enemy type/skill
     const DEG15 = Math.PI * (15 / 180);
     const isBodyguard = !!(enemy as any)._isBodyguard;
@@ -1832,6 +1907,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
           sniper:  { frontArc: Math.PI * 0.15, rearRange: 0.05 },
           shocker: { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.3 },
+          redneck: { frontArc: Math.PI * 0.4 - DEG15, rearRange: 0.2 },
+          dog:     { frontArc: Math.PI * 0.6, rearRange: 0.5 },
         }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -1840,7 +1917,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const isBehind = angleDiff > visionConfig.frontArc;
 
     const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
-    const playerIsHiding = !!(state as any)._playerHiding;
+    // playerIsHiding already declared above
     const canSeePlayer = !playerIsHiding && distToPlayer < effectiveRange && los;
 
     // Check for nearby sound events (gunshots, explosions)

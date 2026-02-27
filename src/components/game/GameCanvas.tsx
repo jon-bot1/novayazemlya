@@ -340,6 +340,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
               <span className="text-muted-foreground">Hold Right-click</span><span className="text-foreground">Charge throw (2s max)</span>
               <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨 — breach walls</span>
+              <span className="text-muted-foreground">X</span><span className="text-foreground">Use special item (propaganda/dog food)</span>
               <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory (drop items)</span>
               <span className="text-muted-foreground">J</span><span className="text-foreground">Intel Log</span>
             </div>
@@ -369,6 +370,19 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.14 — 2026-02-27</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🔫 <span className="text-accent">Shotgun (TOZ-34)</span> — fires 5 pellets in a cone, devastating at close range</li>
+                  <li>• 🤠 <span className="text-warning">Redneck enemies</span> — patrol outside with shotguns and speech bubbles</li>
+                  <li>• 🐕 <span className="text-warning">Guard Dogs</span> — fast melee companions that follow their redneck owner</li>
+                  <li>• 🦴 <span className="text-accent">Dog Food</span> — neutralize dogs without killing (buy from trader)</li>
+                  <li>• 📢 <span className="text-accent">Propaganda Leaflet</span> — convince an enemy to fight for you for 60s</li>
+                  <li>• 🚇 <span className="text-accent">Secret Tunnels</span> — two hidden tunnel entrances for fast travel (3s delay)</li>
+                  <li>• 💬 <span className="text-foreground">Speech Bubbles</span> — enemies react with dialogue during combat</li>
+                  <li>• 🎒 <span className="text-accent">Special Slot [X]</span> — new item slot for tactical items</li>
+                </ul>
+              </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.13 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
@@ -615,6 +629,7 @@ export const GameCanvas: React.FC = () => {
         setReadingDoc(null);
       }
       if (e.key === 'g') inputRef.current.throwGrenade = true;
+      if (e.key === 'x') inputRef.current.useSpecial = true;
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (e.key === '1') inputRef.current.switchWeapon = 1;
       if (e.key === '2') inputRef.current.switchWeapon = 2;

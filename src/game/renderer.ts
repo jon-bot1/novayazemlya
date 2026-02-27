@@ -1263,6 +1263,57 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
+  // ── TUNNEL ENTRANCES ──
+  if (state.tunnelA) {
+    const tPulse = 0.4 + Math.sin(state.time * 2) * 0.2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(state.tunnelA.x, state.tunnelA.y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(100, 60, 160, ${tPulse * 0.3})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(140, 100, 200, ${tPulse})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🚇', state.tunnelA.x, state.tunnelA.y + 5);
+    ctx.fillStyle = `rgba(140, 100, 200, ${tPulse + 0.3})`;
+    ctx.font = 'bold 8px sans-serif';
+    ctx.fillText('TUNNEL', state.tunnelA.x, state.tunnelA.y - 18);
+    ctx.restore();
+  }
+  if (state.tunnelB) {
+    const tPulse = 0.4 + Math.sin(state.time * 2 + 1) * 0.2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(state.tunnelB.x, state.tunnelB.y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(100, 60, 160, ${tPulse * 0.3})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(140, 100, 200, ${tPulse})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🚇', state.tunnelB.x, state.tunnelB.y + 5);
+    ctx.fillStyle = `rgba(140, 100, 200, ${tPulse + 0.3})`;
+    ctx.font = 'bold 8px sans-serif';
+    ctx.fillText('TUNNEL', state.tunnelB.x, state.tunnelB.y - 18);
+    ctx.restore();
+  }
+  // Tunnel timer indicator near player
+  if (state.tunnelTimer > 0) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(140, 100, 200, 0.9)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🚇 ${state.tunnelTimer.toFixed(1)}s`, state.player.pos.x, state.player.pos.y - R - 40);
+    ctx.restore();
+  }
+
   // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
   for (const ep of state.extractionPoints) {
     ctx.save();
@@ -1595,6 +1646,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         heavy: Math.PI * 0.6 - DEG15,
         turret: Math.PI * 0.5 - DEG15,
         sniper: Math.PI * 0.25,
+        redneck: Math.PI * 0.4 - DEG15,
+        dog: Math.PI * 0.6,
       }[enemy.type] || Math.PI * 0.45 - DEG15);
       const rearRange = isBodyguard ? 0.4 : ({
         scav: 0.15,
@@ -1602,6 +1655,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         heavy: 0.4,
         turret: 0,
         sniper: 0.1,
+        redneck: 0.2,
+        dog: 0.5,
       }[enemy.type] || 0.25);
 
       // Clip vision cone to walls (non-elevated only)
@@ -1837,6 +1892,64 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.textAlign = 'center';
         ctx.fillText('🔭 SNIPER', enemy.pos.x, enemy.pos.y - 14);
       }
+    } else if (enemy.type === 'dog') {
+      // Dog — small, low to ground, simple animal shape
+      ctx.save();
+      ctx.translate(enemy.pos.x, enemy.pos.y);
+      ctx.rotate(enemy.angle);
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Body
+      const dogColor = enemy.neutralized ? '#aa9977' : enemy.friendly ? '#77cc55' : '#6a4a2a';
+      ctx.fillStyle = dogColor;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#4a3020';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Head
+      ctx.fillStyle = dogColor;
+      ctx.beginPath();
+      ctx.arc(10, -2, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // Ears
+      ctx.fillStyle = '#5a3a1a';
+      ctx.beginPath();
+      ctx.ellipse(12, -6, 3, 2, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(8, -6, 3, 2, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      // Eye
+      ctx.fillStyle = enemy.neutralized ? '#999' : '#111';
+      ctx.beginPath();
+      ctx.arc(12, -2, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      // Tail
+      ctx.strokeStyle = dogColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-10, -1);
+      ctx.quadraticCurveTo(-14, -6 + Math.sin(state.time * 8) * 3, -12, -8);
+      ctx.stroke();
+      // Legs (simple)
+      ctx.fillStyle = '#5a3a1a';
+      for (const lx of [-6, -2, 4, 8]) {
+        ctx.fillRect(lx - 1, 4, 2, 4);
+      }
+      ctx.restore();
+      // Label
+      if (!enemy.neutralized) {
+        ctx.fillStyle = 'rgba(255,200,200,0.5)';
+        ctx.font = '7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🐕 DOG', enemy.pos.x, enemy.pos.y + 18);
+      }
     } else {
       const isBodyguard = !!(enemy as any)._isBodyguard;
       const isOfficer = !!(enemy as any)._isOfficer;
@@ -1845,6 +1958,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         soldier: { body: '#7aaa5a', outline: '#5a8a3a', eye: '#222', hat: 'helmet', hatColor: '#6a7a4a' },
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
         shocker: { body: '#3a5a8a', outline: '#2a4a7a', eye: '#aaf', hat: 'helmet', hatColor: '#2244aa' },
+        redneck: { body: '#8a6a4a', outline: '#6a4a2a', eye: '#331', hat: 'bandana', hatColor: '#aa5533' },
       };
       let cfg = configs[enemy.type];
       // Officers: beret with badge, no helmet
@@ -2088,12 +2202,72 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 23, barW * ratio, 4);
     }
 
+    // Speech bubble
+    if (enemy.speechBubble && enemy.speechBubbleTimer && enemy.speechBubbleTimer > 0) {
+      ctx.save();
+      const bubbleAlpha = Math.min(1, enemy.speechBubbleTimer);
+      ctx.globalAlpha = bubbleAlpha;
+      const text = enemy.speechBubble;
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      const tw = ctx.measureText(text).width + 12;
+      const bx = enemy.pos.x - tw / 2;
+      const by = enemy.pos.y - R - 42;
+      // Bubble background
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.roundRect(bx, by, tw, 16, 4);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Tail
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(enemy.pos.x - 4, by + 16);
+      ctx.lineTo(enemy.pos.x, by + 22);
+      ctx.lineTo(enemy.pos.x + 4, by + 16);
+      ctx.fill();
+      // Text
+      ctx.fillStyle = '#222';
+      ctx.fillText(text, enemy.pos.x, by + 12);
+      ctx.restore();
+    }
+
+    // Friendly indicator
+    if (enemy.friendly) {
+      ctx.save();
+      const friendPulse = 0.6 + Math.sin(state.time * 4) * 0.3;
+      ctx.beginPath();
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 10, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(60, 220, 80, ${friendPulse})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = `rgba(60, 220, 80, ${friendPulse})`;
+      ctx.font = 'bold 7px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('FRIENDLY', enemy.pos.x, enemy.pos.y + R + 24);
+      ctx.restore();
+    }
+
+    // Neutralized dog indicator
+    if (enemy.neutralized) {
+      ctx.save();
+      ctx.globalAlpha = 0.6 + Math.sin(state.time * 2) * 0.2;
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('😴', enemy.pos.x, enemy.pos.y - R - 8);
+      ctx.restore();
+    }
+
     // Type label
     ctx.fillStyle = 'rgba(255,200,200,0.5)';
     ctx.font = '7px sans-serif';
     ctx.textAlign = 'center';
-    const typeLabel = { scav: 'SCAV', soldier: 'SOLDIER', heavy: 'HEAVY', turret: 'TURRET', boss: '' }[enemy.type];
-    ctx.fillText(typeLabel || '', enemy.pos.x, enemy.pos.y + R + 16);
+    const typeLabel: Record<string, string> = { scav: 'SCAV', soldier: 'SOLDIER', heavy: 'HEAVY', turret: 'TURRET', boss: '', redneck: 'REDNECK', dog: 'DOG' };
+    ctx.fillText(typeLabel[enemy.type] || '', enemy.pos.x, enemy.pos.y + R + 16);
   }
 
   // ── PLACED TNT CHARGES ──
