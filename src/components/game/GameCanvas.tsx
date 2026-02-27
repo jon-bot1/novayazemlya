@@ -554,6 +554,7 @@ export const GameCanvas: React.FC = () => {
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
+  const [rerollCount, setRerollCount] = useState(0);
   const extractedRef = useRef(false); // prevent double extraction
   const dbSyncedRef = useRef(false); // track if we loaded from DB
 
@@ -1248,9 +1249,19 @@ export const GameCanvas: React.FC = () => {
               return updated;
             });
           }}
-          onRerollObjectives={() => {
+          onRerollObjectives={(cost) => {
+            if (cost > 0) {
+              setStash(prev => {
+                const updated = { ...prev, rubles: prev.rubles - cost };
+                saveStash(updated);
+                syncStashToDb(playerName, updated);
+                return updated;
+              });
+            }
             setObjectives(generateMissionObjectives());
+            setRerollCount(c => c + 1);
           }}
+          rerollCount={rerollCount}
         />
       </div>
     );
@@ -1304,6 +1315,7 @@ export const GameCanvas: React.FC = () => {
             setGamePhase('homebase');
             // Reroll objectives for next raid
             setObjectives(generateMissionObjectives());
+            setRerollCount(0);
           }}
         />
 
