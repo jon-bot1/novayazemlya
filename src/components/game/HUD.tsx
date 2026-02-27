@@ -255,38 +255,35 @@ export const HUD: React.FC<HUDProps> = ({
         )}
 
         {/* RIGHT PANEL — Weapons, Equipment, Mission */}
-        <div className="flex flex-col items-end gap-1.5">
-          {/* Active weapon — big prominent card */}
-          <div className="bg-card/90 backdrop-blur-sm border-2 border-accent/60 rounded-md px-4 py-2.5 shadow-lg min-w-[200px]">
-            <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col items-end gap-2">
+          {/* Active weapon — large prominent card */}
+          <div className="bg-card/95 backdrop-blur-md border-2 border-accent/70 rounded-lg px-5 py-3 shadow-xl min-w-[240px]">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col">
-                <span className="text-foreground font-display text-base leading-tight">
-                  🔫 {player.equippedWeapon?.name || '—'}
+                <span className="text-[9px] font-mono text-accent/70 uppercase tracking-widest">Equipped</span>
+                <span className="text-foreground font-display text-lg leading-tight mt-0.5">
+                  {player.activeSlot === 1 ? '🗡️' : '🔫'} {player.equippedWeapon?.name || '—'}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{player.ammoType}</span>
-                {/* Durability bar — sidearms don't degrade */}
+                <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{player.activeSlot === 1 ? 'Melee' : player.ammoType}</span>
+                {/* Durability bar */}
                 {player.equippedWeapon && (player.equippedWeapon as any)._durability !== undefined && (() => {
                   const dur = (player.equippedWeapon as any)._durability;
                   const maxDur = (player.equippedWeapon as any)._maxDurability || 120;
                   const ratio = dur / maxDur;
                   const isBroken = dur <= 0;
                   const statusLabel = isBroken ? '💥BROKEN' : ratio < 0.3 ? `${dur} ⚠` : `${dur}`;
-                  const degradeWarning = !isBroken && ratio < 0.5 && !player.equippedWeapon?.name?.toLowerCase().includes('mosin');
                   return (
                     <div className="flex items-center gap-1 mt-1">
-                      <div className="w-[80px] h-[4px] bg-background/60 rounded-full overflow-hidden">
+                      <div className="w-[100px] h-[5px] bg-background/60 rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full transition-all duration-200"
                           style={{
                             width: `${Math.max(0, ratio * 100)}%`,
-                            backgroundColor: ratio > 0.3 ? '#7aaa5a' : ratio > 0.1 ? '#aa8a3a' : '#cc3a3a',
+                            backgroundColor: ratio > 0.3 ? 'hsl(var(--safe))' : ratio > 0.1 ? 'hsl(var(--warning))' : 'hsl(var(--danger))',
                           }}
                         />
                       </div>
                       <span className="text-[8px] text-muted-foreground font-mono">{statusLabel}</span>
-                      {degradeWarning && (
-                        <span className="text-[7px] text-yellow-400 font-mono animate-pulse">DEGRADED</span>
-                      )}
                     </div>
                   );
                 })()}
@@ -294,23 +291,40 @@ export const HUD: React.FC<HUDProps> = ({
                   <span className="text-[7px] text-muted-foreground/60 font-mono">∞ durability</span>
                 )}
               </div>
-              <span className="text-2xl font-display text-accent text-glow-green tabular-nums">{player.currentAmmo}</span>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-display text-accent text-glow-green tabular-nums">{player.currentAmmo}</span>
+                <span className="text-[8px] text-muted-foreground font-mono">rounds</span>
+              </div>
             </div>
           </div>
-          {/* Weapon slot buttons */}
+          {/* Weapon slots — scroll to cycle */}
           <div className="flex gap-1.5">
-            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 1 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
-              [1] {(player as any).meleeWeapon?.name || '🗡️'}
-            </div>
-            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 2 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
-              [2] {player.sidearm?.name || '—'}
-            </div>
-            <div className={`px-2.5 py-1.5 rounded-md border-2 text-xs font-mono min-w-[80px] text-center ${player.activeSlot === 3 ? 'bg-accent/20 border-accent text-accent shadow-md' : 'bg-card/60 border-border/50 text-muted-foreground'}`}>
-              [3] {player.primaryWeapon?.name || '—'}
-            </div>
+            {([
+              { slot: 1 as const, icon: '🗡️', name: (player as any).meleeWeapon?.name || 'Knife' },
+              { slot: 2 as const, icon: '🔫', name: player.sidearm?.name || '—' },
+              { slot: 3 as const, icon: '🎯', name: player.primaryWeapon?.name || '—' },
+            ] as const).map(w => {
+              const active = player.activeSlot === w.slot;
+              return (
+                <div
+                  key={w.slot}
+                  className={`px-3 py-2 rounded-lg border-2 text-xs font-mono min-w-[90px] text-center transition-all ${
+                    active
+                      ? 'bg-accent/25 border-accent text-accent shadow-lg scale-105 font-bold'
+                      : w.name !== '—'
+                      ? 'bg-card/70 border-border/60 text-muted-foreground hover:border-foreground/30'
+                      : 'bg-card/40 border-border/20 text-muted-foreground/30'
+                  }`}
+                >
+                  <div className="text-base">{w.icon}</div>
+                  <div className="text-[9px] mt-0.5">[{w.slot}] {w.name}</div>
+                </div>
+              );
+            })}
           </div>
-          {/* Throwables & Equipment */}
-          <div className="flex items-center gap-1.5 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
+          <span className="text-[8px] text-muted-foreground/50 font-mono">scroll ↕ cycle weapons</span>
+          {/* Throwables — selected type highlighted */}
+          <div className="flex items-center gap-1.5 bg-card/80 backdrop-blur-sm border border-border/40 rounded-lg px-3 py-2">
             {([
               { type: 'grenade' as const, icon: '💣', count: grenadeCount, color: 'text-warning', label: 'Frag' },
               { type: 'gas_grenade' as const, icon: '☣️', count: gasGrenadeCount, color: 'text-safe', label: 'Gas' },
@@ -318,50 +332,56 @@ export const HUD: React.FC<HUDProps> = ({
             ] as const).map(t => {
               const isSelected = player.selectedThrowable === t.type;
               return (
-                <span
+                <div
                   key={t.type}
-                  className={`text-sm font-mono px-1.5 py-0.5 rounded transition-all ${
+                  className={`flex flex-col items-center px-2 py-1 rounded-md transition-all ${
                     isSelected && t.count > 0
-                      ? `${t.color} bg-accent/20 border border-accent/50 font-bold shadow-sm`
+                      ? `${t.color} bg-accent/20 border-2 border-accent/60 font-bold shadow-md scale-105`
                       : isSelected && t.count === 0
-                      ? 'text-muted-foreground/40 border border-dashed border-muted-foreground/20'
+                      ? 'text-muted-foreground/40 border-2 border-dashed border-muted-foreground/20'
                       : t.count > 0
-                      ? `${t.color}`
-                      : 'text-muted-foreground/30'
+                      ? `${t.color} border border-transparent`
+                      : 'text-muted-foreground/25 border border-transparent'
                   }`}
                 >
-                  {t.icon} {t.count}
-                </span>
+                  <span className="text-base">{t.icon}</span>
+                  <span className="text-[8px] font-mono">{t.count}</span>
+                  {isSelected && <span className="text-[7px] font-mono text-accent">▲</span>}
+                </div>
               );
             })}
-            <span className="text-[9px] text-muted-foreground font-mono">[G] throw [V] cycle</span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className={`text-sm font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
+            <div className="flex flex-col ml-1">
+              <span className="text-[8px] text-muted-foreground font-mono">[G] throw</span>
+              <span className="text-[8px] text-muted-foreground font-mono">ctrl+scroll cycle</span>
+            </div>
+            <span className="text-muted-foreground/30 mx-1">|</span>
+            <span className={`text-lg font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               🧨 {tntCount}
             </span>
-            <span className="text-[9px] text-muted-foreground font-mono">[T]</span>
+            <span className="text-[8px] text-muted-foreground font-mono">[T]</span>
           </div>
           {/* Special Slot — large & prominent */}
           {player.specialSlot && player.specialSlot.length > 0 ? (
-            <div className="bg-card/90 backdrop-blur-sm border-2 border-loot/50 rounded-md px-4 py-2 min-w-[200px] shadow-md">
-              <div className="flex items-center justify-between gap-3">
+            <div className="bg-card/95 backdrop-blur-md border-2 border-loot/60 rounded-lg px-5 py-3 min-w-[240px] shadow-xl">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider">Special Item</span>
-                  <span className="text-foreground font-display text-base leading-tight mt-0.5">
+                  <span className="text-[9px] font-mono text-loot/70 uppercase tracking-widest">⚡ Special Item</span>
+                  <span className="text-foreground font-display text-lg leading-tight mt-0.5">
                     {player.specialSlot[0].icon} {player.specialSlot[0].name}
                   </span>
+                  <span className="text-[10px] font-mono text-muted-foreground mt-0.5">{player.specialSlot[0].description}</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-xl font-display text-loot">{player.specialSlot.length}</span>
-                  <span className="text-[10px] font-mono text-accent font-bold px-1.5 py-0.5 bg-accent/15 border border-accent/30 rounded">[X]</span>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-2xl font-display text-loot font-bold">{player.specialSlot.length}</span>
+                  <span className="text-xs font-mono text-accent font-bold px-2 py-1 bg-accent/20 border-2 border-accent/40 rounded-md shadow-sm">[X]</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-card/50 border border-dashed border-border/30 rounded-md px-4 py-2 min-w-[200px]">
+            <div className="bg-card/40 border-2 border-dashed border-border/30 rounded-lg px-5 py-3 min-w-[240px]">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono text-muted-foreground/40 uppercase tracking-wider">Special Item</span>
-                <span className="text-[10px] font-mono text-muted-foreground/30">[X] empty</span>
+                <span className="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-wider">⚡ Special Item</span>
+                <span className="text-xs font-mono text-muted-foreground/30">[X] empty</span>
               </div>
             </div>
           )}
