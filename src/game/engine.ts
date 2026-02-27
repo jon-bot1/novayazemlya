@@ -1808,8 +1808,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         playGunshot('rifle');
       }
       if ((enemy as any)._proneTimer <= 0) {
-        // Getting up — speed penalty for 2 seconds
-        (enemy as any)._proneGetUpTimer = 2.0;
+        // Getting up — 1s for boss, 2s for others
+        (enemy as any)._proneGetUpTimer = enemy.type === 'boss' ? 1.0 : 2.0;
         enemy.state = 'attack';
       }
       continue;
@@ -1962,6 +1962,46 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         (enemy as any)._orderingArm -= dt;
         if ((enemy as any)._orderingArm <= 0) delete (enemy as any)._orderingArm;
       }
+    }
+
+    // === BODYGUARD HEALS BOSS — nearby bodyguards can patch up the boss ===
+    if ((enemy as any)._isBodyguard && !(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
+      const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
+      if (boss && boss.hp < boss.maxHp * 0.8 && dist(enemy.pos, boss.pos) < 50) {
+        // Start heal — 1 second animation
+        (enemy as any)._bgHealTimer = 1.0;
+        enemy.state = 'idle';
+        enemy.speechBubble = 'ЛЕЧУ, КОМАНДИР!';
+        enemy.speechBubbleTimer = 1.5;
+        (enemy as any)._bgHealCooldown = 15 + Math.random() * 10; // 15-25s cooldown
+      }
+    }
+    // Process bodyguard healing
+    if ((enemy as any)._bgHealTimer > 0) {
+      (enemy as any)._bgHealTimer -= dt;
+      // Green particles during heal
+      if (Math.random() < 0.4) {
+        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
+        if (boss) spawnParticles(state, boss.pos.x + (Math.random() - 0.5) * 10, boss.pos.y + (Math.random() - 0.5) * 10, '#44ff66', 1);
+      }
+      if ((enemy as any)._bgHealTimer <= 0) {
+        delete (enemy as any)._bgHealTimer;
+        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
+        if (boss) {
+          const heal = 15 + Math.floor(Math.random() * 10); // 15-25 HP
+          boss.hp = Math.min(boss.maxHp, boss.hp + heal);
+          boss.speechBubble = 'ХОРОШО...';
+          boss.speechBubbleTimer = 1.5;
+          addMessage(state, `🩹 Bodyguard heals Osipovitj +${heal}HP!`, 'warning');
+          spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
+        }
+        enemy.state = 'chase';
+      }
+    }
+    // Bodyguard heal cooldown
+    if ((enemy as any)._bgHealCooldown > 0) {
+      (enemy as any)._bgHealCooldown -= dt;
+      if ((enemy as any)._bgHealCooldown <= 0) delete (enemy as any)._bgHealCooldown;
     }
 
     // Alarm boost — increases alert range and makes enemies aggressive
@@ -3205,8 +3245,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             // Boss special: 50/50 go prone (damage reduction) or rush player
             if (enemy.type === 'boss') {
               if (Math.random() < 0.5) {
-                // Go prone — 50% grenade damage reduction
-                (enemy as any)._proneTimer = 3.0;
+                // Go prone — 0.2s to get down, then prone for 3s
+                (enemy as any)._proneGoDownTimer = 0.2;
+                if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
                 enemy.speechBubble = 'ЛОЖИСЬ!';
                 enemy.speechBubbleTimer = 2.0;
                 enemy.state = 'idle';
