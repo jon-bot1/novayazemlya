@@ -922,13 +922,7 @@ export function generateMap() {
     { x: 1540, y: 410, w: 40, h: 12, direction: 'south' },
   ];
 
-  // ══════════════════════════════════════
-  // SECRET TUNNEL — random positions
-  // ══════════════════════════════════════
-  const tunnelA = { x: 300 + Math.floor(Math.random() * 600), y: 1900 + Math.floor(Math.random() * 300) };
-  const tunnelB = { x: 2400 + Math.floor(Math.random() * 400), y: 300 + Math.floor(Math.random() * 400) };
-
-  return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H, tunnelA, tunnelB };
+  return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H };
 }
 
 export function createInitialPlayer() {

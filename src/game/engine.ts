@@ -303,8 +303,6 @@ export function createGameState(): GameState {
     distanceTravelled: 0,
     exfilsVisited: new Set<string>(),
     pendingWeapon: null,
-    tunnelA: map.tunnelA,
-    tunnelB: map.tunnelB,
     tunnelTimer: 0,
     propagandaTimer: 0,
     dogsNeutralized: 0,
@@ -658,42 +656,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
 
-  // === TUNNEL TELEPORTATION ===
-  if (state.tunnelA && state.tunnelB) {
-    const dA = dist(state.player.pos, state.tunnelA);
-    const dB = dist(state.player.pos, state.tunnelB);
-    if (state.tunnelTimer > 0) {
-      state.tunnelTimer -= dt;
-      if (state.tunnelTimer <= 0) {
-        // Teleport — offset 60px away from exit so player doesn't re-trigger
-        if (state.tunnelDirection === 'a_to_b') {
-          state.player.pos = { x: state.tunnelB.x + 60, y: state.tunnelB.y + 60 };
-          addMessage(state, '🚇 Emerged from tunnel exit!', 'intel');
-        } else {
-          state.player.pos = { x: state.tunnelA.x + 60, y: state.tunnelA.y + 60 };
-          addMessage(state, '🚇 Emerged from tunnel exit!', 'intel');
-        }
-        state.tunnelDirection = undefined;
-        (state as any)._tunnelCooldown = 2; // 2s cooldown before tunnel can be used again
-        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 12);
-      }
-    } else {
-      // Cooldown after teleport
-      if ((state as any)._tunnelCooldown > 0) {
-        (state as any)._tunnelCooldown -= dt;
-      } else if (dA < 20 && !state.tunnelDirection) {
-        state.tunnelTimer = 3;
-        state.tunnelDirection = 'a_to_b';
-        addMessage(state, '🚇 Entering tunnel... 3 seconds...', 'info');
-        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 8);
-      } else if (dB < 20 && !state.tunnelDirection) {
-        state.tunnelTimer = 3;
-        state.tunnelDirection = 'b_to_a';
-        addMessage(state, '🚇 Entering tunnel... 3 seconds...', 'info');
-        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#8866aa', 8);
-      }
-    }
-  }
+
 
   // === USE SPECIAL ITEM (X key) ===
   if (input.useSpecial) {
