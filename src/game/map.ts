@@ -962,6 +962,7 @@ export function createInitialPlayer() {
     peeking: false,
     lastGrenadeTime: 0,
     tntCount: 0,
+    keycardCount: 0,
     specialSlot: [] as Item[],
     selectedThrowable: 'grenade' as 'grenade' | 'gas_grenade' | 'flashbang',
   };
