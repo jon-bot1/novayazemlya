@@ -1857,6 +1857,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Boss: Commandant Osipovitj — larger, glowing, unique appearance
       const bossSize = R + 8;
       const phase = enemy.bossPhase || 0;
+      const isProne = (enemy as any)._proneTimer > 0;
 
       // Menacing aura
       const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
@@ -1883,11 +1884,39 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const outlineColor = phase === 2 ? '#cc3333' : phase === 1 ? '#aa5533' : '#2a2a3a';
       const eyeColor = phase >= 1 ? '#ff4422' : '#ffaa00';
 
-      drawCuteCharacter(
-        ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
-        bodyColor, outlineColor, eyeColor, isBlinking,
-        'ushanka', '#3a2828', true, bossSize
-      );
+      if (isProne) {
+        // PRONE VISUAL — squished flat, elongated body
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle);
+        ctx.scale(1.6, 0.45); // flatten horizontally
+        drawCuteCharacter(
+          ctx, 0, 0, 0,
+          bodyColor, outlineColor, eyeColor, isBlinking,
+          'ushanka', '#3a2828', true, bossSize
+        );
+        ctx.restore();
+        // Prone indicator
+        ctx.fillStyle = 'rgba(255, 200, 50, 0.7)';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⬇ PRONE ⬇', enemy.pos.x, enemy.pos.y + bossSize * 0.6 + 8);
+      } else {
+        // Boss stomping walk animation — subtle body bob when moving
+        const isMoving = enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank';
+        const stompBob = isMoving ? Math.sin(state.time * 8) * 2.5 : 0;
+        const stompLean = isMoving ? Math.sin(state.time * 4) * 0.06 : 0;
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y + stompBob);
+        ctx.rotate(stompLean);
+        drawCuteCharacter(
+          ctx, 0, 0, enemy.angle,
+          bodyColor, outlineColor, eyeColor, isBlinking,
+          'ushanka', '#3a2828', true, bossSize
+        );
+        ctx.restore();
+      }
 
       // Glowing eyes effect — simple flat circle
       const glowAlpha = 0.3 + Math.sin(state.time * 4) * 0.2;

@@ -4,6 +4,14 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+
+// Helper: set speech bubble if enemy doesn't already have one
+function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
+  if (!text || enemy.speechBubble) return;
+  enemy.speechBubble = text;
+  enemy.speechBubbleTimer = duration;
+}
 
 // Cached spatial grid — rebuilt when walls change
 let _wallGrid: SpatialGrid | null = null;
@@ -749,8 +757,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (e.speechBubbleTimer && e.speechBubbleTimer > 0) {
       e.speechBubbleTimer -= dt;
       if (e.speechBubbleTimer <= 0) {
-        e.speechBubble = undefined;
-        e.speechBubbleTimer = undefined;
+        // Boss death monologue — cycle through lines
+        if (e.state === 'dead' && (e as any)._deathMonologue && (e as any)._deathMonologue.length > 0) {
+          e.speechBubble = (e as any)._deathMonologue.shift();
+          e.speechBubbleTimer = 2.5;
+        } else {
+          e.speechBubble = undefined;
+          e.speechBubbleTimer = undefined;
+        }
       }
     }
   }
@@ -1845,6 +1859,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           };
           enemy.state = 'investigate';
           if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.5; // flee at half original speed
+          setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
           addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
         }
       }
@@ -2041,7 +2056,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue; // skip normal AI
     }
 
-    // === REDNECK SPEECH BUBBLES ===
+    // === IDLE CHATTER — all enemy types ===
+    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && Math.random() < 0.0008) {
+      setSpeech(enemy, pickLine(IDLE_LINES, enemy.type), 3.0);
+    }
+    // === REDNECK CHASE CHATTER ===
     if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
       const lines = ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
       enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
@@ -2090,6 +2109,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
         // Fresh engagement — pick tactical role
         assignTacticalRole(state, enemy);
+
+        // Speech bubble on first alert (not sleepers — they have their own)
+        if (!((enemy as any)._isSleeper && prevState === 'idle')) {
+          setSpeech(enemy, pickLine(ALERT_LINES, enemy.type), 2.5);
+        }
 
         // Sleeper wake-up reaction
         if ((enemy as any)._isSleeper && prevState === 'idle') {
@@ -2186,6 +2210,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Heard a sound — go investigate
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
+      setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // If rushing to a platform, don't get distracted
       if ((enemy as any)._platformTarget) {
@@ -2196,6 +2221,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.state = 'investigate';
         enemy.investigateTarget = { ...state.player.pos }; // snapshot current pos as last known
         enemy.tacticalRole = 'none';
+        setSpeech(enemy, pickLine(LOST_LINES, enemy.type), 2.0);
         // Mark "just lost sight" for ? icon rendering
         (enemy as any)._lostSightTime = state.time;
       } else if (distToPlayer > enemy.alertRange * 1.5) {
@@ -3294,6 +3320,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             }
             enemy.hp = 0;
             enemy.state = 'dead';
+            if (enemy.type === 'boss') {
+              (enemy as any)._deathMonologue = [...BOSS_DEATH_MONOLOGUE];
+              (enemy as any)._deathMonologueTimer = 2.5;
+              enemy.speechBubble = (enemy as any)._deathMonologue.shift();
+              enemy.speechBubbleTimer = 2.5;
+            } else {
+              setSpeech(enemy, pickLine(DEATH_LINES, enemy.type), 3.0);
+            }
             
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
@@ -3394,6 +3428,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
+            setSpeech(enemy, pickLine(DEATH_LINES, enemy.type), 3.0);
             
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
@@ -3500,6 +3535,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
+            if (enemy.type === 'boss') {
+              (enemy as any)._deathMonologue = [...BOSS_DEATH_MONOLOGUE];
+              (enemy as any)._deathMonologueTimer = 2.5;
+              enemy.speechBubble = (enemy as any)._deathMonologue.shift();
+              enemy.speechBubbleTimer = 2.5;
+            } else {
+              setSpeech(enemy, pickLine(DEATH_LINES, enemy.type), 3.0);
+            }
             
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
@@ -3516,6 +3559,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
+            // Hit reaction speech bubble (15% chance)
+            if (!enemy.speechBubble && Math.random() < 0.15) {
+              setSpeech(enemy, pickLine(HIT_LINES, enemy.type), 1.5);
+            }
             // When hit, elevated guards go to attack and expand their range
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
@@ -3530,6 +3577,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               const roll = Math.random();
               if (roll < panicChance) {
                 (enemy as any)._panicTimer = 3 + Math.random() * 3;
+                setSpeech(enemy, pickLine(PANIC_LINES, enemy.type), 2.5);
                 addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS!`, 'warning');
               } else if (roll < panicChance + berserkChance) {
                 (enemy as any)._berserkTimer = 10;
@@ -3537,6 +3585,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 enemy.maxHp *= 2;
                 enemy.hp = Math.min(enemy.hp + enemy.maxHp * 0.3, enemy.maxHp);
                 if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
+                setSpeech(enemy, pickLine(BERSERK_LINES, enemy.type), 3.0);
                 addMessage(state, `🔥 ${enemy.type.toUpperCase()} goes BERSERK!`, 'warning');
               }
             }
@@ -3585,6 +3634,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, `🔥 FRIENDLY FIRE — ${enemy.type.toUpperCase()} hit!`, 'info');
             if (enemy.hp <= 0) {
               enemy.state = 'dead';
+              setSpeech(enemy, pickLine(DEATH_LINES, enemy.type), 3.0);
               sendReinforcementToPlatform(state, enemy);
               enemy.loot = generateEnemyLoot(enemy);
               state.killCount++;
