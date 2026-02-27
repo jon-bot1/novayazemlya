@@ -111,8 +111,10 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             <div className="flex items-center justify-between">
               <span className="text-xs font-display text-accent uppercase tracking-wider">Mission Briefing</span>
               {(() => {
-                const cost = rerollCount === 0 ? 0 : rerollCount * 100;
-                const canAfford = stash.rubles >= cost;
+                const maxRerolls = 3;
+                const atMax = rerollCount >= maxRerolls;
+                const cost = rerollCount === 0 ? 0 : Math.pow(2, rerollCount) * 50; // 0, 100, 200, 400
+                const canAfford = !atMax && stash.rubles >= cost;
                 return (
                   <button
                     className={`px-2 py-1 text-[10px] font-mono border rounded transition-colors ${
@@ -123,7 +125,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     onClick={() => canAfford && onRerollObjectives(cost)}
                     disabled={!canAfford}
                   >
-                    🔄 New Mission {cost === 0 ? '(Free)' : `(${cost}₽)`}
+                    {atMax ? '🔒 No Rerolls Left' : `🔄 New Mission ${cost === 0 ? '(Free)' : `(${cost}₽)`}`}
                   </button>
                 );
               })()}
