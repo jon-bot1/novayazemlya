@@ -21,30 +21,31 @@ const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'kill_boss', name: 'Eliminate Commandant', icon: '💀', description: 'Kill Commandant Osipovitj and retrieve his USB drive', reward: 500, isMain: true },
   { id: 'hack_terminals', name: 'Hack Intel Terminal', icon: '💻', description: 'Hack the nuclear codebook terminal', reward: 400, isMain: true },
   { id: 'plant_bomb', name: 'Sabotage Aircraft', icon: '✈️', description: 'Destroy the airplane with TNT, grenades, or melee', reward: 450, isMain: true },
-  { id: 'collect_documents', name: 'Recover Intel', icon: '📄', description: 'Find and collect 3 classified documents', reward: 350, isMain: true },
   { id: 'find_secret', name: 'Find Secret Passage', icon: '🚪', description: 'Discover the hidden passage in the underground labs', reward: 400, isMain: true },
+  { id: 'kill_sniper', name: 'Neutralize Sniper Tuman', icon: '🎯', description: 'Hunt down and eliminate the deadly Sniper Tuman', reward: 400, isMain: true },
+  { id: 'collect_all_docs', name: 'Recover All Intel', icon: '📚', description: 'Collect every classified document on the map', reward: 450, isMain: true },
+  { id: 'breach_and_clear', name: 'Breach & Clear HQ', icon: '🧨', description: 'Breach 2 walls with TNT and kill 5 enemies inside', reward: 500, isMain: true },
+  { id: 'ghost_extract', name: 'Ghost Extraction', icon: '👻', description: 'Extract without triggering any alarm and undetected', reward: 550, isMain: true },
+  { id: 'wipe_garrison', name: 'Wipe the Garrison', icon: '☠️', description: 'Eliminate at least 15 enemies before extracting', reward: 500, isMain: true },
 ];
 
 const BONUS_OBJECTIVES: ObjectiveTemplate[] = [
-  { id: 'kill_sniper', name: 'Neutralize Sniper', icon: '🎯', description: 'Eliminate Sniper Tuman', reward: 300, isMain: false },
+  { id: 'collect_documents', name: 'Recover Intel', icon: '📄', description: 'Find and collect 3 classified documents', reward: 250, isMain: false },
   { id: 'loot_value', name: 'Scavenger Run', icon: '💰', description: 'Extract with at least 500₽ worth of loot', reward: 200, isMain: false },
-  { id: 'no_alarm', name: 'Ghost Protocol', icon: '🤫', description: 'Extract without triggering any alarm panels', reward: 350, isMain: false },
+  { id: 'no_alarm', name: 'Ghost Protocol', icon: '🤫', description: 'Extract without triggering any alarm panels', reward: 300, isMain: false },
   { id: 'kill_count', name: 'Sweep & Clear', icon: '☠️', description: 'Eliminate at least 10 enemies', reward: 200, isMain: false },
   { id: 'headshots', name: 'Marksman', icon: '🎯', description: 'Get 5 headshot kills', reward: 250, isMain: false },
-  { id: 'speedrun', name: 'Speedrunner', icon: '⏱', description: 'Extract within 2 minutes', reward: 400, isMain: false },
+  { id: 'speedrun', name: 'Speedrunner', icon: '⏱', description: 'Extract within 2 minutes', reward: 350, isMain: false },
   { id: 'loot_bodies', name: 'Body Checker', icon: '🔍', description: 'Loot 5 enemy bodies', reward: 150, isMain: false },
   { id: 'hack_alarm', name: 'Hackerman', icon: '🔓', description: 'Hack an alarm panel', reward: 200, isMain: false },
-  // New lore-driven objectives
-  { id: 'mosin_kills', name: 'Old Faithful', icon: '🔫', description: 'Kill 3 enemies with the Mosin-Nagant — the partizan way', reward: 300, isMain: false },
-  { id: 'no_kills', name: 'Pacifist Route', icon: '🕊️', description: 'Extract without killing anyone', reward: 500, isMain: false },
-  { id: 'breach_walls', name: 'Demolitions Expert', icon: '🧨', description: 'Breach 2 walls with TNT', reward: 250, isMain: false },
-  { id: 'grenade_kills', name: 'Fragmentation', icon: '💣', description: 'Kill 3 enemies with grenades', reward: 250, isMain: false },
-  { id: 'collect_all_docs', name: 'Archivist', icon: '📚', description: 'Collect every document on the map', reward: 400, isMain: false },
-  { id: 'neutralize_dogs', name: 'Dog Whisperer', icon: '🦴', description: 'Neutralize 2 dogs with dog food instead of killing them', reward: 300, isMain: false },
-  { id: 'long_shots', name: 'Distant Thunder', icon: '⚡', description: 'Get 2 kills at extreme range (>250px)', reward: 350, isMain: false },
-  { id: 'knife_kills', name: 'Silent Blade', icon: '🗡️', description: 'Kill 3 enemies with the combat knife at close range', reward: 350, isMain: false },
+  { id: 'mosin_kills', name: 'Old Faithful', icon: '🔫', description: 'Kill 3 enemies with the Mosin-Nagant', reward: 250, isMain: false },
+  { id: 'no_kills', name: 'Pacifist Route', icon: '🕊️', description: 'Extract without killing anyone', reward: 400, isMain: false },
+  { id: 'grenade_kills', name: 'Fragmentation', icon: '💣', description: 'Kill 3 enemies with grenades', reward: 200, isMain: false },
+  { id: 'neutralize_dogs', name: 'Dog Whisperer', icon: '🦴', description: 'Neutralize 2 dogs with dog food', reward: 250, isMain: false },
+  { id: 'long_shots', name: 'Distant Thunder', icon: '⚡', description: 'Get 2 kills at extreme range (>250px)', reward: 300, isMain: false },
+  { id: 'knife_kills', name: 'Silent Blade', icon: '🗡️', description: 'Kill 3 enemies with the combat knife', reward: 250, isMain: false },
   { id: 'loot_caches', name: 'Supply Runner', icon: '📦', description: 'Loot 8 containers in a single raid', reward: 200, isMain: false },
-  { id: 'convert_enemy', name: 'Hearts & Minds', icon: '📢', description: 'Convert an enemy with propaganda and let them get a kill', reward: 400, isMain: false },
+  { id: 'convert_enemy', name: 'Hearts & Minds', icon: '📢', description: 'Convert an enemy with propaganda and let them get a kill', reward: 350, isMain: false },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -112,7 +113,6 @@ export function checkObjectiveCompletion(
       case 'plant_bomb': completed = stats.tntPlacedOnPlane; break;
       case 'find_secret': completed = stats.foundSecret; break;
       case 'hack_alarm': completed = stats.alarmsHacked > 0; break;
-      // New objectives
       case 'mosin_kills': completed = stats.mosinKills >= 3; break;
       case 'no_kills': completed = stats.killCount === 0; break;
       case 'breach_walls': completed = stats.wallsBreached >= 2; break;
@@ -123,6 +123,10 @@ export function checkObjectiveCompletion(
       case 'knife_kills': completed = stats.knifeDistanceKills >= 3; break;
       case 'loot_caches': completed = stats.cachesLooted >= 8; break;
       case 'convert_enemy': completed = stats.convertKill; break;
+      // Combined main objectives
+      case 'breach_and_clear': completed = stats.wallsBreached >= 2 && stats.killCount >= 5; break;
+      case 'ghost_extract': completed = !stats.alarmTriggered && stats.killCount === 0; break;
+      case 'wipe_garrison': completed = stats.killCount >= 15; break;
     }
     return { ...obj, completed };
   });
