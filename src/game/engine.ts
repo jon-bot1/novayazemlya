@@ -1551,9 +1551,38 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.reinforcementTimer = 30 + Math.random() * 20 - state.reinforcementsSpawned * 1.5;
   }
 
+  // Cap sound events — only keep recent ones (prevents unbounded growth)
+  if (state.soundEvents.length > 20) {
+    state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
+  }
+
+  // Cap bullets to prevent lag from rapid-fire scenarios
+  if (state.bullets.length > 150) {
+    state.bullets = state.bullets.slice(-100);
+  }
+
   // Update enemies
+  const viewCx = state.camera.x - 600;
+  const viewCy = state.camera.y - 600;
+  const viewW = 1200;
+  const viewH = 1200;
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
+
+    // Performance: skip full AI for enemies far off-screen that aren't alerted
+    const isOffScreen = enemy.pos.x < viewCx || enemy.pos.x > viewCx + viewW ||
+                        enemy.pos.y < viewCy || enemy.pos.y > viewCy + viewH;
+    if (isOffScreen && (enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.friendly) {
+      // Only update patrol movement at reduced rate
+      enemy.eyeBlink -= dt;
+      if (enemy.eyeBlink < 0) enemy.eyeBlink = 3 + Math.random() * 4;
+      // Speech bubble timer
+      if (enemy.speechBubbleTimer && enemy.speechBubbleTimer > 0) {
+        enemy.speechBubbleTimer -= dt;
+        if (enemy.speechBubbleTimer <= 0) { enemy.speechBubble = undefined; enemy.speechBubbleTimer = undefined; }
+      }
+      continue; // skip expensive AI for idle off-screen enemies
+    }
 
     // Friendly timer countdown
     if (enemy.friendly) {
@@ -2429,6 +2458,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Sniper Tuman: teleport-stalker (never normal movement)
     if (enemy.type === 'sniper') {
+      // === OBSERVING PHASE — sniper watches before engaging ===
+      if ((enemy as any)._sniperObserving) {
+        (enemy as any)._sniperObserveTimer -= dt;
+        // Slowly scan area, don't move or shoot
+        enemy.angle += Math.sin(state.time * 0.8 + enemy.pos.x * 0.01) * 0.015;
+        enemy.state = 'idle';
+        // Only engage after timer runs out AND player is in range+LOS
+        const obsDist = dist(enemy.pos, state.player.pos);
+        const obsLos = obsDist < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos, false);
+        if ((enemy as any)._sniperObserveTimer <= 0 && obsLos) {
+          delete (enemy as any)._sniperObserving;
+          delete (enemy as any)._sniperObserveTimer;
+          addMessage(state, '🎯 Sniper Tuman has spotted you!', 'warning');
+          enemy.state = 'attack';
+        } else if ((enemy as any)._sniperObserveTimer <= 0 && !obsLos) {
+          // Timer done but no LOS — teleport to a better vantage point
+          (enemy as any)._sniperObserveTimer = 5 + Math.random() * 5;
+        }
+        // If player gets very close, break observation early
+        if (obsDist < 120) {
+          delete (enemy as any)._sniperObserving;
+          delete (enemy as any)._sniperObserveTimer;
+          addMessage(state, '🎯 Sniper Tuman detected at close range!', 'warning');
+        }
+        continue; // skip normal sniper AI during observation
+      }
       const isCoverProp = (p: { type: string }) =>
         p.type === 'tree' || p.type === 'pine_tree' || p.type === 'bush' ||
         p.type === 'wood_crate' || p.type === 'barrel_stack' || p.type === 'sandbags' ||
@@ -3257,7 +3312,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (b.fromPlayer) {
       for (const enemy of state.enemies) {
         if (enemy.state === 'dead' || !enemy.elevated || enemy.friendly) continue;
-        if (dist(b.pos, enemy.pos) < 28) { // larger hitbox — guards are on walls
+        const edx = b.pos.x - enemy.pos.x, edy = b.pos.y - enemy.pos.y;
+        if (edx * edx + edy * edy < 784) { // 28*28 = 784
           if (Math.random() < 0.25) {
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
             return false; // concealment miss (reduced from 40% to 25%)
@@ -3310,7 +3366,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         let nearElevated = false;
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead' || !enemy.elevated) continue;
-          if (dist(b.pos, enemy.pos) < 50) { nearElevated = true; break; }
+          const edx2 = b.pos.x - enemy.pos.x, edy2 = b.pos.y - enemy.pos.y;
+          if (edx2 * edx2 + edy2 * edy2 < 2500) { nearElevated = true; break; } // 50*50
         }
         if (nearElevated) {
           // Don't destroy bullet — let it continue to the elevated hitbox check next frame
@@ -3326,20 +3383,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     if (b.fromPlayer) {
       const isMosin = b.weaponName === 'Mosin-Nagant';
-      const hitRadius = isMosin ? 21 : 16; // base 14+2, Mosin 19+2 forgiving hitbox
+      const hitRadius = isMosin ? 21 : 16;
+      const hitRadiusSq = hitRadius * hitRadius;
+      const nearMissRadiusSq = (hitRadius + 3) * (hitRadius + 3);
       for (const enemy of state.enemies) {
-        if (enemy.state === 'dead' || enemy.friendly) continue; // don't hit friendly enemies
-        // Sniper near-miss: bullets within 3px of hitbox trigger flee (no damage)
+        if (enemy.state === 'dead' || enemy.friendly) continue;
+        const dx = b.pos.x - enemy.pos.x, dy = b.pos.y - enemy.pos.y;
+        const dSq = dx * dx + dy * dy;
+        // Quick skip — if more than 50px away, no chance of hit
+        if (dSq > 2500) continue;
+        // Sniper near-miss
         if (enemy.type === 'sniper' && !(enemy as any)._sniperInvisible) {
-          const nearMissRadius = hitRadius + 3;
-          const d = dist(b.pos, enemy.pos);
-          if (d >= hitRadius && d < nearMissRadius) {
+          if (dSq >= hitRadiusSq && dSq < nearMissRadiusSq) {
             (enemy as any)._sniperShouldFlee = true;
             (enemy as any)._sniperTeleportTimer = 0;
             spawnParticles(state, b.pos.x, b.pos.y, '#777', 3);
           }
         }
-        if (dist(b.pos, enemy.pos) < hitRadius) {
+        if (dSq < hitRadiusSq) {
           // Sniper is untouchable during vanish window to prevent free DPS while teleporting
           if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) {
             spawnParticles(state, b.pos.x, b.pos.y, '#999', 2);
@@ -3423,16 +3484,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             }
             // Prone trigger — soldiers/scavs in grass terrain go prone when hit
             if ((enemy.type === 'soldier' || enemy.type === 'scav') && !(enemy as any)._proneTimer && !(enemy as any)._proneGoDownTimer && !(enemy as any)._proneGetUpTimer) {
-              // Check if in grass/forest terrain
-              let inGrass = false;
-              for (const tz of state.terrainZones) {
-                if ((tz.type === 'grass' || tz.type === 'forest') &&
-                    enemy.pos.x >= tz.x && enemy.pos.x <= tz.x + tz.w &&
-                    enemy.pos.y >= tz.y && enemy.pos.y <= tz.y + tz.h) {
-                  inGrass = true;
-                  break;
-                }
-              }
+              // Use terrain grid for fast lookup instead of iterating all zones
+              const terrainGrid = getTerrainGrid(state);
+              const terrain = getTerrainFast(terrainGrid, enemy.pos.x, enemy.pos.y);
+              const inGrass = terrain === 'grass' || terrain === 'forest';
               if (inGrass && Math.random() < 0.20) {
                 // Go down to prone — 1s speed penalty first
                 (enemy as any)._proneGoDownTimer = 1.0;
@@ -3462,9 +3517,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     } else {
       // Friendly fire — panicked enemy bullets can hit other enemies
       if (b.sourceId) {
-        for (const enemy of state.enemies) {
+      for (const enemy of state.enemies) {
           if (enemy.state === 'dead' || enemy.id === b.sourceId) continue;
-          if (dist(b.pos, enemy.pos) < 14) {
+          const fdx = b.pos.x - enemy.pos.x, fdy = b.pos.y - enemy.pos.y;
+          if (fdx * fdx + fdy * fdy < 196) { // 14*14
             enemy.hp -= b.damage * 0.5; // 50% reduced friendly fire damage
             spawnParticles(state, b.pos.x, b.pos.y, '#ffaa00', 4);
             playHit();
@@ -3491,7 +3547,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Friendly bullets don't hit player
       if (b.sourceType === 'friendly') return true;
 
-      if (dist(b.pos, state.player.pos) < 12) {
+      if (distSq(b.pos, state.player.pos) < 144) { // 12*12
         // Cover reduces hit chance based on cover quality
         if (state.player.inCover) {
           const missChance = state.player.peeking ? state.player.coverQuality * 0.5 : state.player.coverQuality;
