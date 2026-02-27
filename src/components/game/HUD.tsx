@@ -352,7 +352,7 @@ export const HUD: React.FC<HUDProps> = ({
             })}
             <div className="flex flex-col ml-1">
               <span className="text-[8px] text-muted-foreground font-mono">[G] throw</span>
-              <span className="text-[8px] text-muted-foreground font-mono">ctrl+scroll cycle</span>
+              <span className="text-[8px] text-muted-foreground font-mono">[V] / ctrl+scroll cycle</span>
             </div>
             <span className="text-muted-foreground/30 mx-1">|</span>
             <span className={`text-lg font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
