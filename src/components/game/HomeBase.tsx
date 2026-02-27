@@ -47,10 +47,11 @@ interface HomeBaseProps {
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
   onBuyTraderItem: (itemId: string) => void;
-  onRerollObjectives: () => void;
+  onRerollObjectives: (cost: number) => void;
+  rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
@@ -109,12 +110,23 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-display text-accent uppercase tracking-wider">Mission Briefing</span>
-              <button
-                className="px-2 py-1 text-[10px] font-mono text-muted-foreground border border-border rounded hover:text-foreground hover:border-foreground/30 transition-colors"
-                onClick={onRerollObjectives}
-              >
-                🔄 New Mission
-              </button>
+              {(() => {
+                const cost = rerollCount === 0 ? 0 : rerollCount * 100;
+                const canAfford = stash.rubles >= cost;
+                return (
+                  <button
+                    className={`px-2 py-1 text-[10px] font-mono border rounded transition-colors ${
+                      canAfford
+                        ? 'text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                        : 'text-muted-foreground/40 border-border/30 cursor-not-allowed'
+                    }`}
+                    onClick={() => canAfford && onRerollObjectives(cost)}
+                    disabled={!canAfford}
+                  >
+                    🔄 New Mission {cost === 0 ? '(Free)' : `(${cost}₽)`}
+                  </button>
+                );
+              })()}
             </div>
             {objectives.map(obj => (
               <div
