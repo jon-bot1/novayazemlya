@@ -137,7 +137,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">Alert Range</span><span className="text-foreground">280px</span>
               <span className="text-muted-foreground">Shoot Range</span><span className="text-foreground">220px</span>
               <span className="text-muted-foreground">Speed</span><span className="text-foreground">1.8 (chase) / 1.2 (patrol)</span>
-              <span className="text-muted-foreground">Special</span><span className="text-warning">3 phases, flashbangs, spawns minions</span>
+              <span className="text-muted-foreground">Special</span><span className="text-warning">3 phases, stim heal (50HP/5s), orders bodyguards, flashbangs</span>
               <span className="text-muted-foreground">Drops</span><span className="text-loot">💾 USB Drive, 💀 Dogtag</span>
             </div>
           </div>
@@ -186,7 +186,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">Alert Range</span><span className="text-danger">400px (extreme)</span>
               <span className="text-muted-foreground">Shoot Range</span><span className="text-danger">350px (extreme)</span>
               <span className="text-muted-foreground">Speed</span><span className="text-foreground">0.6 (slow, methodical)</span>
-              <span className="text-muted-foreground">Special</span><span className="text-accent">Extremely narrow vision arc (laser focus)</span>
+              <span className="text-muted-foreground">Special</span><span className="text-accent">Observes before engaging, repositions for vantage</span>
             </div>
           </div>
 
@@ -335,10 +335,12 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">Ctrl / C</span><span className="text-foreground">Sneak</span>
               <span className="text-muted-foreground">Q / Space</span><span className="text-foreground">Hide near trees/bushes</span>
               <span className="text-muted-foreground">1 / 2 / 3</span><span className="text-foreground">Melee / Sidearm / Primary</span>
+              <span className="text-muted-foreground">Scroll ↕</span><span className="text-foreground">Cycle weapons</span>
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal (auto at low HP)</span>
               <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
               <span className="text-muted-foreground">Hold Right-click</span><span className="text-foreground">Charge throw (2s max)</span>
+              <span className="text-muted-foreground">V / Ctrl+Scroll</span><span className="text-foreground">Cycle grenade type (Frag/Gas/Flash)</span>
               <span className="text-muted-foreground">T (near wall)</span><span className="text-foreground">Place TNT 🧨 — breach walls</span>
               <span className="text-muted-foreground">X</span><span className="text-foreground">Use special item (propaganda/dog food)</span>
               <span className="text-muted-foreground">Tab / I</span><span className="text-foreground">Inventory (drop items)</span>
@@ -402,7 +404,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                   <li>• ✈️ <span className="text-warning">Airplane sabotage</span> — can now be destroyed with grenades or melee, not just TNT</li>
                   <li>• 💳 <span className="text-warning">Access Card consumed</span> on gate use — plan your route carefully</li>
                   <li>• 🚪 <span className="text-accent">Secret passage hint</span> — "Something feels different..." when nearby</li>
-                  <li>• 🎯 Sniper spawn distance fully randomized across northern zones</li>
+                  <li>• 🎯 Sniper spawn distance fully randomized, observes before engaging</li>
                   <li>• ☠️ Death screen now shows both "Return to Base" and "Main Menu" buttons</li>
                 </ul>
               </div>
