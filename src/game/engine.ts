@@ -2688,11 +2688,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.state = 'attack';
             }
           }
-          // After 30s, break cover and rush
+          // After 30s, randomly pick new behavior
           if ((enemy as any)._coverTimer <= 0) {
-            (enemy as any)._seekCover = false;
-            (enemy as any)._coverPos = null;
-            (enemy as any)._coverDecided = false; // can re-roll next time
+            const roll = Math.random();
+            if (roll < 0.3) {
+              // Stay in cover — reset timer
+              (enemy as any)._coverTimer = 20 + Math.random() * 15;
+            } else if (roll < 0.55) {
+              // Rush the player
+              (enemy as any)._seekCover = false;
+              (enemy as any)._coverPos = null;
+              (enemy as any)._coverDecided = false;
+            } else if (roll < 0.75) {
+              // Disengage to patrol
+              (enemy as any)._seekCover = false;
+              (enemy as any)._coverPos = null;
+              (enemy as any)._coverDecided = false;
+              enemy.state = 'patrol';
+              enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+            } else {
+              // Reposition to new cover spot
+              (enemy as any)._coverPos = null;
+              (enemy as any)._coverTimer = 15 + Math.random() * 10;
+            }
           }
           break;
         }
