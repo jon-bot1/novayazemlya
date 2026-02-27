@@ -1,22 +1,48 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
+import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 
 const R = 18;
 const WALL_HEIGHT = 18;
-let _lightCanvas: HTMLCanvasElement | null = null;
 
-// Simple LOS check for renderer — skip detection zones behind walls
+// Cached sorted arrays — only re-sort when count changes
+let _sortedWalls: any[] = [];
+let _sortedWallCount = -1;
+let _sortedProps: Prop[] = [];
+let _sortedPropCount = -1;
+let _rendererWallGrid: SpatialGrid | null = null;
+let _rendererWallCount = -1;
+let _rendererTerrainGrid: TerrainGrid | null = null;
+
+function getRendererWallGrid(state: GameState): SpatialGrid {
+  if (!_rendererWallGrid || state.walls.length !== _rendererWallCount) {
+    _rendererWallGrid = buildSpatialGrid(state.walls);
+    _rendererWallCount = state.walls.length;
+  }
+  return _rendererWallGrid;
+}
+
+function getRendererTerrainGrid(state: GameState): TerrainGrid {
+  if (!_rendererTerrainGrid) {
+    _rendererTerrainGrid = buildTerrainGrid(state.terrainZones, state.mapWidth, state.mapHeight);
+  }
+  return _rendererTerrainGrid;
+}
+
+// Viewport check — is position within visible area (with margin)
+function isOnScreen(x: number, y: number, cx: number, cy: number, w: number, h: number, margin: number = 100): boolean {
+  return x > cx - margin && x < cx + w + margin && y > cy - margin && y < cy + h + margin;
+}
+
+// Simple LOS check for renderer using spatial grid
 function rendererLOS(state: GameState, a: Vec2, b: Vec2): boolean {
+  const grid = getRendererWallGrid(state);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const d = Math.sqrt(dx * dx + dy * dy);
-  const steps = Math.ceil(d / 15);
+  const steps = Math.ceil(d / 20); // larger step for renderer (was 15)
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
-    const px = a.x + dx * t;
-    const py = a.y + dy * t;
-    for (const w of state.walls) {
-      if (px >= w.x && px <= w.x + w.w && py >= w.y && py <= w.y + w.h) return false;
-    }
+    if (collidesWithWallsGrid(grid, a.x + dx * t, a.y + dy * t, 2)) return false;
   }
   return true;
 }
@@ -1119,18 +1145,6 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
   ctx.restore();
 }
 
-// Get terrain type at a world position
-function getTerrainAt(zones: TerrainZone[], x: number, y: number): TerrainZone['type'] {
-  // Later zones override earlier ones
-  let result: TerrainZone['type'] = 'grass';
-  for (const z of zones) {
-    if (x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) {
-      result = z.type;
-    }
-  }
-  return result;
-}
-
 // Terrain colors
 const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
   grass: ['#3a4a2e', '#3e4e32'],
@@ -1140,8 +1154,9 @@ const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
   forest: ['#2a3a1e', '#2e3e22'],
 };
 
-// Draw ground with terrain zones
-function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number, zones: TerrainZone[]) {
+// Draw ground tiles using pre-computed terrain grid
+function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number, state: GameState) {
+  const terrainGrid = getRendererTerrainGrid(state);
   const tileSize = 48;
   const startX = Math.max(0, Math.floor(cx / tileSize) * tileSize);
   const startY = Math.max(0, Math.floor(cy / tileSize) * tileSize);
@@ -1150,67 +1165,23 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
   for (let tx = startX; tx < endX; tx += tileSize) {
     for (let ty = startY; ty < endY; ty += tileSize) {
-      const terrain = getTerrainAt(zones, tx + tileSize / 2, ty + tileSize / 2);
+      const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
       const colors = TERRAIN_COLORS[terrain];
       ctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
       ctx.fillRect(tx, ty, tileSize, tileSize);
 
-      // Subtle tile border
-      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(tx, ty, tileSize, tileSize);
-
+      // Reduced tile detail — only every other tile gets decoration
       const hash = (tx * 7 + ty * 13) % 100;
-
-      if (terrain === 'grass' || terrain === 'forest') {
-        // Grass tufts
-        if (hash < 15) {
-          ctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
-          ctx.lineWidth = 1;
-          const gx = tx + 10 + (hash % 20);
-          const gy = ty + 15 + (hash % 15);
-          ctx.beginPath();
-          ctx.moveTo(gx, gy + 6); ctx.lineTo(gx - 2, gy); ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(gx + 3, gy + 6); ctx.lineTo(gx + 5, gy - 1); ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(gx + 6, gy + 5); ctx.lineTo(gx + 8, gy + 1); ctx.stroke();
-        }
-      } else if (terrain === 'asphalt') {
-        // Road markings and cracks
-        if (hash < 5) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(tx + 10, ty + 20);
-          ctx.lineTo(tx + 35, ty + 30);
-          ctx.stroke();
-        }
-      } else if (terrain === 'concrete') {
-        // Floor cracks
-        if (hash < 8) {
-          ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(tx + 10, ty + 20);
-          ctx.lineTo(tx + 35, ty + 30);
-          ctx.stroke();
-        }
-        if (hash > 90) {
-          ctx.fillStyle = 'rgba(60,50,40,0.1)';
-          ctx.beginPath();
-          ctx.arc(tx + 24, ty + 24, 8, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      } else if (terrain === 'dirt') {
-        // Dirt texture — small stones
-        if (hash < 10) {
-          ctx.fillStyle = 'rgba(80,70,55,0.3)';
-          ctx.beginPath();
-          ctx.arc(tx + 15 + hash % 20, ty + 10 + hash % 25, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      if (hash < 8 && (terrain === 'grass' || terrain === 'forest')) {
+        ctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
+        ctx.lineWidth = 1;
+        const gx = tx + 10 + (hash % 20);
+        const gy = ty + 15 + (hash % 15);
+        ctx.beginPath();
+        ctx.moveTo(gx, gy + 6); ctx.lineTo(gx - 2, gy); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(gx + 3, gy + 6); ctx.lineTo(gx + 5, gy - 1); ctx.stroke();
       }
     }
   }
@@ -1230,7 +1201,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
 
   // Ground tiles with terrain zones
-  drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state.terrainZones);
+  drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
   // Zone labels
   const zoneLabels = [
@@ -1432,20 +1403,30 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── WALLS (3D perspective) ──
-  const sortedWalls = [...state.walls].sort((a, b) => a.y - b.y);
-  for (const wall of sortedWalls) {
+  // ── WALLS (3D perspective) — cached sort, viewport culled ──
+  if (state.walls.length !== _sortedWallCount) {
+    _sortedWalls = [...state.walls].sort((a: any, b: any) => a.y - b.y);
+    _sortedWallCount = state.walls.length;
+  }
+  for (const wall of _sortedWalls) {
+    // Viewport cull — skip walls entirely off screen
+    if (wall.x + wall.w < cx - 20 || wall.x > cx + w + 20 || wall.y + wall.h + WALL_HEIGHT < cy - 20 || wall.y > cy + h + 20) continue;
     drawWall3D(ctx, wall.x, wall.y, wall.w, wall.h, wall.color);
   }
 
-  // ── PROPS (decorative structures) ──
-  const sortedProps = [...state.props].sort((a, b) => a.pos.y - b.pos.y);
-  for (const prop of sortedProps) {
+  // ── PROPS (decorative structures) — cached sort, viewport culled ──
+  if (state.props.length !== _sortedPropCount) {
+    _sortedProps = [...state.props].sort((a, b) => a.pos.y - b.pos.y);
+    _sortedPropCount = state.props.length;
+  }
+  for (const prop of _sortedProps) {
+    if (!isOnScreen(prop.pos.x, prop.pos.y, cx, cy, w, h, 60)) continue;
     drawProp(ctx, prop);
   }
 
-  // ── ALARM PANELS ──
+  // ── ALARM PANELS — viewport culled ──
   for (const panel of state.alarmPanels) {
+    if (!isOnScreen(panel.pos.x, panel.pos.y, cx, cy, w, h, 40)) continue;
     const px = panel.pos.x;
     const py = panel.pos.y;
 
@@ -1516,9 +1497,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillRect(cx, cy, w, h);
   }
 
-  // ── DOCUMENT PICKUPS ──
+  // ── DOCUMENT PICKUPS — viewport culled ──
   for (const dp of state.documentPickups) {
     if (dp.collected) continue;
+    if (!isOnScreen(dp.pos.x, dp.pos.y, cx, cy, w, h, 30)) continue;
     const bob = Math.sin(state.time * 3 + dp.pos.x) * 3;
     const glow = 0.4 + Math.sin(state.time * 2) * 0.2;
 
@@ -1542,8 +1524,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText('DOCUMENT', dp.pos.x, dp.pos.y + bob - 16);
   }
 
-  // ── LOOT ──
+  // ── LOOT — viewport culled ──
   for (const lc of state.lootContainers) {
+    if (!isOnScreen(lc.pos.x, lc.pos.y, cx, cy, w, h, 30)) continue;
     // Ground shadow
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
@@ -1578,9 +1561,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // ── DEAD ENEMIES ──
+  // ── DEAD ENEMIES — viewport culled ──
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
+    if (!isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 30)) continue;
     ctx.save();
     if (!enemy.looted) {
       // Lootable corpse — pulsing loot indicator
@@ -1617,11 +1601,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── LIVING ENEMIES ──
+  // ── LIVING ENEMIES — viewport culled ──
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
-    // Sniper invisible during teleport
     if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) continue;
+    // Skip enemies far off screen (allow larger margin for vision cones)
+    if (!isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 450)) continue;
 
     // Only show detection zone if player can see the enemy (not through walls)
     if (rendererLOS(state, state.player.pos, enemy.pos)) {
@@ -1662,9 +1647,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Clip vision cone to walls (non-elevated only)
       if (!enemy.elevated) {
         // Cast rays along the arc and clip at wall hits
-        const rayCount = 20;
+        const rayCount = 10; // reduced from 20 for performance
         const startAngle = enemy.angle - visionArc;
         const endAngle = enemy.angle + visionArc;
+        const grid = getRendererWallGrid(state);
         ctx.beginPath();
         ctx.moveTo(enemy.pos.x, enemy.pos.y);
         for (let r = 0; r <= rayCount; r++) {
@@ -1672,18 +1658,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           const dx = Math.cos(a);
           const dy = Math.sin(a);
           let rayLen = enemy.alertRange;
-          // Step along ray to find wall hit
-          for (let s = 10; s <= enemy.alertRange; s += 10) {
-            const px = enemy.pos.x + dx * s;
-            const py = enemy.pos.y + dy * s;
-            let hitWall = false;
-            for (const w of state.walls) {
-              if (px >= w.x && px <= w.x + w.w && py >= w.y && py <= w.y + w.h) {
-                hitWall = true;
-                break;
-              }
-            }
-            if (hitWall) { rayLen = s; break; }
+          // Step along ray to find wall hit — larger steps for speed
+          for (let s = 15; s <= enemy.alertRange; s += 15) {
+            if (collidesWithWallsGrid(grid, enemy.pos.x + dx * s, enemy.pos.y + dy * s, 2)) { rayLen = s; break; }
           }
           ctx.lineTo(enemy.pos.x + dx * rayLen, enemy.pos.y + dy * rayLen);
         }

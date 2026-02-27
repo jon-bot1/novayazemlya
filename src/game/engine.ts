@@ -3,9 +3,37 @@ import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
+import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
+
+// Cached spatial grid — rebuilt when walls change
+let _wallGrid: SpatialGrid | null = null;
+let _wallCount = -1;
+let _terrainGrid: TerrainGrid | null = null;
+
+function getWallGrid(state: GameState): SpatialGrid {
+  if (!_wallGrid || state.walls.length !== _wallCount) {
+    _wallGrid = buildSpatialGrid(state.walls);
+    _wallCount = state.walls.length;
+  }
+  return _wallGrid;
+}
+
+function getTerrainGrid(state: GameState): TerrainGrid {
+  if (!_terrainGrid) {
+    _terrainGrid = buildTerrainGrid(state.terrainZones, state.mapWidth, state.mapHeight);
+  }
+  return _terrainGrid;
+}
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+// Fast squared distance — avoid sqrt when only comparing
+function distSq(a: Vec2, b: Vec2) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return dx * dx + dy * dy;
 }
 
 function normalize(v: Vec2): Vec2 {
@@ -278,27 +306,11 @@ export function createGameState(): GameState {
 }
 
 function hasLineOfSight(state: GameState, a: Vec2, b: Vec2, elevated: boolean = false): boolean {
-  if (elevated) {
-    // Elevated enemies can see over walls BUT only within their limited range
-    // They still need actual distance check (handled elsewhere), just skip wall collision
-    return true;
-  }
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const d = Math.sqrt(dx * dx + dy * dy);
-  const steps = Math.ceil(d / 6); // step size ~6px to catch thin walls/fences (8px)
-  for (let i = 1; i <= steps; i++) {
-    const t = i / steps;
-    if (collidesWithWalls(state, a.x + dx * t, a.y + dy * t, 2)) return false;
-  }
-  return true;
+  return hasLOSGrid(getWallGrid(state), a, b, elevated);
 }
 
 function collidesWithWalls(state: GameState, x: number, y: number, r: number): boolean {
-  for (const w of state.walls) {
-    if (rectContains(w.x, w.y, w.w, w.h, x, y, r)) return true;
-  }
-  return false;
+  return collidesWithWallsGrid(getWallGrid(state), x, y, r);
 }
 
 function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
@@ -955,6 +967,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (keycardIdx >= 0) {
           state.player.inventory.splice(keycardIdx, 1); // consume access card
           state.walls.splice(gateWallIdx, 1);
+          _wallGrid = null; _wallCount = -1; // Invalidate spatial grid
           addMessage(state, '💳 GATE OPENED with access card! (card consumed)', 'intel');
           spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
         } else {
@@ -1096,13 +1109,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (bottomH > 8) newSegments.push({ ...w, y: holeEnd, h: bottomH });
       }
       state.walls.splice(bestIdx, 1, ...newSegments);
+      _wallGrid = null; // Invalidate spatial grid after wall change
+      _wallCount = -1;
     }
 
     if (bestIdx >= 0) state.wallsBreached++;
     addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
     playExplosion();
-    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 24);
-    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 18);
+    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 12);
+    spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 8);
     state.soundEvents.push({ pos: { ...tnt.pos }, radius: 500, time: state.time });
 
     // TNT only damages walls — no enemy damage (breach-only explosive)
