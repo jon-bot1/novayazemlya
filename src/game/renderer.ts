@@ -48,6 +48,40 @@ function rendererLOS(state: GameState, a: Vec2, b: Vec2): boolean {
   return true;
 }
 
+// Shared animation time — set once per frame, avoids Date.now() per character
+let _frameTime = 0;
+export function setFrameTime(t: number) { _frameTime = t; }
+
+// Simple LOD character for distant enemies — ~5 draw calls vs ~40
+function drawSimpleCharacter(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, angle: number,
+  bodyColor: string, outlineColor: string,
+  size: number = R
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(1, size * 0.7, size * 0.4, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Body circle
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Direction indicator
+  ctx.fillStyle = outlineColor;
+  ctx.beginPath();
+  ctx.arc(Math.cos(angle) * size * 0.35, Math.sin(angle) * size * 0.35, size * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawCuteCharacter(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, angle: number,
@@ -82,7 +116,7 @@ function drawCuteCharacter(
   // === LEGS — always point downward (no rotation), so feet face south ===
   ctx.save();
   // NO ctx.rotate(angle) here — legs always point down
-  const walkPhase = (Date.now() % 400) / 400;
+  const walkPhase = (_frameTime * 2.5) % 1;
   const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.35 : 0;
   for (const side of [-1, 1]) {
     ctx.save();
@@ -219,14 +253,9 @@ function drawCuteCharacter(
   ctx.lineWidth = 1.8;
   ctx.stroke();
   // Body gradient
-  const torsoGrad = ctx.createLinearGradient(0, -torsoH * 0.35, 0, torsoH * 0.65);
-  torsoGrad.addColorStop(0, 'rgba(255,255,255,0.18)');
-  torsoGrad.addColorStop(0.5, 'rgba(255,255,255,0.02)');
-  torsoGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
-  ctx.fillStyle = torsoGrad;
-  ctx.beginPath();
-  ctx.roundRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH, [4, 4, 2, 2]);
-  ctx.fill();
+  // Skip gradient for performance — use simple highlight instead
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH * 0.4);
   // Collar detail
   ctx.strokeStyle = shadeColor(bodyColor, -20);
   ctx.lineWidth = 1.2;
@@ -607,7 +636,7 @@ function drawMountedGun(ctx: CanvasRenderingContext2D, x: number, y: number, ang
 
   // Muzzle flash when alert
   if (alert) {
-    const flash = Math.sin(Date.now() * 0.02) * 0.5 + 0.5;
+    const flash = Math.sin(_frameTime * 20) * 0.5 + 0.5;
     ctx.fillStyle = `rgba(255, 200, 60, ${flash * 0.4})`;
     ctx.beginPath();
     ctx.arc(40, 0, 6, 0, Math.PI * 2);
@@ -662,12 +691,9 @@ function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
   ctx.fillStyle = color;
   ctx.fillRect(x, y, w, h);
 
-  // Top highlight
-  const topGrad = ctx.createLinearGradient(x, y, x, y + h);
-  topGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
-  topGrad.addColorStop(1, 'rgba(0,0,0,0.05)');
-  ctx.fillStyle = topGrad;
-  ctx.fillRect(x, y, w, h);
+  // Top highlight — flat instead of gradient for Firefox perf
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(x, y, w, h * 0.4);
 
   // Edge line
   ctx.strokeStyle = 'rgba(0,0,0,0.15)';
@@ -707,12 +733,9 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       // Top face
       ctx.fillStyle = '#9a7a48';
       ctx.fillRect(left, top, w, h);
-      // Highlight
-      const g = ctx.createLinearGradient(left, top, left, top + h);
-      g.addColorStop(0, 'rgba(255,255,255,0.15)');
-      g.addColorStop(1, 'rgba(0,0,0,0.08)');
-      ctx.fillStyle = g;
-      ctx.fillRect(left, top, w, h);
+      // Highlight — flat
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(left, top, w, h * 0.4);
       // Plank lines
       ctx.strokeStyle = 'rgba(80,50,20,0.3)';
       ctx.lineWidth = 1;
@@ -766,12 +789,9 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       // Top surface
       ctx.fillStyle = '#7a7a70';
       ctx.fillRect(left, top, w, h);
-      const tg = ctx.createLinearGradient(left, top, left + w, top);
-      tg.addColorStop(0, 'rgba(255,255,255,0.08)');
-      tg.addColorStop(0.5, 'rgba(255,255,255,0.02)');
-      tg.addColorStop(1, 'rgba(0,0,0,0.05)');
-      ctx.fillStyle = tg;
-      ctx.fillRect(left, top, w, h);
+      // Flat highlight instead of gradient
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(left, top, w * 0.5, h);
       // Equipment items on table
       ctx.fillStyle = '#3a5a3a';
       ctx.fillRect(left + 4, top + 3, 8, 5); // radio
@@ -1094,7 +1114,7 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(x, y, tbr, 0, Math.PI * 2); ctx.stroke();
       // Dripping effect
-      const drip = Math.sin(Date.now() * 0.003 + x) * 3;
+      const drip = Math.sin(_frameTime * 3 + x) * 3;
       ctx.fillStyle = 'rgba(100, 255, 50, 0.5)';
       ctx.beginPath(); ctx.arc(x + 4, y + tbr + 2 + drip, 2, 0, Math.PI * 2); ctx.fill();
       break;
@@ -1197,6 +1217,7 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
+  _frameTime = state.time;
   ctx.clearRect(0, 0, w, h);
 
   const cx = state.camera.x - w / 2;
@@ -1362,57 +1383,39 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── WINDOWS on walls — viewport culled ──
+  // ── WINDOWS on walls — viewport culled, no gradients for perf ──
   for (const win of state.windows) {
     if (!isOnScreen(win.x + win.w / 2, win.y + win.h / 2, cx, cy, w, h, 100)) continue;
-    // Window frame
-    ctx.fillStyle = 'rgba(140, 180, 220, 0.35)';
-    ctx.fillRect(win.x, win.y, win.w, win.h);
-    // Glass reflection
-    const glassGrad = win.direction === 'north' || win.direction === 'south'
-      ? ctx.createLinearGradient(win.x, win.y, win.x, win.y + win.h)
-      : ctx.createLinearGradient(win.x, win.y, win.x + win.w, win.y);
-    glassGrad.addColorStop(0, 'rgba(180, 210, 255, 0.5)');
-    glassGrad.addColorStop(0.5, 'rgba(200, 230, 255, 0.25)');
-    glassGrad.addColorStop(1, 'rgba(160, 200, 240, 0.4)');
-    ctx.fillStyle = glassGrad;
+    // Window frame + glass (flat colors instead of gradients)
+    ctx.fillStyle = 'rgba(160, 200, 240, 0.4)';
     ctx.fillRect(win.x, win.y, win.w, win.h);
     // Frame border
     ctx.strokeStyle = '#4a5a6a';
     ctx.lineWidth = 2;
     ctx.strokeRect(win.x, win.y, win.w, win.h);
     // Cross bar
+    ctx.strokeStyle = '#5a6a7a';
+    ctx.lineWidth = 1;
     if (win.w > win.h) {
-      ctx.strokeStyle = '#5a6a7a';
-      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(win.x + win.w / 2, win.y);
       ctx.lineTo(win.x + win.w / 2, win.y + win.h);
       ctx.stroke();
     } else {
-      ctx.strokeStyle = '#5a6a7a';
-      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(win.x, win.y + win.h / 2);
       ctx.lineTo(win.x + win.w, win.y + win.h / 2);
       ctx.stroke();
     }
-    // Light shaft from window
-    ctx.save();
+    // Light shaft — simple flat rect instead of gradient
     const shaftLen = 80;
     let sx = win.x, sy = win.y, sw = win.w, sh = win.h;
     if (win.direction === 'north') { sy += win.h; sh = shaftLen; }
     else if (win.direction === 'south') { sy -= shaftLen; sh = shaftLen; }
     else if (win.direction === 'west') { sx += win.w; sw = shaftLen; }
     else if (win.direction === 'east') { sx -= shaftLen; sw = shaftLen; }
-    const shaftGrad = win.direction === 'north' || win.direction === 'south'
-      ? ctx.createLinearGradient(sx, sy, sx, sy + sh)
-      : ctx.createLinearGradient(sx, sy, sx + sw, sy);
-    shaftGrad.addColorStop(0, 'rgba(180, 210, 255, 0.12)');
-    shaftGrad.addColorStop(1, 'rgba(180, 210, 255, 0)');
-    ctx.fillStyle = shaftGrad;
+    ctx.fillStyle = 'rgba(180, 210, 255, 0.06)';
     ctx.fillRect(sx, sy, sw, sh);
-    ctx.restore();
   }
 
   // ── WALLS (3D perspective) — cached sort, viewport culled ──
@@ -1626,7 +1629,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Only show detection zone if close enough AND player can see the enemy
     const edx = playerPos.x - enemy.pos.x, edy = playerPos.y - enemy.pos.y;
     const enemyDistSq = edx * edx + edy * edy;
-    const showVisionCone = enemyDistSq < 500 * 500; // skip vision cones for enemies >500px away
+    const showVisionCone = enemyDistSq < 400 * 400; // skip vision cones for enemies >400px away
+    const useLOD = enemyDistSq > 350 * 350; // simplified rendering for distant enemies
     if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
@@ -1830,18 +1834,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         'ushanka', '#3a2828', true, bossSize
       );
 
-      // Glowing eyes effect
-      ctx.save();
-      ctx.translate(enemy.pos.x, enemy.pos.y);
+      // Glowing eyes effect — simple flat circle
       const glowAlpha = 0.3 + Math.sin(state.time * 4) * 0.2;
-      const eyeGlow = ctx.createRadialGradient(0, -bossSize * 0.3, 0, 0, -bossSize * 0.3, bossSize * 0.6);
-      eyeGlow.addColorStop(0, `rgba(255, ${phase >= 1 ? '60' : '170'}, ${phase >= 1 ? '20' : '40'}, ${glowAlpha})`);
-      eyeGlow.addColorStop(1, 'rgba(255, 60, 20, 0)');
-      ctx.fillStyle = eyeGlow;
+      ctx.fillStyle = `rgba(255, ${phase >= 1 ? '60' : '170'}, ${phase >= 1 ? '20' : '40'}, ${glowAlpha * 0.5})`;
       ctx.beginPath();
-      ctx.arc(0, -bossSize * 0.3, bossSize * 0.6, 0, Math.PI * 2);
+      ctx.arc(enemy.pos.x, enemy.pos.y - bossSize * 0.3, bossSize * 0.4, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
 
       // Boss ordering arm — extended pointing arm when giving orders
       if ((enemy as any)._orderingArm > 0) {
@@ -2002,11 +2000,16 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
 
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
-      drawCuteCharacter(
-        ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
-        cfg.body, cfg.outline, cfg.eye, isBlinking,
-        isSleeper ? 'none' : cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R), enemyMoving
-      );
+      const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
+      if (useLOD) {
+        drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
+      } else {
+        drawCuteCharacter(
+          ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
+          cfg.body, cfg.outline, cfg.eye, isBlinking,
+          isSleeper ? 'none' : cfg.hat, cfg.hatColor, true, eSize, enemyMoving
+        );
+      }
       // Sleeper label
       if (isSleeper && enemy.state === 'idle') {
         ctx.fillStyle = '#aaaaaa';
@@ -2042,7 +2045,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           ctx.stroke();
         }
         // Electric arcs when close to player
-        if (Math.sqrt((enemy.pos.x - state.player.pos.x) ** 2 + (enemy.pos.y - state.player.pos.y) ** 2) < 60) {
+        if (enemyDistSq < 3600) { // 60^2
           ctx.strokeStyle = `rgba(68, 221, 255, ${0.3 + Math.random() * 0.5})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
