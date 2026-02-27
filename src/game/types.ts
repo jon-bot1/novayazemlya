@@ -179,6 +179,7 @@ export interface Player {
   lastGrenadeTime: number;
   tntCount: number;
   specialSlot: Item[]; // special items: propaganda, syringes, mission items
+  selectedThrowable: 'grenade' | 'gas_grenade' | 'flashbang';
 }
 
 export interface Wall {
@@ -324,6 +325,7 @@ export interface InputState {
   interact: boolean;
   heal: boolean;
   throwGrenade: boolean;
+  cycleThrowable: boolean;
   movementMode: MovementMode;
   moveTarget?: Vec2 | null;
   takeCover: boolean;

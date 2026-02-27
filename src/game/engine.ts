@@ -924,33 +924,49 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     playGunshot('pistol');
   }
 
-  // Throw grenade (G key) — supports both grenades and flashbangs, 1s cooldown
+  // Cycle throwable type (V key)
+  if (input.cycleThrowable) {
+    const types: Array<'grenade' | 'gas_grenade' | 'flashbang'> = ['grenade', 'gas_grenade', 'flashbang'];
+    const labels: Record<string, string> = { grenade: '💣 Frag Grenade', gas_grenade: '☣️ Gas Grenade', flashbang: '💫 Flashbang' };
+    const cur = types.indexOf(state.player.selectedThrowable);
+    // Find next type that player actually has
+    for (let i = 1; i <= types.length; i++) {
+      const next = types[(cur + i) % types.length];
+      if (state.player.inventory.some(item => item.category === next)) {
+        state.player.selectedThrowable = next;
+        addMessage(state, `Selected: ${labels[next]}`, 'info');
+        break;
+      }
+    }
+    input.cycleThrowable = false;
+  }
+
+  // Throw grenade (G key) — throws selected throwable type, 1s cooldown
   if (input.throwGrenade) {
-    // Check 1 second cooldown
     if (state.time - state.player.lastGrenadeTime < 1.0) {
       addMessage(state, '⚠ Wait before throwing again!', 'warning');
       input.throwGrenade = false;
     } else {
-      // Try frag first, then gas grenade, then flashbang
-      let grenadeIdx = state.player.inventory.findIndex(i => i.category === 'grenade');
-      let isFlashbang = false;
-      let isGasGrenade = false;
+      const selected = state.player.selectedThrowable;
+      let grenadeIdx = state.player.inventory.findIndex(i => i.category === selected);
+      // If selected type is empty, try others as fallback
       if (grenadeIdx < 0) {
-        grenadeIdx = state.player.inventory.findIndex(i => i.category === 'gas_grenade');
-        isGasGrenade = grenadeIdx >= 0;
-      }
-      if (grenadeIdx < 0) {
-        grenadeIdx = state.player.inventory.findIndex(i => i.category === 'flashbang');
-        isFlashbang = grenadeIdx >= 0;
+        const fallback: Array<'grenade' | 'gas_grenade' | 'flashbang'> = ['grenade', 'gas_grenade', 'flashbang'];
+        for (const type of fallback) {
+          grenadeIdx = state.player.inventory.findIndex(i => i.category === type);
+          if (grenadeIdx >= 0) {
+            state.player.selectedThrowable = type;
+            break;
+          }
+        }
       }
       if (grenadeIdx >= 0) {
         const grenadeItem = state.player.inventory[grenadeIdx];
-        isFlashbang = grenadeItem.category === 'flashbang';
-        isGasGrenade = grenadeItem.category === 'gas_grenade';
+        const isFlashbang = grenadeItem.category === 'flashbang';
+        const isGasGrenade = grenadeItem.category === 'gas_grenade';
         const angle = state.player.angle;
         const chargePower = (state as any)._grenadeChargePower || 0;
         delete (state as any)._grenadeChargePower;
-        // Base speed 4, charged up to 8 (2x) over 2 seconds
         const throwSpeed = 4 + (chargePower / 2.0) * 4;
         state.grenades.push({
           pos: { x: state.player.pos.x + Math.cos(angle) * 20, y: state.player.pos.y + Math.sin(angle) * 20 },

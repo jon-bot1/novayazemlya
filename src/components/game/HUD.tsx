@@ -310,17 +310,31 @@ export const HUD: React.FC<HUDProps> = ({
             </div>
           </div>
           {/* Throwables & Equipment */}
-          <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
-            <span className={`text-sm font-mono ${grenadeCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
-              💣 {grenadeCount}
-            </span>
-            <span className={`text-sm font-mono ${gasGrenadeCount > 0 ? 'text-safe' : 'text-muted-foreground/40'}`}>
-              ☣️ {gasGrenadeCount}
-            </span>
-            <span className={`text-sm font-mono ${flashbangCount > 0 ? 'text-foreground' : 'text-muted-foreground/40'}`}>
-              💫 {flashbangCount}
-            </span>
-            <span className="text-[9px] text-muted-foreground font-mono">[G]</span>
+          <div className="flex items-center gap-1.5 bg-card/70 backdrop-blur-sm border border-border/40 rounded-md px-3 py-1.5">
+            {([
+              { type: 'grenade' as const, icon: '💣', count: grenadeCount, color: 'text-warning', label: 'Frag' },
+              { type: 'gas_grenade' as const, icon: '☣️', count: gasGrenadeCount, color: 'text-safe', label: 'Gas' },
+              { type: 'flashbang' as const, icon: '💫', count: flashbangCount, color: 'text-foreground', label: 'Flash' },
+            ] as const).map(t => {
+              const isSelected = player.selectedThrowable === t.type;
+              return (
+                <span
+                  key={t.type}
+                  className={`text-sm font-mono px-1.5 py-0.5 rounded transition-all ${
+                    isSelected && t.count > 0
+                      ? `${t.color} bg-accent/20 border border-accent/50 font-bold shadow-sm`
+                      : isSelected && t.count === 0
+                      ? 'text-muted-foreground/40 border border-dashed border-muted-foreground/20'
+                      : t.count > 0
+                      ? `${t.color}`
+                      : 'text-muted-foreground/30'
+                  }`}
+                >
+                  {t.icon} {t.count}
+                </span>
+              );
+            })}
+            <span className="text-[9px] text-muted-foreground font-mono">[G] throw [V] cycle</span>
             <span className="text-muted-foreground/30">|</span>
             <span className={`text-sm font-mono font-bold ${tntCount > 0 ? 'text-warning' : 'text-muted-foreground/40'}`}>
               🧨 {tntCount}
