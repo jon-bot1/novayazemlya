@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee' | 'electric'
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack' | 'special';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -32,6 +32,9 @@ export interface Item {
   weaponFireRate?: number; // ms between shots (overrides player fireRate)
   fireMode?: 'single' | 'auto'; // single = one shot per click, auto = hold to fire
   weaponSlot?: 'primary' | 'secondary'; // which slot this weapon goes in
+  isBuckshot?: boolean; // fires multiple pellets in a cone
+  pelletCount?: number; // number of pellets (default 5)
+  coneAngle?: number; // spread cone in radians (default 0.5 ~30°)
 }
 
 export interface PendingWeapon {
@@ -122,7 +125,7 @@ export interface Enemy {
   lastShot: number;
   fireRate: number;
   angle: number;
-  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss' | 'sniper' | 'shocker';
+  type: 'scav' | 'soldier' | 'heavy' | 'turret' | 'boss' | 'sniper' | 'shocker' | 'redneck' | 'dog';
   bossPhase?: number; // 0=normal, 1=enraged, 2=desperate
   bossChargeTimer?: number; // charge attack cooldown
   bossSpawnTimer?: number; // spawn minion cooldown
@@ -142,6 +145,11 @@ export interface Enemy {
   elevated: boolean; // on raised platform, can shoot over walls
   friendly: boolean; // converted by gas grenade — fights for player
   friendlyTimer: number; // seconds remaining as friendly
+  ownerId?: string; // for dogs: the redneck they follow
+  speechBubble?: string; // current speech bubble text
+  speechBubbleTimer?: number; // seconds remaining for speech bubble
+  neutralized?: boolean; // for dogs: fed dog food, will disappear
+  neutralizedTimer?: number; // seconds until neutralized dog disappears
 }
 
 export interface Player {
@@ -170,6 +178,7 @@ export interface Player {
   peeking: boolean;
   lastGrenadeTime: number;
   tntCount: number;
+  specialSlot: Item[]; // special items: propaganda, syringes, mission items
 }
 
 export interface Wall {
@@ -282,6 +291,13 @@ export interface GameState {
   distanceTravelled: number; // total pixels walked
   exfilsVisited: Set<string>; // names of exfil points player has been near
   pendingWeapon: PendingWeapon | null; // weapon awaiting player confirmation
+  tunnelA?: Vec2; // secret tunnel entrance A
+  tunnelB?: Vec2; // secret tunnel entrance B
+  tunnelTimer: number; // teleport countdown (3s)
+  tunnelDirection?: 'a_to_b' | 'b_to_a'; // which way player is going
+  propagandaTarget?: string; // enemy id being persuaded
+  propagandaTimer: number; // propaganda effect countdown
+  dogsNeutralized: number; // dogs neutralized with food
 }
 
 export interface SoundEvent {
@@ -313,4 +329,5 @@ export interface InputState {
   takeCover: boolean;
   switchWeapon?: 1 | 2 | 3;
   useTNT: boolean;
+  useSpecial: boolean; // use item from special slot
 }
