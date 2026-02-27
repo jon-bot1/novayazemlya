@@ -78,6 +78,12 @@ function canPickupItem(state: GameState, item: Item): boolean {
 }
 
 function tryPickupItem(state: GameState, item: Item): boolean {
+  // Access cards go to dedicated slot, not backpack
+  if (item.id === 'gate_keycard') {
+    state.player.keycardCount++;
+    addMessage(state, `💳 Access Card acquired! (${state.player.keycardCount} held)`, 'intel');
+    return true;
+  }
   if (!canPickupItem(state, item)) {
     const maxSlots = BASE_INVENTORY_SLOTS + state.backpackCapacity;
     addMessage(state, `⚠ Backpack full! (${maxSlots} slots)`, 'warning');
@@ -966,9 +972,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const gateCenterX = gw.x + gw.w / 2;
       const gateCenterY = gw.y + gw.h / 2;
       if (dist(state.player.pos, { x: gateCenterX, y: gateCenterY }) < 80) {
-        const keycardIdx = state.player.inventory.findIndex(i => i.id === 'gate_keycard');
-        if (keycardIdx >= 0) {
-          state.player.inventory.splice(keycardIdx, 1); // consume access card
+        if (state.player.keycardCount > 0) {
+          state.player.keycardCount--; // consume access card
           state.walls.splice(gateWallIdx, 1);
           _wallGrid = null; _wallCount = -1; // Invalidate spatial grid
           addMessage(state, '💳 GATE OPENED with access card! (card consumed)', 'intel');

@@ -359,6 +359,10 @@ export const HUD: React.FC<HUDProps> = ({
               🧨 {tntCount}
             </span>
             <span className="text-[8px] text-muted-foreground font-mono">[T]</span>
+            <span className="text-muted-foreground/30 mx-1">|</span>
+            <span className={`text-lg font-mono font-bold ${(player.keycardCount || 0) > 0 ? 'text-accent' : 'text-muted-foreground/40'}`}>
+              💳 {player.keycardCount || 0}
+            </span>
           </div>
           {/* Special Slot — large & prominent */}
           {player.specialSlot && player.specialSlot.length > 0 ? (

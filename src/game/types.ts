@@ -178,6 +178,7 @@ export interface Player {
   peeking: boolean;
   lastGrenadeTime: number;
   tntCount: number;
+  keycardCount: number; // access cards — separate slot, not in backpack
   specialSlot: Item[]; // special items: propaganda, syringes, mission items
   selectedThrowable: 'grenade' | 'gas_grenade' | 'flashbang';
 }
