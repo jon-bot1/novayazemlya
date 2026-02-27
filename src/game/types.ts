@@ -167,6 +167,7 @@ export interface Player {
   currentAmmo: number;
   maxAmmo: number;
   ammoType: AmmoType;
+  ammoReserves: Record<AmmoType, number>; // vest ammo slots — not in backpack
   bleedRate: number;
   armor: number;
   lastShot: number;
@@ -177,7 +178,7 @@ export interface Player {
   coverLabel: string; // display label for cover type
   peeking: boolean;
   lastGrenadeTime: number;
-  tntCount: number;
+  tntCount: number; // kept for compat but unused — TNT in specialSlot now
   keycardCount: number; // access cards — separate slot, not in backpack
   specialSlot: Item[]; // special items: propaganda, syringes, mission items
   selectedThrowable: 'grenade' | 'gas_grenade' | 'flashbang';

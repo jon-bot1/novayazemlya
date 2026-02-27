@@ -170,7 +170,7 @@ export const HUD: React.FC<HUDProps> = ({
   const grenadeCount = player.inventory.filter(i => i.category === 'grenade').length;
   const gasGrenadeCount = player.inventory.filter(i => i.category === 'gas_grenade').length;
   const flashbangCount = player.inventory.filter(i => i.category === 'flashbang').length;
-  const tntCount = player.tntCount || 0;
+  const tntCount = player.specialSlot?.filter(i => i.name === 'TNT Charge').length || 0;
   const bandages = player.inventory.filter(i => i.medicalType === 'bandage').length;
   const medkits = player.inventory.filter(i => i.medicalType === 'medkit').length;
   const morphine = player.inventory.filter(i => i.medicalType === 'morphine').length;
@@ -297,6 +297,31 @@ export const HUD: React.FC<HUDProps> = ({
               </div>
             </div>
           </div>
+          {/* Ammo Vest — shows reserves for all ammo types */}
+          {player.ammoReserves && (
+            <div className="flex gap-1 bg-card/70 backdrop-blur-sm border border-border/30 rounded-lg px-2 py-1.5">
+              <span className="text-[8px] text-muted-foreground/60 font-mono self-center mr-1">🦺</span>
+              {(['9x18', '5.45x39', '7.62x39', '12gauge', '7.62x54R'] as const).map(at => {
+                const count = player.ammoReserves[at] || 0;
+                const isActive = player.ammoType === at;
+                return (
+                  <div
+                    key={at}
+                    className={`flex flex-col items-center px-1.5 py-0.5 rounded text-[8px] font-mono transition-all ${
+                      isActive && count > 0
+                        ? 'bg-accent/20 border border-accent/50 text-accent font-bold'
+                        : count > 0
+                        ? 'text-muted-foreground border border-border/20'
+                        : 'text-muted-foreground/20 border border-transparent'
+                    }`}
+                  >
+                    <span className="text-[7px] leading-none">{at.split('x')[0]}</span>
+                    <span className="leading-none">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {/* Weapon slots — scroll to cycle */}
           <div className="flex gap-1.5">
             {([
@@ -364,31 +389,38 @@ export const HUD: React.FC<HUDProps> = ({
               💳 {player.keycardCount || 0}
             </span>
           </div>
-          {/* Special Slot — large & prominent */}
-          {player.specialSlot && player.specialSlot.length > 0 ? (
-            <div className="bg-card/95 backdrop-blur-md border-2 border-loot/60 rounded-lg px-5 py-3 min-w-[240px] shadow-xl">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-mono text-loot/70 uppercase tracking-widest">⚡ Special Item</span>
-                  <span className="text-foreground font-display text-lg leading-tight mt-0.5">
-                    {player.specialSlot[0].icon} {player.specialSlot[0].name}
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground mt-0.5">{player.specialSlot[0].description}</span>
+          {/* Special Slot — shows non-TNT special items */}
+          {(() => {
+            const nonTnt = (player.specialSlot || []).filter(i => i.name !== 'TNT Charge');
+            if (nonTnt.length > 0) {
+              const first = nonTnt[0];
+              return (
+                <div className="bg-card/95 backdrop-blur-md border-2 border-loot/60 rounded-lg px-5 py-3 min-w-[240px] shadow-xl">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-mono text-loot/70 uppercase tracking-widest">⚡ Special Item</span>
+                      <span className="text-foreground font-display text-lg leading-tight mt-0.5">
+                        {first.icon} {first.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground mt-0.5">{first.description}</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-2xl font-display text-loot font-bold">{nonTnt.length}</span>
+                      <span className="text-xs font-mono text-accent font-bold px-2 py-1 bg-accent/20 border-2 border-accent/40 rounded-md shadow-sm">[X]</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-2xl font-display text-loot font-bold">{player.specialSlot.length}</span>
-                  <span className="text-xs font-mono text-accent font-bold px-2 py-1 bg-accent/20 border-2 border-accent/40 rounded-md shadow-sm">[X]</span>
+              );
+            }
+            return (
+              <div className="bg-card/40 border-2 border-dashed border-border/30 rounded-lg px-5 py-3 min-w-[240px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-wider">⚡ Special Item</span>
+                  <span className="text-xs font-mono text-muted-foreground/30">[X] empty</span>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-card/40 border-2 border-dashed border-border/30 rounded-lg px-5 py-3 min-w-[240px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-muted-foreground/40 uppercase tracking-wider">⚡ Special Item</span>
-                <span className="text-xs font-mono text-muted-foreground/30">[X] empty</span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
           {/* Kill count & docs */}
           <div className="flex items-center gap-3">
             <span className="text-sm text-foreground/80 font-mono">☠ {killCount}</span>
