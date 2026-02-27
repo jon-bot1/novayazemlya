@@ -1945,6 +1945,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         redneck: { body: '#8a6a4a', outline: '#6a4a2a', eye: '#331', hat: 'bandana', hatColor: '#aa5533' },
       };
       let cfg = configs[enemy.type];
+      // Sleeper: skin-colored body (underwear), no hat, messy hair
+      const isSleeper = !!(enemy as any)._isSleeper;
+      if (isSleeper) {
+        cfg = { body: '#e8c8a8', outline: '#c8a888', eye: '#555', hat: 'none', hatColor: '#000' };
+      }
       // Officers: beret with badge, no helmet
       if (isOfficer) {
         cfg = { body: '#6a8a4a', outline: '#4a6a2a', eye: '#222', hat: 'beret', hatColor: '#8b0000' };
@@ -1958,8 +1963,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       drawCuteCharacter(
         ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
         cfg.body, cfg.outline, cfg.eye, isBlinking,
-        cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R), enemyMoving
+        isSleeper ? 'none' : cfg.hat, cfg.hatColor, true, isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R), enemyMoving
       );
+      // Sleeper label
+      if (isSleeper && enemy.state === 'idle') {
+        ctx.fillStyle = '#aaaaaa';
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💤', enemy.pos.x, enemy.pos.y - R - 8);
+      }
       // Bodyguard name labels
       if (isBodyguard) {
         ctx.fillStyle = '#aaaaaa';
