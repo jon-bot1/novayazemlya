@@ -957,5 +957,6 @@ export function createInitialPlayer() {
     lastGrenadeTime: 0,
     tntCount: 0,
     specialSlot: [] as Item[],
+    selectedThrowable: 'grenade' as 'grenade' | 'gas_grenade' | 'flashbang',
   };
 }

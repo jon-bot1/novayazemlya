@@ -544,7 +544,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -641,6 +641,7 @@ export const GameCanvas: React.FC = () => {
         setReadingDoc(null);
       }
       if (e.key === 'g') inputRef.current.throwGrenade = true;
+      if (e.key === 'v') inputRef.current.cycleThrowable = true;
       if (e.key === 'x') inputRef.current.useSpecial = true;
       if (e.key === 'q' || e.key === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (e.key === '1') inputRef.current.switchWeapon = 1;
