@@ -816,13 +816,6 @@ export function generateMap() {
       w: 8, h: 8, type: 'mine' as Prop['type'],
     })),
 
-    // === TOXIC BARRELS ===
-    { pos: { x: HX + 450, y: HY + 800 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
-    { pos: { x: 2550, y: 750 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
-    { pos: { x: 700, y: 950 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
-    { pos: { x: 1900, y: 1400 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
-    { pos: { x: HX + 850, y: HY + 700 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
-    { pos: { x: 550, y: 1600 }, w: 18, h: 18, type: 'toxic_barrel' as Prop['type'] },
 
     // === AIRPLANE (parked outside hangar) ===
     { pos: { x: HX + HW + 160, y: HY + 200 }, w: 120, h: 80, type: 'airplane' as Prop['type'] },
