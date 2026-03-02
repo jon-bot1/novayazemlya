@@ -212,7 +212,7 @@ export const WEAPON_TEMPLATES = {
   // Secondary weapons
   revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   8.4,     50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
   baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3.6,      8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
-  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     15, '🗡️',   3.6,      6,   350,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
+  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     45, '🗡️',   3.6,      6,   280,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
 };
 
 export function isSecondaryWeapon(item: Item): boolean {
