@@ -921,14 +921,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.player.equippedWeapon = wpnForSlot;
       if (wpnForSlot.ammoType) state.player.ammoType = wpnForSlot.ammoType;
       
-      // Restore saved ammo for this weapon, or load fresh
+      // Restore saved ammo for this weapon, or load from reserves
       const savedAmmo = (wpnForSlot as any)._loadedAmmo;
       if (savedAmmo !== undefined) {
         state.player.currentAmmo = savedAmmo;
         state.player.maxAmmo = getMagSize(wpnForSlot);
       } else {
-        state.player.maxAmmo = getMagSize(wpnForSlot);
-        state.player.currentAmmo = state.player.maxAmmo; // first equip — full mag
+        // First equip — load from ammo reserves (no free ammo)
+        setWeaponAmmo(state, wpnForSlot);
       }
       
       addMessage(state, `🔫 ${wpnForSlot.name} [${slot}]`, 'info');
