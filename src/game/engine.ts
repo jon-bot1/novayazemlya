@@ -1020,7 +1020,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const recoilBloom = (state as any)._recoilBloom || 0;
     const totalSpread = Math.max(0.02, degradedSpread + movingSpread + recoilBloom);
     
-    const baseBulletSpeed = wpn?.bulletSpeed || 8;
+    const baseBulletSpeed = (wpn?.bulletSpeed || 8) * 1.25; // +25% base projectile speed
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
     const bulletSpeed = baseBulletSpeed * (1 + bulletSpeedBonus);
     const bulletLife = wpn?.weaponRange || 60;
