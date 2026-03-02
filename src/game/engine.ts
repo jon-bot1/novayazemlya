@@ -1733,7 +1733,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       lastRadioCall: state.time, radioGroup: 99, radioAlert: 2,
       tacticalRole: rt === 'heavy' ? 'suppressor' : 'assault',
       flankTarget: undefined, suppressTimer: 0, callForHelpTimer: 0,
-      lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
+      lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
     };
     state.enemies.push(re);
     state.reinforcementsSpawned++;
@@ -2186,28 +2186,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const distToPlayer = dist(enemy.pos, state.player.pos);
     const los = hasLineOfSight(state, enemy.pos, state.player.pos, enemy.elevated);
 
-    // === STEALTH AWARENESS TRACKING — compute how close each enemy is to detecting player ===
-    // Detection ratio: 0 = unaware, 1 = fully detected
-    const playerIsHidingForDetection = !!(state as any)._playerHiding;
-    if (!playerIsHidingForDetection && los && distToPlayer < enemy.alertRange * alarmBoost * 1.3) {
-      const toPlayerAngle2 = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-      let angleDiff2 = Math.abs(toPlayerAngle2 - enemy.angle);
-      if (angleDiff2 > Math.PI) angleDiff2 = Math.PI * 2 - angleDiff2;
-
-      const isBodyguard2 = !!(enemy as any)._isBodyguard;
-      const vc2 = isBodyguard2
-        ? { frontArc: Math.PI * 0.5, rearRange: 0.2 }
-        : { scav: { frontArc: Math.PI * 0.25, rearRange: 0.08 }, soldier: { frontArc: Math.PI * 0.30, rearRange: 0.12 }, heavy: { frontArc: Math.PI * 0.40, rearRange: 0.20 }, turret: { frontArc: Math.PI * 0.40, rearRange: 0.0 }, sniper: { frontArc: Math.PI * 0.12, rearRange: 0.03 }, shocker: { frontArc: Math.PI * 0.35, rearRange: 0.15 }, redneck: { frontArc: Math.PI * 0.30, rearRange: 0.10 }, dog: { frontArc: Math.PI * 0.50, rearRange: 0.40 } }[enemy.type] || { frontArc: Math.PI * 0.30, rearRange: 0.12 };
-      const isBehind2 = angleDiff2 > vc2.frontArc;
-      const effectiveRange2 = (isBehind2 ? enemy.alertRange * vc2.rearRange : enemy.alertRange) * alarmBoost;
-      const detectionRatio = Math.max(0, 1 - (distToPlayer / effectiveRange2));
-
-      if (detectionRatio > ((state as any)._stealthDetection || 0)) {
-        (state as any)._stealthDetection = detectionRatio;
-        (state as any)._stealthNearestState = enemy.state;
-        (state as any)._stealthNearestType = enemy.type;
-        (state as any)._stealthNearestDist = distToPlayer;
-      }
+    // === STEALTH AWARENESS TRACKING — use awareness meter ===
+    if (enemy.awareness > ((state as any)._stealthDetection || 0)) {
+      (state as any)._stealthDetection = enemy.awareness;
+      (state as any)._stealthNearestState = enemy.state;
+      (state as any)._stealthNearestType = enemy.type;
+      (state as any)._stealthNearestDist = distToPlayer;
     }
 
     // Enemy tries to activate alarm panel when in chase/attack and near one
@@ -2358,7 +2342,45 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
     // playerIsHiding already declared above
-    const canSeePlayer = !playerIsHiding && distToPlayer < effectiveRange && los;
+    const playerInRange = !playerIsHiding && distToPlayer < effectiveRange && los;
+
+    // === AWARENESS SYSTEM — gradual detection instead of binary ===
+    // Calculate visibility factor based on movement, terrain, and cover
+    const tg2 = getTerrainGrid(state);
+    const playerTerrain = getTerrainFast(tg2, state.player.pos.x, state.player.pos.y);
+    const terrainVisibility: Record<string, number> = { forest: 0.4, grass: 0.8, dirt: 1.0, asphalt: 1.0, concrete: 1.0 };
+    let visibilityFactor = terrainVisibility[playerTerrain] ?? 1.0;
+    // Movement mode affects visibility
+    const pMode = (state as any)._lastMovementMode || 'walk';
+    if (pMode === 'sneak') visibilityFactor *= 0.3;
+    else if (pMode === 'sprint') visibilityFactor *= 1.8;
+    // Cover reduces visibility
+    if ((state as any)._playerHiding) visibilityFactor *= 0;
+    else if (state.player.inCover) visibilityFactor *= 0.5;
+    // Behind enemy = much harder to detect
+    if (isBehind) visibilityFactor *= 0.15;
+    // Distance falloff — closer = faster detection
+    const distanceFactor = Math.max(0, 1 - (distToPlayer / effectiveRange));
+    
+    // Awareness buildup rate (per second)
+    const awarenessRate = playerInRange ? distanceFactor * visibilityFactor * 1.2 : 0;
+    
+    // Update awareness
+    if (awarenessRate > 0) {
+      enemy.awareness = Math.min(1, enemy.awareness + awarenessRate * dt);
+    } else {
+      // Decay awareness when player is not visible
+      const decayRate = enemy.state === 'chase' || enemy.state === 'attack' ? 0.05 : enemy.awarenessDecay;
+      enemy.awareness = Math.max(0, enemy.awareness - decayRate * dt);
+    }
+
+    // Awareness thresholds for state transitions
+    const AWARE_ALERT = 0.3;   // enemy becomes suspicious
+    const AWARE_CHASE = 0.65;  // enemy starts investigating
+    const AWARE_ATTACK = 0.9;  // full detection, combat
+    
+    // canSeePlayer is now awareness-based
+    const canSeePlayer = enemy.awareness >= AWARE_ATTACK;
 
     // Check for nearby sound events (gunshots, explosions)
     let heardSound: Vec2 | null = null;
@@ -2433,6 +2455,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
       }
+    } else if (enemy.awareness >= AWARE_CHASE && (prevState === 'idle' || prevState === 'patrol')) {
+      // Suspicious — investigate
+      enemy.state = 'investigate';
+      enemy.investigateTarget = { ...state.player.pos };
+      setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+    } else if (enemy.awareness >= AWARE_ALERT && enemy.awareness < AWARE_CHASE && (prevState === 'idle' || prevState === 'patrol')) {
+      // Alert — turn toward player
+      enemy.state = 'alert' as any;
+      enemy.angle = toPlayerAngle;
+    }
+    
+    if (canSeePlayer) {
 
       // Apply tactical behavior based on role
       if (enemy.tacticalRole === 'flanker' && enemy.type !== 'turret' && enemy.type !== 'boss') {
@@ -3457,7 +3491,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             lastShot: 0, angle: Math.random() * Math.PI * 2,
             type: 'scav', eyeBlink: 3, loot: [], looted: false,
             lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
-            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
+            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
           };
           state.enemies.push(minion);
           addMessage(state, '📻 Osipovitj calls reinforcements!', 'warning');
@@ -3809,6 +3843,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Sniper is untouchable during vanish window to prevent free DPS while teleporting
           if (enemy.type === 'sniper' && (enemy as any)._sniperInvisible > 0) {
             spawnParticles(state, b.pos.x, b.pos.y, '#999', 2);
+            return false;
+          }
+
+          // === SILENT TAKEDOWN — sneak + behind + close range = instant kill, no sound ===
+          const isSneaking = (state as any)._lastMovementMode === 'sneak';
+          const toEnemyAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+          let takedownAngleDiff = Math.abs(toEnemyAngle - enemy.angle);
+          if (takedownAngleDiff > Math.PI) takedownAngleDiff = Math.PI * 2 - takedownAngleDiff;
+          const behindEnemy = takedownAngleDiff < Math.PI * 0.4; // within 72° of enemy's facing direction (behind them)
+          const closeRange = dist(state.player.pos, enemy.pos) < 120;
+          const unaware = enemy.awareness < 0.5;
+          
+          if (isSneaking && behindEnemy && closeRange && unaware && enemy.type !== 'boss' && enemy.type !== 'turret') {
+            // SILENT TAKEDOWN — instant kill, NO sound event, bonus message
+            enemy.hp = 0;
+            enemy.state = 'dead';
+            setSpeech(enemy, '...', 1.0);
+            sendReinforcementToPlatform(state, enemy);
+            enemy.loot = generateEnemyLoot(enemy);
+            state.killCount++;
+            state.sneakKills++;
+            if (enemy.type === 'dog') state.dogsKilled++;
+            addMessage(state, `🗡️ SILENT TAKEDOWN! +Stealth bonus`, 'kill');
+            spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ccff', 8);
+            // NO sound event — completely silent kill
             return false;
           }
 
