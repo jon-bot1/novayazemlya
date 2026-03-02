@@ -598,6 +598,8 @@ export const GameCanvas: React.FC = () => {
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       const k = e.key.toLowerCase();
       keys.add(k);
+      // Also track physical key codes for reliable movement during Shift/Ctrl
+      if (e.code) keys.add(e.code.toLowerCase());
       if (k === 'e') inputRef.current.interact = true;
       if (k === 't') inputRef.current.useTNT = true;
       if (k === 'h') inputRef.current.heal = true;
@@ -667,6 +669,7 @@ export const GameCanvas: React.FC = () => {
     const onKeyUp = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
       keys.delete(k);
+      if (e.code) keys.delete(e.code.toLowerCase());
       if (k === 'e') inputRef.current.interact = false;
       if (e.key === 'Shift') inputRef.current.movementMode = 'walk';
       if (e.key === 'Control' || k === 'c') inputRef.current.movementMode = 'walk';
@@ -710,10 +713,10 @@ export const GameCanvas: React.FC = () => {
 
     const updateKeys = () => {
       let mx = 0, my = 0;
-      if (keys.has('w') || keys.has('arrowup')) my -= 1;
-      if (keys.has('s') || keys.has('arrowdown')) my += 1;
-      if (keys.has('a') || keys.has('arrowleft')) mx -= 1;
-      if (keys.has('d') || keys.has('arrowright')) mx += 1;
+      if (keys.has('w') || keys.has('arrowup') || keys.has('keyw')) my -= 1;
+      if (keys.has('s') || keys.has('arrowdown') || keys.has('keys')) my += 1;
+      if (keys.has('a') || keys.has('arrowleft') || keys.has('keya')) mx -= 1;
+      if (keys.has('d') || keys.has('arrowright') || keys.has('keyd')) mx += 1;
       inputRef.current.moveX = mx;
       inputRef.current.moveY = my;
     };
