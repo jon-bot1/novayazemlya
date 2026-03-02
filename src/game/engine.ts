@@ -526,22 +526,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
     }
-    // TOXIC BARREL CHECK — use distSq, skip non-toxic props early
-    if (!(state as any)._toxicBarrelPositions) {
-      (state as any)._toxicBarrelPositions = state.props.filter(p => p.type === 'toxic_barrel').map(p => p.pos);
-    }
-    for (const tpos of (state as any)._toxicBarrelPositions) {
-      const tdx = newPos.x - tpos.x, tdy = newPos.y - tpos.y;
-      if (tdx * tdx + tdy * tdy < 900) {
-        state.player.hp -= 0.15 * dt * 60;
-        if (Math.random() < 0.04) {
-          spawnParticles(state, newPos.x, newPos.y, '#88ff44', 1);
-        }
-        if (!state.gameOver && state.player.hp <= 0) {
-          state.deathCause = '☠ Toxic exposure from chemical barrel';
-        }
-      }
-    }
     // Track distance travelled
     state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
