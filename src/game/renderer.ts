@@ -111,23 +111,23 @@ function drawCuteCharacter(
   ctx.ellipse(1, size * 0.85, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // === LEGS ===
-  ctx.save();
+  // === LEGS (simplified) ===
   const walkPhase = (_frameTime * 2.5) % 1;
   const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.35 : 0;
+  ctx.fillStyle = shadeColor(bodyColor, -15);
   for (const side of [-1, 1]) {
+    const lx = legW * 1.1 * side;
+    const ly = torsoH * 0.35;
     ctx.save();
-    ctx.translate(legW * 1.1 * side, torsoH * 0.35);
+    ctx.translate(lx, ly);
     ctx.rotate(legSwing * side);
-    // Leg
-    ctx.fillStyle = shadeColor(bodyColor, -15);
     ctx.fillRect(-legW / 2, 0, legW, legH * 0.95);
     // Boot
     ctx.fillStyle = '#3a3832';
     ctx.fillRect(-legW * 0.55, legH * 0.88, legW * 1.1, legH * 0.18);
+    ctx.fillStyle = shadeColor(bodyColor, -15);
     ctx.restore();
   }
-  ctx.restore();
 
   // === GUN ARM ===
   if (hasGun) {
@@ -1007,37 +1007,59 @@ const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
   forest: ['#2a3a1e', '#2e3e22'],
 };
 
-// Draw ground tiles using pre-computed terrain grid
-function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number, state: GameState) {
+// Cached ground canvas — rendered once, blitted each frame
+let _groundCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
+let _groundMapW = 0;
+let _groundMapH = 0;
+
+function ensureGroundCanvas(state: GameState) {
+  if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight) return;
+  _groundMapW = state.mapWidth;
+  _groundMapH = state.mapHeight;
+  try {
+    _groundCanvas = new OffscreenCanvas(_groundMapW, _groundMapH);
+  } catch {
+    _groundCanvas = document.createElement('canvas');
+    (_groundCanvas as HTMLCanvasElement).width = _groundMapW;
+    (_groundCanvas as HTMLCanvasElement).height = _groundMapH;
+  }
+  const gctx = (_groundCanvas as any).getContext('2d') as CanvasRenderingContext2D;
   const terrainGrid = getRendererTerrainGrid(state);
   const tileSize = 48;
-  const startX = Math.max(0, Math.floor(cx / tileSize) * tileSize);
-  const startY = Math.max(0, Math.floor(cy / tileSize) * tileSize);
-  const endX = Math.min(mapW, cx + w + tileSize);
-  const endY = Math.min(mapH, cy + h + tileSize);
-
-  for (let tx = startX; tx < endX; tx += tileSize) {
-    for (let ty = startY; ty < endY; ty += tileSize) {
+  for (let tx = 0; tx < _groundMapW; tx += tileSize) {
+    for (let ty = 0; ty < _groundMapH; ty += tileSize) {
       const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
       const colors = TERRAIN_COLORS[terrain];
-      ctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
-      ctx.fillRect(tx, ty, tileSize, tileSize);
-
-      // Reduced tile detail — only every other tile gets decoration
+      gctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
+      gctx.fillRect(tx, ty, tileSize, tileSize);
+      // Sparse grass detail
       const hash = (tx * 7 + ty * 13) % 100;
       if (hash < 8 && (terrain === 'grass' || terrain === 'forest')) {
-        ctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
-        ctx.lineWidth = 1;
+        gctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
+        gctx.lineWidth = 1;
         const gx = tx + 10 + (hash % 20);
         const gy = ty + 15 + (hash % 15);
-        ctx.beginPath();
-        ctx.moveTo(gx, gy + 6); ctx.lineTo(gx - 2, gy); ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(gx + 3, gy + 6); ctx.lineTo(gx + 5, gy - 1); ctx.stroke();
+        gctx.beginPath();
+        gctx.moveTo(gx, gy + 6); gctx.lineTo(gx - 2, gy); gctx.stroke();
+        gctx.beginPath();
+        gctx.moveTo(gx + 3, gy + 6); gctx.lineTo(gx + 5, gy - 1); gctx.stroke();
       }
     }
   }
+}
+
+// Draw ground by blitting cached canvas
+function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, mapW: number, mapH: number, state: GameState) {
+  ensureGroundCanvas(state);
+  if (!_groundCanvas) return;
+  // Only blit the visible portion
+  const sx = Math.max(0, Math.floor(cx));
+  const sy = Math.max(0, Math.floor(cy));
+  const sw = Math.min(mapW - sx, Math.ceil(w) + 1);
+  const sh = Math.min(mapH - sy, Math.ceil(h) + 1);
+  if (sw <= 0 || sh <= 0) return;
+  ctx.drawImage(_groundCanvas as any, sx, sy, sw, sh, sx, sy, sw, sh);
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
@@ -1105,9 +1127,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.strokeStyle = `rgba(60, 220, 80, ${pulse})`;
       ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.fillStyle = `rgba(60, 220, 80, ${pulse})`;
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
@@ -1146,9 +1166,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)';
       ctx.lineWidth = 1;
-      ctx.setLineDash([4, 6]);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(150, 150, 150, 0.4)';
       ctx.font = 'bold 9px sans-serif';
       ctx.textAlign = 'center';
@@ -1347,9 +1365,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fill();
         ctx.strokeStyle = `${glowColor} ${pulse * 0.7})`;
         ctx.lineWidth = 2;
-        ctx.setLineDash([4, 3]);
         ctx.stroke();
-        ctx.setLineDash([]);
       }
 
       ctx.beginPath();
@@ -1521,8 +1537,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Only show detection zone if close enough AND player can see the enemy
     const edx = playerPos.x - enemy.pos.x, edy = playerPos.y - enemy.pos.y;
     const enemyDistSq = edx * edx + edy * edy;
-    const showVisionCone = enemyDistSq < 250 * 250 && (enemy.state !== 'patrol' && enemy.state !== 'idle'); // skip for far/idle enemies
-    const useLOD = enemyDistSq > 200 * 200; // aggressive LOD — simplified rendering kicks in sooner
+    const showVisionCone = enemyDistSq < 200 * 200 && (enemy.state !== 'patrol' && enemy.state !== 'idle'); // tighter range for perf
+    const useLOD = enemyDistSq > 350 * 350; // aggressive LOD for Firefox perf
     if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
@@ -1583,9 +1599,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fill();
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 6]);
         ctx.stroke();
-        ctx.setLineDash([]);
       } else {
         // Elevated: draw normal arc (sees over walls)
         ctx.beginPath();
@@ -1596,9 +1610,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fill();
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 6]);
         ctx.stroke();
-        ctx.setLineDash([]);
       }
 
       ctx.beginPath();
@@ -1613,9 +1625,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.closePath();
         ctx.strokeStyle = `rgba(255, 50, 30, ${alertPulse * 5})`;
         ctx.lineWidth = 1;
-        ctx.setLineDash([3, 5]);
         ctx.stroke();
-        ctx.setLineDash([]);
       }
       ctx.restore();
     }
@@ -1711,9 +1721,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
         ctx.strokeStyle = phase === 2 ? 'rgba(255, 30, 30, 0.3)' : 'rgba(255, 120, 40, 0.2)';
         ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
         ctx.stroke();
-        ctx.setLineDash([]);
       }
 
       // Draw the boss character — dark uniform, ushanka with red star, glowing eyes
@@ -1858,12 +1866,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         // Pointing indicator
         ctx.strokeStyle = 'rgba(255, 200, 50, 0.6)';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([3, 3]);
         ctx.beginPath();
         ctx.moveTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
         ctx.lineTo(bossSize * 2.5, -bossSize * 0.8);
         ctx.stroke();
-        ctx.setLineDash([]);
         ctx.restore();
       }
 
@@ -2029,12 +2035,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
             const healPulse = 0.5 + Math.sin(state.time * 8) * 0.3;
             ctx.strokeStyle = `rgba(60, 255, 80, ${healPulse})`;
             ctx.lineWidth = 2;
-            ctx.setLineDash([4, 3]);
             ctx.beginPath();
             ctx.moveTo(enemy.pos.x, enemy.pos.y);
             ctx.lineTo(boss.pos.x, boss.pos.y);
             ctx.stroke();
-            ctx.setLineDash([]);
           }
           // Green cross above bodyguard
           ctx.fillStyle = 'rgba(60, 255, 80, 0.9)';
@@ -2109,9 +2113,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.strokeStyle = `rgba(255, 180, 0, ${panicPulse * 0.7})`;
       ctx.lineWidth = 2;
-      ctx.setLineDash([3, 3]);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.restore();
       ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 12);
       // Exclamation marks flying chaotically
@@ -2174,10 +2176,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.globalAlpha = bigPulse;
         ctx.font = 'bold 18px sans-serif';
         ctx.fillStyle = '#ffcc44';
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 4;
         ctx.fillText('?', enemy.pos.x, enemy.pos.y - R - 14);
-        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
         ctx.globalAlpha = 1;
       } else {
         const pulse = 0.6 + Math.sin(state.time * 4) * 0.4;
@@ -2303,9 +2303,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.arc(enemy.pos.x, enemy.pos.y, R + 10, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(60, 220, 80, ${friendPulse})`;
       ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.fillStyle = `rgba(60, 220, 80, ${friendPulse})`;
       ctx.font = 'bold 7px sans-serif';
       ctx.textAlign = 'center';
@@ -2347,9 +2345,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.strokeStyle = `rgba(255, 60, 20, ${alpha * 2})`;
       ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
       ctx.stroke();
-      ctx.setLineDash([]);
     }
 
     // TNT body
@@ -2364,12 +2360,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Blinking light
     if (blinkOn) {
       ctx.fillStyle = '#ff4444';
-      ctx.shadowColor = '#ff2200';
-      ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.arc(tnt.pos.x, tnt.pos.y - 6, 3, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
 
     // Timer text
@@ -2399,9 +2392,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fill();
       ctx.strokeStyle = `rgba(255, 80, 30, ${alpha * 2})`;
       ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
       ctx.stroke();
-      ctx.setLineDash([]);
     }
 
     // Grenade body
@@ -2498,8 +2489,6 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'center';
     ctx.fillStyle = color;
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 4;
     ctx.fillText(`${coverIcon} [auto] ${coverType === 'high' ? 'HIGH' : 'LOW'} COVER`, cp.x, cp.y - 20);
     ctx.restore();
   }
@@ -2517,14 +2506,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.arc(state.player.pos.x, state.player.pos.y, R + 14, shieldAngle - 1.2, shieldAngle + 1.2);
     ctx.stroke();
 
-    // Dashed outer ring
-    ctx.setLineDash([3, 3]);
+    // Outer ring (solid for perf)
     ctx.strokeStyle = 'rgba(80, 180, 255, 0.25)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(state.player.pos.x, state.player.pos.y, R + 20, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.setLineDash([]);
 
     // Label — show LOW/HIGH cover type with distinct icons
     const coverType = (state as any)._coverType as string || 'low';
@@ -2545,8 +2532,6 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = 'rgba(80, 220, 100, 0.95)';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 4;
     ctx.fillText('🌲 [Q] HIDE', state.player.pos.x, state.player.pos.y + R + 22);
     ctx.restore();
   }
@@ -2557,8 +2542,6 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillStyle = 'rgba(80, 220, 100, 0.95)';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 4;
     ctx.fillText('🌲 HIDDEN', state.player.pos.x, state.player.pos.y + R + 22);
     ctx.restore();
   }
@@ -2580,11 +2563,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const safePulse = 0.5 + Math.sin(state.time * 2) * 0.2;
       ctx.strokeStyle = `rgba(60, 220, 80, ${safePulse})`;
       ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
       ctx.beginPath();
       ctx.arc(playerX, playerY, R + 24, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.restore();
     } else if (inCombat) {
       // Full combat — red pulsing danger ring
@@ -2599,10 +2580,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = `rgba(255, 50, 30, ${dangerPulse + 0.2})`;
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 3;
       ctx.fillText('⚠ DETECTED', playerX, playerY + R + 38);
-      ctx.shadowBlur = 0;
       ctx.restore();
     } else if (detection > 0.02) {
       // Approaching detection — graduated arc indicator
@@ -2629,10 +2607,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = `rgba(${r}, ${g}, 40, ${alpha + 0.2})`;
       ctx.font = 'bold 8px monospace';
       ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 3;
       ctx.fillText(label, playerX, playerY + R + 38);
-      ctx.shadowBlur = 0;
       ctx.restore();
     } else {
       // Fully safe — subtle green dot
@@ -2721,9 +2696,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     const pa = 0.2 + Math.sin(state.time * 8) * 0.15;
     ctx.strokeStyle = `rgba(220, 50, 50, ${pa})`;
     ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
     ctx.stroke();
-    ctx.setLineDash([]);
     ctx.restore();
   }
 
