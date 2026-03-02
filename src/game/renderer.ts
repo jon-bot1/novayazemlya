@@ -59,17 +59,16 @@ function drawSimpleCharacter(
   bodyColor: string, outlineColor: string,
   size: number = R
 ) {
-  ctx.save();
-  ctx.translate(x, y);
+  // No save/restore — manually reset. Faster on Firefox.
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
-  ctx.ellipse(1, size * 0.7, size * 0.4, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 1, y + size * 0.7, size * 0.4, size * 0.12, 0, 0, Math.PI * 2);
   ctx.fill();
   // Body circle
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
-  ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2);
+  ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
   ctx.lineWidth = 1.5;
@@ -77,9 +76,8 @@ function drawSimpleCharacter(
   // Direction indicator
   ctx.fillStyle = outlineColor;
   ctx.beginPath();
-  ctx.arc(Math.cos(angle) * size * 0.35, Math.sin(angle) * size * 0.35, size * 0.12, 0, Math.PI * 2);
+  ctx.arc(x + Math.cos(angle) * size * 0.35, y + Math.sin(angle) * size * 0.35, size * 0.12, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 }
 
 function drawCuteCharacter(
@@ -1386,10 +1384,35 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // ── DEAD ENEMIES — viewport culled ──
+  // ── DEAD ENEMIES — cached to offscreen canvas, viewport culled ──
+  // Cache dead enemy base renders to avoid re-drawing static corpses every frame
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
     if (!isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 30)) continue;
+
+    // Looted enemies that are already cached — just blit
+    if (enemy.looted && (enemy as any)._deadCache) {
+      const cache = (enemy as any)._deadCache as { canvas: HTMLCanvasElement | OffscreenCanvas, ox: number, oy: number };
+      ctx.drawImage(cache.canvas as any, enemy.pos.x + cache.ox, enemy.pos.y + cache.oy);
+      continue;
+    }
+
+    // Cache looted (fully static) enemies to offscreen canvas
+    if (enemy.looted && !(enemy as any)._deadCache) {
+      const cacheSize = enemy.type === 'boss' ? 120 : 60;
+      let offCanvas: HTMLCanvasElement | OffscreenCanvas;
+      try { offCanvas = new OffscreenCanvas(cacheSize, cacheSize); } catch { offCanvas = document.createElement('canvas'); (offCanvas as HTMLCanvasElement).width = cacheSize; (offCanvas as HTMLCanvasElement).height = cacheSize; }
+      const offCtx = (offCanvas as any).getContext('2d') as CanvasRenderingContext2D;
+      offCtx.translate(cacheSize / 2, cacheSize / 2);
+      offCtx.globalAlpha = 0.35;
+      offCtx.font = '18px sans-serif';
+      offCtx.textAlign = 'center';
+      offCtx.fillText('👻', 0, 4);
+      (enemy as any)._deadCache = { canvas: offCanvas, ox: -cacheSize / 2, oy: -cacheSize / 2 };
+      ctx.drawImage(offCanvas as any, enemy.pos.x - cacheSize / 2, enemy.pos.y - cacheSize / 2);
+      continue;
+    }
+
     ctx.save();
 
     if (enemy.type === 'boss') {
@@ -1537,8 +1560,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Only show detection zone if close enough AND player can see the enemy
     const edx = playerPos.x - enemy.pos.x, edy = playerPos.y - enemy.pos.y;
     const enemyDistSq = edx * edx + edy * edy;
-    const showVisionCone = enemyDistSq < 200 * 200 && (enemy.state !== 'patrol' && enemy.state !== 'idle'); // tighter range for perf
-    const useLOD = enemyDistSq > 350 * 350; // aggressive LOD for Firefox perf
+    // Skip vision cones entirely during active combat (chase/attack/flank) — expensive raycasting
+    const enemyInCombat = enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress';
+    const showVisionCone = !enemyInCombat && enemyDistSq < 160 * 160 && (enemy.state !== 'patrol' && enemy.state !== 'idle');
+    const useLOD = enemyDistSq > 250 * 250; // aggressive LOD — 250px threshold
     if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
@@ -2418,32 +2443,72 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText(g.timer.toFixed(1), g.pos.x, g.pos.y + bob - 12);
   }
 
-  // ── PARTICLES — viewport culled ──
-  for (const p of state.particles) {
-    if (!isOnScreen(p.pos.x, p.pos.y, cx, cy, w, h, 10)) continue;
-    const alpha = p.life / p.maxLife;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = p.color;
+  // ── PARTICLES — batched by color for fewer draw calls ──
+  {
+    const particlesByColor = new Map<string, Array<{x: number, y: number, r: number, a: number}>>();
+    for (const p of state.particles) {
+      if (!isOnScreen(p.pos.x, p.pos.y, cx, cy, w, h, 10)) continue;
+      const alpha = p.life / p.maxLife;
+      const key = p.color;
+      let arr = particlesByColor.get(key);
+      if (!arr) { arr = []; particlesByColor.set(key, arr); }
+      arr.push({ x: p.pos.x, y: p.pos.y, r: p.size * (0.5 + alpha * 0.5), a: alpha });
+    }
+    for (const [color, particles] of particlesByColor) {
+      ctx.fillStyle = color;
+      for (const p of particles) {
+        ctx.globalAlpha = p.a;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── BULLETS — batched by color, single path per color ──
+  {
+    // Player bullets
+    ctx.fillStyle = '#ffdd44';
     ctx.beginPath();
-    ctx.arc(p.pos.x, p.pos.y, p.size * (0.5 + alpha * 0.5), 0, Math.PI * 2);
+    for (const b of state.bullets) {
+      if (!b.fromPlayer) continue;
+      if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+      ctx.moveTo(b.pos.x + 3, b.pos.y);
+      ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    // Enemy bullets
+    ctx.fillStyle = '#ff5544';
+    ctx.beginPath();
+    for (const b of state.bullets) {
+      if (b.fromPlayer) continue;
+      if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+      ctx.moveTo(b.pos.x + 3, b.pos.y);
+      ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
+    }
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
-
-  // ── BULLETS — viewport culled, simplified rendering ──
-  for (const b of state.bullets) {
-    if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
-    // Simplified bullet rendering — skip shadow for performance
-    ctx.fillStyle = b.fromPlayer ? '#ffdd44' : '#ff5544';
+  // Bullet trails — batched
+  {
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 220, 80, 0.4)';
     ctx.beginPath();
-    ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-    // Trail line only
-    ctx.strokeStyle = b.fromPlayer ? 'rgba(255,220,60,0.3)' : 'rgba(255,80,60,0.3)';
-    ctx.lineWidth = 2;
+    for (const b of state.bullets) {
+      if (!b.fromPlayer) continue;
+      if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+      ctx.moveTo(b.pos.x, b.pos.y);
+      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 100, 60, 0.3)';
     ctx.beginPath();
-    ctx.moveTo(b.pos.x, b.pos.y);
-    ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+    for (const b of state.bullets) {
+      if (b.fromPlayer) continue;
+      if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+      ctx.moveTo(b.pos.x, b.pos.y);
+      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+    }
     ctx.stroke();
   }
 
