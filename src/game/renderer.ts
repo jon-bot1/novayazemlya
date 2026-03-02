@@ -87,7 +87,7 @@ function drawCuteCharacter(
   x: number, y: number, angle: number,
   bodyColor: string, outlineColor: string,
   eyeColor: string, isBlinking: boolean,
-  hatType: 'ushanka' | 'helmet' | 'beret' | 'bandana',
+  hatType: 'ushanka' | 'helmet' | 'beret' | 'bandana' | 'none',
   hatColor: string,
   hasGun: boolean,
   size: number = R,
@@ -96,7 +96,7 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  const headR = size * 0.42; // smaller head, body more visible
+  const headR = size * 0.42;
   const torsoW = size * 0.7;
   const torsoH = size * 0.55;
   const legW = size * 0.18;
@@ -104,8 +104,6 @@ function drawCuteCharacter(
   const armW = size * 0.14;
   const armH = size * 0.38;
   const shoulderOff = torsoW * 0.42;
-  const skinColor = '#f0dcc0';
-  const skinDark = '#d4b896';
 
   // Drop shadow
   ctx.fillStyle = 'rgba(0,0,0,0.22)';
@@ -113,138 +111,48 @@ function drawCuteCharacter(
   ctx.ellipse(1, size * 0.85, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // === LEGS — always point downward (no rotation), so feet face south ===
+  // === LEGS ===
   ctx.save();
-  // NO ctx.rotate(angle) here — legs always point down
   const walkPhase = (_frameTime * 2.5) % 1;
   const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.35 : 0;
   for (const side of [-1, 1]) {
     ctx.save();
-    const legX = legW * 1.1 * side;
-    ctx.translate(legX, torsoH * 0.35);
+    ctx.translate(legW * 1.1 * side, torsoH * 0.35);
     ctx.rotate(legSwing * side);
-
-    // Upper leg (thigh)
+    // Leg
     ctx.fillStyle = shadeColor(bodyColor, -15);
-    ctx.beginPath();
-    ctx.roundRect(-legW / 2, 0, legW, legH * 0.55, 3);
-    ctx.fill();
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // Knee joint
-    ctx.fillStyle = shadeColor(bodyColor, -25);
-    ctx.beginPath();
-    ctx.arc(0, legH * 0.55, legW * 0.38, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Lower leg (shin)
-    ctx.fillStyle = shadeColor(bodyColor, -20);
-    ctx.beginPath();
-    ctx.roundRect(-legW * 0.45, legH * 0.5, legW * 0.9, legH * 0.45, 3);
-    ctx.fill();
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Boot — chunky with sole
+    ctx.fillRect(-legW / 2, 0, legW, legH * 0.95);
+    // Boot
     ctx.fillStyle = '#3a3832';
-    ctx.beginPath();
-    ctx.roundRect(-legW * 0.55, legH * 0.88, legW * 1.1, legH * 0.18, [0, 0, 3, 3]);
-    ctx.fill();
-    // Boot sole
-    ctx.fillStyle = '#2a2822';
-    ctx.fillRect(-legW * 0.55, legH * 1.02, legW * 1.1, 3);
-    // Boot lace detail
-    ctx.strokeStyle = '#5a5850';
-    ctx.lineWidth = 0.7;
-    ctx.beginPath();
-    ctx.moveTo(-legW * 0.2, legH * 0.9);
-    ctx.lineTo(legW * 0.2, legH * 0.9);
-    ctx.stroke();
-
+    ctx.fillRect(-legW * 0.55, legH * 0.88, legW * 1.1, legH * 0.18);
     ctx.restore();
   }
   ctx.restore();
 
-  // === GUN ARM (right side, behind body when not aiming) ===
+  // === GUN ARM ===
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
-
-    // Upper arm
+    // Arm
     ctx.fillStyle = shadeColor(bodyColor, -5);
-    ctx.beginPath();
-    ctx.roundRect(shoulderOff - armW / 2, -armH * 0.1, armW, armH * 0.5, 3);
-    ctx.fill();
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Elbow
-    ctx.fillStyle = shadeColor(bodyColor, -12);
-    ctx.beginPath();
-    ctx.arc(shoulderOff, armH * 0.35, armW * 0.4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Forearm — extends toward gun
-    ctx.fillStyle = shadeColor(bodyColor, -8);
-    ctx.beginPath();
-    ctx.roundRect(shoulderOff - armW * 0.4, armH * 0.3, armW * 0.8, armH * 0.35, 2);
-    ctx.fill();
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-
-    // Wrist + Hand gripping gun
-    ctx.fillStyle = skinColor;
-    ctx.beginPath();
-    ctx.roundRect(shoulderOff - 3.5, armH * 0.6, 7, 5, 2);
-    ctx.fill();
-    ctx.strokeStyle = skinDark;
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-    // Fingers wrapping grip
-    ctx.fillStyle = skinColor;
-    ctx.beginPath();
-    ctx.arc(shoulderOff + 2, armH * 0.68, 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Gun — detailed
+    ctx.fillRect(shoulderOff - armW / 2, -armH * 0.1, armW, armH * 0.8);
+    // Hand
+    ctx.fillStyle = '#f0dcc0';
+    ctx.fillRect(shoulderOff - 3, armH * 0.6, 6, 5);
+    // Gun barrel
+    ctx.fillStyle = '#6a6a66';
     const gunX = shoulderOff - 3;
     const gunY = armH * 0.55;
-    // Barrel
-    ctx.fillStyle = '#6a6a66';
-    ctx.beginPath();
-    ctx.roundRect(gunX, gunY - 2, size * 0.9, 4.5, 2);
-    ctx.fill();
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-    // Receiver
-    ctx.fillStyle = '#555';
-    ctx.beginPath();
-    ctx.roundRect(gunX + size * 0.55, gunY - 3.5, 8, 7, 1);
-    ctx.fill();
+    ctx.fillRect(gunX, gunY - 2, size * 0.9, 4.5);
     // Muzzle
     ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.roundRect(gunX + size * 0.85, gunY - 1.5, 5, 3, 1);
-    ctx.fill();
-    // Grip
-    ctx.fillStyle = '#7a5a3a';
-    ctx.beginPath();
-    ctx.roundRect(gunX + size * 0.2, gunY + 2, 5, 6, 1);
-    ctx.fill();
-
+    ctx.fillRect(gunX + size * 0.85, gunY - 1.5, 5, 3);
     ctx.restore();
   }
 
-  // === TORSO — rectangular with detail ===
+  // === TORSO ===
   ctx.save();
   ctx.rotate(angle);
-  // Main torso shape
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
   ctx.roundRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH, [4, 4, 2, 2]);
@@ -252,125 +160,45 @@ function drawCuteCharacter(
   ctx.strokeStyle = outlineColor;
   ctx.lineWidth = 1.8;
   ctx.stroke();
-  // Body gradient
-  // Skip gradient for performance — use simple highlight instead
+  // Highlight
   ctx.fillStyle = 'rgba(255,255,255,0.1)';
   ctx.fillRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH * 0.4);
-  // Collar detail
-  ctx.strokeStyle = shadeColor(bodyColor, -20);
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(-torsoW * 0.2, -torsoH * 0.32);
-  ctx.lineTo(0, -torsoH * 0.18);
-  ctx.lineTo(torsoW * 0.2, -torsoH * 0.32);
-  ctx.stroke();
-  // Center seam
-  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.moveTo(0, -torsoH * 0.15);
-  ctx.lineTo(0, torsoH * 0.55);
-  ctx.stroke();
-  // Pocket patches
-  ctx.fillStyle = shadeColor(bodyColor, -8);
-  ctx.fillRect(-torsoW * 0.35, torsoH * 0.05, torsoW * 0.25, torsoH * 0.2);
-  ctx.strokeStyle = shadeColor(bodyColor, -18);
-  ctx.lineWidth = 0.6;
-  ctx.strokeRect(-torsoW * 0.35, torsoH * 0.05, torsoW * 0.25, torsoH * 0.2);
-  ctx.fillRect(torsoW * 0.1, torsoH * 0.05, torsoW * 0.25, torsoH * 0.2);
-  ctx.strokeRect(torsoW * 0.1, torsoH * 0.05, torsoW * 0.25, torsoH * 0.2);
   // Belt
   ctx.fillStyle = '#4a4a3a';
   ctx.fillRect(-torsoW * 0.4, torsoH * 0.42, torsoW * 0.8, 4);
-  // Belt buckle
-  ctx.fillStyle = '#8a8a6a';
-  ctx.beginPath();
-  ctx.roundRect(-3, torsoH * 0.41, 6, 5, 1);
-  ctx.fill();
 
-  // === OFF-ARM (left side) — clearly articulated ===
-  // Upper arm
+  // Off-arm
   ctx.fillStyle = shadeColor(bodyColor, -5);
-  ctx.beginPath();
-  ctx.roundRect(-shoulderOff - armW / 2, -armH * 0.05, armW, armH * 0.45, 3);
-  ctx.fill();
-  ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  // Elbow
-  ctx.fillStyle = shadeColor(bodyColor, -12);
-  ctx.beginPath();
-  ctx.arc(-shoulderOff, armH * 0.35, armW * 0.38, 0, Math.PI * 2);
-  ctx.fill();
-  // Forearm
-  ctx.fillStyle = shadeColor(bodyColor, -8);
-  ctx.beginPath();
-  ctx.roundRect(-shoulderOff - armW * 0.4, armH * 0.3, armW * 0.8, armH * 0.3, 2);
-  ctx.fill();
-  ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 0.8;
-  ctx.stroke();
+  ctx.fillRect(-shoulderOff - armW / 2, -armH * 0.05, armW, armH * 0.7);
   // Hand
-  ctx.fillStyle = skinColor;
-  ctx.beginPath();
-  ctx.roundRect(-shoulderOff - 3, armH * 0.55, 6, 5, 2);
-  ctx.fill();
-  ctx.strokeStyle = skinDark;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
-  // Fingers
-  ctx.fillStyle = skinColor;
-  for (const fx of [-1.5, 0, 1.5]) {
-    ctx.beginPath();
-    ctx.arc(-shoulderOff + fx, armH * 0.63, 1.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  ctx.restore(); // end torso rotation
+  ctx.fillStyle = '#f0dcc0';
+  ctx.fillRect(-shoulderOff - 3, armH * 0.55, 6, 5);
+  ctx.restore();
 
   // === HEAD ===
   ctx.save();
   ctx.translate(0, -torsoH * 0.5);
-
   // Neck
-  ctx.fillStyle = skinColor;
+  ctx.fillStyle = '#f0dcc0';
   ctx.fillRect(-4, headR * 0.55, 8, 8);
-  ctx.strokeStyle = skinDark;
-  ctx.lineWidth = 0.6;
-  ctx.strokeRect(-4, headR * 0.55, 8, 8);
-
-  // Head shape
-  ctx.fillStyle = skinColor;
+  // Head
+  ctx.fillStyle = '#f0dcc0';
   ctx.beginPath();
   ctx.arc(0, 0, headR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = skinDark;
+  ctx.strokeStyle = '#d4b896';
   ctx.lineWidth = 1.8;
   ctx.stroke();
-
-  // Head shine
-  const headGrad = ctx.createRadialGradient(-headR * 0.25, -headR * 0.35, headR * 0.1, 0, 0, headR);
-  headGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
-  headGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
-  headGrad.addColorStop(1, 'rgba(0,0,0,0.03)');
-  ctx.fillStyle = headGrad;
+  // Head shine — flat instead of gradient
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.beginPath();
-  ctx.arc(0, 0, headR, 0, Math.PI * 2);
+  ctx.arc(-headR * 0.2, -headR * 0.25, headR * 0.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // Rosy cheeks (no ears — they clip with rotation)
-  ctx.fillStyle = 'rgba(230, 120, 120, 0.18)';
-  ctx.beginPath();
-  ctx.ellipse(-headR * 0.5, headR * 0.2, headR * 0.18, headR * 0.12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(headR * 0.5, headR * 0.2, headR * 0.18, headR * 0.12, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Face — stays upright but flips left/right based on aim direction
+  // Face
   const facingLeft = Math.abs(angle) > Math.PI * 0.5;
   ctx.save();
-  if (facingLeft) ctx.scale(-1, 1); // mirror horizontally when facing left
+  if (facingLeft) ctx.scale(-1, 1);
   if (isBlinking) {
     ctx.strokeStyle = eyeColor;
     ctx.lineWidth = 2;
@@ -383,17 +211,12 @@ function drawCuteCharacter(
   } else {
     const eyeX = headR * 0.35;
     const eyeYOff = headR * 0.17;
-    const eyeW = 4.5;
-    const eyeH = 5.5;
     for (const ey of [-eyeYOff, eyeYOff]) {
       // Eye white
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.ellipse(eyeX, ey, eyeW, eyeH, 0, 0, Math.PI * 2);
+      ctx.ellipse(eyeX, ey, 4.5, 5.5, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
       // Iris
       ctx.fillStyle = eyeColor;
       ctx.beginPath();
@@ -409,163 +232,81 @@ function drawCuteCharacter(
       ctx.beginPath();
       ctx.arc(eyeX + 3, ey - 2, 1.3, 0, Math.PI * 2);
       ctx.fill();
-      ctx.beginPath();
-      ctx.arc(eyeX, ey + 1.5, 0.7, 0, Math.PI * 2);
-      ctx.fill();
-      // Eyelid line
-      ctx.strokeStyle = 'rgba(100, 60, 40, 0.2)';
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.arc(eyeX, ey, eyeW, -Math.PI * 0.8, -Math.PI * 0.2);
-      ctx.stroke();
     }
-    // Eyebrows
-    ctx.strokeStyle = 'rgba(80, 50, 30, 0.35)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(eyeX - 3, -eyeYOff - 5);
-    ctx.quadraticCurveTo(eyeX + 2, -eyeYOff - 7, eyeX + 5, -eyeYOff - 4);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(eyeX - 3, eyeYOff + 5);
-    ctx.quadraticCurveTo(eyeX + 2, eyeYOff + 7, eyeX + 5, eyeYOff + 4);
-    ctx.stroke();
   }
-  // Nose — small triangle
-  ctx.fillStyle = 'rgba(200, 150, 120, 0.25)';
-  ctx.beginPath();
-  ctx.moveTo(headR * 0.55, -2);
-  ctx.lineTo(headR * 0.62, 0);
-  ctx.lineTo(headR * 0.55, 2);
-  ctx.closePath();
-  ctx.fill();
-  // Mouth
-  ctx.strokeStyle = 'rgba(180, 100, 80, 0.3)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(headR * 0.45, 0, 2.5, -0.5, 0.5);
-  ctx.stroke();
-  ctx.restore(); // end face rotation
+  ctx.restore(); // face
 
-  // === HAT — stays upright, flips with face ===
-  ctx.save();
-  if (facingLeft) ctx.scale(-1, 1);
-  switch (hatType) {
-    case 'ushanka':
-      ctx.fillStyle = hatColor;
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.12, -Math.PI * 0.82, Math.PI * 0.82);
-      ctx.lineTo(0, -headR * 1.12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = shadeColor(hatColor, -15);
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      // Fur trim
-      ctx.fillStyle = shadeColor(hatColor, 20);
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.12, Math.PI * 0.55, Math.PI * 0.82);
-      ctx.arc(0, 0, headR * 0.95, Math.PI * 0.82, Math.PI * 0.55, true);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.12, -Math.PI * 0.82, -Math.PI * 0.55);
-      ctx.arc(0, 0, headR * 0.95, -Math.PI * 0.55, -Math.PI * 0.82, true);
-      ctx.closePath();
-      ctx.fill();
-      // Ear flaps
-      ctx.fillStyle = hatColor;
-      ctx.fillRect(-headR * 1.15, -headR * 0.35, headR * 0.35, headR * 0.7);
-      ctx.fillStyle = shadeColor(hatColor, 15);
-      ctx.fillRect(-headR * 1.15, -headR * 0.25, headR * 0.35, headR * 0.1);
-      // Star
-      ctx.fillStyle = '#dd3333';
-      ctx.font = `bold ${headR * 0.55}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('★', headR * 0.05, headR * -0.3);
-      break;
-    case 'helmet':
-      ctx.fillStyle = hatColor;
-      ctx.beginPath();
-      ctx.arc(0, -headR * 0.05, headR * 1.18, -Math.PI * 0.9, Math.PI * 0.9);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = shadeColor(hatColor, -20);
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      // Helmet rim
-      ctx.fillStyle = shadeColor(hatColor, -10);
-      ctx.beginPath();
-      ctx.arc(0, -headR * 0.05, headR * 1.18, Math.PI * 0.65, Math.PI * 0.9);
-      ctx.arc(0, -headR * 0.05, headR * 1.05, Math.PI * 0.9, Math.PI * 0.65, true);
-      ctx.closePath();
-      ctx.fill();
-      // Chin strap
-      ctx.strokeStyle = '#5a5a4a';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.arc(0, headR * 0.1, headR * 0.85, Math.PI * 0.25, Math.PI * 0.75);
-      ctx.stroke();
-      break;
-    case 'beret':
-      ctx.fillStyle = hatColor;
-      ctx.beginPath();
-      ctx.ellipse(-headR * 0.1, -headR * 0.68, headR * 0.88, headR * 0.4, -0.15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = shadeColor(hatColor, -15);
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      // Band
-      ctx.fillStyle = shadeColor(hatColor, -20);
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.02, -Math.PI * 0.55, Math.PI * 0.55);
-      ctx.arc(0, 0, headR * 0.95, Math.PI * 0.55, -Math.PI * 0.55, true);
-      ctx.closePath();
-      ctx.fill();
-      // Nub
-      ctx.fillStyle = hatColor;
-      ctx.beginPath();
-      ctx.arc(-headR * 0.15, -headR * 1.0, 3, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    case 'bandana':
-      ctx.fillStyle = hatColor;
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 1.04, -Math.PI * 0.72, Math.PI * 0.72);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = shadeColor(hatColor, -12);
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      // Knot + tails
-      ctx.beginPath();
-      ctx.moveTo(-headR * 0.65, -headR * 0.35);
-      ctx.quadraticCurveTo(-headR * 1.3, -headR * 0.55, -headR * 1.1, -headR * 0.1);
-      ctx.lineTo(-headR * 0.7, -headR * 0.05);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(-headR * 0.6, -headR * 0.15);
-      ctx.quadraticCurveTo(-headR * 1.15, -headR * 0.25, -headR * 0.95, 0.05);
-      ctx.lineTo(-headR * 0.5, 0);
-      ctx.closePath();
-      ctx.fill();
-      // Pattern dots
-      ctx.fillStyle = shadeColor(hatColor, 15);
-      ctx.globalAlpha = 0.3;
-      for (let d = 0; d < 5; d++) {
-        const da = -Math.PI * 0.5 + d * 0.3;
+  // === HAT ===
+  if (hatType !== 'none') {
+    ctx.save();
+    if (facingLeft) ctx.scale(-1, 1);
+    switch (hatType) {
+      case 'ushanka':
+        ctx.fillStyle = hatColor;
         ctx.beginPath();
-        ctx.arc(Math.cos(da) * headR * 0.75, Math.sin(da) * headR * 0.75, 1.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, headR * 1.12, -Math.PI * 0.82, Math.PI * 0.82);
+        ctx.lineTo(0, -headR * 1.12);
+        ctx.closePath();
         ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      break;
+        // Fur trim
+        ctx.fillStyle = shadeColor(hatColor, 20);
+        ctx.beginPath();
+        ctx.arc(0, 0, headR * 1.12, Math.PI * 0.55, Math.PI * 0.82);
+        ctx.arc(0, 0, headR * 0.95, Math.PI * 0.82, Math.PI * 0.55, true);
+        ctx.closePath();
+        ctx.fill();
+        // Ear flaps
+        ctx.fillStyle = hatColor;
+        ctx.fillRect(-headR * 1.15, -headR * 0.35, headR * 0.35, headR * 0.7);
+        // Star
+        ctx.fillStyle = '#dd3333';
+        ctx.font = `bold ${headR * 0.55}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('★', headR * 0.05, headR * -0.3);
+        break;
+      case 'helmet':
+        ctx.fillStyle = hatColor;
+        ctx.beginPath();
+        ctx.arc(0, -headR * 0.05, headR * 1.18, -Math.PI * 0.9, Math.PI * 0.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = shadeColor(hatColor, -20);
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        break;
+      case 'beret':
+        ctx.fillStyle = hatColor;
+        ctx.beginPath();
+        ctx.ellipse(-headR * 0.1, -headR * 0.68, headR * 0.88, headR * 0.4, -0.15, 0, Math.PI * 2);
+        ctx.fill();
+        // Band
+        ctx.fillStyle = shadeColor(hatColor, -20);
+        ctx.beginPath();
+        ctx.arc(0, 0, headR * 1.02, -Math.PI * 0.55, Math.PI * 0.55);
+        ctx.arc(0, 0, headR * 0.95, Math.PI * 0.55, -Math.PI * 0.55, true);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'bandana':
+        ctx.fillStyle = hatColor;
+        ctx.beginPath();
+        ctx.arc(0, 0, headR * 1.04, -Math.PI * 0.72, Math.PI * 0.72);
+        ctx.closePath();
+        ctx.fill();
+        // Knot
+        ctx.beginPath();
+        ctx.moveTo(-headR * 0.65, -headR * 0.35);
+        ctx.quadraticCurveTo(-headR * 1.3, -headR * 0.55, -headR * 1.1, -headR * 0.1);
+        ctx.lineTo(-headR * 0.7, -headR * 0.05);
+        ctx.closePath();
+        ctx.fill();
+        break;
+    }
+    ctx.restore();
   }
-  ctx.restore(); // end hat
 
-  ctx.restore(); // head translate
-  ctx.restore(); // main translate
+  ctx.restore(); // head
+  ctx.restore(); // main
 }
 
 // Draw mounted machine gun emplacement
@@ -1104,11 +845,9 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       ctx.textAlign = 'center';
       ctx.fillText('☠', x, y + tbr * 0.4);
       // Green glow
-      const tglow = ctx.createRadialGradient(x, y, 0, x, y, tbr * 2);
-      tglow.addColorStop(0, 'rgba(100, 255, 50, 0.15)');
-      tglow.addColorStop(1, 'rgba(100, 255, 50, 0)');
-      ctx.fillStyle = tglow;
-      ctx.beginPath(); ctx.arc(x, y, tbr * 2, 0, Math.PI * 2); ctx.fill();
+      // Flat glow instead of gradient
+      ctx.fillStyle = 'rgba(100, 255, 50, 0.08)';
+      ctx.beginPath(); ctx.arc(x, y, tbr * 1.5, 0, Math.PI * 2); ctx.fill();
       // Rim
       ctx.strokeStyle = '#5a8a40';
       ctx.lineWidth = 1.5;
@@ -1782,8 +1521,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Only show detection zone if close enough AND player can see the enemy
     const edx = playerPos.x - enemy.pos.x, edy = playerPos.y - enemy.pos.y;
     const enemyDistSq = edx * edx + edy * edy;
-    const showVisionCone = enemyDistSq < 400 * 400; // skip vision cones for enemies >400px away
-    const useLOD = enemyDistSq > 350 * 350; // simplified rendering for distant enemies
+    const showVisionCone = enemyDistSq < 250 * 250 && (enemy.state !== 'patrol' && enemy.state !== 'idle'); // skip for far/idle enemies
+    const useLOD = enemyDistSq > 200 * 200; // aggressive LOD — simplified rendering kicks in sooner
     if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
@@ -1822,7 +1561,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Clip vision cone to walls (non-elevated only)
       if (!enemy.elevated) {
         // Cast rays along the arc — reduced count and increased step for speed
-        const rayCount = 6; // reduced from 10
+        const rayCount = 4; // minimal rays for perf
         const startAngle = enemy.angle - visionArc;
         const endAngle = enemy.angle + visionArc;
         const grid = getRendererWallGrid(state);
@@ -2389,13 +2128,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // BERSERK — red pulsing aura + fire icon
       const bPulse = 0.5 + Math.sin(state.time * 10) * 0.5;
       ctx.save();
-      // Red glow ring
+      // Red glow — flat circle instead of gradient
+      ctx.fillStyle = `rgba(255, 30, 0, ${0.15 + bPulse * 0.15})`;
       ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y, R + 12, 0, Math.PI * 2);
-      const bGrad = ctx.createRadialGradient(enemy.pos.x, enemy.pos.y, R, enemy.pos.x, enemy.pos.y, R + 12);
-      bGrad.addColorStop(0, `rgba(255, 30, 0, ${0.3 + bPulse * 0.3})`);
-      bGrad.addColorStop(1, 'rgba(255, 30, 0, 0)');
-      ctx.fillStyle = bGrad;
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 10, 0, Math.PI * 2);
       ctx.fill();
       // Inner red ring
       ctx.beginPath();
@@ -2725,15 +2461,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const pulse = 0.6 + Math.sin(state.time * 2) * 0.2;
 
   // Radial glow
-  const grad = ctx.createRadialGradient(
-    state.player.pos.x, state.player.pos.y, 0,
-    state.player.pos.x, state.player.pos.y, 45
-  );
-  grad.addColorStop(0, `rgba(100, 255, 80, ${pulse * 0.35})`);
-  grad.addColorStop(0.5, `rgba(100, 255, 80, ${pulse * 0.12})`);
-  grad.addColorStop(1, 'rgba(100, 255, 80, 0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(state.player.pos.x - 45, state.player.pos.y - 45, 90, 90);
+  // Flat glow circle instead of gradient for perf
+  ctx.fillStyle = `rgba(100, 255, 80, ${pulse * 0.12})`;
+  ctx.beginPath();
+  ctx.arc(state.player.pos.x, state.player.pos.y, 35, 0, Math.PI * 2);
+  ctx.fill();
 
   // Ring — changes color when in cover
   ctx.beginPath();

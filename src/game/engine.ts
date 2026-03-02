@@ -526,11 +526,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
     }
-    // TOXIC BARREL CHECK — poison damage, use distSq
-    for (const prop of state.props) {
-      if (prop.type !== 'toxic_barrel') continue;
-      const tdx = newPos.x - prop.pos.x, tdy = newPos.y - prop.pos.y;
-      if (tdx * tdx + tdy * tdy < 900) { // 30*30
+    // TOXIC BARREL CHECK — use distSq, skip non-toxic props early
+    if (!(state as any)._toxicBarrelPositions) {
+      (state as any)._toxicBarrelPositions = state.props.filter(p => p.type === 'toxic_barrel').map(p => p.pos);
+    }
+    for (const tpos of (state as any)._toxicBarrelPositions) {
+      const tdx = newPos.x - tpos.x, tdy = newPos.y - tpos.y;
+      if (tdx * tdx + tdy * tdy < 900) {
         state.player.hp -= 0.15 * dt * 60;
         if (Math.random() < 0.04) {
           spawnParticles(state, newPos.x, newPos.y, '#88ff44', 1);
@@ -587,13 +589,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     fence_v:          { quality: 0.25, label: 'CONCEALMENT', coverType: 'low' },
   };
 
-  // Find nearest cover object — use distSq to avoid sqrt, throttle wall check
+  // Find nearest cover object + hide check — combined single prop loop
   let bestCoverDistSq = 40 * 40;
   let bestCoverPos: Vec2 | null = null;
   let bestCoverQuality = 0;
   let bestCoverLabel = '';
   let bestCoverType: 'high' | 'low' = 'low';
+  let canHideNow = false;
   const px = state.player.pos.x, py = state.player.pos.y;
+  const hidePropsSet = new Set(['tree', 'pine_tree', 'bush']);
   for (const prop of state.props) {
     const dx = px - prop.pos.x, dy = py - prop.pos.y;
     const dsq = dx * dx + dy * dy;
@@ -604,6 +608,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       bestCoverQuality = cq ? cq.quality : 0.60;
       bestCoverLabel = cq ? cq.label : 'COVER';
       bestCoverType = cq ? cq.coverType : 'low';
+    }
+    // Combined hide check — only if not already hiding
+    if (!canHideNow && !(state as any)._playerHiding && hidePropsSet.has(prop.type) && dsq < 45 * 45) {
+      canHideNow = true;
     }
   }
   // Wall cover — use spatial grid for fast lookup instead of iterating all walls
@@ -633,37 +641,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
   }
-
-  // Auto-apply cover when near obstacles
-  if (bestCoverPos && !(state as any)._playerHiding) {
-    if (!state.player.inCover || state.player.coverLabel !== bestCoverLabel) {
-      state.player.inCover = true;
-      state.player.coverObject = bestCoverPos;
-      state.player.coverQuality = bestCoverQuality;
-      state.player.coverLabel = bestCoverLabel;
-    }
-  } else if (!bestCoverPos && !(state as any)._playerHiding) {
-    state.player.inCover = false;
-    state.player.coverObject = null;
-    state.player.coverQuality = 0;
-    state.player.coverLabel = '';
-    state.player.peeking = false;
-  }
-
-  state.coverNearby = !!bestCoverPos;
-  (state as any)._nearestCoverPos = bestCoverPos;
-  (state as any)._nearestCoverLabel = bestCoverLabel;
-  (state as any)._coverType = bestCoverType;
-
-  // Check if player CAN hide (near a tree/bush but not already hiding)
-  const hideProps = ['tree', 'pine_tree', 'bush'];
-  let canHideNow = false;
-  if (!(state as any)._playerHiding) {
-    for (const prop of state.props) {
-      if (!hideProps.includes(prop.type)) continue;
-      if (dist(state.player.pos, prop.pos) < 45) { canHideNow = true; break; }
-    }
-  }
   (state as any)._canHide = canHideNow;
   (state as any)._isHiding = !!(state as any)._playerHiding;
   
@@ -683,22 +660,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Always refresh hide flags (also when standing still)
-  {
-    const hideProps = ['tree', 'pine_tree', 'bush'];
-    let canHideNow = false;
-    if (!(state as any)._playerHiding) {
-      for (const prop of state.props) {
-        if (!hideProps.includes(prop.type)) continue;
-        if (dist(state.player.pos, prop.pos) < 45) {
-          canHideNow = true;
-          break;
-        }
-      }
-    }
-    (state as any)._canHide = canHideNow;
-    (state as any)._isHiding = !!(state as any)._playerHiding;
-  }
+  // Hide flags already set in combined cover+hide loop above
 
   // === HIDE SYSTEM (Q key) — hide at trees/bushes, become invisible ===
   if (input.takeCover) {
