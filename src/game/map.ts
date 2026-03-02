@@ -370,6 +370,8 @@ export function generateMap() {
         const dog = makeEnemy(redneck.pos.x + (Math.random() - 0.5) * 40, redneck.pos.y + (Math.random() - 0.5) * 40, 'dog');
         dog.ownerId = redneck.id;
         dog.radioGroup = redneck.radioGroup;
+        const dogNames = ['Бобик', 'Рекс', 'Мухтар', 'Шарик', 'Тузик', 'Полкан', 'Дружок', 'Барсик', 'Жучка', 'Лайка', 'Найда', 'Стрелка', 'Пуля', 'Вулкан', 'Гром'];
+        (dog as any)._dogName = dogNames[Math.floor(Math.random() * dogNames.length)];
         result.push(dog);
       }
       return result;

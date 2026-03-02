@@ -284,6 +284,7 @@ export interface GameState {
   coverNearby: boolean; // true when player is near a cover object
   deathCause?: string; // what killed the player
   exfilRevealed?: string; // name of revealed exfil point
+  emptyMagTimer: number; // countdown for big on-screen EMPTY display
   // Achievement tracking
   mosinKills: number;
   grenadeKills: number;

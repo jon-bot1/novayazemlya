@@ -399,6 +399,7 @@ export function createGameState(): GameState {
     dogsNeutralized: 0,
     dogsKilled: 0,
     totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
+    emptyMagTimer: 0,
   };
 }
 
@@ -488,7 +489,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   
   // Stamina system: sprinting drains stamina, walking/sneaking recovers it
   if (input.movementMode === 'sprint' && moveLen > 0.1) {
-    state.player.stamina = Math.max(0, state.player.stamina - 18 * dt);
+    state.player.stamina = Math.max(0, state.player.stamina - 14.4 * dt);
   } else if (input.movementMode === 'sneak') {
     state.player.stamina = Math.min(state.player.maxStamina, state.player.stamina + 8 * dt);
   } else {
@@ -934,6 +935,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.flashbangTimer = Math.max(0, state.flashbangTimer - flashDecay);
   }
 
+  // Empty magazine display timer decay
+  if (state.emptyMagTimer > 0) {
+    state.emptyMagTimer = Math.max(0, state.emptyMagTimer - dt);
+  }
+
   // Weapon slot switching (1 = melee, 2 = secondary, 3 = primary)
   if (input.switchWeapon) {
     const slot = input.switchWeapon;
@@ -1050,15 +1056,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (!isMelee && magAmmo <= 0) {
       state.player.currentAmmo = 0; // fail-safe clamp
       // Throttle the message to avoid spam
-      if (state.time - state.player.lastShot > 0.3) {
-        state.player.lastShot = state.time;
-        const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
-        if (ammoAvail > 0) {
-          addMessage(state, '🔄 EMPTY! Press R to reload!', 'warning');
-        } else {
-          addMessage(state, '⚠ EMPTY! No ammo left — find more or switch weapons!', 'damage');
-        }
-      }
+      // Set emptyMagTimer for big on-screen display
+      state.emptyMagTimer = 1.5;
     } else {
     if (wpn && !isSidearm && !isMelee && (wpn as any)._durability === undefined) {
       // Durability based on weapon type: rifles=120
@@ -1149,21 +1148,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.soundEvents.push({ pos: { ...state.player.pos }, radius: gunshotRadius, time: state.time });
     playGunshot('pistol');
     
-    // Auto-reload when magazine empty
-    if (state.player.currentAmmo <= 0 && wpn && !isMelee) {
-      const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
-      if (ammoAvail > 0) {
-        state.player.reloading = true;
-        const reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
-                           wpn.name?.toLowerCase().includes('toz') ? 2.5 :
-                           wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
-        state.player.reloadTimer = reloadTime;
-        state.player.reloadTime = reloadTime;
-        addMessage(state, '🔄 RELOADING...', 'warning');
-      } else {
-        addMessage(state, '⚠ No ammo in reserves!', 'warning');
-      }
-    }
+    // No auto-reload — player must press R manually
     } // end else (has ammo)
   }
 
