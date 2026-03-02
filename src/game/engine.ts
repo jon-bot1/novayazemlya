@@ -3795,7 +3795,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
-            setSpeech(enemy, '💀', 1.5);
+            setSpeech(enemy, '💀 HEADSHOT', 2.0);
            } else {
             // Boss and bodyguard body armor: 33% damage reduction
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
@@ -3898,7 +3898,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
-            setSpeech(enemy, '💀', 1.5);
+            setSpeech(enemy, '💀 HEADSHOT', 2.0);
           } else {
             // Boss and bodyguard body armor: 33% damage reduction
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
