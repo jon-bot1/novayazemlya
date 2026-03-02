@@ -2830,6 +2830,89 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
+  // ── STEALTH AWARENESS INDICATOR — shows how close nearest enemy is to detecting you ──
+  {
+    const detection = (state as any)._stealthDetection || 0;
+    const nearestState = (state as any)._stealthNearestState || 'idle';
+    const isHiding = (state as any)._isHiding;
+    const playerX = state.player.pos.x;
+    const playerY = state.player.pos.y;
+
+    // Only show when not in full combat and detection > 0
+    const inCombat = nearestState === 'attack' || nearestState === 'chase' || nearestState === 'flank' || nearestState === 'suppress';
+    
+    if (isHiding) {
+      // Hidden — green safe indicator
+      ctx.save();
+      const safePulse = 0.5 + Math.sin(state.time * 2) * 0.2;
+      ctx.strokeStyle = `rgba(60, 220, 80, ${safePulse})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, R + 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    } else if (inCombat) {
+      // Full combat — red pulsing danger ring
+      ctx.save();
+      const dangerPulse = 0.5 + Math.sin(state.time * 6) * 0.3;
+      ctx.strokeStyle = `rgba(255, 40, 30, ${dangerPulse})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, R + 24, 0, Math.PI * 2);
+      ctx.stroke();
+      // DETECTED label
+      ctx.fillStyle = `rgba(255, 50, 30, ${dangerPulse + 0.2})`;
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000';
+      ctx.shadowBlur = 3;
+      ctx.fillText('⚠ DETECTED', playerX, playerY + R + 38);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else if (detection > 0.02) {
+      // Approaching detection — graduated arc indicator
+      ctx.save();
+      const arcFill = detection * Math.PI * 2; // fill amount
+      // Background ring (dim)
+      ctx.strokeStyle = 'rgba(100, 100, 100, 0.15)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, R + 24, 0, Math.PI * 2);
+      ctx.stroke();
+      // Detection fill — green→yellow→orange→red
+      const r = Math.min(255, Math.floor(detection * 2 * 255));
+      const g = Math.min(255, Math.floor((1 - detection) * 2 * 200));
+      const alpha = 0.4 + detection * 0.5;
+      ctx.strokeStyle = `rgba(${r}, ${g}, 40, ${alpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, R + 24, -Math.PI / 2, -Math.PI / 2 + arcFill);
+      ctx.stroke();
+      
+      // Status label
+      const label = detection > 0.7 ? '⚠ ALMOST SEEN' : detection > 0.4 ? '👁 CAUTION' : '🤫 SAFE';
+      ctx.fillStyle = `rgba(${r}, ${g}, 40, ${alpha + 0.2})`;
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000';
+      ctx.shadowBlur = 3;
+      ctx.fillText(label, playerX, playerY + R + 38);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else {
+      // Fully safe — subtle green dot
+      ctx.save();
+      const safePulse = 0.3 + Math.sin(state.time * 1.5) * 0.15;
+      ctx.fillStyle = `rgba(60, 200, 80, ${safePulse})`;
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🤫 SAFE', playerX, playerY + R + 38);
+      ctx.restore();
+    }
+  }
+
   // Grenade charge indicator
   if ((state as any)._grenadeChargeStart) {
     const chargeTime = Math.min(2.0, (performance.now() - (state as any)._grenadeChargeStart) / 1000);

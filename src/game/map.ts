@@ -777,12 +777,27 @@ export function generateMap() {
       type: 'bush' as Prop['type'],
     })),
 
-    // Scattered bushes near fences (inside compound)
-    ...Array.from({ length: 20 }, () => ({
+    // Scattered bushes near fences (inside compound) — MORE for stealth gameplay
+    ...Array.from({ length: 35 }, () => ({
       pos: { x: 320 + Math.random() * 2560, y: 300 + Math.random() * 1500 },
-      w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
+      w: 18 + Math.random() * 14, h: 16 + Math.random() * 12,
       type: 'bush' as Prop['type'],
     })),
+    // Extra trees inside compound for hiding — roguelike cover
+    ...Array.from({ length: 12 }, () => ({
+      pos: { x: 400 + Math.random() * 2400, y: 400 + Math.random() * 1300 },
+      w: 26 + Math.random() * 14, h: 26 + Math.random() * 14,
+      type: (Math.random() > 0.5 ? 'pine_tree' : 'tree') as Prop['type'],
+    })),
+    // Dense bush clusters near patrol routes — ambush spots
+    ...Array.from({ length: 8 }, () => {
+      const cx = 600 + Math.random() * 2000;
+      const cy = 500 + Math.random() * 1200;
+      return [
+        { pos: { x: cx, y: cy }, w: 20 + Math.random() * 10, h: 18 + Math.random() * 8, type: 'bush' as Prop['type'] },
+        { pos: { x: cx + 15 + Math.random() * 10, y: cy + (Math.random() - 0.5) * 15 }, w: 18 + Math.random() * 8, h: 16 + Math.random() * 6, type: 'bush' as Prop['type'] },
+      ];
+    }).flat(),
     // === MINEFIELD (lower-left of base compound) ===
     // Warning signs around perimeter
     { pos: { x: 400, y: 1395 }, w: 16, h: 16, type: 'mine_sign' },
@@ -932,7 +947,7 @@ export function createInitialPlayer() {
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
-    ammoReserves: { '9x18': 8, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
+    ammoReserves: { '9x18': 6, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
     bleedRate: 0,
     armor: 0,
     lastShot: 0,

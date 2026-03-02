@@ -201,12 +201,14 @@ export const createGoggles = (): Item => ({
 
 export const WEAPON_TEMPLATES = {
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
+  //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
+  // AK weapons NERFED: less damage, more spread, slower fire rate — ammo scarcity is the real balance lever
   makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
-  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  25, '🔫',   10,      80,   273,   'auto'); w.weaponSlot = 'primary'; return w; },
-  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  30, '🔫',   9,       70,   380,   'auto'); w.weaponSlot = 'primary'; return w; },
-  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  15, '🔫',   6,       25,   900,   'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.5; return w; },
-  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫',   11,      100,  1450,  'single'); w.weaponSlot = 'primary'; return w; },
-  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      8, '🔫',   6,       25,   80,    'auto'); w.weaponSlot = 'primary'; return w; },
+  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  18, '🔫',   9,       65,   320,   'auto'); w.weaponSlot = 'primary'; return w; },
+  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  22, '🔫',   8,       55,   420,   'auto'); w.weaponSlot = 'primary'; return w; },
+  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  13, '🔫',   6,       22,   1000,  'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.55; return w; },
+  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 55, '🔫',   11,      100,  1600,  'single'); w.weaponSlot = 'primary'; return w; },
+  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      6, '🔫',   5,       20,   90,    'auto'); w.weaponSlot = 'primary'; return w; },
   // Secondary weapons
   revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   7,       50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
   baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3,        8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
@@ -280,17 +282,17 @@ export const LOOT_POOLS = {
   },
   military: (): Item[] => {
     return pickMany<Item>([
-      [createAmmo('5.45x39', 4 + Math.floor(Math.random() * 4)), 0.18],
-      [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 3)), 0.14],
-      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.15],
-      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.03],
-      [WEAPON_TEMPLATES.ak74(), 0.15],
-      [WEAPON_TEMPLATES.akm(), 0.08],
+      [createAmmo('5.45x39', 2 + Math.floor(Math.random() * 3)), 0.12],
+      [createAmmo('7.62x39', 2 + Math.floor(Math.random() * 2)), 0.10],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.10],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.02],
+      [WEAPON_TEMPLATES.ak74(), 0.08],
+      [WEAPON_TEMPLATES.akm(), 0.05],
       [randomValuable(), 0.30],
       [randomValuable(), 0.15],
-      [createGrenade(), 0.10],
-      [createGasGrenade(), 0.08],
-      [createTNT(), 0.15],
+      [createGrenade(), 0.06],
+      [createGasGrenade(), 0.05],
+      [createTNT(), 0.10],
     ]);
   },
   medical: (): Item[] => {
@@ -331,18 +333,18 @@ export const LOOT_POOLS = {
   // Weapon cabinet — high chance of finding weapons
   weapon_cabinet: (): Item[] => {
     return pickMany<Item>([
-      [WEAPON_TEMPLATES.ak74(), 0.45],
-      [WEAPON_TEMPLATES.akm(), 0.35],
-      [WEAPON_TEMPLATES.toz(), 0.30],
-      [WEAPON_TEMPLATES.mosin(), 0.20],
-      [WEAPON_TEMPLATES.ppsh(), 0.25],
-      [WEAPON_TEMPLATES.makarov(), 0.35],
-      [WEAPON_TEMPLATES.revolver(), 0.30],
+      [WEAPON_TEMPLATES.ak74(), 0.30],
+      [WEAPON_TEMPLATES.akm(), 0.20],
+      [WEAPON_TEMPLATES.toz(), 0.25],
+      [WEAPON_TEMPLATES.mosin(), 0.15],
+      [WEAPON_TEMPLATES.ppsh(), 0.15],
+      [WEAPON_TEMPLATES.makarov(), 0.30],
+      [WEAPON_TEMPLATES.revolver(), 0.25],
       [WEAPON_TEMPLATES.knife(), 0.25],
-      [createAmmo('5.45x39', 10 + Math.floor(Math.random() * 10)), 0.45],
-      [createAmmo('7.62x39', 8 + Math.floor(Math.random() * 8)), 0.40],
-      [createAmmo('7.62x54R', 5 + Math.floor(Math.random() * 5)), 0.25],
-      [createGasGrenade(), 0.22],
+      [createAmmo('5.45x39', 4 + Math.floor(Math.random() * 4)), 0.35],
+      [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 4)), 0.30],
+      [createAmmo('7.62x54R', 2 + Math.floor(Math.random() * 3)), 0.20],
+      [createGasGrenade(), 0.15],
     ]);
   },
 };

@@ -933,7 +933,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
       ? (wpn as any)._durability / (wpn as any)._maxDurability 
       : 1;
-    const degradedSpread = isMosinWpn ? 0.08 : 0.08 + (1 - durRatio) * 0.22;
+    const degradedSpread = isMosinWpn ? 0.06 : 0.12 + (1 - durRatio) * 0.25; // Higher base spread — AKs less laser-accurate
     
     const baseBulletSpeed = wpn?.bulletSpeed || 8;
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
@@ -1666,6 +1666,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   // Update enemies
+  // Reset stealth detection tracking — recalculated per frame
+  (state as any)._stealthDetection = 0;
+  (state as any)._stealthNearestState = 'idle';
+  (state as any)._stealthNearestType = '';
+  (state as any)._stealthNearestDist = 9999;
+  
   const viewCx = state.camera.x - 600;
   const viewCy = state.camera.y - 600;
   const viewW = 1200;
@@ -2093,6 +2099,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     const distToPlayer = dist(enemy.pos, state.player.pos);
     const los = hasLineOfSight(state, enemy.pos, state.player.pos, enemy.elevated);
+
+    // === STEALTH AWARENESS TRACKING — compute how close each enemy is to detecting player ===
+    // Detection ratio: 0 = unaware, 1 = fully detected
+    const playerIsHidingForDetection = !!(state as any)._playerHiding;
+    if (!playerIsHidingForDetection && los && distToPlayer < enemy.alertRange * alarmBoost * 1.3) {
+      const toPlayerAngle2 = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+      let angleDiff2 = Math.abs(toPlayerAngle2 - enemy.angle);
+      if (angleDiff2 > Math.PI) angleDiff2 = Math.PI * 2 - angleDiff2;
+
+      const isBodyguard2 = !!(enemy as any)._isBodyguard;
+      const vc2 = isBodyguard2
+        ? { frontArc: Math.PI * 0.5, rearRange: 0.2 }
+        : { scav: { frontArc: Math.PI * 0.25, rearRange: 0.08 }, soldier: { frontArc: Math.PI * 0.30, rearRange: 0.12 }, heavy: { frontArc: Math.PI * 0.40, rearRange: 0.20 }, turret: { frontArc: Math.PI * 0.40, rearRange: 0.0 }, sniper: { frontArc: Math.PI * 0.12, rearRange: 0.03 }, shocker: { frontArc: Math.PI * 0.35, rearRange: 0.15 }, redneck: { frontArc: Math.PI * 0.30, rearRange: 0.10 }, dog: { frontArc: Math.PI * 0.50, rearRange: 0.40 } }[enemy.type] || { frontArc: Math.PI * 0.30, rearRange: 0.12 };
+      const isBehind2 = angleDiff2 > vc2.frontArc;
+      const effectiveRange2 = (isBehind2 ? enemy.alertRange * vc2.rearRange : enemy.alertRange) * alarmBoost;
+      const detectionRatio = Math.max(0, 1 - (distToPlayer / effectiveRange2));
+
+      if (detectionRatio > ((state as any)._stealthDetection || 0)) {
+        (state as any)._stealthDetection = detectionRatio;
+        (state as any)._stealthNearestState = enemy.state;
+        (state as any)._stealthNearestType = enemy.type;
+        (state as any)._stealthNearestDist = distToPlayer;
+      }
+    }
 
     // Enemy tries to activate alarm panel when in chase/attack and near one
     if ((enemy.state === 'chase' || enemy.state === 'attack') && enemy.type !== 'turret') {
