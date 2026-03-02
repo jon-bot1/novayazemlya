@@ -27,15 +27,15 @@ const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall =
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
   const stats: Record<string, any> = {
-    scav: { hp: 50, speed: 0.72, damage: 12, alertRange: 100, shootRange: 85, fireRate: 1400 },
-    soldier: { hp: 80, speed: 0.90, damage: 22, alertRange: 160, shootRange: 140, fireRate: 900 },
-    heavy: { hp: 180, speed: 0.45, damage: 35, alertRange: 130, shootRange: 120, fireRate: 1600 },
-    turret: { hp: 250, speed: 0, damage: 25, alertRange: 160, shootRange: 145, fireRate: 900 },
-    boss: { hp: 550, speed: 1.10, damage: 40, alertRange: 250, shootRange: 200, fireRate: 550 },
-    sniper: { hp: 90, speed: 0.36, damage: 85, alertRange: 380, shootRange: 330, fireRate: 5500 },
-    shocker: { hp: 70, speed: 1.10, damage: 45, alertRange: 130, shootRange: 40, fireRate: 650 },
-    redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 120, shootRange: 70, fireRate: 1000 },
-    dog: { hp: 35, speed: 1.80, damage: 25, alertRange: 160, shootRange: 28, fireRate: 900 },
+    scav: { hp: 50, speed: 0.72, damage: 12, alertRange: 125, shootRange: 85, fireRate: 1400 },
+    soldier: { hp: 80, speed: 0.90, damage: 22, alertRange: 200, shootRange: 140, fireRate: 900 },
+    heavy: { hp: 180, speed: 0.45, damage: 35, alertRange: 163, shootRange: 120, fireRate: 1600 },
+    turret: { hp: 250, speed: 0, damage: 25, alertRange: 200, shootRange: 145, fireRate: 900 },
+    boss: { hp: 550, speed: 1.10, damage: 40, alertRange: 313, shootRange: 200, fireRate: 550 },
+    sniper: { hp: 90, speed: 0.36, damage: 85, alertRange: 475, shootRange: 330, fireRate: 5500 },
+    shocker: { hp: 70, speed: 1.10, damage: 45, alertRange: 163, shootRange: 40, fireRate: 650 },
+    redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 150, shootRange: 70, fireRate: 1000 },
+    dog: { hp: 35, speed: 1.80, damage: 25, alertRange: 200, shootRange: 28, fireRate: 900 },
   };
   const s = stats[type] || stats.scav;
   const enemy: Enemy = {
