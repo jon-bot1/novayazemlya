@@ -1,4 +1,4 @@
-import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
+import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
@@ -57,6 +57,26 @@ function rectContains(rx: number, ry: number, rw: number, rh: number, px: number
 function addMessage(state: GameState, text: string, type: GameMessage['type']) {
   state.messages.push({ text, time: state.time, type });
   if (state.messages.length > 10) state.messages.shift();
+}
+
+// Headshot chance — skill-based, no kill-count scaling
+function calcHeadshotChance(state: GameState, b: Bullet, enemy: Enemy): number {
+  let chance = 0.10; // base 10%
+  // Standing still bonus
+  const moveLen = Math.abs((state as any)._lastMoveX || 0) + Math.abs((state as any)._lastMoveY || 0);
+  if (moveLen < 0.05) chance += 0.10; // standing still +10%
+  // Sprinting penalty
+  const mode: string = (state as any)._lastMovementMode || 'walk';
+  if (mode === 'sprint') chance -= 0.10;
+  // Cover bonus (cumulative with standing still)
+  if (state.player.inCover) chance += 0.05;
+  // Soldier bonus (weaker helmets)
+  if (enemy.type === 'soldier') chance += 0.15;
+  // Mosin bonus
+  if (b.weaponName === 'Mosin-Nagant') chance += 0.20;
+  // Upgrade bonus
+  chance += (state as any)._critChanceBonus || 0;
+  return Math.max(0, Math.min(0.55, chance));
 }
 
 const BASE_INVENTORY_SLOTS = 12;
@@ -476,6 +496,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const effectiveMode = (input.movementMode === 'sprint' && state.player.stamina <= 0) ? 'walk' : input.movementMode;
   const finalSpeed = effectiveMode === 'sprint' ? baseSpeed : state.player.speed * speedMultipliers[effectiveMode] * (1 - Math.min(0.35, weightPenalty));
   const playerSpeed = state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed;
+  // Store movement state for headshot calc
+  (state as any)._lastMoveX = moveX;
+  (state as any)._lastMoveY = moveY;
+  (state as any)._lastMovementMode = effectiveMode;
   
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
@@ -3764,15 +3788,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             spawnParticles(state, b.pos.x, b.pos.y, '#aaa', 2);
             return false; // concealment miss (reduced from 40% to 25%)
           }
-          const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
-          const critUpgradeBonus = (state as any)._critChanceBonus || 0;
-          const critChance = Math.min(0.60, 0.05 + state.killCount * 0.02 + soldierBonus + critUpgradeBonus);
+          const critChance = calcHeadshotChance(state, b, enemy);
           const isCrit = Math.random() < critChance;
           if (isCrit) {
             enemy.hp = 0;
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
+            setSpeech(enemy, '💀', 1.5);
            } else {
             // Boss and bodyguard body armor: 33% damage reduction
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
@@ -3866,19 +3889,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             return false; // bullet went over prone enemy
           }
 
-          // Critical hit / headshot — chance scales with kill count (skill)
-          // Soldiers have +15% headshot chance (weaker helmets)
-          // Mosin-Nagant has +20% headshot bonus
-          const soldierBonus = enemy.type === 'soldier' ? 0.15 : 0;
-          const mosinBonus = isMosin ? 0.20 : 0;
-          const critChance = Math.min(0.50, 0.05 + state.killCount * 0.02 + soldierBonus + mosinBonus);
-          const isCrit = enemy.type !== 'boss' && enemy.type !== 'sniper' && Math.random() < critChance;
+          // Critical hit / headshot — skill-based: standing still, cover, weapon bonuses
+          const critChance = calcHeadshotChance(state, b, enemy);
+          const isCrit = Math.random() < critChance;
           
           if (isCrit) {
             enemy.hp = 0;
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
+            setSpeech(enemy, '💀', 1.5);
           } else {
             // Boss and bodyguard body armor: 33% damage reduction
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
