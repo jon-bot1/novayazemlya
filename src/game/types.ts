@@ -310,6 +310,12 @@ export interface GameState {
   dogsNeutralized: number; // dogs neutralized with food
   dogsKilled: number; // dogs killed by player
   totalDogsOnMap: number; // total dogs spawned on map
+  // Stealth additions
+  disguised: boolean; // wearing enemy uniform
+  disguiseTimer: number; // seconds remaining on disguise (degrades)
+  throwingKnives: number; // count of throwing knives
+  chokeholdTarget: string | null; // enemy id being choked
+  chokeholdProgress: number; // 0-2 seconds
 }
 
 export interface SoundEvent {
@@ -344,4 +350,6 @@ export interface InputState {
   useTNT: boolean;
   useSpecial: boolean; // use item from special slot
   reload: boolean; // manual reload (R key)
+  throwKnife: boolean; // throw knife for silent ranged kill (F key)
+  chokehold: boolean; // hold E behind enemy for silent chokehold
 }

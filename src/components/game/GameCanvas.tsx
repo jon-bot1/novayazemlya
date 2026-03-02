@@ -547,7 +547,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -634,6 +634,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'x') inputRef.current.useSpecial = true;
       if (k === 'q' || k === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (k === 'r') inputRef.current.reload = true;
+      if (k === 'f') inputRef.current.throwKnife = true;
       if (k === '1') inputRef.current.switchWeapon = 1;
       if (k === '2') inputRef.current.switchWeapon = 2;
       if (k === '3') inputRef.current.switchWeapon = 3;

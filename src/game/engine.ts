@@ -413,6 +413,12 @@ export function createGameState(): GameState {
     dogsKilled: 0,
     totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
     emptyMagTimer: 0,
+    // Stealth additions
+    disguised: false,
+    disguiseTimer: 0,
+    throwingKnives: 2, // start with 2 throwing knives
+    chokeholdTarget: null,
+    chokeholdProgress: 0,
   };
 }
 
@@ -686,6 +692,97 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         addMessage(state, '⚠ No tree or bush nearby to hide in!', 'warning');
       }
+    }
+  }
+
+  // === DISGUISE SYSTEM ===
+  if (state.disguised) {
+    state.disguiseTimer -= dt;
+    // Disguise breaks on shooting, sprinting, or timer expiry
+    if (state.disguiseTimer <= 0 || input.shooting || effectiveMode === 'sprint') {
+      state.disguised = false;
+      state.disguiseTimer = 0;
+      const reason = input.shooting ? 'shooting' : effectiveMode === 'sprint' ? 'sprinting' : 'time';
+      addMessage(state, `⚠ DISGUISE BLOWN — ${reason}!`, 'warning');
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff4444', 8);
+      // All nearby enemies become immediately aware
+      for (const e of state.enemies) {
+        if (e.state === 'dead') continue;
+        if (dist(e.pos, state.player.pos) < 200) {
+          e.awareness = 1.0;
+        }
+      }
+    }
+  }
+
+  // === CHOKEHOLD (hold E behind unaware enemy) ===
+  if (state.chokeholdTarget) {
+    const target = state.enemies.find(e => e.id === state.chokeholdTarget);
+    if (!target || target.state === 'dead' || dist(state.player.pos, target.pos) > 60 || (state as any)._lastMovementMode !== 'sneak') {
+      // Cancel chokehold
+      state.chokeholdTarget = null;
+      state.chokeholdProgress = 0;
+      if (target && target.state !== 'dead') addMessage(state, '⚠ Chokehold broken!', 'warning');
+    } else {
+      state.chokeholdProgress += dt;
+      // Lock player position next to enemy
+      state.player.pos = { x: target.pos.x - Math.cos(target.angle) * 20, y: target.pos.y - Math.sin(target.angle) * 20 };
+      if (state.chokeholdProgress >= 2.0) {
+        // Complete — silent kill
+        target.hp = 0;
+        target.state = 'dead';
+        setSpeech(target, '...💀', 1.5);
+        sendReinforcementToPlatform(state, target);
+        target.loot = generateEnemyLoot(target);
+        state.killCount++;
+        state.sneakKills++;
+        if (target.type === 'dog') state.dogsKilled++;
+        addMessage(state, `🤫 CHOKEHOLD KILL — completely silent!`, 'kill');
+        spawnParticles(state, target.pos.x, target.pos.y, '#8844cc', 10);
+        state.chokeholdTarget = null;
+        state.chokeholdProgress = 0;
+      }
+    }
+  } else if (input.interact && (state as any)._lastMovementMode === 'sneak') {
+    // Try to initiate chokehold on nearby unaware enemy
+    for (const e of state.enemies) {
+      if (e.state === 'dead' || e.type === 'boss' || e.type === 'turret') continue;
+      if (e.awareness >= 0.5 || dist(state.player.pos, e.pos) > 55) continue;
+      // Must be behind enemy
+      const toEnemyAngle = Math.atan2(e.pos.y - state.player.pos.y, e.pos.x - state.player.pos.x);
+      let aDiff = Math.abs(toEnemyAngle - e.angle);
+      if (aDiff > Math.PI) aDiff = Math.PI * 2 - aDiff;
+      if (aDiff < Math.PI * 0.4) { // behind them
+        state.chokeholdTarget = e.id;
+        state.chokeholdProgress = 0;
+        addMessage(state, '🤫 CHOKEHOLD... hold still (2s)', 'info');
+        input.interact = false; // consume
+        break;
+      }
+    }
+  }
+
+  // === THROWN KNIFE (F key) — silent ranged kill ===
+  if (input.throwKnife) {
+    input.throwKnife = false;
+    if (state.throwingKnives > 0) {
+      state.throwingKnives--;
+      const knifeAngle = state.player.angle;
+      const knifeSpeed = 7;
+      state.bullets.push({
+        pos: { ...state.player.pos },
+        vel: { x: Math.cos(knifeAngle) * knifeSpeed, y: Math.sin(knifeAngle) * knifeSpeed },
+        damage: 80, // high damage — one-shot most enemies
+        damageType: 'melee',
+        fromPlayer: true,
+        life: 35,
+        weaponName: 'Throwing Knife',
+      });
+      addMessage(state, `🗡️ Knife thrown! (${state.throwingKnives} left)`, 'info');
+      // Very quiet — small sound radius
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: 30, time: state.time });
+    } else {
+      addMessage(state, '⚠ No throwing knives left!', 'warning');
     }
   }
 
@@ -1524,6 +1621,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else {
           addMessage(state, `Nothing of value...`, 'info');
         }
+        // === DISGUISE PICKUP — dead soldier/heavy gives uniform ===
+        if (!state.disguised && (enemy.type === 'soldier' || enemy.type === 'heavy')) {
+          state.disguised = true;
+          state.disguiseTimer = 45; // 45 second disguise
+          addMessage(state, '🥷 DISGUISE ON — enemies ignore you! Shooting or running breaks it.', 'intel');
+          spawnParticles(state, state.player.pos.x, state.player.pos.y, '#66aa44', 10);
+        }
       }
     }
 
@@ -2357,6 +2461,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Cover reduces visibility
     if ((state as any)._playerHiding) visibilityFactor *= 0;
     else if (state.player.inCover) visibilityFactor *= 0.5;
+    // Disguise — enemies mostly can't detect you (officers and very close = partial)
+    if (state.disguised) {
+      const isOfficer = !!(enemy as any)._isOfficer;
+      if (isOfficer) visibilityFactor *= 0.3; // officers suspicious
+      else if (distToPlayer < 60) visibilityFactor *= 0.2; // very close = slight suspicion
+      else visibilityFactor *= 0.02; // practically invisible
+    }
     // Behind enemy = much harder to detect
     if (isBehind) visibilityFactor *= 0.15;
     // Distance falloff — closer = faster detection
