@@ -1384,35 +1384,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // ── DEAD ENEMIES — cached to offscreen canvas, viewport culled ──
-  // Cache dead enemy base renders to avoid re-drawing static corpses every frame
+  // ── DEAD ENEMIES — viewport culled, looted enemies skipped entirely ──
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
+    if (enemy.looted) continue; // fully looted = gone from the world
     if (!isOnScreen(enemy.pos.x, enemy.pos.y, cx, cy, w, h, 30)) continue;
-
-    // Looted enemies that are already cached — just blit
-    if (enemy.looted && (enemy as any)._deadCache) {
-      const cache = (enemy as any)._deadCache as { canvas: HTMLCanvasElement | OffscreenCanvas, ox: number, oy: number };
-      ctx.drawImage(cache.canvas as any, enemy.pos.x + cache.ox, enemy.pos.y + cache.oy);
-      continue;
-    }
-
-    // Cache looted (fully static) enemies to offscreen canvas
-    if (enemy.looted && !(enemy as any)._deadCache) {
-      const cacheSize = enemy.type === 'boss' ? 120 : 60;
-      let offCanvas: HTMLCanvasElement | OffscreenCanvas;
-      try { offCanvas = new OffscreenCanvas(cacheSize, cacheSize); } catch { offCanvas = document.createElement('canvas'); (offCanvas as HTMLCanvasElement).width = cacheSize; (offCanvas as HTMLCanvasElement).height = cacheSize; }
-      const offCtx = (offCanvas as any).getContext('2d') as CanvasRenderingContext2D;
-      offCtx.translate(cacheSize / 2, cacheSize / 2);
-      offCtx.globalAlpha = 0.35;
-      offCtx.font = '18px sans-serif';
-      offCtx.textAlign = 'center';
-      offCtx.fillText('👻', 0, 4);
-      (enemy as any)._deadCache = { canvas: offCanvas, ox: -cacheSize / 2, oy: -cacheSize / 2 };
-      ctx.drawImage(offCanvas as any, enemy.pos.x - cacheSize / 2, enemy.pos.y - cacheSize / 2);
-      continue;
-    }
-
     ctx.save();
 
     if (enemy.type === 'boss') {
@@ -1537,12 +1513,6 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = `rgba(220, 200, 60, ${glow + 0.3})`;
       ctx.font = 'bold 8px sans-serif';
       ctx.fillText('SEARCH', enemy.pos.x, enemy.pos.y + bob - 16);
-    } else {
-      // Already looted
-      ctx.globalAlpha = 0.35;
-      ctx.font = '18px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('👻', enemy.pos.x, enemy.pos.y + 4);
     }
     ctx.restore();
   }
