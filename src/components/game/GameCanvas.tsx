@@ -19,6 +19,7 @@ import { createMedical, createGrenade, createFlashbang, createGasGrenade, create
 import { supabase } from '@/integrations/supabase/client';
 
 const TIME_LIMIT = 300; // 5 minutes
+const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
 
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
@@ -587,7 +588,16 @@ export const GameCanvas: React.FC = () => {
   const [showIntel, setShowIntel] = useState(false);
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
+  const [showFirefoxWarning, setShowFirefoxWarning] = useState(false);
   const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isFirefox = /firefox/i.test(navigator.userAgent);
+    if (!isFirefox) return;
+    if (window.sessionStorage.getItem(FIREFOX_WARNING_KEY) === '1') return;
+    setShowFirefoxWarning(true);
+  }, []);
 
   // Keyboard input (desktop)
   useEffect(() => {
@@ -1286,6 +1296,27 @@ export const GameCanvas: React.FC = () => {
     <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
       <div className="relative w-full h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
+
+        {showFirefoxWarning && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+            <div className="max-w-md rounded border border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur">
+              <p className="text-xs font-mono text-foreground">
+                <span className="text-warning">Firefox detected:</span> spelet kan vara snabbare i Chrome eller Edge.
+              </p>
+              <div className="mt-2 flex justify-end">
+                <button
+                  className="rounded border border-border bg-secondary px-2 py-1 text-xs font-mono text-secondary-foreground hover:bg-secondary/80"
+                  onClick={() => {
+                    setShowFirefoxWarning(false);
+                    window.sessionStorage.setItem(FIREFOX_WARNING_KEY, '1');
+                  }}
+                >
+                  Stäng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
         <HUD
           player={hudState.player}
