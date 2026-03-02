@@ -2463,11 +2463,25 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.beginPath();
     for (const b of state.bullets) {
       if (!b.fromPlayer) continue;
+      if (b.weaponName === 'Throwing Knife') continue; // draw separately
       if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
       ctx.moveTo(b.pos.x + 3, b.pos.y);
       ctx.arc(b.pos.x, b.pos.y, 3, 0, Math.PI * 2);
     }
     ctx.fill();
+    // Throwing knives — drawn as rotated dagger
+    for (const b of state.bullets) {
+      if (!b.fromPlayer || b.weaponName !== 'Throwing Knife') continue;
+      if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
+      ctx.save();
+      ctx.translate(b.pos.x, b.pos.y);
+      ctx.rotate(Math.atan2(b.vel.y, b.vel.x) + state.time * 12);
+      ctx.fillStyle = '#c0c8d0';
+      ctx.fillRect(-6, -1.5, 12, 3);
+      ctx.fillStyle = '#8a6a4a';
+      ctx.fillRect(-3, -2, 4, 4);
+      ctx.restore();
+    }
     // Enemy bullets
     ctx.fillStyle = '#ff5544';
     ctx.beginPath();
@@ -2598,6 +2612,53 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('🌲 HIDDEN', state.player.pos.x, state.player.pos.y + R + 22);
+    ctx.restore();
+  }
+
+  // ── DISGUISE INDICATOR ──
+  if (state.disguised) {
+    ctx.save();
+    const pulse = 0.7 + Math.sin(state.time * 3) * 0.2;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = 'rgba(100, 180, 60, 0.95)';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🥷 DISGUISED (${Math.ceil(state.disguiseTimer)}s)`, state.player.pos.x, state.player.pos.y - R - 46);
+    ctx.restore();
+  }
+
+  // ── CHOKEHOLD PROGRESS BAR ──
+  if (state.chokeholdTarget) {
+    const target = state.enemies.find(e => e.id === state.chokeholdTarget);
+    if (target) {
+      ctx.save();
+      const barW = 40;
+      const barH = 5;
+      const progress = state.chokeholdProgress / 2.0;
+      const bx = target.pos.x - barW / 2;
+      const by = target.pos.y - R - 20;
+      // Background
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(bx, by, barW, barH);
+      // Fill
+      ctx.fillStyle = `rgb(${Math.floor(140 + 115 * progress)}, ${Math.floor(60 + 140 * (1 - progress))}, 200)`;
+      ctx.fillRect(bx, by, barW * progress, barH);
+      // Label
+      ctx.fillStyle = 'rgba(200, 150, 255, 0.95)';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🤫 CHOKEHOLD...', target.pos.x, by - 4);
+      ctx.restore();
+    }
+  }
+
+  // ── THROWING KNIVES HUD (near player) ──
+  if (state.throwingKnives > 0) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(180, 200, 220, 0.6)';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`🗡️×${state.throwingKnives} [F]`, state.player.pos.x + R + 30, state.player.pos.y - R - 5);
     ctx.restore();
   }
 
