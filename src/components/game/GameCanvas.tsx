@@ -403,7 +403,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                   <li>• 🗡️ <span className="text-accent">Permanent melee weapon</span> — Combat Knife always available, never breaks</li>
                   <li>• ✈️ <span className="text-warning">Airplane sabotage</span> — can now be destroyed with grenades or melee, not just TNT</li>
                   <li>• 💳 <span className="text-warning">Access Card consumed</span> on gate use — plan your route carefully</li>
-                  <li>• 🚪 <span className="text-accent">Secret passage hint</span> — "Something feels different..." when nearby</li>
+                  
                   <li>• 🎯 Sniper spawn distance fully randomized, observes before engaging</li>
                   <li>• ☠️ Death screen now shows both "Return to Base" and "Main Menu" buttons</li>
                 </ul>
@@ -430,7 +430,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                   <li>• 🔫 Sidearms have infinite durability, Mosin immune to accuracy loss</li>
                   <li>• 🩹 <span className="text-accent">All enemies can heal</span> if they carry bandages — interrupt them!</li>
                   <li>• 💡 Contextual hints for grenades & TNT when you haven't used them</li>
-                  <li>• 🚪 Secret passage area now has visual ground markings</li>
+                  
                   <li>• 🎖️ Officers guaranteed outside walls with keycards</li>
                   <li>• 👁️ Enemies no longer track players through walls</li>
                   <li>• 🎯 Sniper spawns restricted to northern zones with longer flee distance</li>
@@ -992,7 +992,6 @@ export const GameCanvas: React.FC = () => {
             bodiesLooted: state.bodiesLooted,
             timeSeconds: state.time,
             tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-            foundSecret: !!(state as any)._foundSecret,
             alarmsHacked: state.terminalsHacked,
             mosinKills: state.mosinKills,
             wallsBreached: state.wallsBreached,
@@ -1042,7 +1041,7 @@ export const GameCanvas: React.FC = () => {
         bodiesLooted: state.bodiesLooted,
         timeSeconds: state.time,
         tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-        foundSecret: !!(state as any)._foundSecret,
+        
         alarmsHacked: state.terminalsHacked,
         mosinKills: state.mosinKills,
         wallsBreached: state.wallsBreached,

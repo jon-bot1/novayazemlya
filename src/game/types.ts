@@ -302,7 +302,7 @@ export interface GameState {
   distanceTravelled: number; // total pixels walked
   exfilsVisited: Set<string>; // names of exfil points player has been near
   pendingWeapon: PendingWeapon | null; // weapon awaiting player confirmation
-  tunnelTimer: number; // (unused, kept for compat)
+  
   propagandaTarget?: string; // enemy id being persuaded
   propagandaTimer: number; // propaganda effect countdown
   dogsNeutralized: number; // dogs neutralized with food

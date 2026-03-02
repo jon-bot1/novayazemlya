@@ -394,7 +394,7 @@ export function createGameState(): GameState {
     distanceTravelled: 0,
     exfilsVisited: new Set<string>(),
     pendingWeapon: null,
-    tunnelTimer: 0,
+    
     propagandaTimer: 0,
     dogsNeutralized: 0,
     dogsKilled: 0,
@@ -530,22 +530,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.distanceTravelled += dist(state.player.pos, newPos);
     state.player.pos = newPos;
 
-    // Secret passage discovery — deep storage area (bottom-right of map)
-    if (!(state as any)._foundSecret) {
-      const secretZone = { x: 2100, y: 1900, w: 200, h: 200 };
-      if (newPos.x > secretZone.x && newPos.x < secretZone.x + secretZone.w &&
-          newPos.y > secretZone.y && newPos.y < secretZone.y + secretZone.h) {
-        (state as any)._foundSecret = true;
-        addMessage(state, '🚪 SECRET PASSAGE DISCOVERED! Hidden tunnel found!', 'intel');
-      }
-    }
-    // Hint when getting close to secret area
-    if (!(state as any)._foundSecret && !(state as any)._secretHint) {
-      if (newPos.x > 1900 && newPos.y > 1700) {
-        (state as any)._secretHint = true;
-        addMessage(state, '🔍 Something feels different in the southeast corner...', 'info');
-      }
-    }
     
     // Moving breaks hiding (not auto-cover)
     if ((state as any)._playerHiding) {

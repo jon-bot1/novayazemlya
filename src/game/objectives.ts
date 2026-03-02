@@ -21,7 +21,7 @@ const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'kill_boss', name: 'Eliminate Commandant', icon: '💀', description: 'Kill Commandant Osipovitj and retrieve his USB drive', reward: 500, isMain: true },
   { id: 'hack_terminals', name: 'Hack Intel Terminal', icon: '💻', description: 'Hack the nuclear codebook terminal', reward: 400, isMain: true },
   { id: 'plant_bomb', name: 'Sabotage Aircraft', icon: '✈️', description: 'Destroy the airplane with TNT, grenades, or melee', reward: 450, isMain: true },
-  { id: 'find_secret', name: 'Find Secret Passage', icon: '🚪', description: 'Discover the hidden passage in the underground labs', reward: 400, isMain: true },
+  
   { id: 'kill_sniper', name: 'Neutralize Sniper Tuman', icon: '🎯', description: 'Hunt down and eliminate the deadly Sniper Tuman', reward: 400, isMain: true },
   { id: 'collect_all_docs', name: 'Recover All Intel', icon: '📚', description: 'Collect every classified document on the map', reward: 450, isMain: true },
   { id: 'breach_and_clear', name: 'Breach & Clear HQ', icon: '🧨', description: 'Breach 2 walls with TNT and kill 5 enemies inside', reward: 500, isMain: true },
@@ -90,7 +90,7 @@ export function checkObjectiveCompletion(
     bodiesLooted: number;
     timeSeconds: number;
     tntPlacedOnPlane: boolean;
-    foundSecret: boolean;
+    
     alarmsHacked: number;
     mosinKills: number;
     wallsBreached: number;
@@ -119,7 +119,7 @@ export function checkObjectiveCompletion(
       case 'loot_bodies': completed = stats.bodiesLooted >= 5; break;
       case 'speedrun': completed = stats.timeSeconds <= 120; break;
       case 'plant_bomb': completed = stats.tntPlacedOnPlane; break;
-      case 'find_secret': completed = stats.foundSecret; break;
+      
       case 'hack_alarm': completed = stats.alarmsHacked > 0; break;
       case 'mosin_kills': completed = stats.mosinKills >= 3; break;
       case 'no_kills': completed = stats.killCount === 0; break;
