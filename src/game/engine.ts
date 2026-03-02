@@ -857,54 +857,68 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // === USE SPECIAL ITEM (X key) ===
   if (input.useSpecial) {
     input.useSpecial = false;
-    const specialItems = state.player.specialSlot;
-    // Find first non-TNT special item for X key usage
-    const usableIdx = specialItems.findIndex(i => i.name !== 'TNT Charge');
-    if (usableIdx >= 0) {
-      const item = specialItems[usableIdx];
-      if (item.name === 'Propaganda Leaflet') {
-        // Find nearest non-friendly, non-boss enemy within 100px
-        let closest: Enemy | null = null;
-        let closestD = 100;
-        for (const e of state.enemies) {
-          if (e.state === 'dead' || e.type === 'boss' || e.type === 'turret' || e.type === 'sniper' || e.type === 'dog' || e.friendly || (e as any)._isBodyguard) continue;
-          const d = dist(state.player.pos, e.pos);
-          if (d < closestD) { closestD = d; closest = e; }
-        }
-        if (closest) {
-          closest.friendly = true;
-          closest.friendlyTimer = 60;
-          closest.state = 'chase';
-          specialItems.splice(usableIdx, 1);
-          addMessage(state, `📢 ${closest.type.toUpperCase()} CONVINCED — fights for you for 60s!`, 'info');
-          spawnParticles(state, closest.pos.x, closest.pos.y, '#44ff44', 12);
-        } else {
-          addMessage(state, '⚠ No enemy nearby to convince!', 'warning');
-        }
-      } else if (item.name === 'Dog Food') {
-        // Find nearest dog within 80px
-        let closest: Enemy | null = null;
-        let closestD = 80;
-        for (const e of state.enemies) {
-          if (e.state === 'dead' || e.type !== 'dog' || e.neutralized) continue;
-          const d = dist(state.player.pos, e.pos);
-          if (d < closestD) { closestD = d; closest = e; }
-        }
-        if (closest) {
-          closest.neutralized = true;
-          closest.neutralizedTimer = 20;
-          closest.state = 'idle';
-          closest.speed = 0.3;
-          specialItems.splice(usableIdx, 1);
-          state.dogsNeutralized++;
-          addMessage(state, '🦴 Dog neutralized — it loses interest!', 'info');
-          spawnParticles(state, closest.pos.x, closest.pos.y, '#ffcc66', 8);
-        } else {
-          addMessage(state, '⚠ No dog nearby!', 'warning');
-        }
+    
+    // === DISGUISE — priority check: put on uniform if available and near body ===
+    if ((state as any)._disguiseAvailable && !state.disguised) {
+      const dPos = (state as any)._disguisePos;
+      if (dPos && dist(state.player.pos, dPos) < 90) {
+        state.disguised = true;
+        state.disguiseTimer = 45;
+        (state as any)._disguiseAvailable = false;
+        delete (state as any)._disguisePos;
+        addMessage(state, '🥷 DISGUISE ON — enemies ignore you! Shooting or sprinting breaks it.', 'intel');
+        spawnParticles(state, state.player.pos.x, state.player.pos.y, '#66aa44', 10);
+      } else {
+        addMessage(state, '⚠ Move closer to the body to put on disguise!', 'warning');
       }
     } else {
-      addMessage(state, '⚠ No special items! Buy from Delyets.', 'warning');
+      // Normal special item usage
+      const specialItems = state.player.specialSlot;
+      const usableIdx = specialItems.findIndex(i => i.name !== 'TNT Charge');
+      if (usableIdx >= 0) {
+        const item = specialItems[usableIdx];
+        if (item.name === 'Propaganda Leaflet') {
+          let closest: Enemy | null = null;
+          let closestD = 100;
+          for (const e of state.enemies) {
+            if (e.state === 'dead' || e.type === 'boss' || e.type === 'turret' || e.type === 'sniper' || e.type === 'dog' || e.friendly || (e as any)._isBodyguard) continue;
+            const d = dist(state.player.pos, e.pos);
+            if (d < closestD) { closestD = d; closest = e; }
+          }
+          if (closest) {
+            closest.friendly = true;
+            closest.friendlyTimer = 60;
+            closest.state = 'chase';
+            specialItems.splice(usableIdx, 1);
+            addMessage(state, `📢 ${closest.type.toUpperCase()} CONVINCED — fights for you for 60s!`, 'info');
+            spawnParticles(state, closest.pos.x, closest.pos.y, '#44ff44', 12);
+          } else {
+            addMessage(state, '⚠ No enemy nearby to convince!', 'warning');
+          }
+        } else if (item.name === 'Dog Food') {
+          let closest: Enemy | null = null;
+          let closestD = 80;
+          for (const e of state.enemies) {
+            if (e.state === 'dead' || e.type !== 'dog' || e.neutralized) continue;
+            const d = dist(state.player.pos, e.pos);
+            if (d < closestD) { closestD = d; closest = e; }
+          }
+          if (closest) {
+            closest.neutralized = true;
+            closest.neutralizedTimer = 20;
+            closest.state = 'idle';
+            closest.speed = 0.3;
+            specialItems.splice(usableIdx, 1);
+            state.dogsNeutralized++;
+            addMessage(state, '🦴 Dog neutralized — it loses interest!', 'info');
+            spawnParticles(state, closest.pos.x, closest.pos.y, '#ffcc66', 8);
+          } else {
+            addMessage(state, '⚠ No dog nearby!', 'warning');
+          }
+        }
+      } else {
+        addMessage(state, '⚠ No special items! Buy from Delyets.', 'warning');
+      }
     }
   }
 
@@ -1621,12 +1635,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else {
           addMessage(state, `Nothing of value...`, 'info');
         }
-        // === DISGUISE PICKUP — dead soldier/heavy gives uniform ===
-        if (!state.disguised && (enemy.type === 'soldier' || enemy.type === 'heavy')) {
-          state.disguised = true;
-          state.disguiseTimer = 45; // 45 second disguise
-          addMessage(state, '🥷 DISGUISE ON — enemies ignore you! Shooting or running breaks it.', 'intel');
-          spawnParticles(state, state.player.pos.x, state.player.pos.y, '#66aa44', 10);
+        // === DISGUISE AVAILABLE — dead soldier/heavy has uniform ===
+        if (!state.disguised && !(state as any)._disguiseAvailable && (enemy.type === 'soldier' || enemy.type === 'heavy')) {
+          (state as any)._disguiseAvailable = true;
+          (state as any)._disguisePos = { ...enemy.pos };
+          addMessage(state, '🥷 Uniform found! Press [X] near body to put on disguise.', 'intel');
         }
       }
     }

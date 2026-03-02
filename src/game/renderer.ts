@@ -2615,7 +2615,22 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // ── DISGUISE INDICATOR ──
+  // ── DISGUISE PROMPT — show near body when uniform available ──
+  if ((state as any)._disguiseAvailable && !state.disguised) {
+    const dPos = (state as any)._disguisePos;
+    if (dPos) {
+      ctx.save();
+      const pulse = 0.6 + Math.sin(state.time * 5) * 0.3;
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = 'rgba(100, 200, 80, 0.95)';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🥷 [X] PUT ON DISGUISE', dPos.x, dPos.y - 30);
+      ctx.restore();
+    }
+  }
+
+  // ── DISGUISE ACTIVE INDICATOR ──
   if (state.disguised) {
     ctx.save();
     const pulse = 0.7 + Math.sin(state.time * 3) * 0.2;
