@@ -338,4 +338,5 @@ export interface InputState {
   switchWeapon?: 1 | 2 | 3;
   useTNT: boolean;
   useSpecial: boolean; // use item from special slot
+  reload: boolean; // manual reload (R key)
 }
