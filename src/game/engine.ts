@@ -453,10 +453,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
-    let newPos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 12);
+    let newPos = tryMove(state, state.player.pos, dir.x * speed, dir.y * speed, 15);
     // Block player from walking onto platform props (enemies can use them)
     for (const p of state.props) {
-      if (p.blocksPlayer && rectContains(p.pos.x - p.w / 2, p.pos.y - p.h / 2, p.w, p.h, newPos.x, newPos.y, 12)) {
+      if (p.blocksPlayer && rectContains(p.pos.x - p.w / 2, p.pos.y - p.h / 2, p.w, p.h, newPos.x, newPos.y, 15)) {
         newPos = state.player.pos;
         break;
       }
@@ -933,7 +933,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
       ? (wpn as any)._durability / (wpn as any)._maxDurability 
       : 1;
-    const degradedSpread = isMosinWpn ? 0.06 : 0.12 + (1 - durRatio) * 0.25; // Higher base spread — AKs less laser-accurate
+    const degradedSpread = isMosinWpn ? 0.06 : 0.12 + (1 - durRatio) * 0.25;
+    
+    // Movement spread: moving adds inaccuracy, sneaking reduces it
+    const movingSpread = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
+    // Recoil bloom from consecutive shots
+    const recoilBloom = (state as any)._recoilBloom || 0;
+    const totalSpread = Math.max(0.02, degradedSpread + movingSpread + recoilBloom);
     
     const baseBulletSpeed = wpn?.bulletSpeed || 8;
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
@@ -946,7 +952,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const coneAngle = wpn.coneAngle || 0.5;
       const baseAngle = state.player.angle;
       for (let p = 0; p < pelletCount; p++) {
-        const pelletSpread = (Math.random() - 0.5) * coneAngle + (Math.random() - 0.5) * degradedSpread;
+        const pelletSpread = (Math.random() - 0.5) * coneAngle + (Math.random() - 0.5) * totalSpread;
         const a = baseAngle + pelletSpread;
         const pelletSpeed = bulletSpeed * (0.85 + Math.random() * 0.3);
         state.bullets.push({
@@ -961,7 +967,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         });
       }
     } else {
-      const spread = (Math.random() - 0.5) * degradedSpread;
+      const spread = (Math.random() - 0.5) * totalSpread;
       const angle = state.player.angle + spread;
       state.bullets.push({
         pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
@@ -975,6 +981,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       });
     }
     state.player.lastShot = state.time;
+    
+    // === AMMO CONSUMPTION — deduct from magazine ===
+    if (!isMelee) {
+      state.player.currentAmmo = Math.max(0, state.player.currentAmmo - 1);
+    }
+    
+    // === RECOIL BLOOM — consecutive shots increase spread ===
+    if (!(state as any)._recoilBloom) (state as any)._recoilBloom = 0;
+    const bloomRate = isAutoFire ? 0.025 : 0.015; // auto weapons bloom faster
+    (state as any)._recoilBloom = Math.min(0.35, (state as any)._recoilBloom + bloomRate);
+    
     const muzzleAngle = state.player.angle;
     spawnParticles(state, state.player.pos.x + Math.cos(muzzleAngle) * 20, state.player.pos.y + Math.sin(muzzleAngle) * 20, '#ffaa44', 3);
     
@@ -1010,6 +1027,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addMessage(state, '⚠ No ammo in reserves!', 'warning');
       }
     }
+  }
+
+  // Recoil bloom decay — recovers when not shooting
+  if ((state as any)._recoilBloom > 0) {
+    const decayRate = 0.15 * dt; // recovers ~0.15/s
+    (state as any)._recoilBloom = Math.max(0, (state as any)._recoilBloom - decayRate);
+  }
+  
+  // Store current spread for HUD visualization
+  {
+    const wpnVis = state.player.equippedWeapon;
+    const isMosinVis = wpnVis?.name?.toLowerCase().includes('mosin');
+    const baseSpreadVis = isMosinVis ? 0.06 : 0.12;
+    const moveSpreadVis = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
+    const bloomVis = (state as any)._recoilBloom || 0;
+    (state as any)._currentSpread = Math.max(0.02, baseSpreadVis + moveSpreadVis + bloomVis);
   }
 
   // Cycle throwable type (V key)
