@@ -1044,7 +1044,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
     
     // === EMPTY MAGAZINE CHECK ===
-    if (!isMelee && state.player.currentAmmo <= 0) {
+    const magAmmo = Number.isFinite(state.player.currentAmmo) ? state.player.currentAmmo : 0;
+    if (!isMelee && magAmmo <= 0) {
+      state.player.currentAmmo = 0; // fail-safe clamp
       // Throttle the message to avoid spam
       if (state.time - state.player.lastShot > 0.3) {
         state.player.lastShot = state.time;
@@ -1117,7 +1119,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     
     // === AMMO CONSUMPTION — deduct from magazine ===
     if (!isMelee) {
-      state.player.currentAmmo = Math.max(0, state.player.currentAmmo - 1);
+      state.player.currentAmmo = Math.max(0, Math.floor(state.player.currentAmmo) - 1);
     }
     
     // === RECOIL BLOOM — consecutive shots increase spread ===
