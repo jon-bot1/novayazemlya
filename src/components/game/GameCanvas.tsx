@@ -318,7 +318,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
               <span className="text-danger">Eliminate targets</span>, <span className="text-loot">recover intel</span>, 
               <span className="text-warning">sabotage assets</span>, or <span className="text-accent">discover hidden passages</span>. 
-              Extract alive to bring loot back to your stash. Sell loot for rubles, buy <span className="text-warning">upgrades</span> from Trader Sidorov.
+              Extract alive to bring loot back to your stash. Sell loot for rubles, buy <span className="text-warning">upgrades</span> from Delyets.
             </p>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
               Your gear persists between raids. Die and you lose everything you carried.
@@ -389,7 +389,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                   <li>• 🔫 <span className="text-accent">Shotgun (TOZ-34)</span> — fires 5 pellets in a cone, devastating at close range</li>
                   <li>• 🤠 <span className="text-warning">Redneck enemies</span> — patrol outside with shotguns and speech bubbles</li>
                   <li>• 🐕 <span className="text-warning">Guard Dogs</span> — fast melee companions that follow their redneck owner</li>
-                  <li>• 🦴 <span className="text-accent">Dog Food</span> — neutralize dogs without killing (buy from trader)</li>
+                  <li>• 🦴 <span className="text-accent">Dog Food</span> — neutralize dogs without killing (buy from Delyets)</li>
                   <li>• 📢 <span className="text-accent">Propaganda Leaflet</span> — convince an enemy to fight for you for 60s</li>
                   
                   <li>• 💬 <span className="text-foreground">Speech Bubbles</span> — enemies react with dialogue during combat</li>
@@ -412,7 +412,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.12 — 2026-02-26</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 💉 <span className="text-accent">Emergency Injector</span> — auto-revives you at 0 HP, restoring 75 HP & stopping bleed</li>
-                  <li>• 💉 Start every raid with 1 injector — buy extras from Trader Sidorov (350₽)</li>
+                  <li>• 💉 Start every raid with 1 injector — buy extras from Delyets (350₽)</li>
                   <li>• 💉 <span className="text-warning">HUD indicator</span> shows injector status clearly (green = ready, red = empty)</li>
                   <li>• 🩹 <span className="text-accent">Bleeding now stops naturally</span> — light bleeds ~3s, heavy bleeds ~10s</li>
                   <li>• 🔫 <span className="text-warning">Weapon drop rates reduced 15%</span> across all enemy types for better balance</li>
