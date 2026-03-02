@@ -84,13 +84,16 @@ const BASE_INVENTORY_SLOTS = 12;
 // Centralized magazine size lookup
 function getMagSize(wpn: Item | null): number {
   if (!wpn) return 8;
-  const n = wpn.name?.toLowerCase() || '';
-  if (n.includes('ppsh')) return 35;
+  const n = (wpn.name || '').toLowerCase();
+
+  // Keep specific checks before broader rifle checks (e.g. "Makarov" contains "ak")
+  if (n.includes('makarov')) return 8;
+  if (n.includes('nagant') && !n.includes('mosin')) return 7;
   if (n.includes('mosin')) return 5;
   if (n.includes('toz')) return 2;
-  if (n.includes('ak')) return 30;
-  if (n.includes('nagant') && !n.includes('mosin')) return 7;
-  if (n.includes('makarov')) return 8;
+  if (n.includes('ppsh')) return 35;
+  if (n.includes('ak-74') || n.includes('ak74') || n.includes('akm') || n.includes('ak ')) return 30;
+
   return 8;
 }
 
