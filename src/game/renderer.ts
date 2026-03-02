@@ -1,7 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 
-const R = 18;
+const R = 22;
 const WALL_HEIGHT = 18;
 
 // Cached sorted arrays — only re-sort when count changes
@@ -2911,6 +2911,36 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('🤫 SAFE', playerX, playerY + R + 38);
       ctx.restore();
     }
+  }
+
+  // ── CROSSHAIR SPREAD INDICATOR — shows current weapon accuracy ──
+  {
+    const spread = (state as any)._currentSpread || 0.1;
+    const spreadPx = Math.max(8, spread * 200);
+    const aimDist = 35;
+    const pX = state.player.pos.x;
+    const pY = state.player.pos.y;
+    const aimX = pX + Math.cos(state.player.angle) * aimDist;
+    const aimY = pY + Math.sin(state.player.angle) * aimDist;
+    
+    const spreadAlpha = Math.min(0.8, 0.3 + spread * 1.5);
+    const spreadColor = spread > 0.25 ? `rgba(255,100,50,${spreadAlpha})` : spread > 0.15 ? `rgba(255,220,50,${spreadAlpha})` : `rgba(100,255,100,${spreadAlpha})`;
+    ctx.save();
+    ctx.strokeStyle = spreadColor;
+    ctx.lineWidth = 1.5;
+    for (const offset of [-1, 1]) {
+      const perpX = -Math.sin(state.player.angle) * spreadPx * offset;
+      const perpY = Math.cos(state.player.angle) * spreadPx * offset;
+      ctx.beginPath();
+      ctx.moveTo(aimX + perpX * 0.6, aimY + perpY * 0.6);
+      ctx.lineTo(aimX + perpX, aimY + perpY);
+      ctx.stroke();
+    }
+    ctx.fillStyle = spreadColor;
+    ctx.beginPath();
+    ctx.arc(aimX, aimY, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   // Grenade charge indicator
