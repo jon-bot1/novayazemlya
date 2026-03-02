@@ -103,11 +103,21 @@ function setWeaponAmmo(state: GameState, wpn: Item) {
   state.player.maxAmmo = mag;
   if (wpn.ammoType) {
     state.player.ammoType = wpn.ammoType;
-    // Load from reserves
-    const available = state.player.ammoReserves[wpn.ammoType] || 0;
-    const loaded = Math.min(mag, available);
-    state.player.currentAmmo = loaded;
-    state.player.ammoReserves[wpn.ammoType] -= loaded;
+    // If weapon already has loaded ammo (picked up from world), use that
+    const preLoaded = (wpn as any)._loadedAmmo;
+    if (preLoaded !== undefined && preLoaded > 0) {
+      state.player.currentAmmo = Math.min(mag, preLoaded);
+      (wpn as any)._loadedAmmo = undefined;
+    } else if (preLoaded === undefined) {
+      // Fresh pickup — weapon comes with a full magazine (no reserve cost)
+      state.player.currentAmmo = mag;
+    } else {
+      // Explicitly 0 (emptied by player) — load from reserves
+      const available = state.player.ammoReserves[wpn.ammoType] || 0;
+      const loaded = Math.min(mag, available);
+      state.player.currentAmmo = loaded;
+      state.player.ammoReserves[wpn.ammoType] -= loaded;
+    }
   }
 }
 
