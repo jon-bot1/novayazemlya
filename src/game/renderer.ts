@@ -2223,12 +2223,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillRect(lx - 1, 4, 2, 4);
       }
       ctx.restore();
-      // Label
+      // Label with name
       if (!enemy.neutralized) {
+        const dogName = (enemy as any)._dogName || 'DOG';
         ctx.fillStyle = 'rgba(255,200,200,0.5)';
         ctx.font = '7px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🐕 DOG', enemy.pos.x, enemy.pos.y + 18);
+        ctx.fillText(`🐕 ${dogName}`, enemy.pos.x, enemy.pos.y + 18);
       }
     } else {
       const isBodyguard = !!(enemy as any)._isBodyguard;
@@ -3042,6 +3043,20 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('💫 STUNNED 💫', w / 2, h / 2 + 80);
+  }
+
+  // EMPTY MAGAZINE — big on-screen text
+  if (state.emptyMagTimer > 0) {
+    const alpha = Math.min(1, state.emptyMagTimer);
+    ctx.save();
+    ctx.fillStyle = `rgba(255, 60, 60, ${alpha * 0.9})`;
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+    const txt = ammoAvail > 0 ? '⚠ EMPTY — PRESS R TO RELOAD' : '⚠ NO AMMO LEFT';
+    ctx.fillText(txt, w / 2, h / 2 + 40);
+    ctx.restore();
   }
 
   // Low HP flash (only visual feedback, not lighting)
