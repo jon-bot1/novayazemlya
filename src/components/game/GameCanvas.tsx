@@ -546,7 +546,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -603,45 +603,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'e') inputRef.current.interact = true;
       if (k === 't') inputRef.current.useTNT = true;
       if (k === 'h') inputRef.current.heal = true;
-      // Weapon confirmation: Y or Enter to accept, N to reject
-      if (k === 'y' || e.key === 'Enter') {
-        const st = stateRef.current;
-        if (st.pendingWeapon) {
-          const pw = st.pendingWeapon;
-          if (!st.player.inventory.includes(pw.item)) {
-            st.player.inventory.push(pw.item);
-          }
-          if (pw.slot === 'primary') {
-            st.player.primaryWeapon = pw.item;
-            st.player.activeSlot = 3;
-            st.player.equippedWeapon = pw.item;
-          } else {
-            st.player.sidearm = pw.item;
-            st.player.activeSlot = 2;
-            st.player.equippedWeapon = pw.item;
-          }
-          if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
-          st.pendingWeapon = null;
-          delete (st as any)._pendingWeaponPos;
-        }
-      }
-      if (k === 'n') {
-        const st = stateRef.current;
-        if (st.pendingWeapon) {
-          const pw = st.pendingWeapon;
-          const pos = (st as any)._pendingWeaponPos || { ...st.player.pos };
-          st.lootContainers.push({
-            id: `declined_weapon_${Date.now()}`,
-            pos: { x: pos.x + (Math.random() - 0.5) * 10, y: pos.y + (Math.random() - 0.5) * 10 },
-            size: 20,
-            items: [pw.item],
-            looted: false,
-            type: 'body',
-          });
-          st.pendingWeapon = null;
-          delete (st as any)._pendingWeaponPos;
-        }
-      }
+      // Y/N keys no longer needed — weapon swap is E-based now
       if (e.key === 'Escape') {
         setReadingDoc(null);
       }
@@ -649,6 +611,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'v') inputRef.current.cycleThrowable = true;
       if (k === 'x') inputRef.current.useSpecial = true;
       if (k === 'q' || k === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
+      if (k === 'r') inputRef.current.reload = true;
       if (k === '1') inputRef.current.switchWeapon = 1;
       if (k === '2') inputRef.current.switchWeapon = 2;
       if (k === '3') inputRef.current.switchWeapon = 3;
@@ -1353,71 +1316,7 @@ export const GameCanvas: React.FC = () => {
 
         <LootPopup notifications={lootNotifications} />
 
-        {/* Weapon swap confirmation */}
-        {hudState.pendingWeapon && (
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-            <div className="bg-card/95 border-2 border-warning rounded-lg px-6 py-4 text-center shadow-xl min-w-[280px]">
-              <div className="text-xs font-display text-warning uppercase tracking-wider mb-2">⚔ Swap Weapon?</div>
-              <div className="text-sm font-mono text-foreground mb-1">
-                Drop <span className="text-danger">{hudState.pendingWeapon.replacing?.name || '—'}</span>
-              </div>
-              <div className="text-sm font-mono text-foreground mb-3">
-                Equip <span className="text-accent">{hudState.pendingWeapon.item.name}</span>
-                <span className="text-muted-foreground text-xs ml-1">({hudState.pendingWeapon.slot})</span>
-              </div>
-              <div className="flex gap-3 justify-center">
-                <button
-                  className="px-4 py-1.5 bg-accent text-accent-foreground rounded font-mono text-sm hover:bg-accent/80"
-                  onClick={() => {
-                    const st = stateRef.current;
-                    if (st.pendingWeapon) {
-                      const pw = st.pendingWeapon;
-                      if (!st.player.inventory.includes(pw.item)) {
-                        st.player.inventory.push(pw.item);
-                      }
-                      if (pw.slot === 'primary') {
-                        st.player.primaryWeapon = pw.item;
-                        st.player.activeSlot = 3;
-                        st.player.equippedWeapon = pw.item;
-                      } else {
-                        st.player.sidearm = pw.item;
-                        st.player.activeSlot = 2;
-                        st.player.equippedWeapon = pw.item;
-                      }
-                      if (pw.item.ammoType) st.player.ammoType = pw.item.ammoType;
-                      st.pendingWeapon = null;
-                      delete (st as any)._pendingWeaponPos;
-                    }
-                  }}
-                >
-                  [Y] Swap
-                </button>
-                <button
-                  className="px-4 py-1.5 bg-destructive text-destructive-foreground rounded font-mono text-sm hover:bg-destructive/80"
-                  onClick={() => {
-                    const st = stateRef.current;
-                    if (st.pendingWeapon) {
-                      const pw = st.pendingWeapon;
-                      const pos = (st as any)._pendingWeaponPos || { ...st.player.pos };
-                      st.lootContainers.push({
-                        id: `declined_weapon_${Date.now()}`,
-                        pos: { x: pos.x + (Math.random() - 0.5) * 10, y: pos.y + (Math.random() - 0.5) * 10 },
-                        size: 20,
-                        items: [pw.item],
-                        looted: false,
-                        type: 'body',
-                      });
-                      st.pendingWeapon = null;
-                      delete (st as any)._pendingWeaponPos;
-                    }
-                  }}
-                >
-                  [N] Skip
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Weapon swap now uses E-press — no popup needed */}
 
         {/* Mobile action buttons */}
         <div className="sm:hidden">
@@ -1454,7 +1353,7 @@ export const GameCanvas: React.FC = () => {
         </div>
 
         <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot | H heal | G grenade | 1 melee | 2 sidearm | 3 primary
+          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot/swap | R reload | H heal | G grenade | 1 melee | 2 sidearm | 3 primary
         </div>
         {/* Inventory Panel — always visible, compact overlay */}
         <div className="absolute top-[340px] right-3 z-30">

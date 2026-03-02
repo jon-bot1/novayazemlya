@@ -61,6 +61,33 @@ function addMessage(state: GameState, text: string, type: GameMessage['type']) {
 
 const BASE_INVENTORY_SLOTS = 12;
 
+// Centralized magazine size lookup
+function getMagSize(wpn: Item | null): number {
+  if (!wpn) return 8;
+  const n = wpn.name?.toLowerCase() || '';
+  if (n.includes('ppsh')) return 35;
+  if (n.includes('mosin')) return 5;
+  if (n.includes('toz')) return 2;
+  if (n.includes('ak')) return 30;
+  if (n.includes('nagant') && !n.includes('mosin')) return 7;
+  if (n.includes('makarov')) return 8;
+  return 8;
+}
+
+// Set currentAmmo/maxAmmo when equipping a weapon
+function setWeaponAmmo(state: GameState, wpn: Item) {
+  const mag = getMagSize(wpn);
+  state.player.maxAmmo = mag;
+  if (wpn.ammoType) {
+    state.player.ammoType = wpn.ammoType;
+    // Load from reserves
+    const available = state.player.ammoReserves[wpn.ammoType] || 0;
+    const loaded = Math.min(mag, available);
+    state.player.currentAmmo = loaded;
+    state.player.ammoReserves[wpn.ammoType] -= loaded;
+  }
+}
+
 function consumeTNT(state: GameState): boolean {
   const idx = state.player.specialSlot.findIndex(i => i.name === 'TNT Charge');
   if (idx < 0) return false;
@@ -701,22 +728,56 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // Auto-dismiss weapon swap popup when player walks too far from loot source
-  if (state.pendingWeapon && (state as any)._pendingWeaponPos) {
-    const wpnPos = (state as any)._pendingWeaponPos as Vec2;
-    if (dist(state.player.pos, wpnPos) > 85) {
+  // === NEARBY WEAPON SWAP (E-to-swap, no popup) ===
+  if ((state as any)._nearbyWeapon) {
+    const nw = (state as any)._nearbyWeapon;
+    // Expire after 5s or if player walks away
+    if (state.time - nw.time > 5 || dist(state.player.pos, nw.pos) > 85) {
+      // Drop weapon back on ground
       state.lootContainers.push({
-        id: `pending_weapon_${Date.now()}`,
-        pos: { x: wpnPos.x + (Math.random() - 0.5) * 8, y: wpnPos.y + (Math.random() - 0.5) * 8 },
+        id: `nearby_weapon_${Date.now()}`,
+        pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
         size: 20,
-        items: [state.pendingWeapon.item],
+        items: [nw.item],
         looted: false,
         type: 'body',
       });
-      state.pendingWeapon = null;
-      delete (state as any)._pendingWeaponPos;
-      addMessage(state, '🔫 Moved away — weapon remains on the ground.', 'info');
+      delete (state as any)._nearbyWeapon;
+    } else if (input.interact) {
+      // E pressed again — do the swap
+      const oldWpn = nw.replacing;
+      if (nw.slot === 'primary') {
+        state.player.primaryWeapon = nw.item;
+        if (state.player.activeSlot === 3) state.player.equippedWeapon = nw.item;
+      } else {
+        state.player.sidearm = nw.item;
+        if (state.player.activeSlot === 2) state.player.equippedWeapon = nw.item;
+      }
+      if (!state.player.inventory.includes(nw.item)) state.player.inventory.push(nw.item);
+      // Remove old weapon from inventory and drop it
+      if (oldWpn) {
+        const oldIdx = state.player.inventory.indexOf(oldWpn);
+        if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+        state.lootContainers.push({
+          id: `dropped_weapon_${Date.now()}`,
+          pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
+          size: 20,
+          items: [oldWpn],
+          looted: false,
+          type: 'body',
+        });
+      }
+      if (nw.item.ammoType) setWeaponAmmo(state, nw.item);
+      addMessage(state, `🔫 Swapped to ${nw.item.name}!`, 'info');
+      delete (state as any)._nearbyWeapon;
+      input.interact = false; // consume the E press
     }
+  }
+
+  // Legacy pending weapon cleanup
+  if (state.pendingWeapon) {
+    state.pendingWeapon = null;
+    delete (state as any)._pendingWeaponPos;
   }
 
   // Speed boost countdown
@@ -852,9 +913,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const slot = input.switchWeapon;
     const wpnForSlot = slot === 1 ? state.player.meleeWeapon : slot === 2 ? state.player.sidearm : state.player.primaryWeapon;
     if (wpnForSlot) {
+      // Save current weapon's ammo
+      const curWpn = state.player.equippedWeapon;
+      if (curWpn) (curWpn as any)._loadedAmmo = state.player.currentAmmo;
+      
       state.player.activeSlot = slot;
       state.player.equippedWeapon = wpnForSlot;
       if (wpnForSlot.ammoType) state.player.ammoType = wpnForSlot.ammoType;
+      
+      // Restore saved ammo for this weapon, or load fresh
+      const savedAmmo = (wpnForSlot as any)._loadedAmmo;
+      if (savedAmmo !== undefined) {
+        state.player.currentAmmo = savedAmmo;
+        state.player.maxAmmo = getMagSize(wpnForSlot);
+      } else {
+        state.player.maxAmmo = getMagSize(wpnForSlot);
+        state.player.currentAmmo = state.player.maxAmmo; // first equip — full mag
+      }
+      
       addMessage(state, `🔫 ${wpnForSlot.name} [${slot}]`, 'info');
     } else if (slot === 3) {
       addMessage(state, '⚠ No primary weapon!', 'warning');
@@ -880,10 +956,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Transfer ammo from reserves to magazine
       const wpnReload = state.player.equippedWeapon;
       if (wpnReload && wpnReload.ammoType) {
-        const magSize = wpnReload.name?.toLowerCase().includes('ppsh') ? 35 : 
-                        wpnReload.name?.toLowerCase().includes('mosin') ? 5 :
-                        wpnReload.name?.toLowerCase().includes('toz') ? 2 :
-                        wpnReload.name?.toLowerCase().includes('ak') ? 30 : 8;
+        const magSize = getMagSize(wpnReload);
         const needed = magSize - state.player.currentAmmo;
         const available = state.player.ammoReserves[wpnReload.ammoType] || 0;
         const transferred = Math.min(needed, available);
@@ -913,6 +986,28 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     : 1;
   const fireRate = isMosinWpn ? baseFireRate : baseFireRate * (1 + (1 - durRatioForRate) * 0.6); // up to 60% slower
   
+  // === MANUAL RELOAD (R key) ===
+  if (input.reload && !state.player.reloading && wpn) {
+    input.reload = false;
+    const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
+    if (!isMelee && state.player.currentAmmo < getMagSize(wpn)) {
+      const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+      if (ammoAvail > 0) {
+        state.player.reloading = true;
+        const reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
+                           wpn.name?.toLowerCase().includes('toz') ? 2.5 :
+                           wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
+        state.player.reloadTimer = reloadTime;
+        state.player.reloadTime = reloadTime;
+        addMessage(state, '🔄 RELOADING...', 'info');
+      } else {
+        addMessage(state, '⚠ No reserve ammo for this weapon!', 'warning');
+      }
+    }
+  } else {
+    input.reload = false;
+  }
+
   const weaponBroken = !isSidearm && wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
   
   if (weaponBroken) {
@@ -923,6 +1018,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
     // Init durability on first shot if not set (sidearms and melee skip durability)
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
+    
+    // === EMPTY MAGAZINE CHECK ===
+    if (!isMelee && state.player.currentAmmo <= 0) {
+      // Throttle the message to avoid spam
+      if (state.time - state.player.lastShot > 0.3) {
+        state.player.lastShot = state.time;
+        const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+        if (ammoAvail > 0) {
+          addMessage(state, '🔄 EMPTY! Press R to reload!', 'warning');
+        } else {
+          addMessage(state, '⚠ EMPTY! No ammo left — find more or switch weapons!', 'damage');
+        }
+      }
+    } else {
     if (wpn && !isSidearm && !isMelee && (wpn as any)._durability === undefined) {
       // Durability based on weapon type: rifles=120
       (wpn as any)._durability = 120;
@@ -1027,6 +1136,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addMessage(state, '⚠ No ammo in reserves!', 'warning');
       }
     }
+    } // end else (has ammo)
   }
 
   // Recoil bloom decay — recovers when not shooting
@@ -1361,20 +1471,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 state.player.activeSlot = 2;
                 state.player.equippedWeapon = item;
               }
-              if (item.ammoType) state.player.ammoType = item.ammoType;
+              if (item.ammoType) setWeaponAmmo(state, item);
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
             } else {
-              // Slot occupied — ask for confirmation (max 3 times per weapon instance)
+              // Slot occupied — show message instead of popup, player can press E again to swap
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              const prompts = ((item as any)._swapPrompts || 0) as number;
-              if (prompts >= 3) {
-                addMessage(state, `🔫 ${item.name} ignored (max prompts reached).`, 'info');
-              } else {
-                (item as any)._swapPrompts = prompts + 1;
-                state.pendingWeapon = { item, slot, replacing: currentInSlot };
-                (state as any)._pendingWeaponPos = { ...lc.pos }; // track loot source position
-                addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip (${(item as any)._swapPrompts}/3)`, 'warning');
-              }
+              // Store nearby weapon info for E-to-swap
+              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...lc.pos }, time: state.time };
+              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
             }
           }
         }
@@ -1445,19 +1549,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 state.player.activeSlot = 2;
                 state.player.equippedWeapon = item;
               }
-              if (item.ammoType) state.player.ammoType = item.ammoType;
+              if (item.ammoType) setWeaponAmmo(state, item);
               addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
             } else {
               if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              const prompts = ((item as any)._swapPrompts || 0) as number;
-              if (prompts >= 3) {
-                addMessage(state, `🔫 ${item.name} ignored (max prompts reached).`, 'info');
-              } else {
-                (item as any)._swapPrompts = prompts + 1;
-                state.pendingWeapon = { item, slot, replacing: currentInSlot };
-                (state as any)._pendingWeaponPos = { ...enemy.pos }; // track loot source position
-                addMessage(state, `🔫 ${item.name} found! Press Y/Enter to swap, N to skip (${(item as any)._swapPrompts}/3)`, 'warning');
-              }
+              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...enemy.pos }, time: state.time };
+              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
             }
           }
           if (item.id === 'boss_usb') {
