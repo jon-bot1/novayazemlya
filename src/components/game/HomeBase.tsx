@@ -263,7 +263,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🏪</span>
               <div>
-                <span className="text-xs font-display text-foreground">Trader Sidorov's Shop</span>
+                <span className="text-xs font-display text-foreground">Delyets' Shop</span>
                 <p className="text-[10px] font-mono text-muted-foreground italic">"Items go to your stash. Equip before deploying."</p>
               </div>
             </div>
