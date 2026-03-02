@@ -27,15 +27,15 @@ const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall =
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
   const stats: Record<string, any> = {
-    scav: { hp: 32, speed: 0.81, damage: 8, alertRange: 120, shootRange: 100, fireRate: 1200 },
-    soldier: { hp: 56, speed: 1.01, damage: 15, alertRange: 184, shootRange: 161, fireRate: 800 },
-    heavy: { hp: 120, speed: 0.54, damage: 25, alertRange: 150, shootRange: 130, fireRate: 1500 },
-    turret: { hp: 200, speed: 0, damage: 20, alertRange: 180, shootRange: 160, fireRate: 800 },
-    boss: { hp: 440, speed: 1.22, damage: 30, alertRange: 280, shootRange: 220, fireRate: 500 },
-    sniper: { hp: 70, speed: 0.41, damage: 68, alertRange: 400, shootRange: 350, fireRate: 5000 },
-    shocker: { hp: 56, speed: 1.22, damage: 35, alertRange: 150, shootRange: 45, fireRate: 600 },
-    redneck: { hp: 65, speed: 0.72, damage: 15, alertRange: 140, shootRange: 80, fireRate: 900 },
-    dog: { hp: 25, speed: 1.98, damage: 20, alertRange: 180, shootRange: 30, fireRate: 800 },
+    scav: { hp: 50, speed: 0.72, damage: 12, alertRange: 100, shootRange: 85, fireRate: 1400 },
+    soldier: { hp: 80, speed: 0.90, damage: 22, alertRange: 160, shootRange: 140, fireRate: 900 },
+    heavy: { hp: 180, speed: 0.45, damage: 35, alertRange: 130, shootRange: 120, fireRate: 1600 },
+    turret: { hp: 250, speed: 0, damage: 25, alertRange: 160, shootRange: 145, fireRate: 900 },
+    boss: { hp: 550, speed: 1.10, damage: 40, alertRange: 250, shootRange: 200, fireRate: 550 },
+    sniper: { hp: 90, speed: 0.36, damage: 85, alertRange: 380, shootRange: 330, fireRate: 5500 },
+    shocker: { hp: 70, speed: 1.10, damage: 45, alertRange: 130, shootRange: 40, fireRate: 650 },
+    redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 120, shootRange: 70, fireRate: 1000 },
+    dog: { hp: 35, speed: 1.80, damage: 25, alertRange: 160, shootRange: 28, fireRate: 900 },
   };
   const s = stats[type] || stats.scav;
   const enemy: Enemy = {
@@ -288,25 +288,23 @@ export function generateMap() {
   const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
 
   const enemies: Enemy[] = [
-    // Inside base — reduced garrison
+    // Inside base — minimal garrison (stealth-focused)
     rz(ZONE_HANGAR_A, 'scav'),
-    rz(ZONE_HANGAR_B, 'scav'),
     rz(ZONE_CORRIDOR, 'soldier'),
-    rz(ZONE_OFFICES_BOT, 'soldier'),
     rz(ZONE_STORAGE_A, 'soldier'),
     rz(ZONE_STORAGE_B, 'heavy'),
-    // Sleepers — just woke up, underwear only, scav-armed (2x, random spawn)
-    ...([0, 1].map(() => {
-      const sleepZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP, ZONE_STORAGE_A, ZONE_STORAGE_B];
+    // Sleeper — just one, surprise factor
+    ...([0].map(() => {
+      const sleepZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP, ZONE_STORAGE_A];
       const sz = sleepZones[Math.floor(Math.random() * sleepZones.length)];
       const sp = randIn(sz.x, sz.y, sz.w, sz.h);
       const sleeper = makeEnemy(sp.x, sp.y, 'scav');
       (sleeper as any)._isSleeper = true;
       sleeper.state = 'idle';
-      sleeper.hp = 20;
-      sleeper.maxHp = 20;
-      sleeper.speed = 0.54; // groggy
-      sleeper.alertRange = 60; // half asleep
+      sleeper.hp = 30;
+      sleeper.maxHp = 30;
+      sleeper.speed = 0.45;
+      sleeper.alertRange = 50;
       sleeper.speechBubble = '💤';
       sleeper.speechBubbleTimer = 999;
       return sleeper;
@@ -321,71 +319,54 @@ export function generateMap() {
       return makeEnemy(bp.x, bp.y, 'boss');
     })(),
 
-    // === OUTDOOR ENEMIES — all randomized ===
-    // Gate guards
+    // === OUTDOOR ENEMIES — reduced ===
+    // Gate guards (just one)
     rz(ZONE_GATE, 'soldier'),
-    rz(ZONE_GATE, 'soldier'),
-    // Yard patrols — random inside/outside zones
+    // Yard patrols — fewer
     rz(ZONE_YARD_W, 'scav'),
-    rz(ZONE_YARD_W, 'soldier'),
     rz(ZONE_YARD_E, 'soldier'),
-    rz(ZONE_YARD_E, 'heavy'),
     rz(ZONE_YARD_N, 'soldier'),
-    // Watchtower turrets (elevated, fixed positions on structures)
-    makeEnemy(350, 330, 'turret', Math.PI * 0.75),  // NW
-    makeEnemy(2880, 330, 'turret', Math.PI * 0.5),   // NE
+    // Watchtower turrets (elevated, fixed)
+    makeEnemy(350, 330, 'turret', Math.PI * 0.75),
+    makeEnemy(2880, 330, 'turret', Math.PI * 0.5),
 
-    // === WALL GUARDS on elevated platforms (inside the wall perimeter) ===
-    // Randomly decide which platforms get guards (60% chance each)
-    ...(Math.random() < 0.6 ? [makeEnemy(800, 320, 'soldier', Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(1600, 320, 'soldier', Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(2400, 320, 'soldier', Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(340, 800, 'soldier', Math.PI)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(340, 1400, 'soldier', Math.PI)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(2880, 800, 'soldier', 0)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(2880, 1400, 'soldier', 0)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.6 ? [makeEnemy(2000, 1830, 'soldier', -Math.PI * 0.5)] : []),
+    // === WALL GUARDS — fewer (40% chance each) ===
+    ...(Math.random() < 0.4 ? [makeEnemy(800, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.4 ? [makeEnemy(2400, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.4 ? [makeEnemy(340, 800, 'soldier', Math.PI)] : []),
+    ...(Math.random() < 0.4 ? [makeEnemy(2880, 800, 'soldier', 0)] : []),
+    ...(Math.random() < 0.4 ? [makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5)] : []),
 
-    // === OUTSIDE PATROL GUARDS — randomized in outside zones ===
+    // === OUTSIDE PATROL GUARDS — reduced ===
     rz(ZONE_OUTSIDE_SW, 'soldier'),
-    rz(ZONE_OUTSIDE_SW, 'soldier'),
-    rz(ZONE_OUTSIDE_SE, 'soldier'),
     rz(ZONE_OUTSIDE_SE, 'scav'),
     rz(ZONE_OUTSIDE_S, 'soldier'),
-    // North side patrols
-    rz(ZONE_OUTSIDE_NW, 'soldier'),
-    rz(ZONE_OUTSIDE_N, 'soldier'),
-    rz(ZONE_OUTSIDE_N, 'soldier'),
     rz(ZONE_OUTSIDE_N, 'soldier'),
     rz(ZONE_OUTSIDE_N, 'heavy'),
     rz(ZONE_OUTSIDE_NE, 'soldier'),
-    rz(ZONE_OUTSIDE_NE, 'scav'),
 
-    // === SNIPER — can spawn in ANY outside zone, including far side of map ===
+    // === SNIPER ===
     (() => {
       const sniper = rz(pick(allOutsideZones), 'sniper');
-      (sniper as any)._sniperObserving = true; // starts observing, not engaging
-      (sniper as any)._sniperObserveTimer = 8 + Math.random() * 7; // 8-15s before first engagement
+      (sniper as any)._sniperObserving = true;
+      (sniper as any)._sniperObserveTimer = 10 + Math.random() * 10;
       sniper.state = 'idle';
       return sniper;
     })(),
 
-    // === SHOCKERS — electric melee enemies ===
+    // === SHOCKERS — just 1-2 ===
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
-    rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
-    ...(Math.random() < 0.5 ? [rz(pick(allInsideZones), 'shocker')] : []),
+    ...(Math.random() < 0.4 ? [rz(pick(allInsideZones), 'shocker')] : []),
 
-    // === REDNECKS WITH DOGS — spawn outside, shotgun + companion dog ===
+    // === REDNECKS WITH DOGS — 1-2 ===
     ...(() => {
       const redneckZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_NE];
-      const count = 2 + Math.floor(Math.random() * 2); // 2-3
+      const count = 1 + Math.floor(Math.random() * 2); // 1-2
       const result: Enemy[] = [];
       for (let i = 0; i < count; i++) {
         const zone = redneckZones[Math.floor(Math.random() * redneckZones.length)];
         const redneck = rz(zone, 'redneck');
         result.push(redneck);
-        // Companion dog
         const dog = makeEnemy(redneck.pos.x + (Math.random() - 0.5) * 40, redneck.pos.y + (Math.random() - 0.5) * 40, 'dog');
         dog.ownerId = redneck.id;
         dog.radioGroup = redneck.radioGroup;
@@ -398,10 +379,10 @@ export function generateMap() {
   // Save base enemy count before adding officers (index math depends on this)
   const baseEnemyCount = enemies.length;
 
-  // === OUTDOOR OFFICERS — guarantee at least 2 outside walls, rest can be anywhere ===
+  // === OUTDOOR OFFICERS — 1-3 total ===
   const pureOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
   const allOfficerZones = [...pureOutsideZones, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
-  const numOfficers = 3 + Math.floor(Math.random() * 3); // 3-5
+  const numOfficers = 1 + Math.floor(Math.random() * 3); // 1-3
   for (let i = 0; i < numOfficers; i++) {
     // First 2 officers always spawn outside walls
     const zone = i < 2
@@ -942,7 +923,7 @@ export function createInitialPlayer() {
     maxHp: 100,
     speed: 1.69,
     angle: -Math.PI / 2,
-    inventory: [weapon, knife, createGrenade(), createGrenade()],
+    inventory: [weapon, knife],
     equippedWeapon: weapon,
     meleeWeapon: knife,
     sidearm: weapon,
@@ -951,7 +932,7 @@ export function createInitialPlayer() {
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
-    ammoReserves: { '9x18': 24, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
+    ammoReserves: { '9x18': 8, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
     bleedRate: 0,
     armor: 0,
     lastShot: 0,
@@ -966,5 +947,11 @@ export function createInitialPlayer() {
     keycardCount: 0,
     specialSlot: [] as Item[],
     selectedThrowable: 'grenade' as 'grenade' | 'gas_grenade' | 'flashbang',
+    // Roguelike additions
+    stamina: 100,
+    maxStamina: 100,
+    reloading: false,
+    reloadTimer: 0,
+    reloadTime: 0,
   };
 }

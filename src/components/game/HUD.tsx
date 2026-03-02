@@ -193,6 +193,26 @@ export const HUD: React.FC<HUDProps> = ({
           {player.bleedRate > 0 && (
             <span className="text-sm text-danger animate-pulse-glow font-display">🩸 BLEEDING</span>
           )}
+          {/* Stamina bar */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-display text-foreground/60">STA</span>
+            <div className="w-36 h-2.5 bg-secondary rounded-sm overflow-hidden border border-border/40">
+              <div className="h-full bg-accent/70 transition-all duration-200" style={{ width: `${Math.min(100, (player.stamina / player.maxStamina) * 100)}%` }} />
+            </div>
+            <span className="text-[10px] font-display text-foreground/60 tabular-nums min-w-[24px] text-right">{Math.floor(player.stamina)}</span>
+          </div>
+          {player.stamina <= 10 && (
+            <span className="text-[10px] text-warning animate-pulse font-mono">⚠ EXHAUSTED</span>
+          )}
+          {/* Reload indicator */}
+          {player.reloading && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-warning animate-pulse font-mono">🔄 RELOADING</span>
+              <div className="w-24 h-2 bg-secondary rounded-sm overflow-hidden">
+                <div className="h-full bg-warning transition-all duration-100" style={{ width: `${Math.max(0, (1 - player.reloadTimer / player.reloadTime) * 100)}%` }} />
+              </div>
+            </div>
+          )}
           {/* Medical supplies */}
           <div className="flex items-center gap-3">
             <span className={`text-xs font-mono ${bandages > 0 ? 'text-foreground' : 'text-foreground/30'}`}>🩹 {bandages}</span>
