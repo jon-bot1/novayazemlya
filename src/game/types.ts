@@ -182,6 +182,12 @@ export interface Player {
   keycardCount: number; // access cards — separate slot, not in backpack
   specialSlot: Item[]; // special items: propaganda, syringes, mission items
   selectedThrowable: 'grenade' | 'gas_grenade' | 'flashbang';
+  // Roguelike additions
+  stamina: number; // 0-100, drains while sprinting
+  maxStamina: number;
+  reloading: boolean; // true when mid-reload
+  reloadTimer: number; // seconds remaining
+  reloadTime: number; // total reload time for current weapon
 }
 
 export interface Wall {
@@ -274,6 +280,7 @@ export interface GameState {
   mineFieldZone: { x: number; y: number; w: number; h: number };
   reinforcementTimer: number; // countdown to next reinforcement wave
   reinforcementsSpawned: number; // total reinforcements spawned so far
+  maxReinforcements: number; // cap on total reinforcements
   coverNearby: boolean; // true when player is near a cover object
   deathCause?: string; // what killed the player
   exfilRevealed?: string; // name of revealed exfil point

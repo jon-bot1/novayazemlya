@@ -327,8 +327,9 @@ export function createGameState(): GameState {
     flashbangTimer: 0,
     backpackCapacity: 0,
     mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
-    reinforcementTimer: 45 + Math.random() * 15, // first wave after ~45-60s
+    reinforcementTimer: 90 + Math.random() * 30, // first wave after ~90-120s (slower)
     reinforcementsSpawned: 0,
+    maxReinforcements: 6, // fewer reinforcements
     coverNearby: false,
     mosinKills: 0,
     grenadeKills: 0,
@@ -430,9 +431,24 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
   
   // Movement speed based on mode
-  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.4, walk: 1.0, sprint: 1.7 };
-  const baseSpeed = state.player.speed * speedMultipliers[input.movementMode];
-  const playerSpeed = state.speedBoostTimer > 0 ? baseSpeed * 1.5 : baseSpeed;
+  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.35, walk: 0.85, sprint: 1.5 };
+  // Weight penalty: every 5kg over 3kg = 5% speed loss
+  const totalWeight = state.player.inventory.reduce((s, i) => s + i.weight, 0);
+  const weightPenalty = Math.max(0, (totalWeight - 3) / 5) * 0.05;
+  const baseSpeed = state.player.speed * speedMultipliers[input.movementMode] * (1 - Math.min(0.35, weightPenalty));
+  
+  // Stamina system: sprinting drains stamina, walking/sneaking recovers it
+  if (input.movementMode === 'sprint' && moveLen > 0.1) {
+    state.player.stamina = Math.max(0, state.player.stamina - 18 * dt);
+  } else if (input.movementMode === 'sneak') {
+    state.player.stamina = Math.min(state.player.maxStamina, state.player.stamina + 8 * dt);
+  } else {
+    state.player.stamina = Math.min(state.player.maxStamina, state.player.stamina + 12 * dt);
+  }
+  // Force walk if stamina depleted
+  const effectiveMode = (input.movementMode === 'sprint' && state.player.stamina <= 0) ? 'walk' : input.movementMode;
+  const finalSpeed = effectiveMode === 'sprint' ? baseSpeed : state.player.speed * speedMultipliers[effectiveMode] * (1 - Math.min(0.35, weightPenalty));
+  const playerSpeed = state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed;
   
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
@@ -598,9 +614,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   (state as any)._isHiding = !!(state as any)._playerHiding;
   
   playFootstep(input.movementMode);
-    const footstepRadius: Record<MovementMode, number> = { sneak: 30, walk: 80, sprint: 160 };
-    if (Math.random() < (input.movementMode === 'sprint' ? 0.15 : input.movementMode === 'walk' ? 0.05 : 0.01)) {
-      state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[input.movementMode], time: state.time });
+    // Sound propagation — sprinting is VERY loud, walking moderate, sneak nearly silent
+    const footstepRadius: Record<MovementMode, number> = { sneak: 20, walk: 60, sprint: 200 };
+    const footstepChance: Record<MovementMode, number> = { sneak: 0.005, walk: 0.04, sprint: 0.2 };
+    // Terrain affects sound: gravel/concrete louder
+    let terrainMult = 1.0;
+    const tg = getTerrainGrid(state);
+    const terrain = getTerrainFast(tg, state.player.pos.x, state.player.pos.y);
+    if (terrain === 'concrete' || terrain === 'asphalt') terrainMult = 1.4;
+    else if (terrain === 'dirt') terrainMult = 0.8;
+    else if (terrain === 'forest') terrainMult = 0.6;
+    if (Math.random() < footstepChance[effectiveMode]) {
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[effectiveMode] * terrainMult, time: state.time });
     }
   }
 
@@ -846,7 +871,33 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.player.angle = Math.atan2(moveY, moveX);
   }
 
-  // Player shooting — weapon-specific stats + fire modes + durability
+  // Player shooting — weapon-specific stats + fire modes + durability + RELOAD
+  // Block shooting during reload
+  if (state.player.reloading) {
+    state.player.reloadTimer -= dt;
+    if (state.player.reloadTimer <= 0) {
+      state.player.reloading = false;
+      // Transfer ammo from reserves to magazine
+      const wpnReload = state.player.equippedWeapon;
+      if (wpnReload && wpnReload.ammoType) {
+        const magSize = wpnReload.name?.toLowerCase().includes('ppsh') ? 35 : 
+                        wpnReload.name?.toLowerCase().includes('mosin') ? 5 :
+                        wpnReload.name?.toLowerCase().includes('toz') ? 2 :
+                        wpnReload.name?.toLowerCase().includes('ak') ? 30 : 8;
+        const needed = magSize - state.player.currentAmmo;
+        const available = state.player.ammoReserves[wpnReload.ammoType] || 0;
+        const transferred = Math.min(needed, available);
+        state.player.currentAmmo += transferred;
+        state.player.ammoReserves[wpnReload.ammoType] -= transferred;
+        state.player.maxAmmo = magSize;
+        addMessage(state, `🔄 Reloaded! ${state.player.currentAmmo}/${magSize}`, 'info');
+      }
+    }
+    // Can't shoot while reloading
+    input.shooting = false;
+    input.shootPressed = false;
+  }
+  
   const wpn = state.player.equippedWeapon;
   const baseFireRate = wpn?.weaponFireRate || state.player.fireRate;
   const isAutoFire = wpn?.fireMode === 'auto';
@@ -939,9 +990,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
     
-    // Sound event — gunshots alert enemies
-    state.soundEvents.push({ pos: { ...state.player.pos }, radius: 300, time: state.time });
+    // Sound event — gunshots alert enemies (VERY loud — stealth penalty)
+    const gunshotRadius = isMelee ? 50 : 500;
+    state.soundEvents.push({ pos: { ...state.player.pos }, radius: gunshotRadius, time: state.time });
     playGunshot('pistol');
+    
+    // Auto-reload when magazine empty
+    if (state.player.currentAmmo <= 0 && wpn && !isMelee) {
+      const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+      if (ammoAvail > 0) {
+        state.player.reloading = true;
+        const reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
+                           wpn.name?.toLowerCase().includes('toz') ? 2.5 :
+                           wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
+        state.player.reloadTimer = reloadTime;
+        state.player.reloadTime = reloadTime;
+        addMessage(state, '🔄 RELOADING...', 'warning');
+      } else {
+        addMessage(state, '⚠ No ammo in reserves!', 'warning');
+      }
+    }
   }
 
   // Cycle throwable type (V key)
@@ -1560,33 +1628,31 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   // === REINFORCEMENT SPAWNING from forest paths ===
   state.reinforcementTimer -= dt;
-  if (state.reinforcementTimer <= 0 && state.reinforcementsSpawned < 12) {
+  if (state.reinforcementTimer <= 0 && state.reinforcementsSpawned < state.maxReinforcements) {
     const spawnExfils = state.extractionPoints.filter(ep => !ep.active);
     const sp = spawnExfils.length > 0 ? spawnExfils[Math.floor(Math.random() * spawnExfils.length)] : state.extractionPoints[Math.floor(Math.random() * state.extractionPoints.length)];
-    const cnt = 1 + Math.floor(Math.random() * 2);
-    for (let ri = 0; ri < cnt; ri++) {
-      const ox = (Math.random() - 0.5) * 60, oy = (Math.random() - 0.5) * 60;
-      const rp = { x: sp.pos.x + ox, y: sp.pos.y + oy };
-      const rt: Enemy['type'] = Math.random() < 0.3 ? 'heavy' : 'soldier';
-      const re: Enemy = {
-        id: `reinf_${state.reinforcementsSpawned}_${ri}`, pos: rp,
-        hp: rt === 'heavy' ? 120 : 56, maxHp: rt === 'heavy' ? 120 : 56,
-        speed: rt === 'heavy' ? 0.72 : 1.35, damage: rt === 'heavy' ? 25 : 15,
-        alertRange: 200, shootRange: 170, fireRate: rt === 'heavy' ? 1500 : 800,
-        state: 'chase', patrolTarget: { x: state.mapWidth / 2, y: state.mapHeight / 2 },
-        investigateTarget: { ...state.player.pos }, lastShot: 0,
-        angle: Math.atan2(state.player.pos.y - rp.y, state.player.pos.x - rp.x),
-        type: rt, eyeBlink: 3, loot: [], looted: false,
-        lastRadioCall: state.time, radioGroup: 99, radioAlert: 2,
-        tacticalRole: rt === 'heavy' ? 'suppressor' : 'assault',
-        flankTarget: undefined, suppressTimer: 0, callForHelpTimer: 0,
-        lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
-      };
-      state.enemies.push(re);
-      state.reinforcementsSpawned++;
-    }
-    addMessage(state, `\u{1F6A8} Reinforcements from ${sp.name}!`, 'warning');
-    state.reinforcementTimer = 30 + Math.random() * 20 - state.reinforcementsSpawned * 1.5;
+    // Only 1 reinforcement at a time
+    const ox = (Math.random() - 0.5) * 60, oy = (Math.random() - 0.5) * 60;
+    const rp = { x: sp.pos.x + ox, y: sp.pos.y + oy };
+    const rt: Enemy['type'] = Math.random() < 0.3 ? 'heavy' : 'soldier';
+    const re: Enemy = {
+      id: `reinf_${state.reinforcementsSpawned}_0`, pos: rp,
+      hp: rt === 'heavy' ? 180 : 80, maxHp: rt === 'heavy' ? 180 : 80,
+      speed: rt === 'heavy' ? 0.63 : 1.17, damage: rt === 'heavy' ? 35 : 22,
+      alertRange: 180, shootRange: 150, fireRate: rt === 'heavy' ? 1600 : 900,
+      state: 'chase', patrolTarget: { x: state.mapWidth / 2, y: state.mapHeight / 2 },
+      investigateTarget: { ...state.player.pos }, lastShot: 0,
+      angle: Math.atan2(state.player.pos.y - rp.y, state.player.pos.x - rp.x),
+      type: rt, eyeBlink: 3, loot: [], looted: false,
+      lastRadioCall: state.time, radioGroup: 99, radioAlert: 2,
+      tacticalRole: rt === 'heavy' ? 'suppressor' : 'assault',
+      flankTarget: undefined, suppressTimer: 0, callForHelpTimer: 0,
+      lastTacticalSwitch: 0, stunTimer: 0, elevated: false, friendly: false, friendlyTimer: 0,
+    };
+    state.enemies.push(re);
+    state.reinforcementsSpawned++;
+    addMessage(state, `\u{1F6A8} Reinforcement from ${sp.name}!`, 'warning');
+    state.reinforcementTimer = 60 + Math.random() * 40; // slower spawning
   }
 
   // Cap sound events — only keep recent ones (prevents unbounded growth)
@@ -2114,6 +2180,33 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue; // skip normal AI
     }
 
+    // === BODY DISCOVERY — enemies react to dead allies nearby ===
+    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody) {
+      for (const dead of state.enemies) {
+        if (dead.state !== 'dead' || dead === enemy) continue;
+        if (dist(enemy.pos, dead.pos) < 80 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) {
+          (enemy as any)._discoveredBody = true;
+          enemy.state = 'investigate';
+          enemy.investigateTarget = { ...dead.pos };
+          setSpeech(enemy, 'МАН НЕР!', 3.0);
+          // Alert nearby allies
+          for (const ally of state.enemies) {
+            if (ally === enemy || ally.state === 'dead') continue;
+            if (dist(ally.pos, enemy.pos) < 300 && ally.state !== 'chase' && ally.state !== 'attack') {
+              ally.state = 'investigate';
+              ally.investigateTarget = { ...dead.pos };
+              if (!ally.speechBubble) {
+                ally.speechBubble = 'ЧТО СЛУЧИЛОСЬ?!';
+                ally.speechBubbleTimer = 2.5;
+              }
+            }
+          }
+          addMessage(state, `👀 Enemy discovered a body!`, 'warning');
+          break;
+        }
+      }
+    }
+
     // === IDLE CHATTER — all enemy types ===
     if ((enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && Math.random() < 0.0008) {
       setSpeech(enemy, pickLine(IDLE_LINES, enemy.type), 3.0);
@@ -2125,21 +2218,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.speechBubbleTimer = 3;
     }
 
-    // Vision cone varies by enemy type/skill
+    // Vision cone — NARROW for stealth gameplay (roguelike)
     const DEG15 = Math.PI * (15 / 180);
     const isBodyguard = !!(enemy as any)._isBodyguard;
     const visionConfig = isBodyguard
-      ? { frontArc: Math.PI * 0.75, rearRange: 0.4 }
+      ? { frontArc: Math.PI * 0.5, rearRange: 0.2 }
       : {
-          scav:    { frontArc: Math.PI * 0.35 - DEG15, rearRange: 0.15 },
-          soldier: { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 },
-          heavy:   { frontArc: Math.PI * 0.6 - DEG15, rearRange: 0.4 },
-          turret:  { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.0 },
-          sniper:  { frontArc: Math.PI * 0.15, rearRange: 0.05 },
-          shocker: { frontArc: Math.PI * 0.5 - DEG15, rearRange: 0.3 },
-          redneck: { frontArc: Math.PI * 0.4 - DEG15, rearRange: 0.2 },
-          dog:     { frontArc: Math.PI * 0.6, rearRange: 0.5 },
-        }[enemy.type] || { frontArc: Math.PI * 0.45 - DEG15, rearRange: 0.25 };
+          scav:    { frontArc: Math.PI * 0.25, rearRange: 0.08 },
+          soldier: { frontArc: Math.PI * 0.30, rearRange: 0.12 },
+          heavy:   { frontArc: Math.PI * 0.40, rearRange: 0.20 },
+          turret:  { frontArc: Math.PI * 0.40, rearRange: 0.0 },
+          sniper:  { frontArc: Math.PI * 0.12, rearRange: 0.03 },
+          shocker: { frontArc: Math.PI * 0.35, rearRange: 0.15 },
+          redneck: { frontArc: Math.PI * 0.30, rearRange: 0.10 },
+          dog:     { frontArc: Math.PI * 0.50, rearRange: 0.40 },
+        }[enemy.type] || { frontArc: Math.PI * 0.30, rearRange: 0.12 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
     let angleDiff = Math.abs(toPlayerAngle - enemy.angle);

@@ -270,27 +270,27 @@ function randomValuable(): Item {
 export const LOOT_POOLS = {
   common: (): Item[] => {
     return pickMany<Item>([
-      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.35],
+      [createMedical('Bandage', 10, '🩹', 'bandage', 3), 0.25],
       [randomValuable(), 0.5],
-      [randomValuable(), 0.3],
-      [createAmmo('5.45x39', 5 + Math.floor(Math.random() * 5)), 0.08],
-      [createGrenade(), 0.08],
-      [createTNT(), 0.2],
+      [randomValuable(), 0.25],
+      [createAmmo('9x18', 3 + Math.floor(Math.random() * 3)), 0.06],
+      [createGrenade(), 0.04],
+      [createTNT(), 0.12],
     ]);
   },
   military: (): Item[] => {
     return pickMany<Item>([
-      [createAmmo('5.45x39', 8 + Math.floor(Math.random() * 8)), 0.30],
-      [createAmmo('7.62x39', 5 + Math.floor(Math.random() * 5)), 0.25],
-      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.25],
-      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.06],
-      [WEAPON_TEMPLATES.ak74(), 0.25],
-      [WEAPON_TEMPLATES.akm(), 0.15],
-      [randomValuable(), 0.35],
-      [randomValuable(), 0.2],
-      [createGrenade(), 0.2],
-      [createGasGrenade(), 0.16],
-      [createTNT(), 0.25],
+      [createAmmo('5.45x39', 4 + Math.floor(Math.random() * 4)), 0.18],
+      [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 3)), 0.14],
+      [createMedical('Medkit', 40, '🏥', 'medkit', 1), 0.15],
+      [createMedical('Morphine', 100, '💉', 'morphine', 5, 8), 0.03],
+      [WEAPON_TEMPLATES.ak74(), 0.15],
+      [WEAPON_TEMPLATES.akm(), 0.08],
+      [randomValuable(), 0.30],
+      [randomValuable(), 0.15],
+      [createGrenade(), 0.10],
+      [createGasGrenade(), 0.08],
+      [createTNT(), 0.15],
     ]);
   },
   medical: (): Item[] => {
