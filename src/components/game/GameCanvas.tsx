@@ -551,6 +551,7 @@ export const GameCanvas: React.FC = () => {
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
   const aimTouchRef = useRef<number | null>(null);
+  const updateKeysRef = useRef<() => void>(() => {});
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
@@ -592,6 +593,17 @@ export const GameCanvas: React.FC = () => {
   useEffect(() => {
     const keys = new Set<string>();
 
+    const updateKeys = () => {
+      let mx = 0, my = 0;
+      if (keys.has('w') || keys.has('arrowup') || keys.has('keyw')) my -= 1;
+      if (keys.has('s') || keys.has('arrowdown') || keys.has('keys')) my += 1;
+      if (keys.has('a') || keys.has('arrowleft') || keys.has('keya')) mx -= 1;
+      if (keys.has('d') || keys.has('arrowright') || keys.has('keyd')) mx += 1;
+      inputRef.current.moveX = mx;
+      inputRef.current.moveY = my;
+    };
+    updateKeysRef.current = updateKeys;
+
     const onKeyDown = (e: KeyboardEvent) => {
       // Don't capture game keys when typing in an input field
       const tag = (e.target as HTMLElement)?.tagName;
@@ -628,6 +640,7 @@ export const GameCanvas: React.FC = () => {
         setShowInventory(false);
         setReadingDoc(null);
       }
+      updateKeys();
     };
     const onKeyUp = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
@@ -636,6 +649,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'e') inputRef.current.interact = false;
       if (e.key === 'Shift') inputRef.current.movementMode = 'walk';
       if (e.key === 'Control' || k === 'c') inputRef.current.movementMode = 'walk';
+      updateKeys();
     };
 
     const onMouseDown = (e: MouseEvent) => {
@@ -674,16 +688,6 @@ export const GameCanvas: React.FC = () => {
       inputRef.current.aimY = e.clientY - rect.top - rect.height / 2;
     };
 
-    const updateKeys = () => {
-      let mx = 0, my = 0;
-      if (keys.has('w') || keys.has('arrowup') || keys.has('keyw')) my -= 1;
-      if (keys.has('s') || keys.has('arrowdown') || keys.has('keys')) my += 1;
-      if (keys.has('a') || keys.has('arrowleft') || keys.has('keya')) mx -= 1;
-      if (keys.has('d') || keys.has('arrowright') || keys.has('keyd')) mx += 1;
-      inputRef.current.moveX = mx;
-      inputRef.current.moveY = my;
-    };
-
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
@@ -700,7 +704,6 @@ export const GameCanvas: React.FC = () => {
       }
     };
 
-    const interval = setInterval(updateKeys, 16);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('mousedown', onMouseDown);
@@ -710,7 +713,7 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('wheel', onWheel, { passive: false });
 
     return () => {
-      clearInterval(interval);
+      updateKeysRef.current = () => {};
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('mousedown', onMouseDown);
@@ -863,15 +866,18 @@ export const GameCanvas: React.FC = () => {
     if (!started) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
     if (!ctx) return;
 
+    const isFirefox = /firefox/i.test(navigator.userAgent);
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const rawDpr = window.devicePixelRatio || 1;
+      const maxDpr = isFirefox ? 1 : 2;
+      const dpr = Math.min(rawDpr, maxDpr);
       const w = window.innerWidth;
       const h = window.innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -891,6 +897,7 @@ export const GameCanvas: React.FC = () => {
 
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
+      updateKeysRef.current();
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
       stateRef.current = state;
       inputRef.current.interact = false;
