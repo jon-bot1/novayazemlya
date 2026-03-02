@@ -397,6 +397,8 @@ export function createGameState(): GameState {
     tunnelTimer: 0,
     propagandaTimer: 0,
     dogsNeutralized: 0,
+    dogsKilled: 0,
+    totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
   };
 }
 
@@ -2311,11 +2313,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const owner = enemy.ownerId ? state.enemies.find(e => e.id === enemy.ownerId) : null;
       const ownerAlive = owner && owner.state !== 'dead';
       const dToPlayer = dist(enemy.pos, state.player.pos);
-      const playerVisible = !playerIsHiding && dToPlayer < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos, false);
+      const isSneaking = (state as any)._lastMovementMode === 'sneak';
+      const playerVisible = !playerIsHiding && !isSneaking && dToPlayer < enemy.alertRange && hasLineOfSight(state, enemy.pos, state.player.pos, false);
       
-      // Dog follows owner when idle, attacks when owner is fighting or player is close
+      // Dog follows owner when idle, attacks when owner is fighting or player is close (but not sneaking)
       const ownerFighting = ownerAlive && (owner!.state === 'chase' || owner!.state === 'attack');
-      const shouldAttack = playerVisible || ownerFighting || (!ownerAlive && dToPlayer < 150);
+      const shouldAttack = playerVisible || (ownerFighting && !isSneaking) || (!ownerAlive && dToPlayer < 150 && !isSneaking);
       
       if (shouldAttack && !enemy.friendly) {
         enemy.state = 'chase';
@@ -3712,6 +3715,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            if (enemy.type === 'dog') state.dogsKilled++;
             state.grenadeKills++;
             addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
@@ -3812,6 +3816,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            if (enemy.type === 'dog') state.dogsKilled++;
             // Track elevated kill achievements
             if (isCrit) state.headshotKills++;
             if (b.weaponName === 'Mosin-Nagant') state.mosinKills++;
@@ -3855,7 +3860,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     if (b.fromPlayer) {
       const isMosin = b.weaponName === 'Mosin-Nagant';
-      const hitRadius = isMosin ? 21 : 16;
+      const hitRadius = isMosin ? 26 : 20;
       const hitRadiusSq = hitRadius * hitRadius;
       const nearMissRadiusSq = (hitRadius + 3) * (hitRadius + 3);
       for (const enemy of state.enemies) {
@@ -3923,6 +3928,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
             state.killCount++;
+            if (enemy.type === 'dog') state.dogsKilled++;
             // Track bullet kill achievements
             if (isCrit) state.headshotKills++;
             if (b.weaponName === 'Mosin-Nagant') state.mosinKills++;
@@ -4014,6 +4020,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               sendReinforcementToPlatform(state, enemy);
               enemy.loot = generateEnemyLoot(enemy);
               state.killCount++;
+              if (enemy.type === 'dog') state.dogsKilled++;
               addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
             } else {

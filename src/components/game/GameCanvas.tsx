@@ -969,6 +969,8 @@ export const GameCanvas: React.FC = () => {
             terminalsHacked: state.terminalsHacked,
             distanceTravelled: Math.round(state.distanceTravelled / 10),
             exfilsVisited: state.exfilsVisited.size,
+            dogsKilled: state.dogsKilled,
+            totalDogsOnMap: state.totalDogsOnMap,
           },
           pendingWeapon: state.pendingWeapon,
         });
