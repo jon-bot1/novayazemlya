@@ -579,8 +579,6 @@ export function generateMap() {
     rLoot({ x: 1200, y: 2050, w: 150, h: 100 }, 'crate', 'military'),
     rLoot({ x: 2100, y: 1950, w: 200, h: 100 }, 'crate', 'common'),
     rLoot({ x: 1600, y: 2200, w: 150, h: 100 }, 'barrel', 'common'),
-    // Secret passage area loot (draws player to the area)
-    rLoot({ x: 2100, y: 1920, w: 100, h: 80 }, 'crate', 'valuable'),
 
     // === WEAPON CABINETS — fixed positions, guaranteed weapon loot ===
     makeLoot(HX + 180, HY + 400, 'weapon_cabinet', 'weapon_cabinet'),   // hangar A
@@ -829,12 +827,6 @@ export function generateMap() {
     // === AMMO DUMP (east yard — stockpile) ===
     { pos: { x: 2550, y: 1100 }, w: 50, h: 50, type: 'ammo_dump' as Prop['type'] },
 
-    // === SECRET PASSAGE MARKERS (visual hints near x:2100-2250, y:1900-2050) ===
-    // Unusual props to draw player attention to the area
-    { pos: { x: 2120, y: 1920 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 2200, y: 1980 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 2160, y: 2020 }, w: 16, h: 16, type: 'road_sign' },
-    { pos: { x: 2100, y: 1960 }, w: 18, h: 18, type: 'wood_crate' },
   ];
 
   // ══════════════════════════════════════
@@ -896,8 +888,6 @@ export function generateMap() {
     { pos: { x: 500, y: MAP_H - 100 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: MAP_W - 100, y: 1000 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: 200, y: 500 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
-    // Secret passage area glow
-    { pos: { x: 2150, y: 1960 }, radius: 60, color: '#4488ff', intensity: 0.35, flicker: true, type: 'fire' },
   ];
 
   // ══════════════════════════════════════
