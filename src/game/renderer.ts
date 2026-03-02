@@ -2248,6 +2248,26 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.restore();
     }
 
+    // Awareness bar — shows detection progress (stealth meter above enemy)
+    if (enemy.awareness > 0.02 && enemy.awareness < 1.0 && enemy.state !== 'chase' && enemy.state !== 'attack') {
+      const aBarW = 32;
+      const aBarH = 3;
+      const aBarY = enemy.hp < enemy.maxHp ? enemy.pos.y - R - 30 : enemy.pos.y - R - 24;
+      const awareness = enemy.awareness;
+      // Background
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(enemy.pos.x - aBarW / 2 - 1, aBarY - 1, aBarW + 2, aBarH + 2);
+      // Color: green → yellow → orange → red
+      const aColor = awareness < 0.3 ? '#66cc44' : awareness < 0.65 ? '#ccaa33' : awareness < 0.9 ? '#cc6622' : '#cc2222';
+      ctx.fillStyle = aColor;
+      ctx.fillRect(enemy.pos.x - aBarW / 2, aBarY, aBarW * awareness, aBarH);
+      // Eye icon
+      ctx.font = '7px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = aColor;
+      ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 7, aBarY + aBarH);
+    }
+
     // HP bar
     if (enemy.hp < enemy.maxHp) {
       const barW = 28;

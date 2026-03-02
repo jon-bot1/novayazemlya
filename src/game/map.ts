@@ -59,6 +59,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
     stunTimer: 0,
+    awareness: 0,
+    awarenessDecay: 0.15,
     elevated: false,
     friendly: false,
     friendlyTimer: 0,

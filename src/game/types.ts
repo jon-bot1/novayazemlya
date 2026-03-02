@@ -142,6 +142,8 @@ export interface Enemy {
   callForHelpTimer: number; // cooldown for calling help
   lastTacticalSwitch: number; // prevent rapid role switching
   stunTimer: number; // flashbang stun duration remaining
+  awareness: number; // 0-1, how aware the enemy is of the player (stealth meter)
+  awarenessDecay: number; // rate at which awareness decays per second
   elevated: boolean; // on raised platform, can shoot over walls
   friendly: boolean; // converted by gas grenade — fights for player
   friendlyTimer: number; // seconds remaining as friendly
