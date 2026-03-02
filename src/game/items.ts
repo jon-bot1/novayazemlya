@@ -203,16 +203,16 @@ export const WEAPON_TEMPLATES = {
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
   //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
   // AK weapons NERFED: less damage, more spread, slower fire rate — ammo scarcity is the real balance lever
-  makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   7,       45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
-  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  18, '🔫',   9,       65,   320,   'auto'); w.weaponSlot = 'primary'; return w; },
-  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  22, '🔫',   8,       55,   420,   'auto'); w.weaponSlot = 'primary'; return w; },
-  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  13, '🔫',   6,       22,   1000,  'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.55; return w; },
-  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 55, '🔫',   11,      100,  1600,  'single'); w.weaponSlot = 'primary'; return w; },
-  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      6, '🔫',   5,       20,   90,    'auto'); w.weaponSlot = 'primary'; return w; },
+  makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   8.4,     45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
+  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  18, '🔫',   10.8,    65,   320,   'auto'); w.weaponSlot = 'primary'; return w; },
+  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  22, '🔫',   9.6,     55,   420,   'auto'); w.weaponSlot = 'primary'; return w; },
+  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  13, '🔫',   7.2,     22,   1000,  'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.55; return w; },
+  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 55, '🔫',   13.2,    100,  1600,  'single'); w.weaponSlot = 'primary'; return w; },
+  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      6, '🔫',   6,       20,   90,    'auto'); w.weaponSlot = 'primary'; return w; },
   // Secondary weapons
-  revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   7,       50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
-  baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3,        8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
-  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     15, '🗡️',   3,        6,   350,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
+  revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   8.4,     50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
+  baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3.6,      8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
+  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     15, '🗡️',   3.6,      6,   350,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
 };
 
 export function isSecondaryWeapon(item: Item): boolean {
