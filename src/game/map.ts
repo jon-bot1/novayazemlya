@@ -932,7 +932,7 @@ export function createInitialPlayer() {
     currentAmmo: 8,
     maxAmmo: 8,
     ammoType: '9x18' as const,
-    ammoReserves: { '9x18': 6, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
+    ammoReserves: { '9x18': 32, '5.45x39': 0, '7.62x39': 0, '12gauge': 0, '7.62x54R': 0 } as Record<import('./types').AmmoType, number>,
     bleedRate: 0,
     armor: 0,
     lastShot: 0,
