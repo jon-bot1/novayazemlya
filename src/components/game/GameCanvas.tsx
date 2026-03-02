@@ -338,6 +338,9 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-muted-foreground">1 / 2 / 3</span><span className="text-foreground">Melee / Sidearm / Primary</span>
               <span className="text-muted-foreground">Scroll ↕</span><span className="text-foreground">Cycle weapons</span>
               <span className="text-muted-foreground">E</span><span className="text-foreground">Interact / Loot</span>
+              <span className="text-muted-foreground">E (sneak behind)</span><span className="text-accent">Chokehold — silent 2s kill</span>
+              <span className="text-muted-foreground">F</span><span className="text-accent">Throw Knife — silent ranged (80 dmg)</span>
+              <span className="text-muted-foreground">X (near body)</span><span className="text-accent">Put on Disguise (45s stealth)</span>
               <span className="text-muted-foreground">H</span><span className="text-foreground">Heal (auto at low HP)</span>
               <span className="text-muted-foreground">G / Right-click</span><span className="text-foreground">Throw Grenade</span>
               <span className="text-muted-foreground">Hold Right-click</span><span className="text-foreground">Charge throw (2s max)</span>
@@ -354,6 +357,10 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <ul className="text-[11px] font-mono text-foreground/70 space-y-1">
               <li>• <span className="text-accent">Sneak</span> to avoid detection — enemies have vision arcs</li>
               <li>• <span className="text-accent">Hide</span> near trees/bushes with Q — become invisible to enemies</li>
+              <li>• 🤫 <span className="text-accent">Chokehold [E]</span> — sneak behind an unaware enemy for a silent 2s kill</li>
+              <li>• 🗡️ <span className="text-accent">Throwing Knife [F]</span> — silent ranged takedown (80 dmg, tiny sound)</li>
+              <li>• 🥷 <span className="text-accent">Disguise [X]</span> — take a uniform from a dead soldier, enemies ignore you for 45s</li>
+              <li>• 🥷 Officers can still detect you through disguise — keep distance!</li>
               <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate & call for backup</li>
               <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
               <li>• 🧨 <span className="text-warning">TNT charges</span> breach any wall — press <span className="text-accent">T near a wall</span> (5s fuse)</li>
@@ -373,6 +380,17 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.16 — 2026-03-02</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🥷 <span className="text-accent">Disguise System</span> — loot a dead soldier, press [X] near body to put on uniform (45s)</li>
+                  <li>• 🥷 Enemies almost blind to you while disguised (officers still suspicious)</li>
+                  <li>• 🥷 Disguise breaks if you shoot, sprint, or timer expires</li>
+                  <li>• 🤫 <span className="text-accent">Chokehold</span> — sneak behind unaware enemy, press [E] for silent 2s kill</li>
+                  <li>• 🗡️ <span className="text-accent">Throwing Knives</span> — press [F] for silent ranged attack (80 dmg, start with 2)</li>
+                  <li>• 🎓 <span className="text-foreground">In-game tutorial tips</span> — contextual hints appear near your character</li>
+                </ul>
+              </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.15 — 2026-02-27</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">

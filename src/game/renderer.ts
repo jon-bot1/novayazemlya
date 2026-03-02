@@ -2677,6 +2677,92 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
+  // ── IN-GAME TUTORIAL TIPS — contextual popups near player ──
+  {
+    const tips: string[] = [];
+    const tut = (state as any)._tutorialShown || {};
+
+    // Tip: Chokehold — when sneaking and an unaware enemy is nearby behind
+    const pMode = (state as any)._lastMovementMode || 'walk';
+    if (!tut.chokehold && pMode === 'sneak') {
+      for (const e of state.enemies) {
+        if (e.state === 'dead' || e.awareness > 0.3) continue;
+        const dx = e.pos.x - state.player.pos.x;
+        const dy = e.pos.y - state.player.pos.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 200 && d > 40) {
+          tips.push('🤫 TIP: Sneak behind & press [E] for silent Chokehold');
+          tut.chokehold = true;
+          break;
+        }
+      }
+    }
+
+    // Tip: Throwing knife — first time having knives
+    if (!tut.knife && state.throwingKnives > 0 && state.time < 30) {
+      tips.push('🗡️ TIP: Press [F] to throw a silent knife (80 dmg)');
+      tut.knife = true;
+    }
+
+    // Tip: Disguise — when uniform is available nearby
+    if (!tut.disguise && (state as any)._disguiseAvailable && !state.disguised) {
+      tips.push('🥷 TIP: Press [X] near body to put on enemy uniform');
+      tut.disguise = true;
+    }
+
+    // Tip: Disguise active — first time disguised
+    if (!tut.disguiseActive && state.disguised && state.disguiseTimer > 40) {
+      tips.push('🥷 TIP: Disguised! Avoid shooting & sprinting to stay hidden');
+      tut.disguiseActive = true;
+    }
+
+    (state as any)._tutorialShown = tut;
+
+    // Render tips as floating popups near player
+    if (tips.length > 0) {
+      ctx.save();
+      ctx.textAlign = 'center';
+      for (let i = 0; i < tips.length; i++) {
+        const tipY = state.player.pos.y + R + 38 + i * 18;
+        const tipX = state.player.pos.x;
+        const fadeIn = Math.min(1, (state.time % 100)); // always visible once triggered
+        const pulse = 0.8 + Math.sin(state.time * 4) * 0.2;
+
+        // Background pill
+        const text = tips[i];
+        ctx.font = 'bold 9px monospace';
+        const tw = ctx.measureText(text).width + 16;
+        ctx.fillStyle = `rgba(0, 0, 0, ${0.7 * pulse})`;
+        ctx.beginPath();
+        const rx = tipX - tw / 2;
+        const ry = tipY - 9;
+        const rw = tw;
+        const rh = 16;
+        const cr = 4;
+        ctx.moveTo(rx + cr, ry);
+        ctx.lineTo(rx + rw - cr, ry);
+        ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + cr);
+        ctx.lineTo(rx + rw, ry + rh - cr);
+        ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - cr, ry + rh);
+        ctx.lineTo(rx + cr, ry + rh);
+        ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - cr);
+        ctx.lineTo(rx, ry + cr);
+        ctx.quadraticCurveTo(rx, ry, rx + cr, ry);
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = `rgba(100, 220, 80, ${0.6 * pulse})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Text
+        ctx.fillStyle = `rgba(180, 255, 140, ${0.95 * pulse})`;
+        ctx.fillText(text, tipX, tipY + 2);
+      }
+      ctx.restore();
+    }
+  }
+
   // ── STEALTH AWARENESS INDICATOR — shows how close nearest enemy is to detecting you ──
   {
     const detection = (state as any)._stealthDetection || 0;
