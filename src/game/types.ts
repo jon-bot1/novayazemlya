@@ -305,6 +305,8 @@ export interface GameState {
   propagandaTarget?: string; // enemy id being persuaded
   propagandaTimer: number; // propaganda effect countdown
   dogsNeutralized: number; // dogs neutralized with food
+  dogsKilled: number; // dogs killed by player
+  totalDogsOnMap: number; // total dogs spawned on map
 }
 
 export interface SoundEvent {

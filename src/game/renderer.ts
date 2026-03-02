@@ -1,7 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 
-const R = 22;
+const R = 28;
 const WALL_HEIGHT = 18;
 
 // Cached sorted arrays — only re-sort when count changes

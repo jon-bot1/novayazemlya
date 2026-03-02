@@ -23,6 +23,8 @@ interface AchievementStats {
   terminalsHacked: number;
   distanceTravelled: number;
   exfilsVisited: number;
+  dogsKilled: number;
+  totalDogsOnMap: number;
 }
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold';
@@ -79,6 +81,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   ...tierAchievements('travel', 'Traveller', '🥾', 'm distance travelled', 'distanceTravelled', [1500, 4000, 8000]),
   { id: 'tourist', name: 'Tourist 🗺️', icon: '🗺️', desc: 'Visit all 3 exfil points in one raid', tier: 'gold', check: s => s.exfilsVisited >= 3 },
   { id: 'nohit', name: 'Ghost 👻', icon: '👻', desc: 'Complete a raid without taking damage', tier: 'gold', check: s => s.noHitsTaken && s.killCount > 0 },
+  { id: 'goodboy', name: 'Good Boy 🐕', icon: '🐕', desc: 'Extract without killing any dogs', tier: 'gold', check: s => s.totalDogsOnMap > 0 && s.dogsKilled === 0 },
 ];
 
 // For each achievement group, return only the highest earned tier
