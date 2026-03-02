@@ -263,6 +263,13 @@ export const HUD: React.FC<HUDProps> = ({
             )}
             {/* Hide prompt moved to renderer — shows at player position */}
           </div>
+          {/* Stealth Controls Help */}
+          <div className="flex flex-col gap-0.5 mt-1 border-t border-border/30 pt-1">
+            <span className="text-[9px] font-display text-accent/70 uppercase tracking-wider">🥷 Stealth</span>
+            <span className="text-[9px] font-mono text-muted-foreground">[E] Chokehold — sneak behind unaware enemy, 2s silent kill</span>
+            <span className="text-[9px] font-mono text-muted-foreground">[F] Throwing Knife — silent ranged kill (80 dmg)</span>
+            <span className="text-[9px] font-mono text-muted-foreground">[X] Disguise — take uniform from dead soldier (45s)</span>
+          </div>
         </div>
 
         {/* CENTER — Timer */}
