@@ -1020,7 +1020,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const recoilBloom = (state as any)._recoilBloom || 0;
     const totalSpread = Math.max(0.02, degradedSpread + movingSpread + recoilBloom);
     
-    const baseBulletSpeed = (wpn?.bulletSpeed || 8) * 1.25; // +25% base projectile speed
+    const baseBulletSpeed = (wpn?.bulletSpeed || 8) * 1.5; // +50% base projectile speed (25% + 20%)
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
     const bulletSpeed = baseBulletSpeed * (1 + bulletSpeedBonus);
     const bulletLife = wpn?.weaponRange || 60;
@@ -1811,7 +1811,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const spread = (Math.random() - 0.5) * 0.15;
             state.bullets.push({
               pos: { ...enemy.pos },
-              vel: { x: Math.cos(enemy.angle + spread) * 7.5, y: Math.sin(enemy.angle + spread) * 7.5 },
+              vel: { x: Math.cos(enemy.angle + spread) * 9, y: Math.sin(enemy.angle + spread) * 9 },
               damage: enemy.damage,
               damageType: 'bullet',
               fromPlayer: false,
@@ -1905,7 +1905,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const panicAngle = enemy.angle + Math.PI + (Math.random() - 0.5) * 2.5; // mostly AWAY from where they're facing (toward player)
         state.bullets.push({
           pos: { x: enemy.pos.x + Math.cos(panicAngle) * 14, y: enemy.pos.y + Math.sin(panicAngle) * 14 },
-          vel: { x: Math.cos(panicAngle) * 6.25, y: Math.sin(panicAngle) * 6.25 },
+          vel: { x: Math.cos(panicAngle) * 7.5, y: Math.sin(panicAngle) * 7.5 },
           damage: enemy.damage * 0.5, damageType: 'bullet', fromPlayer: false, life: 35,
           sourceId: enemy.id, sourceType: enemy.type,
         });
@@ -1943,7 +1943,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const angle = enemy.angle + spread;
         state.bullets.push({
           pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
-          vel: { x: Math.cos(angle) * 8.75, y: Math.sin(angle) * 8.75 },
+          vel: { x: Math.cos(angle) * 10.5, y: Math.sin(angle) * 10.5 },
           damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50,
           sourceId: enemy.id, sourceType: enemy.type,
         });
@@ -1975,7 +1975,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const angle = enemy.angle + spread;
         state.bullets.push({
           pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
-          vel: { x: Math.cos(angle) * 7.5, y: Math.sin(angle) * 7.5 },
+          vel: { x: Math.cos(angle) * 9, y: Math.sin(angle) * 9 },
           damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50,
           sourceId: enemy.id, sourceType: enemy.type,
         });
@@ -2808,7 +2808,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
-            vel: { x: Math.cos(angle) * 7.5, y: Math.sin(angle) * 7.5 },
+            vel: { x: Math.cos(angle) * 9, y: Math.sin(angle) * 9 },
             damage: enemy.damage, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
             sourceId: enemy.id, sourceType: enemy.type,
           });
@@ -3271,7 +3271,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
-            vel: { x: Math.cos(angle) * 7.5, y: Math.sin(angle) * 7.5 },
+            vel: { x: Math.cos(angle) * 9, y: Math.sin(angle) * 9 },
             damage: enemy.damage * 0.7, damageType: 'bullet', fromPlayer: false, life: 50, elevated: enemy.elevated,
             sourceId: enemy.id, sourceType: enemy.type,
           });
@@ -3296,7 +3296,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (state.time - enemy.lastShot > suppressRate && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange * 1.3) {
           const spread = (Math.random() - 0.5) * 0.35; // wide spread — suppression, not precision
           const angle = enemy.angle + spread;
-          const bSpeed = enemy.type === 'heavy' ? 8.75 : 7.5;
+          const bSpeed = enemy.type === 'heavy' ? 10.5 : 9;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
             vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
@@ -3372,7 +3372,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           } else {
             const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
             const angle = enemy.angle + spread;
-            const bSpeed = enemy.type === 'sniper' ? 12.5 : enemy.type === 'turret' ? 10 : 7.5;
+            const bSpeed = enemy.type === 'sniper' ? 15 : enemy.type === 'turret' ? 12 : 9;
             state.bullets.push({
               pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
               vel: { x: Math.cos(angle) * bSpeed, y: Math.sin(angle) * bSpeed },
