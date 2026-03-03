@@ -500,7 +500,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
   
   // Movement speed based on mode
-  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.35, walk: 0.85, sprint: 1.5 };
+  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.35, walk: 0.85, sprint: 1.65 };
   // Weight penalty: every 5kg over 3kg = 5% speed loss
   const totalWeight = state.player.inventory.reduce((s, i) => s + i.weight, 0);
   const weightPenalty = Math.max(0, (totalWeight - 3) / 5) * 0.05;
@@ -508,7 +508,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   
   // Stamina system: sprinting drains stamina, walking/sneaking recovers it
   if (input.movementMode === 'sprint' && moveLen > 0.1) {
-    state.player.stamina = Math.max(0, state.player.stamina - 10.8 * dt);
+    state.player.stamina = Math.max(0, state.player.stamina - 8.64 * dt);
   } else if (input.movementMode === 'sneak') {
     state.player.stamina = Math.min(state.player.maxStamina, state.player.stamina + 8 * dt);
   } else {
@@ -2674,11 +2674,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
       }
-    } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol')) {
-      // Heard a sound — go investigate
+    } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'investigate')) {
+      // Heard a sound — go investigate (boost awareness too)
       enemy.state = 'investigate';
       enemy.investigateTarget = heardSound;
+      enemy.awareness = Math.max(enemy.awareness, 0.7);
       setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+    } else if (heardSound && (enemy.state === 'chase' || enemy.state === 'attack')) {
+      // Already in combat — update known player position from sound
+      enemy.investigateTarget = heardSound;
+      enemy.awareness = Math.max(enemy.awareness, 0.9);
     } else if (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') {
       // If rushing to a platform, don't get distracted
       if ((enemy as any)._platformTarget) {
@@ -4062,6 +4067,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.shootRange = Math.max(enemy.shootRange, 250);
             }
             enemy.state = 'chase';
+            enemy.awareness = 1.0; // getting shot = full awareness
+            enemy.investigateTarget = { ...state.player.pos };
             // Panic or Berserk chance on taking damage (not boss, sniper, bodyguard, turret)
             if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
               const hpPct = enemy.hp / enemy.maxHp;
