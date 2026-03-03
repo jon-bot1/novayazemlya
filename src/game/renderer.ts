@@ -1533,7 +1533,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     // Skip vision cones entirely during active combat (chase/attack/flank) — expensive raycasting
     const enemyInCombat = enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress';
     const showVisionCone = !enemyInCombat && enemyDistSq < 160 * 160 && (enemy.state !== 'patrol' && enemy.state !== 'idle');
-    const useLOD = enemyDistSq > 250 * 250; // aggressive LOD — 250px threshold
+    const useLOD = enemyDistSq > 400 * 400; // LOD threshold — full detail within 400px
     if (showVisionCone && rendererLOS(state, playerPos, enemy.pos)) {
       ctx.save();
       const alertPulse = 0.03 + Math.sin(state.time * 1.5 + enemy.pos.x * 0.1) * 0.015;
