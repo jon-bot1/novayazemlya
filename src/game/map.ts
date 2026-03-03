@@ -127,8 +127,10 @@ export function generateMap() {
   // ══════════════════════════════════════
   const walls: Wall[] = [
     // === PERIMETER FENCE (outer boundary of base) ===
-    // North fence
-    makeWall(300, 280, 2600, FT, FENCE),
+    // North fence — split with locked gate in the middle
+    makeWall(300, 280, 1100, FT, FENCE),
+    makeWall(1400, 280, 220, FT, '#aa4444'),  // NORTH GATE WALL — same color for keycard identification
+    makeWall(1620, 280, 1280, FT, FENCE),
     // South fence — full with locked gate wall in the gap
     makeWall(300, 1850, 1100, FT, FENCE),
     makeWall(1400, 1850, 220, FT, '#aa4444'),  // GATE WALL — special color for identification
@@ -643,6 +645,11 @@ export function generateMap() {
 
     // Gate
     { pos: { x: 1500, y: 1855 }, w: 120, h: 12, type: 'gate' },
+
+    // North gate
+    { pos: { x: 1375, y: 220 }, w: 40, h: 60, type: 'guard_booth' },
+    { pos: { x: 1645, y: 220 }, w: 40, h: 60, type: 'guard_booth' },
+    { pos: { x: 1500, y: 275 }, w: 120, h: 12, type: 'gate' },
 
     // Road signs
     { pos: { x: 1480, y: 1900 }, w: 12, h: 12, type: 'road_sign' },
