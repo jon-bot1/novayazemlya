@@ -1288,22 +1288,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   // Interact
   if (input.interact) {
-    // Gate keycard check — remove gate wall if player has keycard and is near gate
-    const gateWallIdx = state.walls.findIndex(w => w.color === '#aa4444');
-    if (gateWallIdx >= 0) {
-      const gw = state.walls[gateWallIdx];
+    // Gate keycard check — remove nearest gate wall if player has keycard and is near any gate
+    for (let gi = state.walls.length - 1; gi >= 0; gi--) {
+      const gw = state.walls[gi];
+      if (gw.color !== '#aa4444') continue;
       const gateCenterX = gw.x + gw.w / 2;
       const gateCenterY = gw.y + gw.h / 2;
       if (dist(state.player.pos, { x: gateCenterX, y: gateCenterY }) < 80) {
         if (state.player.keycardCount > 0) {
-          state.player.keycardCount--; // consume access card
-          state.walls.splice(gateWallIdx, 1);
-          _wallGrid = null; _wallCount = -1; // Invalidate spatial grid
+          state.player.keycardCount--;
+          state.walls.splice(gi, 1);
+          _wallGrid = null; _wallCount = -1;
           addMessage(state, '💳 GATE OPENED with access card! (card consumed)', 'intel');
           spawnParticles(state, gateCenterX, gateCenterY, '#44ff44', 10);
         } else {
           addMessage(state, '🔒 Gate is locked — you need an access card!', 'warning');
         }
+        break;
       }
     }
 

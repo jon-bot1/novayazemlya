@@ -25,7 +25,6 @@ const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
   { id: 'kill_sniper', name: 'Neutralize Sniper Tuman', icon: '🎯', description: 'Hunt down and eliminate the deadly Sniper Tuman', reward: 400, isMain: true },
   { id: 'collect_all_docs', name: 'Recover All Intel', icon: '📚', description: 'Collect every classified document on the map', reward: 450, isMain: true },
   { id: 'breach_and_clear', name: 'Breach & Clear HQ', icon: '🧨', description: 'Breach 2 walls with TNT and kill 5 enemies inside', reward: 500, isMain: true },
-  { id: 'ghost_extract', name: 'Ghost Extraction', icon: '👻', description: 'Extract without triggering any alarm and undetected', reward: 550, isMain: true },
   { id: 'wipe_garrison', name: 'Wipe the Garrison', icon: '☠️', description: 'Eliminate at least 15 enemies before extracting', reward: 500, isMain: true },
   { id: 'destroy_fuel', name: 'Burn the Fuel', icon: '🛢️', description: 'Destroy the fuel depot with TNT or grenades', reward: 450, isMain: true },
   { id: 'disable_comms', name: 'Silence the Tower', icon: '📡', description: 'Hack the radio tower to disable enemy communications', reward: 400, isMain: true },
@@ -33,6 +32,7 @@ const MAIN_OBJECTIVES: ObjectiveTemplate[] = [
 ];
 
 const BONUS_OBJECTIVES: ObjectiveTemplate[] = [
+  { id: 'ghost_extract', name: 'Ghost Extraction', icon: '👻', description: 'Extract without triggering any alarm and 0 kills', reward: 550, isMain: false },
   { id: 'collect_documents', name: 'Recover Intel', icon: '📄', description: 'Find and collect 3 classified documents', reward: 250, isMain: false },
   { id: 'loot_value', name: 'Scavenger Run', icon: '💰', description: 'Extract with at least 500₽ worth of loot', reward: 200, isMain: false },
   { id: 'no_alarm', name: 'Ghost Protocol', icon: '🤫', description: 'Extract without triggering any alarm panels', reward: 300, isMain: false },
