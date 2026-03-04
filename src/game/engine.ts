@@ -3005,13 +3005,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Timer done but no LOS — teleport to a better vantage point
           (enemy as any)._sniperObserveTimer = 5 + Math.random() * 5;
         }
-        // If player gets very close, break observation early
+      // If player gets very close, break observation early
         if (obsDist < 120) {
           delete (enemy as any)._sniperObserving;
           delete (enemy as any)._sniperObserveTimer;
           addMessage(state, '🎯 Sniper Tuman detected at close range!', 'warning');
         }
-        continue; // skip normal sniper AI during observation
+        // If sniper takes a hit during observation, break out and flee immediately
+        if ((enemy as any)._sniperShouldFlee) {
+          delete (enemy as any)._sniperObserving;
+          delete (enemy as any)._sniperObserveTimer;
+          enemy.awareness = 1.0;
+          enemy.state = 'attack';
+          // Don't continue — fall through to normal sniper AI so teleport logic runs
+        } else {
+          continue; // skip normal sniper AI during observation
+        }
       }
       const isCoverProp = (p: { type: string }) =>
         p.type === 'tree' || p.type === 'pine_tree' || p.type === 'bush' ||
