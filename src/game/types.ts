@@ -260,6 +260,7 @@ export interface GameState {
   bullets: Bullet[];
   grenades: Grenade[];
   placedTNTs: PlacedTNT[];
+  mortarStrikes: MortarStrike[];
   particles: Particle[];
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
