@@ -2516,6 +2516,60 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
+  // ── LASER DESIGNATOR BEAM ──
+  if (state.laserTarget) {
+    ctx.save();
+    const lp = state.player.pos;
+    const lt = state.laserTarget;
+    // Main laser beam — red, pulsing
+    const laserPulse = 0.5 + Math.sin(state.time * 12) * 0.3;
+    ctx.strokeStyle = `rgba(255, 30, 20, ${laserPulse})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(lp.x, lp.y);
+    ctx.lineTo(lt.x, lt.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Dot at target
+    ctx.fillStyle = `rgba(255, 30, 20, ${0.6 + Math.sin(state.time * 8) * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(lt.x, lt.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── MORTAR STRIKE INDICATORS ──
+  for (const m of state.mortarStrikes) {
+    const progress = 1 - m.timer / m.maxTimer;
+    const urgency = Math.min(1, progress * 1.5);
+    // Growing danger circle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(m.pos.x, m.pos.y, m.radius * progress, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 60, 20, ${0.3 + urgency * 0.5})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Inner target cross
+    const crossSize = 12 + Math.sin(state.time * 10) * 4;
+    ctx.strokeStyle = `rgba(255, 40, 20, ${0.5 + urgency * 0.4})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(m.pos.x - crossSize, m.pos.y);
+    ctx.lineTo(m.pos.x + crossSize, m.pos.y);
+    ctx.moveTo(m.pos.x, m.pos.y - crossSize);
+    ctx.lineTo(m.pos.x, m.pos.y + crossSize);
+    ctx.stroke();
+    // Timer text
+    ctx.fillStyle = `rgba(255, 80, 30, ${0.7 + urgency * 0.3})`;
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`MORTAR ${m.timer.toFixed(1)}s`, m.pos.x, m.pos.y - m.radius * progress - 8);
+    ctx.restore();
+  }
+
   // ── PLAYER ──
   ctx.save();
   const pulse = 0.6 + Math.sin(state.time * 2) * 0.2;

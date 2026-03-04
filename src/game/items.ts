@@ -213,6 +213,7 @@ export const WEAPON_TEMPLATES = {
   revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   8.4,     50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
   baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3.6,      8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
   knife:    () => { const w = createWeapon('Combat Knife', '9x18',     45, '🗡️',   3.6,      6,   280,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
+  laser:    () => { const w = createWeapon('Laser Designator', '9x18', 0, '🔴', 0, 0, 3000, 'single'); w.weaponSlot = 'primary'; w.weight = 1; w.description = 'Laser designator — calls in mortar fire on target. 3s delay.'; (w as any).isLaserDesignator = true; return w; },
 };
 
 export function isSecondaryWeapon(item: Item): boolean {
@@ -341,6 +342,7 @@ export const LOOT_POOLS = {
       [WEAPON_TEMPLATES.makarov(), 0.30],
       [WEAPON_TEMPLATES.revolver(), 0.25],
       [WEAPON_TEMPLATES.knife(), 0.25],
+      [WEAPON_TEMPLATES.laser(), 0.08],
       [createAmmo('5.45x39', 4 + Math.floor(Math.random() * 4)), 0.35],
       [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 4)), 0.30],
       [createAmmo('7.62x54R', 2 + Math.floor(Math.random() * 3)), 0.20],

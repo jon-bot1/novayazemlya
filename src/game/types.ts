@@ -88,6 +88,15 @@ export interface PlacedTNT {
   maxTimer: number;
 }
 
+export interface MortarStrike {
+  pos: Vec2;
+  timer: number; // seconds until impact
+  maxTimer: number;
+  damage: number;
+  radius: number;
+  fromPlayer: boolean;
+}
+
 export interface Particle {
   pos: Vec2;
   vel: Vec2;
@@ -251,6 +260,7 @@ export interface GameState {
   bullets: Bullet[];
   grenades: Grenade[];
   placedTNTs: PlacedTNT[];
+  mortarStrikes: MortarStrike[];
   particles: Particle[];
   lootContainers: LootContainer[];
   documentPickups: DocumentPickup[];
@@ -316,6 +326,7 @@ export interface GameState {
   throwingKnives: number; // count of throwing knives
   chokeholdTarget: string | null; // enemy id being choked
   chokeholdProgress: number; // 0-2 seconds
+  laserTarget: Vec2 | null; // current laser pointer target (for rendering)
 }
 
 export interface SoundEvent {

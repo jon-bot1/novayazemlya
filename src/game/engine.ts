@@ -419,6 +419,8 @@ export function createGameState(): GameState {
     throwingKnives: 2, // start with 2 throwing knives
     chokeholdTarget: null,
     chokeholdProgress: 0,
+    mortarStrikes: [],
+    laserTarget: null,
   };
 }
 
@@ -1096,12 +1098,40 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   const weaponBroken = !isSidearm && wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
   
+  // === LASER DESIGNATOR — special handling ===
+  const isLaserDesignator = wpn && (wpn as any).isLaserDesignator;
+  if (isLaserDesignator) {
+    // Always show laser beam while equipped
+    const laserRange = 600;
+    const lx = state.player.pos.x + Math.cos(state.player.angle) * laserRange;
+    const ly = state.player.pos.y + Math.sin(state.player.angle) * laserRange;
+    state.laserTarget = { x: lx, y: ly };
+    
+    if (input.shootPressed && state.time - state.player.lastShot > 3.0) {
+      state.player.lastShot = state.time;
+      // Call in mortar strike at laser target position
+      const targetPos = { x: lx, y: ly };
+      state.mortarStrikes.push({
+        pos: targetPos,
+        timer: 3.0,
+        maxTimer: 3.0,
+        damage: 250,
+        radius: 180,
+        fromPlayer: true,
+      });
+      addMessage(state, '🔴 MORTAR STRIKE CALLED IN — 3 seconds to impact!', 'warning');
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: 100, time: state.time });
+    }
+  } else {
+    state.laserTarget = null;
+  }
+
   if (weaponBroken) {
     if (canFire && state.time - state.player.lastShot > 0.5) {
       state.player.lastShot = state.time;
       addMessage(state, `⚠ ${wpn!.name} is BROKEN! Find a new weapon!`, 'warning');
     }
-  } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
+  } else if (!isLaserDesignator && canFire && state.time - state.player.lastShot > fireRate / 1000) {
     // Init durability on first shot if not set (sidearms and melee skip durability)
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
     
@@ -1495,7 +1525,73 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     return false; // remove detonated TNT
   });
 
-  // Interact (E key) — looting, keycard, terminals
+  // Update mortar strikes — countdown and explode
+  state.mortarStrikes = state.mortarStrikes.filter(m => {
+    m.timer -= dt;
+    if (m.timer > 0) return true;
+
+    // IMPACT — same damage logic as grenades
+    addMessage(state, '💥 MORTAR IMPACT!', 'damage');
+    spawnParticles(state, m.pos.x, m.pos.y, '#ff8833', 25);
+    spawnParticles(state, m.pos.x, m.pos.y, '#ffcc44', 18);
+    spawnParticles(state, m.pos.x, m.pos.y, '#444', 12);
+    playExplosion();
+    state.soundEvents.push({ pos: { ...m.pos }, radius: 600, time: state.time });
+
+    for (const enemy of state.enemies) {
+      if (enemy.state === 'dead') continue;
+      const d = dist(m.pos, enemy.pos);
+      if (d < m.radius && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+        if (enemy.type === 'boss') {
+          const proneReduction = (enemy as any)._proneTimer > 0 ? 0.5 : 1.0;
+          const dmg = enemy.maxHp * 0.30 * proneReduction;
+          enemy.hp -= dmg;
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 8);
+          addMessage(state, `💥 Boss hit by mortar! -${Math.floor(dmg)}HP`, 'damage');
+          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+        }
+        if ((enemy as any)._isBodyguard) {
+          const dmg = enemy.maxHp * 0.30;
+          enemy.hp -= dmg;
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+          addMessage(state, `💥 Bodyguard hit by mortar! -${Math.floor(dmg)}HP`, 'damage');
+          if (enemy.hp > 0) { enemy.state = 'chase'; continue; }
+        }
+        const falloff = 1 - (d / m.radius);
+        const dmg = m.damage * falloff;
+        enemy.hp -= dmg;
+        spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ff4444', 6);
+        if (enemy.hp <= 0) {
+          enemy.hp = 0;
+          enemy.state = 'dead';
+          sendReinforcementToPlatform(state, enemy);
+          enemy.loot = generateEnemyLoot(enemy);
+          state.killCount++;
+          if (enemy.type === 'dog') state.dogsKilled++;
+          state.grenadeKills++;
+          addMessage(state, `💀 ${enemy.type.toUpperCase()} eliminated by mortar!`, 'kill');
+          spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+        }
+      }
+    }
+
+    // Damage player
+    const dPlayer = dist(m.pos, state.player.pos);
+    if (dPlayer < m.radius && hasLineOfSight(state, m.pos, state.player.pos)) {
+      const falloff = 1 - (dPlayer / m.radius);
+      const dmg = m.damage * falloff * 0.5;
+      state.player.hp -= dmg;
+      state.noHitsTaken = false;
+      spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
+      addMessage(state, `💥 Mortar shrapnel! -${Math.floor(dmg)}HP`, 'damage');
+      if (state.player.hp <= 0) {
+        state.deathCause = '💥 Killed by own mortar strike';
+      }
+    }
+
+    return false;
+  });
+
   if (input.interact) {
     // Loot containers — require line of sight (no looting through walls)
     for (const lc of state.lootContainers) {
