@@ -326,6 +326,7 @@ export interface GameState {
   throwingKnives: number; // count of throwing knives
   chokeholdTarget: string | null; // enemy id being choked
   chokeholdProgress: number; // 0-2 seconds
+  laserTarget: Vec2 | null; // current laser pointer target (for rendering)
 }
 
 export interface SoundEvent {
