@@ -342,6 +342,7 @@ export const LOOT_POOLS = {
       [WEAPON_TEMPLATES.makarov(), 0.30],
       [WEAPON_TEMPLATES.revolver(), 0.25],
       [WEAPON_TEMPLATES.knife(), 0.25],
+      [WEAPON_TEMPLATES.laser(), 0.08],
       [createAmmo('5.45x39', 4 + Math.floor(Math.random() * 4)), 0.35],
       [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 4)), 0.30],
       [createAmmo('7.62x54R', 2 + Math.floor(Math.random() * 3)), 0.20],
