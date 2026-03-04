@@ -419,6 +419,8 @@ export function createGameState(): GameState {
     throwingKnives: 2, // start with 2 throwing knives
     chokeholdTarget: null,
     chokeholdProgress: 0,
+    mortarStrikes: [],
+    laserTarget: null,
   };
 }
 
