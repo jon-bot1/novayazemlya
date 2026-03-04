@@ -1098,12 +1098,40 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   const weaponBroken = !isSidearm && wpn && (wpn as any)._durability !== undefined && (wpn as any)._durability <= 0;
   
+  // === LASER DESIGNATOR — special handling ===
+  const isLaserDesignator = wpn && (wpn as any).isLaserDesignator;
+  if (isLaserDesignator) {
+    // Always show laser beam while equipped
+    const laserRange = 600;
+    const lx = state.player.pos.x + Math.cos(state.player.angle) * laserRange;
+    const ly = state.player.pos.y + Math.sin(state.player.angle) * laserRange;
+    state.laserTarget = { x: lx, y: ly };
+    
+    if (input.shootPressed && state.time - state.player.lastShot > 3.0) {
+      state.player.lastShot = state.time;
+      // Call in mortar strike at laser target position
+      const targetPos = { x: lx, y: ly };
+      state.mortarStrikes.push({
+        pos: targetPos,
+        timer: 3.0,
+        maxTimer: 3.0,
+        damage: 250,
+        radius: 180,
+        fromPlayer: true,
+      });
+      addMessage(state, '🔴 MORTAR STRIKE CALLED IN — 3 seconds to impact!', 'warning');
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: 100, time: state.time });
+    }
+  } else {
+    state.laserTarget = null;
+  }
+
   if (weaponBroken) {
     if (canFire && state.time - state.player.lastShot > 0.5) {
       state.player.lastShot = state.time;
       addMessage(state, `⚠ ${wpn!.name} is BROKEN! Find a new weapon!`, 'warning');
     }
-  } else if (canFire && state.time - state.player.lastShot > fireRate / 1000) {
+  } else if (!isLaserDesignator && canFire && state.time - state.player.lastShot > fireRate / 1000) {
     // Init durability on first shot if not set (sidearms and melee skip durability)
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
     
