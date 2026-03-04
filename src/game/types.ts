@@ -88,6 +88,15 @@ export interface PlacedTNT {
   maxTimer: number;
 }
 
+export interface MortarStrike {
+  pos: Vec2;
+  timer: number; // seconds until impact
+  maxTimer: number;
+  damage: number;
+  radius: number;
+  fromPlayer: boolean;
+}
+
 export interface Particle {
   pos: Vec2;
   vel: Vec2;
