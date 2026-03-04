@@ -2495,7 +2495,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       enemy.awareness = Math.min(1, enemy.awareness + awarenessRate * dt);
     } else {
       // Decay awareness when player is not visible
-      const decayRate = enemy.state === 'chase' || enemy.state === 'attack' ? 0.05 : enemy.awarenessDecay;
+      const baseDecay = enemy.state === 'chase' || enemy.state === 'attack' ? 0.05 : enemy.awarenessDecay;
+      const decayRate = (enemy as any)._combatAlert ? baseDecay * 0.4 : baseDecay; // combat-alert enemies lose track much slower
       enemy.awareness = Math.max(0, enemy.awareness - decayRate * dt);
     }
 
@@ -4079,6 +4080,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.state = 'chase';
             enemy.awareness = 1.0; // getting shot = full awareness
             enemy.investigateTarget = { ...state.player.pos };
+            // Boost observation after being hit — harder to lose
+            enemy.alertRange = Math.max(enemy.alertRange, enemy.alertRange * 1.4);
+            enemy.awarenessDecay = Math.max(0.02, enemy.awarenessDecay * 0.3); // much slower decay
+            (enemy as any)._combatAlert = true; // permanently heightened after taking fire
             // Panic or Berserk chance on taking damage (not boss, sniper, bodyguard, turret)
             if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
               const hpPct = enemy.hp / enemy.maxHp;
