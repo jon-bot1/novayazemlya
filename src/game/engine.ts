@@ -432,6 +432,21 @@ function collidesWithWalls(state: GameState, x: number, y: number, r: number): b
   return collidesWithWallsGrid(getWallGrid(state), x, y, r);
 }
 
+// Check if a position is indoors (walls in all 4 cardinal directions within range)
+function isIndoors(state: GameState, pos: Vec2, range: number = 200): boolean {
+  const grid = getWallGrid(state);
+  const step = 8;
+  let hitN = false, hitS = false, hitE = false, hitW = false;
+  for (let d = step; d <= range; d += step) {
+    if (!hitN && collidesWithWallsGrid(grid, pos.x, pos.y - d, 2)) hitN = true;
+    if (!hitS && collidesWithWallsGrid(grid, pos.x, pos.y + d, 2)) hitS = true;
+    if (!hitE && collidesWithWallsGrid(grid, pos.x + d, pos.y, 2)) hitE = true;
+    if (!hitW && collidesWithWallsGrid(grid, pos.x - d, pos.y, 2)) hitW = true;
+    if (hitN && hitS && hitE && hitW) return true;
+  }
+  return false;
+}
+
 function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
   let nx = pos.x + dx;
   let ny = pos.y + dy;
