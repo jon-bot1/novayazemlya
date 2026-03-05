@@ -1556,7 +1556,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     for (const enemy of state.enemies) {
       if (enemy.state === 'dead') continue;
       const d = dist(m.pos, enemy.pos);
-      if (d < m.radius && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+      if (d < m.radius && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated) && !isIndoors(state, enemy.pos)) {
         if (enemy.type === 'boss') {
           const proneReduction = (enemy as any)._proneTimer > 0 ? 0.5 : 1.0;
           const dmg = enemy.maxHp * 0.30 * proneReduction;
