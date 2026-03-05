@@ -1592,7 +1592,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Damage player
     const dPlayer = dist(m.pos, state.player.pos);
-    if (dPlayer < m.radius && hasLineOfSight(state, m.pos, state.player.pos)) {
+    if (dPlayer < m.radius && hasLineOfSight(state, m.pos, state.player.pos) && !isIndoors(state, state.player.pos)) {
       const falloff = 1 - (dPlayer / m.radius);
       const dmg = m.damage * falloff * 0.5;
       state.player.hp -= dmg;
