@@ -1191,6 +1191,20 @@ export const GameCanvas: React.FC = () => {
             const matchBarrelLvl = getUpgradeLevel(ups, 'match_barrel');
             if (matchBarrelLvl > 0) (st as any)._critChanceBonus = matchBarrelLvl * 0.05;
 
+            // ── Test player overrides ──
+            const nameLower = playerName.trim().toLowerCase();
+            if (nameLower === 'test1') {
+              // Spawn with laser designator
+              const { WEAPON_TEMPLATES: WT } = require('../../game/items');
+              const laser = WT.laser();
+              st.player.primaryWeapon = laser;
+              st.player.inventory.push(laser);
+            }
+            if (nameLower === 'test2') {
+              // Spawn indoors in HQ
+              st.player.pos = { x: 920, y: 620 };
+            }
+
             lastTimeRef.current = 0;
             extractedRef.current = false;
             setStash(prev => {
