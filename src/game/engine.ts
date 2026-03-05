@@ -1545,7 +1545,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     m.timer -= dt;
     if (m.timer > 0) return true;
 
-    // IMPACT — same damage logic as grenades
+    // IMPACT — clean up mortar flee flags
+    for (const enemy of state.enemies) {
+      delete (enemy as any)._mortarFleeRolled;
+    }
+    // Same damage logic as grenades
     addMessage(state, '💥 MORTAR IMPACT!', 'damage');
     spawnParticles(state, m.pos.x, m.pos.y, '#ff8833', 25);
     spawnParticles(state, m.pos.x, m.pos.y, '#ffcc44', 18);
