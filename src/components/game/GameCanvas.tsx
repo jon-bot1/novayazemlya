@@ -1194,11 +1194,12 @@ export const GameCanvas: React.FC = () => {
             // ── Test player overrides ──
             const nameLower = playerName.trim().toLowerCase();
             if (nameLower === 'test1') {
-              // Spawn with laser designator
-              const { WEAPON_TEMPLATES: WT } = require('../../game/items');
-              const laser = WT.laser();
+              const laser = WEAPON_TEMPLATES.laser();
               st.player.primaryWeapon = laser;
               st.player.inventory.push(laser);
+            }
+            if (nameLower === 'test2') {
+              st.player.pos = { x: 920, y: 620 };
             }
             if (nameLower === 'test2') {
               // Spawn indoors in HQ
