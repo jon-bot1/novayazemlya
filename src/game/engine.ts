@@ -3822,7 +3822,33 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    if (g.timer <= 0) {
+    // === MORTAR FLEE — enemies only react in the last 0.8s before impact ===
+    for (const m of state.mortarStrikes) {
+      if (!m.fromPlayer || m.timer > 0.8 || m.timer <= 0) continue;
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead' || enemy.type === 'turret') continue;
+        if ((enemy as any)._grenadeFlee) continue; // already fleeing
+        if ((enemy as any)._mortarFleeRolled) continue;
+        const dToMortar = dist(m.pos, enemy.pos);
+        if (dToMortar < m.radius * 1.3 && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+          let fleeChance = 0.5;
+          if (enemy.type === 'boss') fleeChance = 0.7;
+          else if (enemy.type === 'heavy' || (enemy as any)._isBodyguard) fleeChance = 0.5;
+          else if (enemy.type === 'scav') fleeChance = 0.35;
+          if (Math.random() < fleeChance) {
+            (enemy as any)._grenadeFlee = 1.5;
+            const fleeAngle = Math.atan2(enemy.pos.y - m.pos.y, enemy.pos.x - m.pos.x) + (Math.random() - 0.5) * 0.6;
+            (enemy as any)._grenadeFleeAngle = fleeAngle;
+            enemy.speechBubble = 'ОБСТРЕЛ!';
+            enemy.speechBubbleTimer = 1.5;
+          } else {
+            (enemy as any)._mortarFleeRolled = true;
+          }
+        }
+      }
+    }
+
+
       const isFlashbang = g.damage === -1;
       const isGas = g.damage === -2;
 
