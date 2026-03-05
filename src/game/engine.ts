@@ -1116,16 +1116,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // === LASER DESIGNATOR — special handling ===
   const isLaserDesignator = wpn && (wpn as any).isLaserDesignator;
   if (isLaserDesignator) {
-    // Always show laser beam while equipped
-    const laserRange = 600;
-    const lx = state.player.pos.x + Math.cos(state.player.angle) * laserRange;
-    const ly = state.player.pos.y + Math.sin(state.player.angle) * laserRange;
+    // Laser points at mouse cursor world position (aimX/aimY = screen offset from center)
+    const lx = state.camera.x + input.aimX;
+    const ly = state.camera.y + input.aimY;
     state.laserTarget = { x: lx, y: ly };
     
     if (input.shootPressed && state.time - state.player.lastShot > 3.0) {
       state.player.lastShot = state.time;
-      // Call in mortar strike at laser target position
       const targetPos = { x: lx, y: ly };
+      // Warn about friendly fire if target is close to player
+      const distToPlayer = Math.sqrt((lx - state.player.pos.x) ** 2 + (ly - state.player.pos.y) ** 2);
+      if (distToPlayer < 200) {
+        addMessage(state, '⚠ DANGER CLOSE! Mortar incoming near your position!', 'damage');
+      }
       state.mortarStrikes.push({
         pos: targetPos,
         timer: 3.0,
