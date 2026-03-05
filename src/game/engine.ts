@@ -3848,7 +3848,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-
+    if (g.timer <= 0) {
       const isFlashbang = g.damage === -1;
       const isGas = g.damage === -2;
 
