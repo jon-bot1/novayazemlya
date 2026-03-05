@@ -432,6 +432,21 @@ function collidesWithWalls(state: GameState, x: number, y: number, r: number): b
   return collidesWithWallsGrid(getWallGrid(state), x, y, r);
 }
 
+// Check if a position is indoors (walls in all 4 cardinal directions within range)
+function isIndoors(state: GameState, pos: Vec2, range: number = 200): boolean {
+  const grid = getWallGrid(state);
+  const step = 8;
+  let hitN = false, hitS = false, hitE = false, hitW = false;
+  for (let d = step; d <= range; d += step) {
+    if (!hitN && collidesWithWallsGrid(grid, pos.x, pos.y - d, 2)) hitN = true;
+    if (!hitS && collidesWithWallsGrid(grid, pos.x, pos.y + d, 2)) hitS = true;
+    if (!hitE && collidesWithWallsGrid(grid, pos.x + d, pos.y, 2)) hitE = true;
+    if (!hitW && collidesWithWallsGrid(grid, pos.x - d, pos.y, 2)) hitW = true;
+    if (hitN && hitS && hitE && hitW) return true;
+  }
+  return false;
+}
+
 function tryMove(state: GameState, pos: Vec2, dx: number, dy: number, r: number): Vec2 {
   let nx = pos.x + dx;
   let ny = pos.y + dy;
@@ -1541,7 +1556,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     for (const enemy of state.enemies) {
       if (enemy.state === 'dead') continue;
       const d = dist(m.pos, enemy.pos);
-      if (d < m.radius && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+      if (d < m.radius && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated) && !isIndoors(state, enemy.pos)) {
         if (enemy.type === 'boss') {
           const proneReduction = (enemy as any)._proneTimer > 0 ? 0.5 : 1.0;
           const dmg = enemy.maxHp * 0.30 * proneReduction;
@@ -1577,7 +1592,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Damage player
     const dPlayer = dist(m.pos, state.player.pos);
-    if (dPlayer < m.radius && hasLineOfSight(state, m.pos, state.player.pos)) {
+    if (dPlayer < m.radius && hasLineOfSight(state, m.pos, state.player.pos) && !isIndoors(state, state.player.pos)) {
       const falloff = 1 - (dPlayer / m.radius);
       const dmg = m.damage * falloff * 0.5;
       state.player.hp -= dmg;
