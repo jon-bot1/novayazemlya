@@ -382,11 +382,28 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
               <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.18 — 2026-03-08</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🏥 <span className="text-accent">Hospital Bosses</span> — Dr. Kravtsov (lab coat, syringe, green aura) & The Uzbek (emaciated, chains, red glow)</li>
+                  <li>• 😱 <span className="text-warning">Fear Attack</span> — Kravtsov injects terror (phase 1+), forcing you to flee for 2.5s. Deal 40 dmg to interrupt!</li>
+                  <li>• 📄 <span className="text-accent">Hospital Lore</span> — 5 new documents: Kravtsov's lab journals, Nurse Volkov's notes, Director's final report</li>
+                  <li>• 📄 Documents no longer pop up mid-raid — read them in the <span className="text-accent">Intel Archive</span> at the Safe House</li>
+                  <li>• 🎨 <span className="text-accent">Unique boss rendering</span> — each boss has distinct visual identity, death sprites, and nameplates</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.17 — 2026-03-05</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🗺️ <span className="text-accent">3 Maps</span> — Objekt 47, The Fishing Village, The Hospital — each with unique atmosphere</li>
+                  <li>• 🎨 <span className="text-accent">Map-specific visuals</span> — distinct color palettes, terrain details, and ambient overlays per map</li>
+                  <li>• 🏥 <span className="text-warning">Hospital atmosphere</span> — cold blue-grey palette with dark vignette for horror feel</li>
+                  <li>• 💬 <span className="text-accent">Boss dialogue system</span> — unique taunts, death monologues, and phase transitions per boss</li>
+                </ul>
+              </div>
+              <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.16 — 2026-03-02</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 🥷 <span className="text-accent">Disguise System</span> — loot a dead soldier, press [X] near body to put on uniform (45s)</li>
-                  <li>• 🥷 Enemies almost blind to you while disguised (officers still suspicious)</li>
-                  <li>• 🥷 Disguise breaks if you shoot, sprint, or timer expires</li>
                   <li>• 🤫 <span className="text-accent">Chokehold</span> — sneak behind unaware enemy, press [E] for silent 2s kill</li>
                   <li>• 🗡️ <span className="text-accent">Throwing Knives</span> — press [F] for silent ranged attack (80 dmg, start with 2)</li>
                   <li>• 🎓 <span className="text-foreground">In-game tutorial tips</span> — contextual hints appear near your character</li>
@@ -396,101 +413,25 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.15 — 2026-02-27</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• ⚡ <span className="text-accent">Performance overhaul</span> — spatial hash grids, viewport culling, particle caps</li>
-                  <li>• 🐌 <span className="text-foreground">Movement speed -10%</span> — all units move slower for more tactical gameplay</li>
                   <li>• 🔫 <span className="text-accent">Increased weapon drops</span> — more weapons in crates, cabinets and enemy bodies</li>
-                  <li>• 🎯 <span className="text-accent">10 new objectives</span> — Old Faithful, Pacifist, Demolitions Expert, Dog Whisperer & more</li>
-                  <li>• 🗡️ Silent Blade — kill 3 with knife | 📢 Hearts & Minds — convert an enemy who gets a kill</li>
-                  <li>• ⚡ Distant Thunder — 2 extreme range kills | 📚 Archivist — collect all documents</li>
+                  <li>• 🎯 <span className="text-accent">10 new objectives</span> — Old Faithful, Pacifist, Demolitions Expert & more</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.14 — 2026-02-27</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• 🔫 <span className="text-accent">Shotgun (TOZ-34)</span> — fires 5 pellets in a cone, devastating at close range</li>
-                  <li>• 🤠 <span className="text-warning">Redneck enemies</span> — patrol outside with shotguns and speech bubbles</li>
-                  <li>• 🐕 <span className="text-warning">Guard Dogs</span> — fast melee companions that follow their redneck owner</li>
-                  <li>• 🦴 <span className="text-accent">Dog Food</span> — neutralize dogs without killing (buy from Delyets)</li>
+                  <li>• 🤠 <span className="text-warning">Redneck enemies</span> — patrol outside with shotguns and guard dogs</li>
                   <li>• 📢 <span className="text-accent">Propaganda Leaflet</span> — convince an enemy to fight for you for 60s</li>
-                  
-                  <li>• 💬 <span className="text-foreground">Speech Bubbles</span> — enemies react with dialogue during combat</li>
-                  <li>• 🎒 <span className="text-accent">Special Slot [X]</span> — new item slot for tactical items</li>
                 </ul>
               </div>
               <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.13 — 2026-02-26</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• 🗡️ <span className="text-accent">3-Slot Weapon System</span> — [1] Melee, [2] Secondary, [3] Primary</li>
-                  <li>• 🗡️ <span className="text-accent">Permanent melee weapon</span> — Combat Knife always available, never breaks</li>
-                  <li>• ✈️ <span className="text-warning">Airplane sabotage</span> — can now be destroyed with grenades or melee, not just TNT</li>
-                  <li>• 💳 <span className="text-warning">Access Card consumed</span> on gate use — plan your route carefully</li>
-                  
-                  <li>• 🎯 Sniper spawn distance fully randomized, observes before engaging</li>
-                  <li>• ☠️ Death screen now shows both "Return to Base" and "Main Menu" buttons</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.12 — 2026-02-26</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• 💉 <span className="text-accent">Emergency Injector</span> — auto-revives you at 0 HP, restoring 75 HP & stopping bleed</li>
-                  <li>• 💉 Start every raid with 1 injector — buy extras from Delyets (350₽)</li>
-                  <li>• 💉 <span className="text-warning">HUD indicator</span> shows injector status clearly (green = ready, red = empty)</li>
-                  <li>• 🩹 <span className="text-accent">Bleeding now stops naturally</span> — light bleeds ~3s, heavy bleeds ~10s</li>
-                  <li>• 🔫 <span className="text-warning">Weapon drop rates reduced 15%</span> across all enemy types for better balance</li>
-                  <li>• 🎒 <span className="text-accent">Backpack redesign</span> — visual backpack outline with clickable item slots</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.11 — 2026-02-26</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• 🏠 <span className="text-accent">Safe House</span> — persistent hideout between raids with stash, trader & missions</li>
-                  <li>• 🎯 <span className="text-warning">Dynamic Missions</span> — randomized main + bonus objectives each raid</li>
-                  <li>• 🏪 <span className="text-loot">Trader Sidorov</span> — buy upgrades: Red Dot, Tac Boots, Extended Mag & more</li>
-                  <li>• 📦 Inventory panel: drop items from your inventory during raids</li>
-                  <li>• 🔫 <span className="text-warning">Weapon durability</span> — guns degrade with use, losing fire rate & accuracy</li>
-                  <li>• 🔫 Sidearms have infinite durability, Mosin immune to accuracy loss</li>
-                  <li>• 🩹 <span className="text-accent">All enemies can heal</span> if they carry bandages — interrupt them!</li>
-                  <li>• 💡 Contextual hints for grenades & TNT when you haven't used them</li>
-                  
-                  <li>• 🎖️ Officers guaranteed outside walls with keycards</li>
-                  <li>• 👁️ Enemies no longer track players through walls</li>
-                  <li>• 🎯 Sniper spawns restricted to northern zones with longer flee distance</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.10 — 2026-02-26</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• 💣 Grenade charge throw: hold right-click for longer range</li>
-                  <li>• 🥽 Tactical Goggles — 50% flashbang protection (drops from Shockers)</li>
-                  <li>• 🔫 Sniper Tuman: reacts to near-misses, can't see hidden players</li>
-                  <li>• 😱 Panic fire shoots away from player</li>
-                  <li>• ✈️ Airplane prop, toxic barrels, cover indicators</li>
-                  <li>• 📦 20 new loot items, reduced ammo drop rates</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.9 — 2026-02-26</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Auto-cover near obstacles, hide mechanic (Q near trees)</li>
-                  <li>• 25% movement speed reduction</li>
-                  <li>• Weapon swap popup with confirmation</li>
-                  <li>• Sniper healing on teleport, berserk stop distance</li>
-                  <li>• ⚡ Shocker troops with electric sparks</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.8 — 2026-02-24</div>
-                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
-                  <li>• Weapon slot system: primary + secondary</li>
-                  <li>• New enemy: ⚡ Shocker, new secondary weapons</li>
-                  <li>• Officer spawn rate 3-5 per raid</li>
-                </ul>
-              </div>
-              <div className="text-xs font-mono">
-                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1–0.7</div>
+                <div className="text-muted-foreground font-display text-[11px] uppercase tracking-wider mb-1">v0.1–0.13</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
                   <li>• Core combat, boss fight, tactical AI, TNT breaching</li>
-                  <li>• Achievements, highscores, intel documents</li>
+                  <li>• 3-slot weapon system, Safe House, trader, missions</li>
                   <li>• Cover system, medical system, extraction zones</li>
+                  <li>• Achievements, highscores, intel documents</li>
                 </ul>
               </div>
             </div>
