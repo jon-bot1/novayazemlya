@@ -405,7 +405,7 @@ function generateEnemyLoot(enemy: Enemy) {
         { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
       );
     }
-    // Kravtsov, Uzbek, Dock Master keep their pre-assigned loot from map generators
+    // Kravtsov, Uzbek, Nachalnik keep their pre-assigned loot from map generators
     return baseLoot;
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
