@@ -521,7 +521,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                 <span className="text-base">⛏️</span>
                 <div>
                   <p className="text-[11px] font-display text-foreground">Norrberget Mine <span className="text-[9px] text-warning font-mono">(10 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">THE SOURCE</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Where VARG's father disappeared. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
+                  <p className="text-[10px] font-mono text-muted-foreground">NORDVAKT's highest priority. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
                 </div>
               </div>
             </div>
