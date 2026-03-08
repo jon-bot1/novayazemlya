@@ -5074,6 +5074,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addKillFeed(state, enemy.type, 'Grenade');
             addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, 'Grenade');
+            trackWeaponMasteryKill(state, undefined, 'Grenade');
           }
         }
 
