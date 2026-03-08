@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Item } from '../../game/types';
 import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
+import { MapId, MAPS } from '../../game/maps';
 
 export interface StashState {
   items: Item[];
@@ -42,7 +43,7 @@ interface HomeBaseProps {
   playerName: string;
   stash: StashState;
   objectives: MissionObjective[];
-  onDeploy: () => void;
+  onDeploy: (mapId: MapId) => void;
   onSellItem: (index: number) => void;
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
@@ -53,6 +54,7 @@ interface HomeBaseProps {
 
 export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
+  const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
   const level = getLevelForXp(stash.xp);
@@ -295,16 +297,43 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
+        {/* Map Selection */}
+        <div className="border border-border rounded p-3 bg-secondary/10">
+          <span className="text-xs font-display text-accent uppercase tracking-wider block mb-2">🗺️ Select Map</span>
+          <div className="grid grid-cols-2 gap-2">
+            {MAPS.map(m => (
+              <button
+                key={m.id}
+                className={`flex flex-col items-start gap-1 p-3 rounded border transition-colors text-left ${
+                  selectedMap === m.id
+                    ? 'border-accent bg-accent/10 text-foreground'
+                    : 'border-border/50 bg-secondary/20 text-muted-foreground hover:border-foreground/30'
+                }`}
+                onClick={() => setSelectedMap(m.id)}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{m.icon}</span>
+                  <span className="text-xs font-display">{m.name}</span>
+                </div>
+                <p className="text-[9px] font-mono leading-tight">{m.description}</p>
+                <span className="text-[8px] font-mono text-muted-foreground/60">{m.size}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Deploy */}
         <button
           className="w-full px-6 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg mt-2"
-          onClick={onDeploy}
+          onClick={() => onDeploy(selectedMap)}
         >
-          🪖 DEPLOY TO MISSION
+          🪖 DEPLOY TO {MAPS.find(m => m.id === selectedMap)?.name?.toUpperCase() || 'MISSION'}
         </button>
 
         <p className="text-[10px] font-mono text-muted-foreground/50 text-center">
-          Infiltrate Objekt 47 — Extract with loot to bring it back to your stash
+          {selectedMap === 'fishing_village'
+            ? 'Infiltrate the abandoned fishing village — find the speedboat and extract'
+            : 'Infiltrate Objekt 47 — Extract with loot to bring it back to your stash'}
         </p>
       </div>
     </div>
