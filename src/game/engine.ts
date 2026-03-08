@@ -672,7 +672,59 @@ function generateEnemyLoot(enemy: Enemy) {
   return baseLoot;
 }
 
-export function createGameState(mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState {
+// ══════════════════════════════════════════════════════════
+// MINE ELEVATOR TRANSITION — swaps map data between surface and underground
+// ══════════════════════════════════════════════════════════
+function performMineElevatorTransition(state: GameState, direction: 'up' | 'down') {
+  const newMap = direction === 'down' ? generateMineUndergroundMap() : generateMiningSurfaceMap();
+
+  // Preserve player state (HP, inventory, ammo, etc.) — only change position
+  if (direction === 'down') {
+    state.player.pos = { x: 950, y: 50 }; // elevator exit underground
+  } else {
+    state.player.pos = { x: 950, y: 1700 }; // elevator exit surface
+  }
+
+  // Swap all map data
+  state.walls = newMap.walls;
+  state.enemies = newMap.enemies;
+  state.lootContainers = newMap.lootContainers;
+  state.documentPickups = newMap.documentPickups;
+  state.extractionPoints = newMap.extractionPoints;
+  state.alarmPanels = newMap.alarmPanels;
+  state.props = newMap.props;
+  state.lights = newMap.lights;
+  state.windows = newMap.windows;
+  state.terrainZones = newMap.terrainZones;
+  state.mapWidth = newMap.mapWidth;
+  state.mapHeight = newMap.mapHeight;
+
+  // Reset spatial caches
+  _cachedWallGrid = null;
+  _cachedTerrainGrid = null;
+
+  // Clear transient state
+  state.bullets = [];
+  state.grenades = [];
+  state.placedTNTs = [];
+  state.mortarStrikes = [];
+  state.particles = [];
+  state.soundEvents = [];
+  state.alarmActive = false;
+
+  // Camera snap to new position
+  state.camera = { x: state.player.pos.x, y: state.player.pos.y };
+
+  // Track current mine level
+  (state as any)._mineLevel = direction === 'down' ? 'underground' : 'surface';
+
+  addMessage(state, direction === 'down'
+    ? '⛏ UNDERGROUND MINE — The air is thick with dust. Gruvrå awaits in the deep.'
+    : '⛏ SURFACE — Fresh air. The village spreads out before you.',
+    'intel');
+}
+
+
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
