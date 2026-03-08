@@ -5209,6 +5209,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
             const actualDmg = b.damage * armorReduction;
             enemy.hp -= actualDmg;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + actualDmg; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
             addHitMarker(b.pos.x, b.pos.y, state.time, false, false, actualDmg);
