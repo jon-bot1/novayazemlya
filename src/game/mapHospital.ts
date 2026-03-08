@@ -330,9 +330,10 @@ export function generateHospitalMap() {
     { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createExtractionCode()], looted: false, type: 'archive' as const },
   ];
 
-  // ═══ DOCUMENTS ═══
-  const docZones = [ZONE_WARD_W, ZONE_LAB_E, ZONE_OFFICE_E, ZONE_BASEMENT, ZONE_COURTYARD];
-  const documentPickups: DocumentPickup[] = ['doc_1', 'doc_2', 'doc_3', 'doc_4', 'doc_5'].map((id, i) => {
+  // ═══ DOCUMENTS (hospital-specific lore) ═══
+  const docZones = [ZONE_WARD_W, ZONE_LAB_E, ZONE_OFFICE_E, ZONE_BASEMENT, ZONE_COURTYARD, ZONE_LAB_E, ZONE_BASEMENT];
+  const docIds = ['doc_h1', 'doc_h2', 'doc_h3', 'doc_h4', 'doc_h5', 'doc_3', 'doc_4'];
+  const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
     const z = docZones[i % docZones.length];
     const p = randIn(z.x, z.y, z.w, z.h);
     return makeDocPickup(p.x, p.y, id);
