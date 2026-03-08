@@ -617,6 +617,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  if (input.moveTarget) {
     const dx = input.moveTarget.x - state.player.pos.x;
     const dy = input.moveTarget.y - state.player.pos.y;
     const d = Math.sqrt(dx * dx + dy * dy);
