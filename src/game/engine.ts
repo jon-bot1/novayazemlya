@@ -4308,7 +4308,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             if (enemy.type === 'boss') {
-              (enemy as any)._deathMonologue = [...BOSS_DEATH_MONOLOGUE];
+              (enemy as any)._deathMonologue = getBossDeathMonologue(enemy);
               (enemy as any)._deathMonologueTimer = 2.5;
               enemy.speechBubble = (enemy as any)._deathMonologue.shift();
               enemy.speechBubbleTimer = 2.5;
