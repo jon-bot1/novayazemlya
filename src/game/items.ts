@@ -398,4 +398,24 @@ export const LOOT_POOLS = {
       [createExtMagazine(), 0.10],
     ]);
   },
+  // Swedish weapon cabinet — Gruvsamhället map
+  weapon_cabinet_swedish: (): Item[] => {
+    return pickMany<Item>([
+      [WEAPON_TEMPLATES.kpist45(), 0.30],
+      [WEAPON_TEMPLATES.ak4(), 0.25],
+      [WEAPON_TEMPLATES.ksp58(), 0.10],
+      [WEAPON_TEMPLATES.toz(), 0.20],
+      [WEAPON_TEMPLATES.mosin(), 0.12],
+      [WEAPON_TEMPLATES.makarov(), 0.25],
+      [WEAPON_TEMPLATES.knife(), 0.20],
+      [createAmmo('9x18', 5 + Math.floor(Math.random() * 5)), 0.35],
+      [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 4)), 0.30],
+      [createAmmo('7.62x54R', 2 + Math.floor(Math.random() * 3)), 0.25],
+      [createGrenade(), 0.20],
+      [createFlashbang(), 0.12],
+      [createScope(), 0.10],
+      [createSuppressor(), 0.08],
+      [createExtMagazine(), 0.10],
+    ]);
+  },
 };
