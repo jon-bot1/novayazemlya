@@ -757,17 +757,6 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc, isMobile]);
 
-  // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
-  // Mobile input is handled entirely by MobileControls component with joystick
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.style.touchAction = 'none';
-    // No canvas-level pointer events needed — MobileControls handles touch,
-    // mouse handlers above handle desktop
-    return () => {};
-  }, []);
-
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;

@@ -1,15 +1,20 @@
 // Procedural sound effects using Web Audio API — zero latency, no backend needed
 
 let audioCtx: AudioContext | null = null;
+let masterNode: DynamicsCompressorNode | null = null;
 
 function getCtx(): AudioContext {
-  if (!audioCtx) audioCtx = new AudioContext();
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+    masterNode = null; // reset master when new context
+  }
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-// Master compressor to prevent clipping and balance volume
+// Master compressor — cached to avoid creating a new node per sound
 function getMaster(ctx: AudioContext): DynamicsCompressorNode {
+  if (masterNode) return masterNode;
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -18;
   comp.knee.value = 12;
@@ -17,6 +22,7 @@ function getMaster(ctx: AudioContext): DynamicsCompressorNode {
   comp.attack.value = 0.003;
   comp.release.value = 0.1;
   comp.connect(ctx.destination);
+  masterNode = comp;
   return comp;
 }
 
