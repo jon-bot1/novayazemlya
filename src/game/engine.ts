@@ -4690,3 +4690,4 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   return state;
 }
+}
