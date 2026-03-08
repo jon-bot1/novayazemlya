@@ -215,6 +215,12 @@ export function checkObjectiveCompletion(
       case 'village_sweep': completed = stats.cachesLooted >= 6; break;
       case 'speedboat_escape': completed = stats.extractionName === 'SPEEDBOAT'; break;
       case 'forest_trail': completed = stats.extractionName !== 'SPEEDBOAT' && !!stats.extractionName; break;
+      // Hospital specific
+      case 'kill_doctor': completed = stats.bossKilled; break;
+      case 'clear_basement': completed = stats.bossKilled && stats.killCount >= 4; break;
+      case 'hack_lab': completed = stats.alarmsHacked >= 1; break;
+      case 'rooftop_escape': completed = stats.extractionName === 'ROOFTOP HELICOPTER'; break;
+      case 'parking_escape': completed = stats.extractionName === 'PARKING LOT'; break;
     }
     return { ...obj, completed };
   });
