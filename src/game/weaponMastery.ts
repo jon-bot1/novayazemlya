@@ -19,7 +19,7 @@ export const EMPTY_MASTERY: WeaponMasteryState = {
 };
 
 // Kills required for each mastery level (cumulative)
-export const MASTERY_THRESHOLDS = [10, 25, 50, 100, 200];
+export const MASTERY_THRESHOLDS = [50, 100, 200, 400, 750];
 export const MASTERY_MAX_LEVEL = 5;
 
 export interface MasteryBonus {
