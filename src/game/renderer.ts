@@ -1,4 +1,5 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
+import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 
 const R = 28;
@@ -1334,6 +1335,44 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // ── LOOT — viewport culled ──
   for (const lc of state.lootContainers) {
     if (!isOnScreen(lc.pos.x, lc.pos.y, cx, cy, w, h, 30)) continue;
+
+    // === WEAPON DROPS — distinct visual ===
+    if (lc.type === 'weapon_drop' && !lc.looted && lc.items.length > 0) {
+      const wpn = lc.items[0];
+      const bob = Math.sin(state.time * 2.5 + lc.pos.x * 0.3) * 2;
+      const pulse = 0.6 + Math.sin(state.time * 3) * 0.2;
+
+      // Ground shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.ellipse(lc.pos.x, lc.pos.y + 8, 16, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Weapon glow ring
+      ctx.beginPath();
+      ctx.arc(lc.pos.x, lc.pos.y + bob, 16, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 160, 40, ${pulse * 0.15})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 160, 40, ${pulse * 0.7})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Weapon icon
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(wpn.icon || '🔫', lc.pos.x, lc.pos.y + bob + 5);
+
+      // Weapon name label
+      ctx.fillStyle = `rgba(255, 200, 100, ${pulse + 0.2})`;
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillText(wpn.name, lc.pos.x, lc.pos.y + bob - 14);
+
+      continue; // don't draw as regular loot
+    }
+
+    // Skip looted weapon_drops entirely
+    if (lc.type === 'weapon_drop' && lc.looted) continue;
+
     // Ground shadow
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
@@ -2973,12 +3012,41 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── INTERACTION PROMPTS — only check nearby items ──
   for (const lc of state.lootContainers) {
-    if (lc.looted) continue;
+    if (lc.looted || lc.type === 'weapon_drop') continue;
     if (dist2d(state.player.pos, lc.pos) < 70) {
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('[E] SEARCH', lc.pos.x, lc.pos.y + lc.size + 6);
+    }
+  }
+  // Weapon drop interaction prompts
+  for (const lc of state.lootContainers) {
+    if (lc.type !== 'weapon_drop' || lc.looted || lc.items.length === 0) continue;
+    if (dist2d(state.player.pos, lc.pos) < 60) {
+      const wpn = lc.items[0];
+      const slot = isSecondaryWeapon(wpn) ? 'secondary' : 'primary';
+      const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+
+      ctx.textAlign = 'center';
+      if (!currentInSlot) {
+        // Empty slot — simple pickup
+        ctx.fillStyle = 'rgba(100, 255, 100, 0.95)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`[E] EQUIP ${wpn.name}`, lc.pos.x, lc.pos.y + 22);
+      } else if (currentInSlot.name === wpn.name) {
+        ctx.fillStyle = 'rgba(180, 180, 180, 0.7)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText(`Already equipped`, lc.pos.x, lc.pos.y + 22);
+      } else {
+        // Swap prompt — show what you'll get and what you'll drop
+        ctx.fillStyle = 'rgba(255, 180, 50, 0.95)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`[E] SWAP → ${wpn.name}`, lc.pos.x, lc.pos.y + 22);
+        ctx.fillStyle = 'rgba(200, 160, 80, 0.7)';
+        ctx.font = '8px sans-serif';
+        ctx.fillText(`(drop ${currentInSlot.name})`, lc.pos.x, lc.pos.y + 32);
+      }
     }
   }
   for (const dp of state.documentPickups) {

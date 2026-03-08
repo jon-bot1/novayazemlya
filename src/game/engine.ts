@@ -79,14 +79,34 @@ function calcHeadshotChance(state: GameState, b: Bullet, enemy: Enemy): number {
   return Math.max(0, Math.min(0.55, chance));
 }
 
-// Helper: handle weapon pickup with slot system
-function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
+// Helper: spawn a weapon as a visible drop on the ground near a position
+function spawnWeaponDrop(state: GameState, item: Item, sourcePos: Vec2) {
+  // Offset slightly from source so it's visible next to the body/crate
+  const angle = Math.random() * Math.PI * 2;
+  const offsetDist = 25 + Math.random() * 15;
+  const dropPos = {
+    x: sourcePos.x + Math.cos(angle) * offsetDist,
+    y: sourcePos.y + Math.sin(angle) * offsetDist,
+  };
+  state.lootContainers.push({
+    id: `weapon_drop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    pos: dropPos,
+    size: 18,
+    items: [item],
+    looted: false,
+    type: 'weapon_drop',
+  });
+}
+
+// Helper: pick up a weapon_drop — equip or swap
+function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer) {
+  const item = lc.items[0];
+  if (!item) return;
   const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
   const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-  const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-  if (currentInSlot && currentInSlot.name === item.name) {
-    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-  } else if (!currentInSlot) {
+
+  if (!currentInSlot) {
+    // Empty slot — just equip
     if (slot === 'primary') {
       state.player.primaryWeapon = item;
       state.player.activeSlot = 3;
@@ -96,12 +116,39 @@ function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
       state.player.activeSlot = 2;
       state.player.equippedWeapon = item;
     }
+    state.player.inventory.push(item);
     if (item.ammoType) setWeaponAmmo(state, item);
     addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
+    lc.looted = true;
+    playPickup();
+  } else if (currentInSlot.name === item.name) {
+    // Same weapon — skip
+    addMessage(state, `Already have ${item.name}`, 'info');
   } else {
-    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-    (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...sourcePos }, time: state.time };
-    addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
+    // Swap — drop old weapon, equip new one
+    const oldWpn = currentInSlot;
+    // Save current ammo to old weapon before dropping
+    if (state.player.equippedWeapon === oldWpn) {
+      (oldWpn as any)._loadedAmmo = state.player.currentAmmo;
+    }
+    // Remove old from inventory
+    const oldIdx = state.player.inventory.indexOf(oldWpn);
+    if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+    // Put new weapon in slot
+    if (slot === 'primary') {
+      state.player.primaryWeapon = item;
+      if (state.player.activeSlot === 3) state.player.equippedWeapon = item;
+    } else {
+      state.player.sidearm = item;
+      if (state.player.activeSlot === 2) state.player.equippedWeapon = item;
+    }
+    state.player.inventory.push(item);
+    if (item.ammoType) setWeaponAmmo(state, item);
+    // Replace this drop's contents with the old weapon
+    lc.items = [oldWpn];
+    lc.looted = false; // keep it on the ground with the old weapon
+    addMessage(state, `🔫 Swapped to ${item.name}! (dropped ${oldWpn.name})`, 'info');
+    playPickup();
   }
 }
 
@@ -838,56 +885,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // === NEARBY WEAPON SWAP (E-to-swap, no popup) ===
-  if ((state as any)._nearbyWeapon) {
-    const nw = (state as any)._nearbyWeapon;
-    // Expire after 5s or if player walks away
-    if (state.time - nw.time > 5 || dist(state.player.pos, nw.pos) > 85) {
-      // Drop weapon back on ground
-      state.lootContainers.push({
-        id: `nearby_weapon_${Date.now()}`,
-        pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
-        size: 20,
-        items: [nw.item],
-        looted: false,
-        type: 'body',
-      });
-      delete (state as any)._nearbyWeapon;
-    } else if (input.interact) {
-      // E pressed again — do the swap
-      const oldWpn = nw.replacing;
-      if (nw.slot === 'primary') {
-        state.player.primaryWeapon = nw.item;
-        if (state.player.activeSlot === 3) state.player.equippedWeapon = nw.item;
-      } else {
-        state.player.sidearm = nw.item;
-        if (state.player.activeSlot === 2) state.player.equippedWeapon = nw.item;
+  // === WEAPON DROP PICKUP (E near weapon_drop) ===
+  if (input.interact) {
+    for (const lc of state.lootContainers) {
+      if (lc.type !== 'weapon_drop' || lc.looted) continue;
+      if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
+        pickupWeaponDrop(state, lc);
+        input.interact = false; // consume E press
+        break;
       }
-      if (!state.player.inventory.includes(nw.item)) state.player.inventory.push(nw.item);
-      // Remove old weapon from inventory and drop it
-      if (oldWpn) {
-        const oldIdx = state.player.inventory.indexOf(oldWpn);
-        if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
-        state.lootContainers.push({
-          id: `dropped_weapon_${Date.now()}`,
-          pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
-          size: 20,
-          items: [oldWpn],
-          looted: false,
-          type: 'body',
-        });
-      }
-      if (nw.item.ammoType) setWeaponAmmo(state, nw.item);
-      addMessage(state, `🔫 Swapped to ${nw.item.name}!`, 'info');
-      delete (state as any)._nearbyWeapon;
-      input.interact = false; // consume the E press
     }
-  }
-
-  // Legacy pending weapon cleanup
-  if (state.pendingWeapon) {
-    state.pendingWeapon = null;
-    delete (state as any)._pendingWeaponPos;
   }
 
   // Speed boost countdown
@@ -1643,16 +1650,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.interact) {
     // Loot containers — require line of sight (no looting through walls)
     for (const lc of state.lootContainers) {
+      if (lc.type === 'weapon_drop') continue; // handled separately
       if (!lc.looted && dist(state.player.pos, lc.pos) < 70 && hasLineOfSight(state, state.player.pos, lc.pos)) {
         lc.looted = true;
         state.cachesLooted++;
         for (const item of lc.items) {
+          // Weapons drop on the ground separately — player picks up manually
+          if (item.category === 'weapon' && item.damage) {
+            spawnWeaponDrop(state, item, lc.pos);
+            continue;
+          }
           if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          // Ammo & TNT handled by tryPickupItem — no extra logic needed here
           // Auto-equip backpack
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
@@ -1662,10 +1674,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
-          }
-          // Weapon pickup with slot system & confirmation
-          if (item.category === 'weapon' && item.damage) {
-            handleWeaponPickup(state, item, lc.pos);
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
@@ -1704,12 +1712,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.looted = true;
         state.bodiesLooted++;
         for (const item of enemy.loot) {
+          // Weapons drop on the ground separately
+          if (item.category === 'weapon' && item.damage) {
+            spawnWeaponDrop(state, item, enemy.pos);
+            continue;
+          }
           if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          // Ammo & TNT handled by tryPickupItem
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
             addMessage(state, '🎒 Backpack equipped!', 'intel');
@@ -1717,9 +1729,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
-          }
-          if (item.category === 'weapon' && item.damage) {
-            handleWeaponPickup(state, item, enemy.pos);
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
