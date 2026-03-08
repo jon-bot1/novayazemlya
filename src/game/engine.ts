@@ -33,6 +33,7 @@ function addKillFeed(state: GameState, enemyType: string, method: string) {
   const icons: Record<string, string> = {
     boss: '💀', sniper: '🎯', heavy: '🪖', soldier: '🔫', scav: '🐀',
     turret: '🏗️', shocker: '⚡', redneck: '🤠', dog: '🐕',
+    cultist: '🔮', miner_cult: '⛏️', svarta_sol: '☀️',
   };
   const icon = icons[enemyType] || '☠';
   const typeLabel = enemyType === 'boss' ? 'BOSS' : enemyType.toUpperCase();
