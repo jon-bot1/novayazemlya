@@ -324,7 +324,7 @@ export function generateFishingVillageMap() {
     makeLoot(380, 1300, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_DOCK, 'crate', 'valuable'),
     rLoot(ZONE_DOCK, 'barrel', 'common'),
-    rLoot(ZONE_PIER, 'crate', 'military'),
+    rLoot(ZONE_DOCK_EAST, 'crate', 'military'),
     rLoot(ZONE_STORE, 'desk', 'desk'),
     rLoot(ZONE_STORE, 'locker', 'valuable'),
     makeLoot(510, 390, 'weapon_cabinet', 'weapon_cabinet'),
