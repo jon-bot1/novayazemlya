@@ -88,7 +88,7 @@ export const STORY_ARC = {
 
 Declared killed in action during a failed exfiltration in East Berlin — in reality, extracted by NORDVAKT and given a new identity. Now operates as a ghost: no country, no name, no backup.
 
-NORDVAKT selected Operatör 8 for Operation Aurora Borealis based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
+NORDVAKT selected Operatör 8 for Operation Grindvakt based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
   },
 
   missionBriefing: `OPERATION AURORA BOREALIS — FINAL BRIEFING
