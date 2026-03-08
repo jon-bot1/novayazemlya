@@ -16,19 +16,23 @@ let _sortedProps: Prop[] = [];
 let _sortedPropCount = -1;
 let _rendererWallGrid: SpatialGrid | null = null;
 let _rendererWallCount = -1;
+let _rendererWallGridStateRef: GameState | null = null;
 let _rendererTerrainGrid: TerrainGrid | null = null;
+let _rendererTerrainGridStateRef: GameState | null = null;
 
 function getRendererWallGrid(state: GameState): SpatialGrid {
-  if (!_rendererWallGrid || state.walls.length !== _rendererWallCount) {
+  if (!_rendererWallGrid || _rendererWallGridStateRef !== state || state.walls.length !== _rendererWallCount) {
     _rendererWallGrid = buildSpatialGrid(state.walls);
     _rendererWallCount = state.walls.length;
+    _rendererWallGridStateRef = state;
   }
   return _rendererWallGrid;
 }
 
 function getRendererTerrainGrid(state: GameState): TerrainGrid {
-  if (!_rendererTerrainGrid) {
+  if (!_rendererTerrainGrid || _rendererTerrainGridStateRef !== state) {
     _rendererTerrainGrid = buildTerrainGrid(state.terrainZones, state.mapWidth, state.mapHeight);
+    _rendererTerrainGridStateRef = state;
   }
   return _rendererTerrainGrid;
 }
