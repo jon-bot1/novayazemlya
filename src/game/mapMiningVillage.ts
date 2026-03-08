@@ -501,20 +501,22 @@ export function generateMineUndergroundMap() {
   if (bossIdx >= 0) {
     const boss = enemies[bossIdx];
     const ort = makeEnemy(boss.pos.x - 40, boss.pos.y + 25, 'heavy');
-    (ort as any)._bodyguardOf = boss.id;
     (ort as any)._isBodyguard = true;
     (ort as any)._guardName = 'ORT';
     ort.hp = 200; ort.maxHp = 200; ort.speed = 0.65; ort.damage = 35;
     ort.alertRange = 280; ort.shootRange = 240; ort.radioGroup = boss.radioGroup;
+    (ort as any)._patrolRadiusMin = 150;
+    (ort as any)._patrolRadiusMax = 400;
 
     const stoll = makeEnemy(boss.pos.x + 40, boss.pos.y + 25, 'heavy');
-    (stoll as any)._bodyguardOf = boss.id;
     (stoll as any)._isBodyguard = true;
     (stoll as any)._guardName = 'STOLL';
     stoll.hp = 180; stoll.maxHp = 180; stoll.speed = 0.50; stoll.damage = 30;
     stoll.alertRange = 300; stoll.shootRange = 260; stoll.fireRate = 800;
     stoll.radioGroup = boss.radioGroup;
     stoll.tacticalRole = 'suppressor';
+    (stoll as any)._patrolRadiusMin = 150;
+    (stoll as any)._patrolRadiusMax = 400;
 
     enemies.push(ort, stoll);
   }

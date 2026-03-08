@@ -4422,7 +4422,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     switch (enemy.state as string) {
       case 'idle': {
-        // Bodyguards follow their boss instead of idling
+        // Bodyguards follow their boss instead of idling (only if tethered)
         if ((enemy as any)._bodyguardOf) {
           const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
           if (boss && boss.state !== 'dead') {
@@ -4440,16 +4440,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Standing still, looking around slowly
         enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
         // Start patrolling frequently — enemies should feel alive
+        const patrolMin = (enemy as any)._patrolRadiusMin || 90;
+        const patrolMax = (enemy as any)._patrolRadiusMax || 220;
         if (Math.random() < 0.012) {
           enemy.state = 'patrol';
-          enemy.patrolTarget = pickPatrolTarget(state, enemy, 90, 220);
+          enemy.patrolTarget = pickPatrolTarget(state, enemy, patrolMin, patrolMax);
         }
         break;
       }
       case 'patrol': {
         if (enemy.type === 'turret') break;
         if (enemy.type === 'sniper') { enemy.state = 'idle'; break; } // Snipers never patrol — stay still
-        // Bodyguards follow their boss during patrol
+        // Bodyguards follow their boss during patrol (only if tethered)
         if ((enemy as any)._bodyguardOf) {
           const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
           if (boss && boss.state !== 'dead') {
