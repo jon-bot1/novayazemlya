@@ -755,7 +755,7 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('wheel', onWheel);
     };
-  }, [showInventory, showIntel, readingDoc]);
+  }, [showInventory, showIntel, readingDoc, isMobile]);
 
   // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
   // Mobile input is handled entirely by MobileControls component with joystick
