@@ -4198,7 +4198,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.investigateTarget) {
           const dToTarget = dist(enemy.pos, enemy.investigateTarget);
           if (dToTarget < 30) {
-            enemy.state = 'alert';
+            // === SOUND INVESTIGATION MEMORY ===
+            // Arrived at investigation point but found nothing → become more vigilant
+            const investigationCount = ((enemy as any)._investigationCount || 0) + 1;
+            (enemy as any)._investigationCount = investigationCount;
+            // Each fruitless investigation makes the enemy harder to fool
+            enemy.awarenessDecay = Math.max(0.02, enemy.awarenessDecay * (0.70 - investigationCount * 0.05));
+            // Heightened alertness: awareness doesn't drop below a floor
+            const awarenessFloor = Math.min(0.5, investigationCount * 0.15);
+            if (enemy.awareness < awarenessFloor) enemy.awareness = awarenessFloor;
+            // Random: 25% chance to stay alert longer, 15% chance to go into patrol with boosted range
+            const vigilanceRoll = Math.random();
+            if (vigilanceRoll < 0.25) {
+              // Extended alert — look around for longer
+              (enemy as any)._alertStart = state.time;
+              (enemy as any)._extendedAlert = true; // will alert for 5-8s instead of 3-5s
+              enemy.state = 'alert';
+              setSpeech(enemy, investigationCount >= 2 ? 'ЧТО-ТО НЕ ТАК...' : 'СТРАННО...', 2.5);
+            } else if (vigilanceRoll < 0.40) {
+              // Boosted patrol — larger detection range temporarily
+              enemy.alertRange *= 1.3;
+              enemy.state = 'patrol';
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+              setSpeech(enemy, 'Я СЛЕЖУ...', 2.0);
+            } else {
+              enemy.state = 'alert';
+            }
           } else {
             // Check if target is reachable (LOS to target)
             const canReach = hasLineOfSight(state, enemy.pos, enemy.investigateTarget, enemy.elevated);
