@@ -825,7 +825,7 @@ I don't believe he deserted. I believe the mountain took him. And I believe Holm
   },
 
   // ═══════════════════════════════════════════════
-  // CROSS-MAP LORE — SUBSTANCE ZERO & AURORA BOREALIS
+  // CROSS-MAP LORE — SUBSTANCE ZERO & OPERATION GRINDVAKT
   // ═══════════════════════════════════════════════
   {
     id: 'doc_sz_1',

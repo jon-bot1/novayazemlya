@@ -192,7 +192,7 @@ PRIMARY: Destroy the Substance Zero shipping containers at the dock.
 SECONDARY: Recover the buyer list from Nachalnik's ledger.
 TERTIARY: Eliminate Nachalnik and dismantle the pipeline.
 
-HANDLER NOTE: The buyer list is critical. We need to know who else has Substance Zero. If it's already reached foreign powers, Aurora Borealis becomes a much bigger operation.`,
+HANDLER NOTE: The buyer list is critical. We need to know who else has Substance Zero. If it's already reached foreign powers, Grindvakt becomes a much bigger operation.`,
 
     hospital: `SITE BRIEFING — HOSPITAL №6
 
