@@ -660,6 +660,37 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
+
+  // === SPAWN VALIDATION — nudge enemies out of walls ===
+  const spawnGrid = buildSpatialGrid(state.walls);
+  for (const enemy of state.enemies) {
+    if (collidesWithWallsGrid(spawnGrid, enemy.pos.x, enemy.pos.y, 10)) {
+      // Try nudging in 8 directions at increasing distances
+      let escaped = false;
+      for (let nudgeDist = 20; nudgeDist <= 120 && !escaped; nudgeDist += 20) {
+        for (let a = 0; a < 8; a++) {
+          const angle = (a / 8) * Math.PI * 2;
+          const nx = enemy.pos.x + Math.cos(angle) * nudgeDist;
+          const ny = enemy.pos.y + Math.sin(angle) * nudgeDist;
+          if (!collidesWithWallsGrid(spawnGrid, nx, ny, 12)) {
+            enemy.pos.x = nx;
+            enemy.pos.y = ny;
+            escaped = true;
+            break;
+          }
+        }
+      }
+    }
+    // Also validate patrol target is reachable
+    if (collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 4)) {
+      const angle = Math.random() * Math.PI * 2;
+      enemy.patrolTarget = {
+        x: enemy.pos.x + Math.cos(angle) * 100,
+        y: enemy.pos.y + Math.sin(angle) * 100,
+      };
+    }
+  }
+
   return state;
 }
 
