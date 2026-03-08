@@ -940,34 +940,7 @@ export const GameCanvas: React.FC = () => {
 
         // Live objective tracking
         if (hudUpdateCounter % 18 === 0) {
-          const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
-          const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
-          const lootVal = state.player.inventory.reduce((s, i) => s + i.value, 0);
-          setObjectives(prev => checkObjectiveCompletion(prev, {
-            bossKilled,
-            sniperKilled,
-            terminalsHacked: state.terminalsHacked,
-            documentsCollected: state.documentsCollected,
-            killCount: state.killCount,
-            headshotKills: state.headshotKills,
-            lootValue: lootVal,
-            alarmTriggered: !!(state as any)._alarmEverTriggered,
-            bodiesLooted: state.bodiesLooted,
-            timeSeconds: state.time,
-            tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-            alarmsHacked: state.terminalsHacked,
-            mosinKills: state.mosinKills,
-            wallsBreached: state.wallsBreached,
-            grenadeKills: state.grenadeKills,
-            dogsNeutralized: state.dogsNeutralized,
-            longShots: state.longShots,
-            knifeDistanceKills: state.knifeDistanceKills,
-            cachesLooted: state.cachesLooted,
-            convertKill: !!(state as any)._convertKill,
-            fuelDestroyed: !!(state as any)._fuelDestroyed,
-            ammoDestroyed: !!(state as any)._ammoDestroyed,
-            radioDisabled: !!(state as any)._radioDisabled,
-          }));
+          setObjectives(prev => checkObjectiveCompletion(prev, buildObjectivePayload(state)));
         }
       }
 
