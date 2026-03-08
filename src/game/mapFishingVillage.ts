@@ -361,8 +361,8 @@ export function generateFishingVillageMap() {
   // ══════════════════════════════════════
   // DOCUMENTS
   // ══════════════════════════════════════
-  const docZones = [ZONE_WEST_VILLAGE, ZONE_EAST_VILLAGE, ZONE_STORE, ZONE_WAREHOUSE, ZONE_DOCK];
-  const docIds = ['doc_1', 'doc_2', 'doc_3', 'doc_4', 'doc_5'];
+  const docZones = [ZONE_WEST_VILLAGE, ZONE_EAST_VILLAGE, ZONE_STORE, ZONE_WAREHOUSE, ZONE_DOCK, ZONE_WEST_VILLAGE, ZONE_EAST_VILLAGE];
+  const docIds = ['doc_1', 'doc_2', 'doc_3', 'doc_4', 'doc_5', 'doc_kven_songs', 'doc_ancient_1'];
   const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
     const z = docZones[i % docZones.length];
     const p = randIn(z.x, z.y, z.w, z.h);
