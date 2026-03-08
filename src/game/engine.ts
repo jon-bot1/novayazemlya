@@ -1127,7 +1127,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const netSlowTimer = Math.max(0, (state as any)._playerNetSlowTimer || 0);
   (state as any)._playerNetSlowTimer = netSlowTimer;
   const netSlowMult = netSlowTimer > 0 ? 0.48 : 1;
-  const playerSpeed = (state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed) * netSlowMult;
+  // Weather speed modifier
+  const weatherSpeedMod = (() => {
+    const w = (state as any)._weather as { type: string; intensity: number } | undefined;
+    if (!w || w.type === 'clear') return 1;
+    if (w.type === 'blizzard') return 1 - w.intensity * 0.20; // up to -20%
+    if (w.type === 'rain') return 1 - w.intensity * 0.08;    // up to -8%
+    if (w.type === 'dust') return 1 - w.intensity * 0.12;    // up to -12%
+    return 1;
+  })();
+  const playerSpeed = (state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed) * netSlowMult * weatherSpeedMod;
   // Store movement state for headshot calc
   (state as any)._lastMoveX = moveX;
   (state as any)._lastMoveY = moveY;
