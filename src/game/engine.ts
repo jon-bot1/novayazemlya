@@ -548,6 +548,9 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;
+  normalizeBossIdentityForMap(state, mapId);
+  (state as any)._bossNets = [];
+  (state as any)._playerNetSlowTimer = 0;
   return state;
 }
 
