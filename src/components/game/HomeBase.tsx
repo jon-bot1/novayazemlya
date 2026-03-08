@@ -338,75 +338,85 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             })}
           </div>
           {/* Boss Intel for selected map */}
-          {!MAPS.find(m => m.id === selectedMap)?.unlockRequirement || stash.extractionCount >= (MAPS.find(m => m.id === selectedMap)?.unlockRequirement || 0) ? (
-            <div className="mt-2 p-3 border border-border/40 rounded bg-background/30">
-              {selectedMap === 'novaya_zemlya' && (
-                <div className="flex gap-3 items-start">
-                  <span className="text-2xl">★</span>
-                  <div>
-                    <p className="text-xs font-display text-purple-400">COMMANDANT OSIPOVITJ</p>
-                    <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                      Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering.
-                    </p>
-                    <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
-                      <span>💀 HP: 500</span>
-                      <span>🛡️ 2 Bodyguards</span>
-                      <span>📍 Underground Bunker</span>
-                    </div>
+          {(() => {
+            const selMap = MAPS.find(m => m.id === selectedMap);
+            const isTest3 = playerName.trim().toLowerCase() === 'test3';
+            const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+            return (
+              <div className={`mt-2 p-3 border border-border/40 rounded bg-background/30 ${mapLocked ? 'opacity-60' : ''}`}>
+                {mapLocked && (
+                  <div className="mb-2 px-2 py-1 bg-warning/10 border border-warning/30 rounded text-[9px] font-mono text-warning text-center">
+                    🔒 Locked — {selMap.unlockRequirement! - stash.extractionCount} more extraction{selMap.unlockRequirement! - stash.extractionCount !== 1 ? 's' : ''} needed
                   </div>
-                </div>
-              )}
-              {selectedMap === 'fishing_village' && (
-                <div className="flex gap-3 items-start">
-                  <span className="text-2xl">⚓</span>
-                  <div>
-                    <p className="text-xs font-display text-yellow-400">DOCK MASTER</p>
-                    <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                      A grizzled smuggler who controls the pier and the only speedboat out. Armed with a shotgun and surrounded by loyal redneck guards and their dogs. Holds the boat keys.
-                    </p>
-                    <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
-                      <span>💀 HP: 400</span>
-                      <span>🤠 Redneck Guards</span>
-                      <span>📍 The Dock</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {selectedMap === 'hospital' && (
-                <div className="flex flex-col gap-3">
+                )}
+                {selectedMap === 'novaya_zemlya' && (
                   <div className="flex gap-3 items-start">
-                    <span className="text-2xl">🧪</span>
+                    <span className="text-2xl">★</span>
                     <div>
-                      <p className="text-xs font-display text-green-400">DR. KRAVTSOV</p>
+                      <p className="text-xs font-display text-purple-400">COMMANDANT OSIPOVITJ</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic.
+                        Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering.
+                      </p>
+                      <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                        <span>💀 HP: 500</span>
+                        <span>🛡️ 2 Bodyguards</span>
+                        <span>📍 Underground Bunker</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedMap === 'fishing_village' && (
+                  <div className="flex gap-3 items-start">
+                    <span className="text-2xl">⚓</span>
+                    <div>
+                      <p className="text-xs font-display text-yellow-400">DOCK MASTER</p>
+                      <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                        A grizzled smuggler who controls the pier and the only speedboat out. Armed with a shotgun and surrounded by loyal redneck guards and their dogs. Holds the boat keys.
                       </p>
                       <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                         <span>💀 HP: 400</span>
-                        <span>😱 Fear Attack</span>
-                        <span>📍 East Wing Lab</span>
+                        <span>🤠 Redneck Guards</span>
+                        <span>📍 The Dock</span>
                       </div>
                     </div>
                   </div>
-                  <div className="border-t border-border/20" />
-                  <div className="flex gap-3 items-start">
-                    <span className="text-2xl">🩸</span>
-                    <div>
-                      <p className="text-xs font-display text-red-400">THE UZBEK</p>
-                      <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human.
-                      </p>
-                      <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
-                        <span>💀 HP: 600</span>
-                        <span>⚡ Extreme Speed</span>
-                        <span>📍 Basement Cell B-0</span>
+                )}
+                {selectedMap === 'hospital' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">🧪</span>
+                      <div>
+                        <p className="text-xs font-display text-green-400">DR. KRAVTSOV</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic.
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 400</span>
+                          <span>😱 Fear Attack</span>
+                          <span>📍 East Wing Lab</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t border-border/20" />
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">🩸</span>
+                      <div>
+                        <p className="text-xs font-display text-red-400">THE UZBEK</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human.
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 600</span>
+                          <span>⚡ Extreme Speed</span>
+                          <span>📍 Basement Cell B-0</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : null}
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Intel Tab — Document Archive */}
