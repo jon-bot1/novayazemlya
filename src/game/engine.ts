@@ -3413,6 +3413,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sourceId: enemy.id, sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
+          addMuzzleFlash(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, false);
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
           playGunshot('rifle');
