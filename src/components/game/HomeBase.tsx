@@ -229,18 +229,22 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-[300px] overflow-y-auto">
-                {stash.items.map((item, idx) => (
-                  <button
-                    key={`${item.id}_${idx}`}
-                    className="flex flex-col items-center gap-0.5 p-2 bg-secondary/30 border border-border/50 rounded hover:border-warning/50 hover:bg-warning/10 transition-colors group"
-                    onClick={() => onSellItem(idx)}
-                    title={`${item.name} — ${item.value}₽ (click to sell)`}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="text-[9px] font-mono text-foreground/80 leading-tight text-center truncate w-full">{item.name}</span>
-                    <span className="text-[9px] font-mono text-warning group-hover:text-warning">{item.value}₽</span>
-                  </button>
-                ))}
+                {stash.items.map((item, idx) => {
+                  const rarity = getItemRarity(item.value, item.category);
+                  return (
+                    <button
+                      key={`${item.id}_${idx}`}
+                      className={`flex flex-col items-center gap-0.5 p-2 rounded hover:border-warning/50 hover:bg-warning/10 transition-colors group ${RARITY_BG[rarity]} ${RARITY_GLOW[rarity]}`}
+                      onClick={() => onSellItem(idx)}
+                      title={`${item.name} — ${item.value}₽ (${RARITY_LABEL[rarity]}) — click to sell`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-[9px] font-mono text-foreground/80 leading-tight text-center truncate w-full">{item.name}</span>
+                      <span className="text-[9px] font-mono text-warning group-hover:text-warning">{item.value}₽</span>
+                      <span className="text-[7px] font-mono font-bold" style={{ color: RARITY_COLORS[rarity] }}>{RARITY_LABEL[rarity]}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -1222,10 +1222,10 @@ export const GameCanvas: React.FC = () => {
               return updated;
             });
           }}
-          onBuyTraderItem={(itemId) => {
+          onBuyTraderItem={(itemId, adjustedCost) => {
             setStash(prev => {
               const traderItem = TRADER_ITEMS.find(t => t.id === itemId);
-              if (!traderItem || prev.rubles < traderItem.cost) return prev;
+              if (!traderItem || prev.rubles < adjustedCost) return prev;
               let newItem: Item;
               switch (itemId) {
                 case 'buy_injector': newItem = { id: 'emergency_injector', name: 'Emergency Injector', category: 'medical', icon: '💉', weight: 0.2, value: 350, healAmount: 75, medicalType: 'morphine', description: 'Auto-revive to 75 HP when taking lethal damage. Stops bleeding.' } as Item; break;
@@ -1254,8 +1254,22 @@ export const GameCanvas: React.FC = () => {
               }
               const updated = {
                 ...prev,
-                rubles: prev.rubles - traderItem.cost,
+                rubles: prev.rubles - adjustedCost,
                 items: [...prev.items, newItem],
+              };
+              persistStash(updated, playerName);
+              return updated;
+            });
+          }}
+          onCraft={(recipeId) => {
+            const recipe = RECIPES.find(r => r.id === recipeId);
+            if (!recipe) return;
+            setStash(prev => {
+              const result = craft(recipe, prev.items);
+              if (!result) return prev;
+              const updated = {
+                ...prev,
+                items: [...result.remaining, result.result],
               };
               persistStash(updated, playerName);
               return updated;
