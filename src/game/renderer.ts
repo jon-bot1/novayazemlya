@@ -997,24 +997,86 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
   ctx.restore();
 }
 
-// Terrain colors
-const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
-  grass: ['#3a4a2e', '#3e4e32'],
-  dirt: ['#5a5040', '#5e5444'],
-  asphalt: ['#3a3a38', '#3e3e3c'],
-  concrete: ['#4e4e44', '#525248'],
-  forest: ['#2a3a1e', '#2e3e22'],
+// Terrain colors — per-map palettes for distinct atmosphere
+type MapPalette = {
+  terrain: Record<string, [string, string]>;
+  outside: string; // color beyond map bounds
+  ambientOverlay: string | null; // full-screen tint
+  grassDetailA: string;
+  grassDetailB: string;
+  dirtDetailA: string;
+  concreteDetail: string;
 };
+
+const MAP_PALETTES: Record<string, MapPalette> = {
+  novaya_zemlya: {
+    terrain: {
+      grass: ['#3a4a2e', '#3e4e32'],
+      dirt: ['#5a5040', '#5e5444'],
+      asphalt: ['#3a3a38', '#3e3e3c'],
+      concrete: ['#4e4e44', '#525248'],
+      forest: ['#2a3a1e', '#2e3e22'],
+    },
+    outside: '#1a2a14',
+    ambientOverlay: null,
+    grassDetailA: 'rgba(60,90,40,0.25)',
+    grassDetailB: 'rgba(40,80,30,0.3)',
+    dirtDetailA: 'rgba(90,70,50,0.15)',
+    concreteDetail: 'rgba(80,80,70,0.08)',
+  },
+  fishing_village: {
+    terrain: {
+      grass: ['#3e5030', '#425434'],
+      dirt: ['#6a5a40', '#6e5e44'],
+      asphalt: ['#3c3c3a', '#40403e'],
+      concrete: ['#5a5a50', '#5e5e54'],
+      forest: ['#2c3c1e', '#304024'],
+    },
+    outside: '#1c2c16',
+    ambientOverlay: 'rgba(180, 160, 100, 0.03)', // warm coastal tint
+    grassDetailA: 'rgba(70,100,50,0.22)',
+    grassDetailB: 'rgba(50,90,40,0.28)',
+    dirtDetailA: 'rgba(110,90,60,0.15)',
+    concreteDetail: 'rgba(90,90,80,0.08)',
+  },
+  hospital: {
+    terrain: {
+      grass: ['#2e3a28', '#32402c'],
+      dirt: ['#484840', '#4c4c44'],
+      asphalt: ['#2a2a2a', '#2e2e2e'],
+      concrete: ['#3a3a38', '#3e3e3c'],
+      forest: ['#222e1a', '#26321e'],
+    },
+    outside: '#121a0e',
+    ambientOverlay: 'rgba(20, 30, 40, 0.12)', // cold dark tint
+    grassDetailA: 'rgba(40,60,30,0.2)',
+    grassDetailB: 'rgba(30,50,25,0.25)',
+    dirtDetailA: 'rgba(60,55,50,0.12)',
+    concreteDetail: 'rgba(50,50,50,0.1)',
+  },
+};
+
+function getMapPalette(state: GameState): MapPalette {
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  return MAP_PALETTES[mapId] || MAP_PALETTES.novaya_zemlya;
+}
+
+// Legacy fallback
+const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.novaya_zemlya.terrain;
 
 // Cached ground canvas — rendered once, blitted each frame
 let _groundCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
 let _groundMapW = 0;
 let _groundMapH = 0;
+let _groundMapId = '';
 
 function ensureGroundCanvas(state: GameState) {
-  if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight) return;
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
   _groundMapW = state.mapWidth;
   _groundMapH = state.mapHeight;
+  _groundMapId = mapId;
+  const palette = getMapPalette(state);
   try {
     _groundCanvas = new OffscreenCanvas(_groundMapW, _groundMapH);
   } catch {
@@ -1029,13 +1091,14 @@ function ensureGroundCanvas(state: GameState) {
     for (let ty = 0; ty < _groundMapH; ty += tileSize) {
       const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
-      const colors = TERRAIN_COLORS[terrain];
+      const colors = palette.terrain[terrain] || palette.terrain['grass'];
       gctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
       gctx.fillRect(tx, ty, tileSize, tileSize);
-      // Sparse grass detail
+      
       const hash = (tx * 7 + ty * 13) % 100;
-      if (hash < 8 && (terrain === 'grass' || terrain === 'forest')) {
-        gctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
+      // Grass & forest details
+      if (hash < 10 && (terrain === 'grass' || terrain === 'forest')) {
+        gctx.strokeStyle = terrain === 'forest' ? palette.grassDetailB : palette.grassDetailA;
         gctx.lineWidth = 1;
         const gx = tx + 10 + (hash % 20);
         const gy = ty + 15 + (hash % 15);
@@ -1043,6 +1106,36 @@ function ensureGroundCanvas(state: GameState) {
         gctx.moveTo(gx, gy + 6); gctx.lineTo(gx - 2, gy); gctx.stroke();
         gctx.beginPath();
         gctx.moveTo(gx + 3, gy + 6); gctx.lineTo(gx + 5, gy - 1); gctx.stroke();
+        // Extra grass blade for denser feel
+        if (hash < 5) {
+          gctx.beginPath();
+          gctx.moveTo(gx + 14, gy + 4); gctx.lineTo(gx + 12, gy - 2); gctx.stroke();
+        }
+      }
+      // Dirt pebble details
+      if (hash < 6 && terrain === 'dirt') {
+        gctx.fillStyle = palette.dirtDetailA;
+        const px = tx + 8 + (hash * 3) % 30;
+        const py = ty + 6 + (hash * 7) % 28;
+        gctx.beginPath(); gctx.arc(px, py, 1.5, 0, Math.PI * 2); gctx.fill();
+        gctx.beginPath(); gctx.arc(px + 12, py + 8, 1, 0, Math.PI * 2); gctx.fill();
+      }
+      // Concrete crack details
+      if (hash < 4 && terrain === 'concrete') {
+        gctx.strokeStyle = palette.concreteDetail;
+        gctx.lineWidth = 0.8;
+        const cx = tx + 5 + (hash * 5) % 30;
+        const cy = ty + 10 + (hash * 3) % 25;
+        gctx.beginPath();
+        gctx.moveTo(cx, cy);
+        gctx.lineTo(cx + 8 + hash % 10, cy + 6 + hash % 8);
+        gctx.lineTo(cx + 14 + hash % 12, cy + 3);
+        gctx.stroke();
+      }
+      // Asphalt line markings (occasional)
+      if (hash < 3 && terrain === 'asphalt') {
+        gctx.fillStyle = 'rgba(200,180,60,0.08)';
+        gctx.fillRect(tx + 20, ty, 6, tileSize);
       }
     }
   }
@@ -1076,46 +1169,74 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Outside area (dense forest beyond map)
-  ctx.fillStyle = '#1a2a14';
+  // Outside area (dense forest beyond map) — map-specific color
+  const palette = getMapPalette(state);
+  ctx.fillStyle = palette.outside;
   ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
 
   // Ground tiles with terrain zones
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
-  // Zone labels
-  const zoneLabels = [
-    { x: 1600, y: 1100, label: 'HANGAR', sub: 'Huvudbyggnad', size: 22 },
-    { x: 1300, y: 1000, label: 'HANGAR A', sub: 'Hall Väst', size: 14 },
-    { x: 1300, y: 1400, label: 'HANGAR B', sub: 'Hall Syd', size: 12 },
-    { x: 1600, y: 1000, label: 'KORRIDOR', sub: 'C-1', size: 10 },
-    { x: 1800, y: 870, label: 'KONTOR', sub: 'Befälsbyggnad', size: 13 },
-    { x: 1850, y: 1300, label: 'LAGER', sub: 'Förrådsdepå', size: 16 },
-    { x: 1510, y: 1780, label: 'HUVUDGRIND', sub: 'Södra infart', size: 14 },
-    { x: 500, y: 575, label: 'KASERN', sub: 'Baracker', size: 12 },
-    { x: 1500, y: 410, label: 'KOMMANDOPOST', sub: 'Ledningscentral', size: 12 },
-    { x: 2575, y: 650, label: 'AMMOBUNKER', sub: 'Östligt förråd', size: 11 },
-    { x: 530, y: 950, label: 'MOTORPOOL', sub: 'Fordonspark', size: 11 },
-    { x: 350, y: 330, label: 'VAKTTORN NV', sub: '', size: 9 },
-    { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
-  ];
+  // Zone labels — map-specific
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
+    novaya_zemlya: [
+      { x: 1600, y: 1100, label: 'HANGAR', sub: 'Huvudbyggnad', size: 22 },
+      { x: 1300, y: 1000, label: 'HANGAR A', sub: 'Hall Väst', size: 14 },
+      { x: 1300, y: 1400, label: 'HANGAR B', sub: 'Hall Syd', size: 12 },
+      { x: 1600, y: 1000, label: 'KORRIDOR', sub: 'C-1', size: 10 },
+      { x: 1800, y: 870, label: 'KONTOR', sub: 'Befälsbyggnad', size: 13 },
+      { x: 1850, y: 1300, label: 'LAGER', sub: 'Förrådsdepå', size: 16 },
+      { x: 1510, y: 1780, label: 'HUVUDGRIND', sub: 'Södra infart', size: 14 },
+      { x: 500, y: 575, label: 'KASERN', sub: 'Baracker', size: 12 },
+      { x: 1500, y: 410, label: 'KOMMANDOPOST', sub: 'Ledningscentral', size: 12 },
+      { x: 2575, y: 650, label: 'AMMOBUNKER', sub: 'Östligt förråd', size: 11 },
+      { x: 530, y: 950, label: 'MOTORPOOL', sub: 'Fordonspark', size: 11 },
+      { x: 350, y: 330, label: 'VAKTTORN NV', sub: '', size: 9 },
+      { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
+    ],
+    fishing_village: [
+      { x: 750, y: 550, label: 'VÄSTRA BOSTÄDER', sub: 'Stugor', size: 14 },
+      { x: 1700, y: 550, label: 'ÖSTRA BOSTÄDER', sub: 'Stugor', size: 14 },
+      { x: 1130, y: 380, label: 'LANTHANDEL', sub: 'Butik', size: 12 },
+      { x: 1350, y: 600, label: 'LANDSVÄGEN', sub: '', size: 10 },
+      { x: 1400, y: 1800, label: 'KAJEN', sub: 'Hamn', size: 18 },
+      { x: 960, y: 1690, label: 'LAGERHUS', sub: '', size: 11 },
+      { x: 750, y: 1530, label: 'FISKESTUGA', sub: '', size: 10 },
+      { x: 150, y: 200, label: 'SKOG NV', sub: '', size: 9 },
+      { x: 2650, y: 200, label: 'SKOG NÖ', sub: '', size: 9 },
+    ],
+    hospital: [
+      { x: 1200, y: 700, label: 'SJUKHUSET', sub: 'Huvudbyggnad', size: 22 },
+      { x: 600, y: 500, label: 'AVDELNING VÄST', sub: 'Vårdsal', size: 13 },
+      { x: 600, y: 900, label: 'AVDELNING 2', sub: 'Vårdsal', size: 12 },
+      { x: 600, y: 1350, label: 'AVDELNING 3', sub: 'Isolering', size: 11 },
+      { x: 1850, y: 550, label: 'LABORATORIET', sub: 'Forskning', size: 14 },
+      { x: 1850, y: 1250, label: 'EXPEDITION', sub: 'Kontor', size: 13 },
+      { x: 1200, y: 870, label: 'INNERGÅRD', sub: 'Öppen yta', size: 14 },
+      { x: 1200, y: 1600, label: 'KÄLLAREN', sub: '⚠ FARLIGT', size: 16 },
+      { x: 1200, y: 450, label: 'KORRIDOR', sub: 'Norr', size: 10 },
+      { x: 1200, y: 1350, label: 'KORRIDOR', sub: 'Söder', size: 10 },
+      { x: 300, y: 2100, label: 'PARKERING', sub: '', size: 11 },
+    ],
+  };
+  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.novaya_zemlya;
+  const labelColor = mapId === 'hospital' ? '#a0a0a0' : '#c8c8b4';
   for (const z of zoneLabels) {
-    if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue; // skip off-screen labels
+    if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue;
     ctx.save();
-    ctx.globalAlpha = 0.14;
-    ctx.fillStyle = '#c8c8b4';
+    ctx.globalAlpha = mapId === 'hospital' ? 0.10 : 0.14;
+    ctx.fillStyle = labelColor;
     ctx.font = `bold ${z.size}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(z.label, z.x, z.y);
     if (z.sub) {
-      ctx.globalAlpha = 0.09;
+      ctx.globalAlpha = mapId === 'hospital' ? 0.07 : 0.09;
       ctx.font = `${Math.max(8, z.size - 6)}px sans-serif`;
       ctx.fillText(z.sub, z.x, z.y + z.size + 2);
     }
     ctx.restore();
   }
-
-
 
 
   // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
@@ -3153,7 +3274,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
-  // No lighting overlay — pure daylight, uniform everywhere
+  // Map-specific atmosphere overlay
+  {
+    const pal = getMapPalette(state);
+    if (pal.ambientOverlay) {
+      ctx.fillStyle = pal.ambientOverlay;
+      ctx.fillRect(0, 0, w, h);
+    }
+    // Hospital: subtle vignette effect for horror feel
+    if ((state as any)._mapId === 'hospital') {
+      // Edge darkening — simple rects at edges (perf-friendly vs radial gradient)
+      const vignetteA = 0.08;
+      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA})`;
+      ctx.fillRect(0, 0, w, 40);           // top
+      ctx.fillRect(0, h - 40, w, 40);      // bottom
+      ctx.fillRect(0, 0, 40, h);           // left
+      ctx.fillRect(w - 40, 0, 40, h);     // right
+      // Corners slightly darker
+      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA * 1.5})`;
+      ctx.fillRect(0, 0, 60, 60);
+      ctx.fillRect(w - 60, 0, 60, 60);
+      ctx.fillRect(0, h - 60, 60, 60);
+      ctx.fillRect(w - 60, h - 60, 60, 60);
+    }
+  }
+
 
   // Flashbang stun effect — white screen + dizzy stars
   if (state.flashbangTimer > 0) {

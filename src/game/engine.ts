@@ -428,7 +428,7 @@ function generateEnemyLoot(enemy: Enemy) {
 export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
-  return {
+  const state: GameState = {
     player,
     enemies: map.enemies,
     bullets: [],
@@ -463,9 +463,9 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     flashbangTimer: 0,
     backpackCapacity: 0,
     mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
-    reinforcementTimer: 90 + Math.random() * 30, // first wave after ~90-120s (slower)
+    reinforcementTimer: 90 + Math.random() * 30,
     reinforcementsSpawned: 0,
-    maxReinforcements: 6, // fewer reinforcements
+    maxReinforcements: 6,
     coverNearby: false,
     mosinKills: 0,
     grenadeKills: 0,
@@ -489,15 +489,17 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     dogsKilled: 0,
     totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
     emptyMagTimer: 0,
-    // Stealth additions
     disguised: false,
     disguiseTimer: 0,
-    throwingKnives: 2, // start with 2 throwing knives
+    throwingKnives: 2,
     chokeholdTarget: null,
     chokeholdProgress: 0,
     mortarStrikes: [],
     laserTarget: null,
   };
+  // Store map ID for renderer atmosphere differentiation
+  (state as any)._mapId = mapId;
+  return state;
 }
 
 function hasLineOfSight(state: GameState, a: Vec2, b: Vec2, elevated: boolean = false): boolean {
