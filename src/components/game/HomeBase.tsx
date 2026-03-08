@@ -43,7 +43,7 @@ interface HomeBaseProps {
   playerName: string;
   stash: StashState;
   objectives: MissionObjective[];
-  onDeploy: () => void;
+  onDeploy: (mapId: MapId) => void;
   onSellItem: (index: number) => void;
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
