@@ -140,7 +140,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             { key: 'trader', label: '⬆ Upgrades' },
             { key: 'shop', label: '🏪 Shop' },
             { key: 'mastery', label: '⚔️ Mastery' },
-            { key: 'intel', label: `📄 Intel${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
+            { key: 'intel', label: `📄 Archive${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
           ] as const).map(t => (
             <button
               key={t.key}
