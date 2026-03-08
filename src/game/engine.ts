@@ -1206,8 +1206,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Restore saved ammo for this weapon, or load from reserves
       const savedAmmo = (wpnForSlot as any)._loadedAmmo;
       if (savedAmmo !== undefined) {
-        state.player.currentAmmo = savedAmmo;
-        state.player.maxAmmo = getMagSize(wpnForSlot);
+        const mag = getMagSize(wpnForSlot);
+        state.player.currentAmmo = Math.min(savedAmmo, mag); // clamp to mag size
+        state.player.maxAmmo = mag;
       } else {
         // First equip — load from ammo reserves (no free ammo)
         setWeaponAmmo(state, wpnForSlot);
@@ -1245,6 +1246,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.currentAmmo += transferred;
         state.player.ammoReserves[wpnReload.ammoType] -= transferred;
         state.player.maxAmmo = magSize;
+        // Safety clamp — never exceed magazine size
+        state.player.currentAmmo = Math.min(state.player.currentAmmo, magSize);
         addMessage(state, `🔄 Reloaded! ${state.player.currentAmmo}/${magSize}`, 'info');
       }
     }
@@ -1288,6 +1291,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         addMessage(state, '⚠ No reserve ammo for this weapon!', 'warning');
       }
+    } else if (!isMelee && state.player.currentAmmo >= getMagSize(wpn)) {
+      addMessage(state, '⚠ Magazine already full!', 'info');
     }
   } else {
     input.reload = false;
@@ -2043,10 +2048,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (state.gameOver) return state;
   }
 
-  // Extraction check — need BOTH USB and nuclear codebook for full success
+  // Extraction check — map-specific success conditions
+  const mapId = (state as any)._mapId as MapId | undefined;
+  const isObjekt47 = mapId === 'objekt47';
   const hasUSB = state.player.inventory.some(i => i.id === 'boss_usb');
   const hasCodes = state.hasNuclearCodes;
-  const fullSuccess = hasUSB && hasCodes;
+  // Only Objekt 47 requires USB + nuclear codes; other maps just require extraction code
+  const fullSuccess = isObjekt47 ? (hasUSB && hasCodes) : state.hasExtractionCode;
   let inExtraction = false;
   for (const ep of state.extractionPoints) {
     // Track visiting exfil points (within 150px)
@@ -2057,10 +2065,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
-        const missing: string[] = [];
-        if (!hasUSB) missing.push('USB drive');
-        if (!hasCodes) missing.push('nuclear codes');
-        addMessage(state, `⚠ Missing: ${missing.join(' & ')} — extract incomplete!`, 'warning');
+        if (isObjekt47) {
+          const missing: string[] = [];
+          if (!hasUSB) missing.push('USB drive');
+          if (!hasCodes) missing.push('nuclear codes');
+          addMessage(state, `⚠ Missing: ${missing.join(' & ')} — extract incomplete!`, 'warning');
+        } else if (!state.hasExtractionCode) {
+          addMessage(state, `⚠ Missing extraction code — extract incomplete!`, 'warning');
+        }
       }
       // Show entering message once
       if (state.extractionProgress === 0) {
@@ -2072,7 +2084,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.extracted = true;
         state.hasExtractionCode = fullSuccess;
         addMessage(state, fullSuccess
-          ? `💾☢ FULL SUCCESS — EXTRACTED: ${ep.name}!`
+          ? `💾 FULL SUCCESS — EXTRACTED: ${ep.name}!`
           : `⚠ EXTRACTED — MISSION INCOMPLETE`, fullSuccess ? 'info' : 'warning');
       }
     } else if (d < 300 && Math.floor(state.time) % 5 === 0 && Math.floor(state.time) !== Math.floor(state.time - dt)) {
