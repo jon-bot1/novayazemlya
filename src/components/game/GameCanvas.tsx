@@ -1151,9 +1151,9 @@ export const GameCanvas: React.FC = () => {
           playerName={playerName}
           stash={stash}
           objectives={objectives}
-          onDeploy={() => {
+          onDeploy={(mapId: MapId) => {
             // Apply upgrades to game state
-            stateRef.current = createGameState();
+            stateRef.current = createGameState(mapId);
             const st = stateRef.current;
             const ups = stash.upgrades;
             // Backpack upgrade
