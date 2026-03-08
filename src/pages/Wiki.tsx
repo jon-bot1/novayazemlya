@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'enemies' | 'maps' | 'mechanics' | 'items' | 'recoil' | 'upgrades' | 'stealth' | 'bosses';
+type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'recoil' | 'enemies' | 'bosses' | 'maps' | 'items' | 'mechanics' | 'stealth' | 'upgrades' | 'safehouse' | 'achievements' | 'reputation' | 'daynight';
 
 const SECTIONS: { id: WikiSection; label: string; icon: string }[] = [
   { id: 'lore', label: 'Story & Lore', icon: '📜' },
@@ -17,7 +17,11 @@ const SECTIONS: { id: WikiSection; label: string; icon: string }[] = [
   { id: 'items', label: 'Items & Loot', icon: '🎒' },
   { id: 'mechanics', label: 'Mechanics', icon: '⚙️' },
   { id: 'stealth', label: 'Stealth', icon: '🤫' },
+  { id: 'safehouse', label: 'Safe House', icon: '🏠' },
   { id: 'upgrades', label: 'Upgrades & Trader', icon: '🏪' },
+  { id: 'reputation', label: 'Reputation', icon: '🎖️' },
+  { id: 'achievements', label: 'Achievements', icon: '🏆' },
+  { id: 'daynight', label: 'Day/Night Cycle', icon: '🌙' },
 ];
 
 const H2 = ({ children }: { children: React.ReactNode }) => (
