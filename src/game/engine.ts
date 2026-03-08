@@ -729,6 +729,14 @@ export function createGameState(mapId: MapId = 'objekt47', playerLevel: number =
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
+  (state as any)._playerNoiseLevel = 0; // 0-1 noise meter for HUD
+  // Tag extraction points with difficulty multipliers
+  for (const ep of state.extractionPoints) {
+    // Harder exfils = longer timer = more reward
+    if (ep.timer >= 8) (ep as any)._xpMultiplier = 2.0;      // hardest
+    else if (ep.timer >= 5) (ep as any)._xpMultiplier = 1.5;  // medium
+    else (ep as any)._xpMultiplier = 1.0;                      // easy
+  }
 
   // === SPAWN VALIDATION — nudge enemies out of walls ===
   const spawnGrid = buildSpatialGrid(state.walls);
@@ -1118,6 +1126,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (silentBonus > 0) stepRadius *= (1 - silentBonus);
       state.soundEvents.push({ pos: { ...state.player.pos }, radius: stepRadius, time: state.time });
     }
+  }
+
+  // === NOISE METER — compute player noise level for HUD ===
+  {
+    const baseNoise: Record<MovementMode, number> = { sneak: 0.05, walk: 0.25, sprint: 0.75 };
+    let noise = baseNoise[effectiveMode] || 0.25;
+    // Recalculate terrain multiplier for noise meter
+    const tgNoise = getTerrainGrid(state);
+    const terrainNoise = getTerrainFast(tgNoise, state.player.pos.x, state.player.pos.y);
+    let noiseTMult = 1.0;
+    if (terrainNoise === 'concrete' || terrainNoise === 'asphalt') noiseTMult = 1.4;
+    else if (terrainNoise === 'dirt') noiseTMult = 0.8;
+    else if (terrainNoise === 'forest') noiseTMult = 0.6;
+    noise *= noiseTMult;
+    const silentBonusN = (state as any)._noiseReduction || 0;
+    if (silentBonusN > 0) noise *= (1 - silentBonusN);
+    if ((state as any)._playerHiding) noise = 0;
+    else if (state.player.inCover && !state.player.peeking) noise *= 0.5;
+    // Gunfire spike — recent shots massively increase noise
+    const recentShots = state.soundEvents.filter(se => state.time - se.time < 0.5 && se.radius >= 100);
+    if (recentShots.length > 0) noise = Math.min(1, noise + 0.5);
+    // Smooth the noise value
+    const prevNoise = (state as any)._playerNoiseLevel || 0;
+    (state as any)._playerNoiseLevel = prevNoise + (noise - prevNoise) * Math.min(1, dt * 8);
   }
 
   // Hide flags already set in combined cover+hide loop above
@@ -3037,23 +3069,63 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.speechBubbleTimer = 2.5;
       }
 
-      // Boss orders bodyguards — tells them to attack/flank
-      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.0015) {
-        const bodyguards = state.enemies.filter(e => e.state !== 'dead' && (e as any)._isBodyguard);
-        if (bodyguards.length > 0) {
-          const orders = ['ФЛАНГ СЛЕВА!', 'ОБХОДИ СПРАВА!', 'ПРИКРОЙ МЕНЯ!', 'УБЕЙ ЕГО!', 'ВПЕРЁД!'];
-          enemy.speechBubble = orders[Math.floor(Math.random() * orders.length)];
-          enemy.speechBubbleTimer = 2.5;
-          (enemy as any)._orderingArm = 1.5; // arm gesture timer
-          // Bodyguards react
-          for (const bg of bodyguards) {
-            bg.state = 'chase';
-            bg.investigateTarget = { ...state.player.pos };
-            if (!bg.speechBubble) {
-              const replies = ['ДА, КОМАНДИР!', 'ЕСТЬ!', 'ВЫПОЛНЯЮ!', 'ПОНЯЛ!'];
-              bg.speechBubble = replies[Math.floor(Math.random() * replies.length)];
-              bg.speechBubbleTimer = 2;
+      // === BOSS CALLOUTS — orders nearby enemies, triggering real behavior changes ===
+      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.003) {
+        const nearbyAllies = state.enemies.filter(e => e !== enemy && e.state !== 'dead' && !e.friendly && e.type !== 'turret' && e.type !== 'dog' && dist(e.pos, enemy.pos) < 400);
+        if (nearbyAllies.length > 0) {
+          // Pick a random callout type — each triggers different behavior
+          const calloutRoll = Math.random();
+          if (calloutRoll < 0.25) {
+            // FLANK ORDER — send one enemy to flank
+            enemy.speechBubble = 'ФЛАНГ! ОБХОДИ!';
+            enemy.speechBubbleTimer = 2.5;
+            const flanker = nearbyAllies[Math.floor(Math.random() * nearbyAllies.length)];
+            const perpAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+            flanker.flankTarget = {
+              x: Math.max(50, Math.min(state.mapWidth - 50, state.player.pos.x + Math.cos(perpAngle) * 200)),
+              y: Math.max(50, Math.min(state.mapHeight - 50, state.player.pos.y + Math.sin(perpAngle) * 200)),
+            };
+            flanker.state = 'flank';
+            flanker.tacticalRole = 'flanker';
+            setSpeech(flanker, 'ПОНЯЛ!', 1.5);
+          } else if (calloutRoll < 0.50) {
+            // GRENADE ORDER — tell an enemy to throw grenade if they can
+            enemy.speechBubble = 'КИНЬ ГРАНАТУ!';
+            enemy.speechBubbleTimer = 2.5;
+            const thrower = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
+            if (thrower && dist(thrower.pos, state.player.pos) < 300) {
+              const gAngle = Math.atan2(state.player.pos.y - thrower.pos.y, state.player.pos.x - thrower.pos.x);
+              state.grenades.push({
+                pos: { ...thrower.pos }, vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
+                timer: 1.8, radius: 80, damage: 20, fromPlayer: false, sourceId: thrower.id, sourceType: thrower.type,
+              });
+              setSpeech(thrower, 'ГРАНАТА!', 1.5);
+              addMessage(state, `💣 Boss orders grenade throw!`, 'warning');
             }
+          } else if (calloutRoll < 0.70) {
+            // SUPPRESS ORDER — one ally lays suppressive fire
+            enemy.speechBubble = 'ПРИКРОЙ ОГНЁМ!';
+            enemy.speechBubbleTimer = 2.5;
+            const suppressor = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
+            if (suppressor) {
+              suppressor.state = 'suppress';
+              suppressor.suppressTimer = 4 + Math.random() * 3;
+              suppressor.tacticalRole = 'suppressor';
+              setSpeech(suppressor, 'ЕСТЬ!', 1.5);
+            }
+          } else {
+            // CHARGE ORDER — all nearby rush the player
+            enemy.speechBubble = 'ВСЕ ВПЕРЁД!';
+            enemy.speechBubbleTimer = 2.5;
+            for (const ally of nearbyAllies) {
+              // 80% obey, 20% ignore (randomization)
+              if (Math.random() < 0.80) {
+                ally.state = 'chase';
+                ally.investigateTarget = { ...state.player.pos };
+                if (!ally.speechBubble) setSpeech(ally, 'ВПЕРЁД!', 1.5);
+              }
+            }
+            addMessage(state, `⚠ Boss orders all-out charge!`, 'warning');
           }
         }
       }
@@ -4198,7 +4270,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.investigateTarget) {
           const dToTarget = dist(enemy.pos, enemy.investigateTarget);
           if (dToTarget < 30) {
-            enemy.state = 'alert';
+            // === SOUND INVESTIGATION MEMORY ===
+            // Arrived at investigation point but found nothing → become more vigilant
+            const investigationCount = ((enemy as any)._investigationCount || 0) + 1;
+            (enemy as any)._investigationCount = investigationCount;
+            // Each fruitless investigation makes the enemy harder to fool
+            enemy.awarenessDecay = Math.max(0.02, enemy.awarenessDecay * (0.70 - investigationCount * 0.05));
+            // Heightened alertness: awareness doesn't drop below a floor
+            const awarenessFloor = Math.min(0.5, investigationCount * 0.15);
+            if (enemy.awareness < awarenessFloor) enemy.awareness = awarenessFloor;
+            // Random: 25% chance to stay alert longer, 15% chance to go into patrol with boosted range
+            const vigilanceRoll = Math.random();
+            if (vigilanceRoll < 0.25) {
+              // Extended alert — look around for longer
+              (enemy as any)._alertStart = state.time;
+              (enemy as any)._extendedAlert = true; // will alert for 5-8s instead of 3-5s
+              enemy.state = 'alert';
+              setSpeech(enemy, investigationCount >= 2 ? 'ЧТО-ТО НЕ ТАК...' : 'СТРАННО...', 2.5);
+            } else if (vigilanceRoll < 0.40) {
+              // Boosted patrol — larger detection range temporarily
+              enemy.alertRange *= 1.3;
+              enemy.state = 'patrol';
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+              setSpeech(enemy, 'Я СЛЕЖУ...', 2.0);
+            } else {
+              enemy.state = 'alert';
+            }
           } else {
             // Check if target is reachable (LOS to target)
             const canReach = hasLineOfSight(state, enemy.pos, enemy.investigateTarget, enemy.elevated);
@@ -4234,11 +4331,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'alert': {
-        // Looking around nervously — return to patrol after ~3 seconds
+        // Looking around nervously — extended alert if triggered by investigation memory
         enemy.angle += Math.sin(state.time * 3 + enemy.pos.x) * 0.03;
-        if (!( enemy as any)._alertStart) (enemy as any)._alertStart = state.time;
-        if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
+        if (!(enemy as any)._alertStart) (enemy as any)._alertStart = state.time;
+        const alertDuration = (enemy as any)._extendedAlert ? (5 + Math.random() * 3) : (3 + Math.random() * 2);
+        if (state.time - (enemy as any)._alertStart > alertDuration) {
           (enemy as any)._alertStart = 0;
+          delete (enemy as any)._extendedAlert;
           enemy.state = 'patrol';
           enemy.patrolTarget = pickPatrolTarget(state, enemy, 120, 300);
         }
@@ -4488,6 +4587,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Out of range — chase instead
           enemy.state = 'chase';
           break;
+        }
+        // === FRIENDLY FIRE AWARENESS ===
+        // Check if an ally is in the line of fire before shooting (90% chance to check, 10% panic fire)
+        let allyBlocking = false;
+        if (enemy.type !== 'turret' && enemy.type !== 'boss' && Math.random() > 0.10) {
+          const fireAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          for (const ally of state.enemies) {
+            if (ally === enemy || ally.state === 'dead' || ally.friendly !== enemy.friendly) continue;
+            const dToAlly = dist(enemy.pos, ally.pos);
+            if (dToAlly > distToPlayer || dToAlly < 20) continue; // ally behind player or too close to self
+            const allyAngle = Math.atan2(ally.pos.y - enemy.pos.y, ally.pos.x - enemy.pos.x);
+            let angleDiffFF = Math.abs(fireAngle - allyAngle);
+            if (angleDiffFF > Math.PI) angleDiffFF = Math.PI * 2 - angleDiffFF;
+            if (angleDiffFF < 0.15 && dToAlly < distToPlayer * 0.9) { // ally within ~8.5° cone and closer
+              allyBlocking = true;
+              break;
+            }
+          }
+        }
+        if (allyBlocking) {
+          // Reposition instead of shooting — move perpendicular to firing line
+          const perpAngle = enemy.angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+          enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(perpAngle) * speed * 0.8, Math.sin(perpAngle) * speed * 0.8, 10);
+          break; // skip shooting this frame
         }
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
           if (enemy.type === 'shocker') {

@@ -819,6 +819,7 @@ export const GameCanvas: React.FC = () => {
     exfilRevealed: undefined as string | undefined,
     achievementStats: undefined as any,
     pendingWeapon: null as any,
+    noiseLevel: 0,
     nearInteractable: false,
   });
   const [showInventory, setShowInventory] = useState(false);
@@ -1168,6 +1169,7 @@ export const GameCanvas: React.FC = () => {
             totalDogsOnMap: state.totalDogsOnMap,
           },
           pendingWeapon: state.pendingWeapon,
+          noiseLevel: (state as any)._playerNoiseLevel || 0,
           nearInteractable: (() => {
             const p = state.player.pos;
             // Check loot containers, gates, alarm panels, weapon drops, document pickups
@@ -1274,9 +1276,12 @@ export const GameCanvas: React.FC = () => {
       const objectiveXp = completed.reduce((s, o) => s + Math.floor(o.reward / 2), 0);
       // XP: kills (10 each), extraction bonus (50), loot value (1 per 50₽), objectives
       const killXp = state.killCount * 10;
-      const extractionXp = 50;
+      // Extraction cost — harder exfils give more XP
+      const activeExfil = state.extractionPoints.find(ep => ep.active && Math.hypot(ep.pos.x - state.player.pos.x, ep.pos.y - state.player.pos.y) < ep.radius + 50);
+      const exfilMultiplier = activeExfil ? ((activeExfil as any)._xpMultiplier || 1.0) : 1.0;
+      const extractionXp = Math.round(50 * exfilMultiplier);
       const lootXp = Math.floor(lootValue / 50);
-      const totalXp = killXp + extractionXp + lootXp + objectiveXp;
+      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier);
 
       // ── Daily mission rewards ──
       const dailyMissions = getDailyMissions();
@@ -1652,6 +1657,7 @@ export const GameCanvas: React.FC = () => {
           activeUpgrades={stash.upgrades}
           isMobile={isMobile}
           mapId={selectedMapId}
+          noiseLevel={hudState.noiseLevel}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');

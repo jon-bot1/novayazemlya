@@ -131,11 +131,12 @@ interface HUDProps {
   activeUpgrades?: UpgradeState;
   isMobile?: boolean;
   mapId?: string;
+  noiseLevel?: number;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
@@ -245,6 +246,22 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
           <span className="text-[8px] font-mono text-foreground/40 tabular-nums w-6 text-right">{Math.floor(player.stamina)}</span>
         </div>
+        {/* Noise meter */}
+        {noiseLevel !== undefined && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-32 h-1.5 bg-background/40 rounded-sm overflow-hidden border border-border/20">
+              <div
+                className={`h-full transition-all duration-200 ${
+                  noiseLevel > 0.6 ? 'bg-danger/70' : noiseLevel > 0.3 ? 'bg-warning/60' : 'bg-accent/40'
+                }`}
+                style={{ width: `${Math.min(100, noiseLevel * 100)}%` }}
+              />
+            </div>
+            <span className={`text-[8px] font-mono tabular-nums w-6 text-right ${
+              noiseLevel > 0.6 ? 'text-danger/70' : noiseLevel > 0.3 ? 'text-warning/60' : 'text-foreground/30'
+            }`}>🔊</span>
+          </div>
+        )}
         {/* Reload progress bar (only while reloading) */}
         {player.reloading && (
           <div className="w-32 h-1.5 bg-background/40 rounded-sm overflow-hidden border border-warning/30">
