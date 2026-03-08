@@ -65,7 +65,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const xpInfo = getXpForNextLevel(stash.xp);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-auto">
+    <div className="absolute inset-0 flex items-start sm:items-center justify-center bg-background z-50 overflow-auto py-2">
       <div className="max-w-2xl w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-3 sm:p-6 border border-border bg-card rounded max-h-[100dvh] overflow-y-auto pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Header */}
         <div className="text-center border-b border-border pb-4">

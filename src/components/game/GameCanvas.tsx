@@ -49,7 +49,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
   const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
-  <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-auto">
+  <div className="absolute inset-0 flex items-start sm:items-center justify-center bg-background z-50 overflow-auto py-2">
     <div className="max-w-lg w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-4 sm:p-8 border border-border bg-card rounded max-h-[98vh] overflow-y-auto">
       <div className="text-center">
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
