@@ -1058,8 +1058,8 @@ const MAP_PALETTES: Record<string, MapPalette> = {
 };
 
 function getMapPalette(state: GameState): MapPalette {
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
-  return MAP_PALETTES[mapId] || MAP_PALETTES.novaya_zemlya;
+  const mapId = (state as any)._mapId || 'objekt47';
+  return MAP_PALETTES[mapId] || MAP_PALETTES.objekt47;
 }
 
 // Legacy fallback
