@@ -216,6 +216,43 @@ export const WEAPON_TEMPLATES = {
   laser:    () => { const w = createWeapon('Laser Designator', '9x18', 0, '🔴', 0, 0, 3000, 'single'); w.weaponSlot = 'primary'; w.weight = 1; w.description = 'Laser designator — calls in mortar fire on target. 3s delay.'; (w as any).isLaserDesignator = true; return w; },
 };
 
+// ── WEAPON MODIFICATIONS ──
+export const createScope = (): Item => ({
+  id: nextId(),
+  name: 'Red Dot Scope',
+  category: 'weapon_mod',
+  icon: '🔭',
+  weight: 0.3,
+  value: 250,
+  description: 'Attach to weapon: +20% bullet speed',
+  modType: 'scope',
+  modBulletSpeedBonus: 0.20,
+});
+
+export const createSuppressor = (): Item => ({
+  id: nextId(),
+  name: 'Suppressor',
+  category: 'weapon_mod',
+  icon: '🔇',
+  weight: 0.4,
+  value: 350,
+  description: 'Attach to weapon: -50% shot noise radius',
+  modType: 'suppressor',
+  modNoiseReduction: 0.50,
+});
+
+export const createExtMagazine = (): Item => ({
+  id: nextId(),
+  name: 'Extended Magazine',
+  category: 'weapon_mod',
+  icon: '📎',
+  weight: 0.2,
+  value: 200,
+  description: 'Attach to weapon: +8 magazine capacity',
+  modType: 'ext_magazine',
+  modMagBonus: 8,
+});
+
 export function isSecondaryWeapon(item: Item): boolean {
   if (item.weaponSlot) return item.weaponSlot === 'secondary';
   // Fallback for legacy items without slot tag
