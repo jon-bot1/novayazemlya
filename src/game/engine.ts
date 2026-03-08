@@ -3622,6 +3622,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Apply tactical behavior based on role
       if (enemy.tacticalRole === 'flanker' && enemy.type !== 'turret' && enemy.type !== 'boss') {
         enemy.state = 'flank';
+        // Announce flanking (30% chance, if no speech bubble)
+        if (!enemy.speechBubble && Math.random() < 0.30) {
+          setSpeech(enemy, pickLine(FLANKING_LINES, enemy.type), 2.0);
+        }
         // Calculate flank target — move perpendicular to player direction
         if (!enemy.flankTarget || dist(enemy.pos, enemy.flankTarget) < 30 || state.time - enemy.lastTacticalSwitch > 4) {
           const toPlayer = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -3637,6 +3641,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else if (enemy.tacticalRole === 'suppressor' && enemy.type !== 'turret') {
         enemy.state = 'suppress';
         enemy.suppressTimer = 3; // keep suppressing for 3 seconds
+        // Announce suppression (35% chance)
+        if (!enemy.speechBubble && Math.random() < 0.35) {
+          setSpeech(enemy, pickLine(SUPPRESSING_LINES, enemy.type), 2.0);
+        }
       } else if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
