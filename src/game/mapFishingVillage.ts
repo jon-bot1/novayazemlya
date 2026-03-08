@@ -111,27 +111,27 @@ export function generateFishingVillageMap() {
   // TERRAIN ZONES
   // ══════════════════════════════════════
   const terrainZones: TerrainZone[] = [
-    // Dense forest top
-    { x: 0, y: 0, w: MAP_W, h: 280, type: 'forest' },
-    // Forest sides — east side tighter
-    { x: 0, y: 0, w: 160, h: 1350, type: 'forest' },
-    { x: MAP_W - 100, y: 0, w: 100, h: 1350, type: 'forest' },
+    // Snow-covered forest top
+    { x: 0, y: 0, w: MAP_W, h: 280, type: 'dirt' },
+    // Forest sides — snow-covered edges
+    { x: 0, y: 0, w: 160, h: 1350, type: 'dirt' },
+    { x: MAP_W - 100, y: 0, w: 100, h: 1350, type: 'dirt' },
     // Rocky terrain east of cabins
     { x: 1020, y: 350, w: 280, h: 500, type: 'dirt' },
-    // Swampy/grassy area east-south
-    { x: 1020, y: 850, w: 280, h: 300, type: 'grass' },
+    // Frozen ground east-south
+    { x: 1020, y: 850, w: 280, h: 300, type: 'dirt' },
     // Main road (vertical, center)
     { x: 620, y: 200, w: 100, h: 1150, type: 'asphalt' },
     // Side road to dock
     { x: 500, y: 1300, w: 250, h: 80, type: 'asphalt' },
     // Dock building — two rooms extending into sea (interior floor must stay dry)
     { x: 500, y: 1380, w: 370, h: 330, type: 'concrete' },
-    // Village grass
-    { x: 180, y: 280, w: 870, h: 1050, type: 'grass' },
-    // Dirt around cabins
+    // Snow-covered village ground
+    { x: 180, y: 280, w: 870, h: 1050, type: 'dirt' },
+    // Frozen dirt around cabins
     { x: 280, y: 380, w: 300, h: 700, type: 'dirt' },
     { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
-    // Beach / sand near water
+    // Frozen shore near water
     { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
     // === WATER / SEA — starts below the dock building so interior floor isn't water-colored ===
     { x: 0, y: 1710, w: MAP_W, h: MAP_H - 1710, type: 'water' },
