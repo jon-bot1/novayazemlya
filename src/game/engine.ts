@@ -2583,13 +2583,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
       enemy.speed = (enemy as any)._originalSpeed * 0.25; // 75% speed loss
     }
-    // Flee chance check (per second, not per frame)
+    // Flee chance check — uses _cowardice personality trait
     if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && !(enemy as any)._isBodyguard) {
       if (!(enemy as any)._fleeCheckTimer) (enemy as any)._fleeCheckTimer = 1.0;
       (enemy as any)._fleeCheckTimer -= dt;
       if ((enemy as any)._fleeCheckTimer <= 0) {
         (enemy as any)._fleeCheckTimer = 1.0;
-        const fleeChance = hpRatio < 0.50 ? 0.15 : hpRatio < 0.75 ? 0.10 : 0;
+        const cowardice = (enemy as any)._cowardice ?? 0.3;
+        // Cowardly enemies flee earlier and more often
+        const fleeThresholdHigh = 0.50 + cowardice * 0.25; // scav(0.7): flee at 75% HP, soldier(0.2): 55%
+        const fleeThresholdLow = 0.30 + cowardice * 0.20;  // scav: 44%, soldier: 34%
+        const fleeChance = hpRatio < fleeThresholdLow ? (0.10 + cowardice * 0.25) : hpRatio < fleeThresholdHigh ? (0.05 + cowardice * 0.15) : 0;
         if (fleeChance > 0 && Math.random() < fleeChance && (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress')) {
           // Flee! Run away from player
           const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
@@ -2598,7 +2602,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 300)),
           };
           enemy.state = 'investigate';
-          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.5; // flee at half original speed
+          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * (cowardice > 0.5 ? 0.7 : 0.5); // cowards run faster
           setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
           addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
         }
