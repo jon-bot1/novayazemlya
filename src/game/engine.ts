@@ -1448,17 +1448,48 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (wpn as any)._maxDurability = 120;
     }
     
-    // Degradation penalties: accuracy worsens (not Mosin, not sidearms)
+    // Durability ratio for spread/fire rate
     const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
       ? (wpn as any)._durability / (wpn as any)._maxDurability 
       : 1;
-    const degradedSpread = isMosinWpn ? 0.06 : 0.12 + (1 - durRatio) * 0.25;
-    
-    // Movement spread: moving adds inaccuracy, sneaking reduces it
-    const movingSpread = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
-    // Recoil bloom from consecutive shots
+    // === COMPREHENSIVE SPREAD SYSTEM ===
+    // Base spread per weapon class (tighter = more accurate)
+    const wpnName = (wpn?.name || '').toLowerCase();
+    const weaponBaseSpread: number = (() => {
+      if (isMosinWpn) return 0.03;  // bolt-action sniper — very precise
+      if (wpnName.includes('ak 4')) return 0.06; // battle rifle — precise
+      if (wpnName.includes('revolver')) return 0.07;
+      if (wpnName.includes('ak-74') || wpnName.includes('akm')) return 0.09; // assault rifles — moderate
+      if (wpnName.includes('ksp 58')) return 0.11; // MG — less accurate
+      if (wpnName.includes('ppsh') || wpnName.includes('kpist')) return 0.12; // SMGs — spray-y
+      if (wpnName.includes('makarov')) return 0.10; // pistol
+      if (wpnName.includes('toz')) return 0.08; // shotgun base (pellets add cone)
+      return 0.10; // default
+    })();
+
+    // Durability degrades accuracy
+    const durPenalty = (1 - durRatio) * 0.15;
+
+    // Movement spread — depends on movement mode AND weapon weight
+    const wpnWeight = wpn?.weight || 2;
+    const weightFactor = Math.min(1.5, wpnWeight / 4); // heavier weapons = more movement penalty
+    const movingSpread = moveLen > 0.1
+      ? (effectiveMode === 'sprint' ? 0.18 * weightFactor
+        : effectiveMode === 'walk' ? 0.07 * weightFactor
+        : 0.015) // sneaking — very stable
+      : -0.02; // standing still — slight accuracy bonus
+
+    // Recoil bloom from consecutive shots — weapon-specific rates
     const recoilBloom = (state as any)._recoilBloom || 0;
-    const totalSpread = Math.max(0.02, degradedSpread + movingSpread + recoilBloom);
+
+    // Sustained fire penalty — tracks how many shots fired recently
+    const sustainedShots = (state as any)._sustainedShots || 0;
+    const sustainedPenalty = isAutoFire ? Math.min(0.12, sustainedShots * 0.008) : 0; // auto-fire gets worse over time
+
+    // Cover bonus — in cover = more stable
+    const coverBonus = state.player.inCover ? -0.04 : 0;
+
+    const totalSpread = Math.max(0.02, weaponBaseSpread + durPenalty + movingSpread + recoilBloom + sustainedPenalty + coverBonus);
     
     const baseBulletSpeed = (wpn?.bulletSpeed || 8) * 1.5; // +50% base projectile speed (25% + 20%)
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
@@ -1506,10 +1537,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.player.currentAmmo = Math.max(0, Math.floor(state.player.currentAmmo) - 1);
     }
     
-    // === RECOIL BLOOM — consecutive shots increase spread ===
+    // === WEAPON-SPECIFIC RECOIL BLOOM ===
     if (!(state as any)._recoilBloom) (state as any)._recoilBloom = 0;
-    const bloomRate = isAutoFire ? 0.025 : 0.015; // auto weapons bloom faster
-    (state as any)._recoilBloom = Math.min(0.35, (state as any)._recoilBloom + bloomRate);
+    // Bloom rate varies by weapon: heavy weapons bloom faster, precision weapons slower
+    const bloomRate = (() => {
+      if (isMosinWpn) return 0.005; // bolt-action — minimal bloom
+      const n = (wpn?.name || '').toLowerCase();
+      if (n.includes('ksp 58')) return 0.04;  // MG — heavy bloom
+      if (n.includes('ppsh') || n.includes('kpist')) return 0.035; // SMGs — fast bloom
+      if (n.includes('akm')) return 0.03; // AKM — noticeable
+      if (n.includes('ak-74') || n.includes('ak 4')) return 0.022; // controlled
+      if (n.includes('makarov') || n.includes('revolver')) return 0.015; // pistols — low
+      return isAutoFire ? 0.028 : 0.015;
+    })();
+    const bloomCap = isMosinWpn ? 0.08 : isAutoFire ? 0.30 : 0.20;
+    (state as any)._recoilBloom = Math.min(bloomCap, (state as any)._recoilBloom + bloomRate);
+    
+    // Track sustained shots for auto-fire penalty
+    if (!(state as any)._sustainedShots) (state as any)._sustainedShots = 0;
+    (state as any)._sustainedShots = Math.min(20, (state as any)._sustainedShots + 1);
+    (state as any)._lastShotTime = state.time;
     
     const muzzleAngle = state.player.angle;
     addMuzzleFlash(state, state.player.pos.x + Math.cos(muzzleAngle) * 25, state.player.pos.y + Math.sin(muzzleAngle) * 25, true);
@@ -1539,20 +1586,38 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     } // end else (has ammo)
   }
 
-  // Recoil bloom decay — recovers when not shooting
+  // Recoil bloom decay — recovers when not shooting (weapon-specific recovery)
   if ((state as any)._recoilBloom > 0) {
-    const decayRate = 0.15 * dt; // recovers ~0.15/s
-    (state as any)._recoilBloom = Math.max(0, (state as any)._recoilBloom - decayRate);
+    const wpnDecay = state.player.equippedWeapon;
+    const dn = (wpnDecay?.name || '').toLowerCase();
+    // Light weapons recover faster, heavy weapons slower
+    const recoveryRate = dn.includes('ksp 58') ? 0.08 : dn.includes('ppsh') || dn.includes('kpist') ? 0.12
+      : dn.includes('mosin') ? 0.25 : dn.includes('makarov') || dn.includes('revolver') ? 0.20
+      : 0.14;
+    (state as any)._recoilBloom = Math.max(0, (state as any)._recoilBloom - recoveryRate * dt);
+  }
+  // Sustained shot counter decay — resets after 0.5s of not shooting
+  if ((state as any)._sustainedShots > 0) {
+    const timeSinceShot = state.time - ((state as any)._lastShotTime || 0);
+    if (timeSinceShot > 0.4) {
+      (state as any)._sustainedShots = Math.max(0, (state as any)._sustainedShots - 8 * dt); // fast recovery when burst stops
+    }
   }
   
   // Store current spread for HUD visualization
   {
     const wpnVis = state.player.equippedWeapon;
-    const isMosinVis = wpnVis?.name?.toLowerCase().includes('mosin');
-    const baseSpreadVis = isMosinVis ? 0.06 : 0.12;
-    const moveSpreadVis = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
+    const wpnVisName = (wpnVis?.name || '').toLowerCase();
+    const baseSpreadVis = wpnVisName.includes('mosin') ? 0.03 : wpnVisName.includes('ak 4') ? 0.06
+      : wpnVisName.includes('ksp 58') ? 0.11 : wpnVisName.includes('ppsh') || wpnVisName.includes('kpist') ? 0.12
+      : 0.10;
+    const wpnWt = wpnVis?.weight || 2;
+    const wtFactor = Math.min(1.5, wpnWt / 4);
+    const moveSpreadVis = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.18 * wtFactor : effectiveMode === 'walk' ? 0.07 * wtFactor : 0.015) : -0.02;
     const bloomVis = (state as any)._recoilBloom || 0;
-    (state as any)._currentSpread = Math.max(0.02, baseSpreadVis + moveSpreadVis + bloomVis);
+    const sustainVis = (wpnVis?.fireMode === 'auto') ? Math.min(0.12, ((state as any)._sustainedShots || 0) * 0.008) : 0;
+    const coverVis = state.player.inCover ? -0.04 : 0;
+    (state as any)._currentSpread = Math.max(0.02, baseSpreadVis + moveSpreadVis + bloomVis + sustainVis + coverVis);
   }
 
   // Cycle throwable type (V key)
@@ -3511,7 +3576,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle += Math.abs(angleDelta) > TURN_SPEED ? Math.sign(angleDelta) * TURN_SPEED : angleDelta;
 
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
-          const spread = (Math.random() - 0.5) * 0.15;
+          const accE = (enemy as any)._accuracy ?? 0.7;
+          const spread = (Math.random() - 0.5) * (0.25 - accE * 0.2);
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
@@ -3986,7 +4052,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Opportunistic shots while flanking
         if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
-          const spread = (Math.random() - 0.5) * 0.2;
+          const accF = (enemy as any)._accuracy ?? 0.7;
+          const spread = (Math.random() - 0.5) * (0.30 - accF * 0.15); // flanking = less accurate
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
