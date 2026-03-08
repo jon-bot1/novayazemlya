@@ -1003,14 +1003,44 @@ export const GameCanvas: React.FC = () => {
       const lootXp = Math.floor(lootValue / 50);
       const totalXp = killXp + extractionXp + lootXp + objectiveXp;
 
+      // ── Daily mission rewards ──
+      const dailyMissions = getDailyMissions();
+      const dailyProg = loadDailyProgress();
+      const raidStats: Record<string, number | boolean> = {
+        killCount: state.killCount,
+        headshotKills: state.headshotKills,
+        grenadeKills: state.grenadeKills,
+        bodiesLooted: state.bodiesLooted,
+        cachesLooted: state.cachesLooted,
+        noHitsTaken: state.noHitsTaken,
+        longShots: state.longShots,
+        wallsBreached: state.wallsBreached,
+        documentsCollected: state.documentsCollected,
+        dogsNeutralized: state.dogsNeutralized,
+        mosinKills: state.mosinKills,
+        knifeDistanceKills: state.knifeDistanceKills,
+      };
+      let dailyRubles = 0;
+      let dailyXp = 0;
+      for (const dm of dailyMissions) {
+        if (!dailyProg.completed.includes(dm.id) && checkDailyCompletion(dm, raidStats)) {
+          dailyProg.completed.push(dm.id);
+          dailyRubles += dm.reward.rubles;
+          dailyXp += dm.reward.xp;
+        }
+      }
+      if (dailyRubles > 0 || dailyXp > 0) {
+        saveDailyProgress(dailyProg);
+      }
+
       setStash(prev => {
-        const newXp = prev.xp + totalXp;
+        const newXp = prev.xp + totalXp + dailyXp;
         const newLevel = getLevelForXp(newXp);
         const updated = {
           ...prev,
           items: [...prev.items, ...lootItems],
           extractionCount: prev.extractionCount + 1,
-          rubles: prev.rubles + objectiveReward,
+          rubles: prev.rubles + objectiveReward + dailyRubles,
           xp: newXp,
           level: newLevel,
         };
