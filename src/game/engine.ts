@@ -512,6 +512,8 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     chokeholdProgress: 0,
     mortarStrikes: [],
     laserTarget: null,
+    fearTimer: 0,
+    fearSourcePos: null,
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;
@@ -591,6 +593,28 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Camera wobble for dizzy effect
     state.camera.x += Math.sin(state.time * 12) * 3;
     state.camera.y += Math.cos(state.time * 9) * 3;
+  }
+
+  // Kravtsov fear effect: forced flee away from source, can't shoot
+  if (state.fearTimer > 0) {
+    state.fearTimer = Math.max(0, state.fearTimer - dt);
+    input.shooting = false;
+    input.shootPressed = false;
+    input.moveTarget = null;
+    if (state.fearSourcePos) {
+      const fdx = state.player.pos.x - state.fearSourcePos.x;
+      const fdy = state.player.pos.y - state.fearSourcePos.y;
+      const fd = Math.sqrt(fdx * fdx + fdy * fdy) || 1;
+      moveX = fdx / fd;
+      moveY = fdy / fd;
+    }
+    // Camera shake — panic effect
+    state.camera.x += (Math.random() - 0.5) * 4;
+    state.camera.y += (Math.random() - 0.5) * 4;
+    if (state.fearTimer <= 0) {
+      state.fearSourcePos = null;
+      addMessage(state, '😤 Fear subsides — you regain control!', 'info');
+    }
   }
 
   if (input.moveTarget) {
@@ -2478,7 +2502,57 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
 
-      // Boss charge attack
+      // ═══ KRAVTSOV FEAR ATTACK — inject terror, force player to flee ═══
+      if ((enemy as any)._bossId === 'kravtsov' && (enemy.bossPhase || 0) >= 1) {
+        const fearCd = (enemy as any)._fearCooldown || 0;
+        const fearCharging = (enemy as any)._fearCharging || 0;
+        if (fearCd > 0) {
+          (enemy as any)._fearCooldown = fearCd - dt;
+        } else if (fearCharging > 0) {
+          // Charging the fear syringe — can be interrupted by dealing enough damage
+          (enemy as any)._fearCharging = fearCharging - dt;
+          enemy.speechBubble = '💉 ПОЛУЧИ ИНЪЕКЦИЮ!';
+          enemy.speechBubbleTimer = 0.5;
+          // Slow down while charging
+          enemy.speed = 0.3;
+          if ((enemy as any)._fearCharging <= 0) {
+            // Fire the fear attack!
+            const d = dist(enemy.pos, state.player.pos);
+            if (d < 200 && state.fearTimer <= 0) {
+              state.fearTimer = 2.5;
+              state.fearSourcePos = { ...enemy.pos };
+              addMessage(state, '😱 KRAVTSOV INJECTED TERROR! You must flee!', 'damage');
+              enemy.speechBubble = 'БОЙСЯ, ПОДОПЫТНЫЙ!';
+              enemy.speechBubbleTimer = 2.5;
+              spawnParticles(state, state.player.pos.x, state.player.pos.y, '#44ff66', 12);
+            }
+            (enemy as any)._fearCooldown = 15;
+            // Restore speed
+            const ph = enemy.bossPhase || 0;
+            enemy.speed = ph === 2 ? 1.89 : 1.49;
+          }
+        } else if ((enemy.state === 'chase' || enemy.state === 'attack') && dist(enemy.pos, state.player.pos) < 250 && Math.random() < 0.003) {
+          // Start charging fear attack
+          (enemy as any)._fearCharging = 1.5;
+          (enemy as any)._fearHpAtStart = enemy.hp;
+          addMessage(state, '⚠ Kravtsov is preparing a syringe — deal damage to interrupt!', 'warning');
+        }
+        // Interrupt if took significant damage during charge
+        if ((enemy as any)._fearCharging > 0 && (enemy as any)._fearHpAtStart) {
+          const dmgTaken = (enemy as any)._fearHpAtStart - enemy.hp;
+          if (dmgTaken >= 40) {
+            (enemy as any)._fearCharging = 0;
+            (enemy as any)._fearCooldown = 8;
+            enemy.speechBubble = 'АА! МОЯ СЫВОРОТКА!';
+            enemy.speechBubbleTimer = 2;
+            const ph = enemy.bossPhase || 0;
+            enemy.speed = ph === 2 ? 1.89 : 1.49;
+            addMessage(state, '✅ Fear attack interrupted!', 'info');
+          }
+        }
+      }
+
+
       if (enemy.bossChargeTimer !== undefined) {
         enemy.bossChargeTimer = Math.max(0, (enemy.bossChargeTimer || 0) - dt);
       }

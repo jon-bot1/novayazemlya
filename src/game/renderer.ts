@@ -2082,7 +2082,36 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.restore();
         ctx.restore();
 
-        // Nameplate
+        // Fear charge indicator — glowing syringe raised above head
+        const fearCharging = (enemy as any)._fearCharging || 0;
+        if (fearCharging > 0) {
+          const chargeProgress = 1 - (fearCharging / 1.5);
+          const pulse = Math.sin(state.time * 12) * 0.3;
+          // Warning circle expanding
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, 30 + chargeProgress * 60, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(80, 255, 100, ${0.3 + chargeProgress * 0.4 + pulse * 0.1})`;
+          ctx.lineWidth = 2 + chargeProgress * 2;
+          ctx.setLineDash([6, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Big syringe above head
+          ctx.save();
+          ctx.translate(enemy.pos.x, enemy.pos.y - bossSize - 10);
+          const syringeShake = Math.sin(state.time * 15) * 2 * chargeProgress;
+          ctx.translate(syringeShake, 0);
+          ctx.fillStyle = `rgba(80, 255, 120, ${0.6 + chargeProgress * 0.4})`;
+          ctx.font = `bold ${14 + chargeProgress * 6}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('💉', 0, 0);
+          ctx.restore();
+          // "CHARGING" bar
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(enemy.pos.x - 20, enemy.pos.y - bossSize - 22, 40, 5);
+          ctx.fillStyle = `rgba(80, 255, 100, 0.9)`;
+          ctx.fillRect(enemy.pos.x - 20, enemy.pos.y - bossSize - 22, 40 * chargeProgress, 5);
+        }
+
         ctx.fillStyle = phase === 2 ? 'rgba(50, 255, 80, 0.9)' : phase === 1 ? 'rgba(80, 200, 100, 0.9)' : 'rgba(150, 220, 170, 0.8)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
@@ -3666,6 +3695,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('💫 STUNNED 💫', w / 2, h / 2 + 80);
+  }
+
+  // FEAR EFFECT — green toxic overlay + text
+  if (state.fearTimer > 0) {
+    const alpha = Math.min(0.35, state.fearTimer * 0.15);
+    ctx.fillStyle = `rgba(30, 120, 40, ${alpha})`;
+    ctx.fillRect(0, 0, w, h);
+    // Pulsing green vignette
+    const vigAlpha = 0.2 + Math.sin(state.time * 6) * 0.1;
+    const vigGrad = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.6);
+    vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vigGrad.addColorStop(1, `rgba(20, 80, 20, ${vigAlpha})`);
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, 0, w, h);
+    // "FEAR" text
+    ctx.save();
+    ctx.fillStyle = `rgba(100, 255, 80, ${Math.min(0.9, state.fearTimer * 0.4)})`;
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('😱 СТРАХ — НЕ МОГУ СТРЕЛЯТЬ!', w / 2, h / 2 - 30);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = `rgba(200, 255, 200, ${Math.min(0.7, state.fearTimer * 0.3)})`;
+    ctx.fillText('Flee from Kravtsov!', w / 2, h / 2);
+    ctx.restore();
   }
 
   // EMPTY MAGAZINE — big on-screen text
