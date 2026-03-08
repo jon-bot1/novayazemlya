@@ -27,6 +27,32 @@ function getBossTitle(enemy: Enemy): string {
   return 'COMMANDANT OSIPOVITJ';
 }
 
+function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
+  for (const enemy of state.enemies) {
+    if (enemy.type !== 'boss') continue;
+
+    if (mapId === 'fishing_village') {
+      (enemy as any)._bossId = 'nachalnik';
+      (enemy as any)._bossTitle = 'НАЧАЛЬНИК';
+      (enemy as any)._hookAttack = true;
+      (enemy as any)._hookRange = (enemy as any)._hookRange || 55;
+      (enemy as any)._hookDamage = (enemy as any)._hookDamage || 60;
+    } else if (mapId === 'novaya_zemlya') {
+      (enemy as any)._bossId = 'osipovitj';
+      (enemy as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
+    }
+  }
+}
+
+function getDamageSourceLabel(state: GameState, sourceType?: string, sourceId?: string): string {
+  if (sourceType === 'boss') {
+    const sourceBoss = state.enemies.find(e => e.id === sourceId && e.type === 'boss');
+    return sourceBoss ? getBossTitle(sourceBoss) : 'BOSS';
+  }
+  if (sourceType === 'sniper') return 'Sniper Tuman';
+  return sourceType ? sourceType.toUpperCase() : 'unknown';
+}
+
 // Helper: set speech bubble if enemy doesn't already have one
 function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
   if (!text || enemy.speechBubble) return;
