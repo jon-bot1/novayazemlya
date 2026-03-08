@@ -382,6 +382,7 @@ export function generateHospitalMap() {
     makeLoot(BX + 800, BY + 1600, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_CORRIDOR_N, 'locker', 'locker'),
     rLoot(ZONE_PARKING, 'crate', 'common'),
+    { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createTNT()], looted: false, type: 'crate' as const },
     { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createExtractionCode()], looted: false, type: 'archive' as const },
   ];
 

@@ -1596,7 +1596,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     let bestDist = 40; // must be very close to the placed position
     for (let wi = 0; wi < state.walls.length; wi++) {
       const w = state.walls[wi];
-      if (w.color === '#aa4444') continue;
       const cx = Math.max(w.x, Math.min(tnt.pos.x, w.x + w.w));
       const cy = Math.max(w.y, Math.min(tnt.pos.y, w.y + w.h));
       const d = dist(tnt.pos, { x: cx, y: cy });

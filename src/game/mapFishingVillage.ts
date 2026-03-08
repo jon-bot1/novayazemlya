@@ -321,6 +321,14 @@ export function generateFishingVillageMap() {
       looted: false,
       type: 'archive' as const,
     },
+    {
+      id: `loot_${containerId++}`,
+      pos: randIn(ZONE_DOCK.x, ZONE_DOCK.y, ZONE_DOCK.w, ZONE_DOCK.h),
+      size: 24,
+      items: [createTNT()],
+      looted: false,
+      type: 'crate' as const,
+    },
   ];
 
   // ══════════════════════════════════════
