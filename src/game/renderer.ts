@@ -4435,6 +4435,77 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
+  // ── AURORA BOREALIS + COMET (dusk/night, high graphics) ──
+  if (hasWeatherEffects()) {
+    const darkness = getDarknessFactor(state.time);
+    const tod = getTimeOfDay(state.time);
+    if (darkness > 0.1 && (tod === 'dusk' || tod === 'night')) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      // Aurora — multiple wavering bands across the top portion of screen
+      const auroraIntensity = Math.min(1, (darkness - 0.1) * 2.5);
+      const t = state.time;
+      for (let band = 0; band < 4; band++) {
+        const bandY = 20 + band * 18 + Math.sin(t * 0.3 + band * 1.7) * 12;
+        const bandWidth = w * (0.4 + Math.sin(t * 0.15 + band * 2.1) * 0.25);
+        const bandX = w * 0.5 + Math.sin(t * 0.08 + band * 0.9) * w * 0.2 - bandWidth / 2;
+        // Color cycling — greens, teals, purples, pinks
+        const hue = 120 + Math.sin(t * 0.12 + band * 1.3) * 60 + band * 30;
+        const sat = 70 + Math.sin(t * 0.2 + band) * 20;
+        const alpha = auroraIntensity * (0.04 + Math.sin(t * 0.25 + band * 1.5) * 0.025);
+        const aGrad = ctx.createLinearGradient(bandX, bandY - 20, bandX + bandWidth, bandY + 30);
+        aGrad.addColorStop(0, `hsla(${hue}, ${sat}%, 50%, 0)`);
+        aGrad.addColorStop(0.3, `hsla(${hue}, ${sat}%, 55%, ${alpha})`);
+        aGrad.addColorStop(0.5, `hsla(${hue + 20}, ${sat}%, 60%, ${alpha * 1.3})`);
+        aGrad.addColorStop(0.7, `hsla(${hue + 10}, ${sat}%, 55%, ${alpha})`);
+        aGrad.addColorStop(1, `hsla(${hue}, ${sat}%, 50%, 0)`);
+        ctx.fillStyle = aGrad;
+        // Wavy shape via multiple rects with vertical offset
+        for (let seg = 0; seg < 12; seg++) {
+          const segX = bandX + (bandWidth / 12) * seg;
+          const segW = bandWidth / 12 + 2;
+          const segY = bandY + Math.sin(t * 0.4 + seg * 0.8 + band * 2) * 8;
+          const segH = 12 + Math.sin(t * 0.3 + seg * 0.5 + band) * 6;
+          ctx.fillRect(segX, segY, segW, segH);
+        }
+      }
+      // Occasional bright aurora pulse
+      if (Math.sin(t * 0.07) > 0.85) {
+        const pulseAlpha = (Math.sin(t * 0.07) - 0.85) * auroraIntensity * 0.6;
+        const pulseGrad = ctx.createLinearGradient(0, 0, w, 60);
+        pulseGrad.addColorStop(0, `hsla(140, 80%, 50%, 0)`);
+        pulseGrad.addColorStop(0.5, `hsla(160, 90%, 60%, ${pulseAlpha})`);
+        pulseGrad.addColorStop(1, `hsla(140, 80%, 50%, 0)`);
+        ctx.fillStyle = pulseGrad;
+        ctx.fillRect(0, 10, w, 50);
+      }
+
+      // ── COMET — streaks across sky during deep night ──
+      if (tod === 'night') {
+        // Comet cycles every ~80 seconds, visible for ~10s
+        const cometCycle = (t % 80) / 80;
+        if (cometCycle > 0.8) {
+          const cometProgress = (cometCycle - 0.8) / 0.2; // 0→1
+          const cx = w * 0.1 + cometProgress * w * 0.85;
+          const cy = 15 + Math.sin(cometProgress * Math.PI * 0.3) * 20;
+          const cometAlpha = Math.sin(cometProgress * Math.PI) * 0.7;
+          // Tail
+          const tailGrad = ctx.createLinearGradient(cx - 60, cy, cx, cy);
+          tailGrad.addColorStop(0, `rgba(200, 220, 255, 0)`);
+          tailGrad.addColorStop(1, `rgba(200, 220, 255, ${cometAlpha * 0.4})`);
+          ctx.fillStyle = tailGrad;
+          ctx.fillRect(cx - 60, cy - 1.5, 60, 3);
+          // Head
+          ctx.fillStyle = `rgba(240, 250, 255, ${cometAlpha})`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+  }
+
   // ── WEATHER EFFECTS (high graphics only) ──
   if (hasWeatherEffects()) {
     const mapId = (state as any)._mapId || 'objekt47';
