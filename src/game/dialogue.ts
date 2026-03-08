@@ -49,6 +49,9 @@ export const PANIC_LINES: Record<string, string[]> = {
   heavy:   ['ЧТО?! НЕТ!!', 'АААХ!!'],
   redneck: ['OH LORD!!', 'HELP ME!!', 'NOOO!!', 'MAMA!!'],
   shocker: ['РАЗРЯД!! АААА!!', 'СИСТЕМА СБОЙ!!'],
+  cultist: ['БОРЕАЛИС НЕ СПАСЁТ?!', 'ВЕЩЕСТВО! ЗАЩИТИ!', 'НЕТ НЕТ НЕТ!'],
+  miner_cult: ['BERGET SVIKER OSS!', 'STÅLHANDSKE! HJÄLP!', 'NEJ NEJ!'],
+  svarta_sol: ['ABORT MISSION!', 'EXTRACTION NEEDED!'],
 };
 
 // === BERSERK ===
