@@ -3576,7 +3576,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.angle += Math.abs(angleDelta) > TURN_SPEED ? Math.sign(angleDelta) * TURN_SPEED : angleDelta;
 
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
-          const spread = (Math.random() - 0.5) * 0.15;
+          const accE = (enemy as any)._accuracy ?? 0.7;
+          const spread = (Math.random() - 0.5) * (0.25 - accE * 0.2);
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
