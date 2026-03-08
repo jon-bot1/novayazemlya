@@ -3051,7 +3051,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           delete (enemy as any)._bossHealGiven;
           enemy.speechBubble = 'НАМНОГО ЛУЧШЕ!';
           enemy.speechBubbleTimer = 2;
-          addMessage(state, '💉 Osipovitj healed +50HP!', 'damage');
+          addMessage(state, `💉 ${getBossTitle(enemy)} healed +50HP!`, 'damage');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 8);
         } else {
           const healAmt = Math.min(25, enemy.maxHp - enemy.hp);
