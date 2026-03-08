@@ -1557,7 +1557,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.save();
 
     if (enemy.type === 'boss') {
-      // === BOSS CORPSE — dramatic sprawled body with blood pool ===
+      // === BOSS CORPSE ===
+      const bossId = (enemy as any)._bossId || 'osipovitj';
       const bossSize = R + 8;
       const hasSpeech = enemy.speechBubble && enemy.speechBubbleTimer && enemy.speechBubbleTimer > 0;
       
@@ -1565,85 +1566,211 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const deathAge = Math.min(10, state.time - ((enemy as any)._deathTime || state.time));
       if (!(enemy as any)._deathTime) (enemy as any)._deathTime = state.time;
       const poolR = 15 + Math.min(35, deathAge * 5);
-      ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
-      ctx.beginPath();
-      ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
-      ctx.fill();
+      
+      if (bossId === 'kravtsov') {
+        // Kravtsov corpse — green-tinted blood pool (mutagen)
+        ctx.fillStyle = 'rgba(40, 100, 40, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Normal blood on top
+        ctx.fillStyle = 'rgba(120, 20, 20, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x + 3, enemy.pos.y, poolR * 0.6, poolR * 0.4, -0.1, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Sprawled body (top-down)
-      ctx.save();
-      ctx.translate(enemy.pos.x, enemy.pos.y);
-      ctx.rotate(enemy.angle + 0.3); // slightly angled
-      
-      // Torso
-      ctx.fillStyle = '#3a3a4a';
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      
-      // Head (tilted)
-      ctx.fillStyle = '#c4956a';
-      ctx.beginPath();
-      ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#222';
-      ctx.stroke();
-      
-      // Ushanka fallen slightly off
-      ctx.fillStyle = '#3a2828';
-      ctx.beginPath();
-      ctx.arc(bossSize * 0.55, bossSize * 0.1, bossSize * 0.17, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#cc3333';
-      ctx.font = '6px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('★', bossSize * 0.55, bossSize * 0.13);
-      
-      // Arms splayed
-      ctx.strokeStyle = '#c4956a';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
-      ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
-      ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
-      ctx.stroke();
-      
-      // Dropped weapon
-      ctx.fillStyle = '#444';
-      ctx.save();
-      ctx.translate(-bossSize * 0.5, -bossSize * 0.6);
-      ctx.rotate(0.8);
-      ctx.fillRect(0, -1.5, 22, 3);
-      ctx.restore();
-      
-      // Legs
-      ctx.strokeStyle = '#3a3a4a';
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.35, -bossSize * 0.1);
-      ctx.lineTo(-bossSize * 0.7, -bossSize * 0.3);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.35, bossSize * 0.1);
-      ctx.lineTo(-bossSize * 0.7, bossSize * 0.2);
-      ctx.stroke();
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.3);
+        // Lab coat body
+        ctx.fillStyle = '#b0b0a8';
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Head
+        ctx.fillStyle = '#c4956a';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#666';
+        ctx.stroke();
+        // Broken glasses
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.45, bossSize * 0.1, 3, 0, Math.PI * 1.5);
+        ctx.stroke();
+        // Dropped syringe
+        ctx.fillStyle = '#aaa';
+        ctx.save();
+        ctx.translate(bossSize * 0.2, -bossSize * 0.5);
+        ctx.rotate(1.2);
+        ctx.fillRect(0, -1, 14, 2);
+        ctx.fillStyle = 'rgba(80,200,120,0.6)';
+        ctx.fillRect(2, -0.5, 6, 1);
+        ctx.restore();
+        // Arms
+        ctx.strokeStyle = '#c4956a';
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
+        ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
+        ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
+        ctx.stroke();
+        ctx.restore();
 
-      ctx.restore();
+        // Nameplate
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(50, 180, 80, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† DR. KRAVTSOV †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
 
-      // Boss death nameplate
-      const fadeAlpha = hasSpeech ? 1.0 : 0.6;
-      ctx.globalAlpha = fadeAlpha;
-      ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
-      ctx.font = 'bold 9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+      } else if (bossId === 'uzbek') {
+        // Uzbek corpse — dark blood, chains scattered
+        ctx.fillStyle = 'rgba(80, 10, 10, 0.5)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR * 1.1, poolR * 0.7, 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.2);
+        // Emaciated body
+        ctx.fillStyle = '#5a4a3a';
+        ctx.strokeStyle = '#3a2a1a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.6, bossSize * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Head
+        ctx.fillStyle = '#8a7050';
+        ctx.beginPath();
+        ctx.ellipse(bossSize * 0.45, bossSize * 0.1, bossSize * 0.2, bossSize * 0.17, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#3a2a1a';
+        ctx.stroke();
+        // Closed eyes (peaceful at last)
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.5, bossSize * 0.05);
+        ctx.lineTo(bossSize * 0.56, bossSize * 0.05);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.5, bossSize * 0.15);
+        ctx.lineTo(bossSize * 0.56, bossSize * 0.15);
+        ctx.stroke();
+        // Thin arms with broken chains
+        ctx.strokeStyle = '#8a7050';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, -bossSize * 0.25);
+        ctx.lineTo(-bossSize * 0.4, -bossSize * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, bossSize * 0.25);
+        ctx.lineTo(bossSize * 0.3, bossSize * 0.55);
+        ctx.stroke();
+        // Chain fragments on ground
+        ctx.strokeStyle = '#777';
+        ctx.lineWidth = 1.5;
+        for (let c = 0; c < 4; c++) {
+          const cx = -bossSize * 0.2 + c * bossSize * 0.2;
+          const cy = bossSize * 0.3 + Math.sin(c * 1.5) * 5;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + 5, cy + 3);
+          ctx.lineTo(cx + 3, cy + 6);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Nameplate
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(200, 50, 30, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† УЗБЕК †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+
+      } else {
+        // Default Osipovitj corpse
+        ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.3);
+        ctx.fillStyle = '#3a3a4a';
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#c4956a';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#222';
+        ctx.stroke();
+        ctx.fillStyle = '#3a2828';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.55, bossSize * 0.1, bossSize * 0.17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#cc3333';
+        ctx.font = '6px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', bossSize * 0.55, bossSize * 0.13);
+        ctx.strokeStyle = '#c4956a';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
+        ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
+        ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
+        ctx.stroke();
+        ctx.fillStyle = '#444';
+        ctx.save();
+        ctx.translate(-bossSize * 0.5, -bossSize * 0.6);
+        ctx.rotate(0.8);
+        ctx.fillRect(0, -1.5, 22, 3);
+        ctx.restore();
+        ctx.strokeStyle = '#3a3a4a';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.35, -bossSize * 0.1);
+        ctx.lineTo(-bossSize * 0.7, -bossSize * 0.3);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.35, bossSize * 0.1);
+        ctx.lineTo(-bossSize * 0.7, bossSize * 0.2);
+        ctx.stroke();
+        ctx.restore();
+
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+      }
 
       if (!enemy.looted) {
         const bob = Math.sin(state.time * 2) * 2;
