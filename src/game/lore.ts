@@ -917,13 +917,13 @@ P.S. The confiscated Stålhandske tape is in my safe. What he recorded before hi
     classification: 'TOP SECRET',
     content: `PERSONAL — NOT FOR OPERATIONAL FILE
 
-Day one of Aurora Borealis. STYRESMAN handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
+Day one of Operation Grindvakt. Styrelsen handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
 
 NORDVAKT recruited me after East Berlin. They said I was dead — officially. Good. The dead have no loyalties, no attachments, no countries. That's what they wanted. An operator with nothing to lose.
 
-STYRESMAN says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it connects to the Swedish mine at Norrberget. The same geological vein. Thousands of kilometers of it, running beneath our feet.
+Styrelsen says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it connects to the Swedish mine at Norrberget. The same geological vein. Thousands of kilometers of it, running beneath our feet.
 
-Four sites. Four raids. STYRESMAN says secure the intelligence, deny Substance Zero to all parties. But I've read between the lines. NORDVAKT doesn't want to destroy it. They want to CONTROL it. A Nordic deterrent. Something that would make Scandinavia untouchable.
+Four sites. Four raids. Styrelsen says secure the intelligence, deny Substance Zero to all parties. But I've read between the lines. NORDVAKT doesn't want to destroy it. They want to CONTROL it. A Nordic deterrent. Something that would make Scandinavia untouchable.
 
 I'm not sure that's possible. The reports on what happened to the miners at Norrberget — the absorption, the crystallization — this isn't a weapon you control. This is something that controls you.
 
