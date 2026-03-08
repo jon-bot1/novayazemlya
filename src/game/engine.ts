@@ -21,7 +21,7 @@ function getBossDeathMonologue(enemy: Enemy): string[] {
 function getBossTitle(enemy: Enemy): string {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
-  if (bossId === 'patient_zero') return 'ПАЦИЕНТ НОЛЬ';
+  if (bossId === 'uzbek') return 'УЗБЕК';
   return 'COMMANDANT OSIPOVITJ';
 }
 
