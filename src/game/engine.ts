@@ -3995,8 +3995,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
           (enemy as any)._alertStart = 0;
           enemy.state = 'patrol';
-          const alertAngle = Math.random() * Math.PI * 2;
-          enemy.patrolTarget = { x: enemy.pos.x + Math.cos(alertAngle) * 300, y: enemy.pos.y + Math.sin(alertAngle) * 300 };
+          enemy.patrolTarget = pickPatrolTarget(state, enemy, 120, 300);
         }
         break;
       }
