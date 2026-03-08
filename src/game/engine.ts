@@ -4472,9 +4472,47 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             // Check if target is reachable (LOS to target)
             const canReach = hasLineOfSight(state, enemy.pos, enemy.investigateTarget, enemy.elevated);
             if (!canReach) {
-              // Can't reach through wall — give up and patrol instead
-              enemy.state = 'patrol';
-              enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
+              // Can't see through wall — find nearest doorway/opening to peek or go through
+              // Search for gaps in walls (doorways are gaps between wall segments)
+              const target = enemy.investigateTarget;
+              let bestDoorPos: Vec2 | null = null;
+              let bestDoorDist = Infinity;
+              
+              // Scan for walkable positions between enemy and target near walls
+              const dirToTarget = normalize({ x: target.x - enemy.pos.x, y: target.y - enemy.pos.y });
+              const perpX = -dirToTarget.y;
+              const perpY = dirToTarget.x;
+              const scanDist = dist(enemy.pos, target);
+              
+              // Check positions along the perpendicular near walls for openings
+              for (let along = 0.2; along <= 0.8; along += 0.15) {
+                const midX = enemy.pos.x + (target.x - enemy.pos.x) * along;
+                const midY = enemy.pos.y + (target.y - enemy.pos.y) * along;
+                for (let side = -200; side <= 200; side += 30) {
+                  const testX = midX + perpX * side;
+                  const testY = midY + perpY * side;
+                  if (testX < 20 || testX > state.mapWidth - 20 || testY < 20 || testY > state.mapHeight - 20) continue;
+                  // Check if this point has LOS to both enemy and target
+                  if (hasLineOfSight(state, enemy.pos, { x: testX, y: testY }, enemy.elevated) &&
+                      hasLineOfSight(state, { x: testX, y: testY }, target, enemy.elevated)) {
+                    const d = dist(enemy.pos, { x: testX, y: testY });
+                    if (d < bestDoorDist) {
+                      bestDoorDist = d;
+                      bestDoorPos = { x: testX, y: testY };
+                    }
+                  }
+                }
+              }
+              
+              if (bestDoorPos) {
+                // Found an opening — go to it (peek/exit through door)
+                enemy.investigateTarget = bestDoorPos;
+                setSpeech(enemy, Math.random() < 0.5 ? 'ПРОВЕРЮ ВЫХОД!' : 'ВЫХОЖУ!', 2.0);
+              } else {
+                // No opening found — patrol instead
+                enemy.state = 'patrol';
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
+              }
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
