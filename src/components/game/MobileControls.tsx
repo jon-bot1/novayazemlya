@@ -61,9 +61,17 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
     setCurrentMode(movementMode);
   }, [movementMode]);
 
+  // Detect landscape: short height relative to width
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  React.useEffect(() => {
+    const onResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   return (
     <div
-      className="sm:hidden absolute inset-0 z-40 touch-none pointer-events-auto"
+      className="absolute inset-0 z-40 touch-none pointer-events-auto"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Left joystick — movement */}
