@@ -209,3 +209,59 @@ export function pickLine(pool: Record<string, string[]>, type: string): string |
   if (!lines || lines.length === 0) return null;
   return lines[Math.floor(Math.random() * lines.length)];
 }
+
+// ═══════════════════════════════════════════════════
+// AMBIENT ATMOSPHERE — periodic messages per map
+// ═══════════════════════════════════════════════════
+export const AMBIENT_MESSAGES: Record<string, string[]> = {
+  objekt47: [
+    '🌬️ The Arctic wind howls through the compound...',
+    '📻 Static crackles from an abandoned radio nearby...',
+    '💡 A fluorescent light flickers in the corridor ahead...',
+    '🧲 Your compass needle trembles — magnetic interference from below...',
+    '👁️ You feel watched. The ventilation shafts seem to breathe...',
+    '📡 A distant antenna dish rotates slowly, searching...',
+    '🔊 From deep underground — a low, rhythmic hum. Like a heartbeat.',
+    '❄️ Frost crystals form on the bunker walls. It\'s not that cold...',
+    '🐾 Boot prints in the frozen mud lead to the southern perimeter... and stop.',
+    '💀 Dog tags hang from a wire. Tarnished. The names are worn away.',
+  ],
+  fishing_village: [
+    '🌊 Waves crash against the pier. The sound masks everything...',
+    '🐟 The stench of dead fish hangs in the salt air...',
+    '⛵ A fishing boat rocks against its moorings. The hull is stained dark...',
+    '🔔 A rusted bell clangs in the wind. No one answers.',
+    '🏚️ Through a cabin window — a table set for dinner. Covered in dust.',
+    '🐕 Somewhere in the forest, a dog howls. Then silence.',
+    '🌙 The northern lights flicker above — green and cold.',
+    '🪝 Scratch marks on the dock planks. Deep. Like a hook dragged across.',
+    '📦 Lead-lined containers stacked behind the warehouse. The labels say "FISH."',
+    '🌊 The tide is coming in. The beach mines will be hidden soon...',
+  ],
+  hospital: [
+    '🏥 A door swings shut somewhere. The echo lingers...',
+    '💉 Broken syringes crunch underfoot. The glass is stained green...',
+    '🔦 Your flashlight catches something on the wall — nail marks. Deep.',
+    '📋 A patient chart on the floor: "Subject 7 — DO NOT RELEASE."',
+    '🩸 The floor is sticky. Not water.',
+    '😰 A sound from the basement — like chains dragging across concrete.',
+    '💊 Pills scattered across the hallway. Someone left in a hurry.',
+    '🧪 The east wing lab glows faintly green. Even with the power off.',
+    '👤 For a moment, you see a figure in the window. When you look again — empty.',
+    '📢 The PA system clicks on briefly: static, then a whisper, then silence.',
+    '🌡️ The temperature drops as you move deeper. Your breath fogs.',
+  ],
+  mining_village: [
+    '⛏️ The mine entrance yawns open. A draft of warm air rises from below...',
+    '🧲 Your compass spins freely. The magnetic anomaly is stronger here...',
+    '🪨 A rumble from deep underground. Not an earthquake. Something else.',
+    '🕯️ The mine lamps flicker in sequence — west to east. Like breathing.',
+    '🔊 Infrasound. You can\'t hear it, but your chest vibrates. 18 Hz.',
+    '🌑 The black crystals in the tunnel walls seem to pulse faintly...',
+    '👤 Carved into the rock: "STÅLHANDSKE VAR HÄR 1955"',
+    '🏚️ An abandoned cabin. Inside — a compass with a bent needle pointing down.',
+    '⚠️ The concrete seal on Drift 7 is warm to the touch. 30°C.',
+    '💎 The black ore glints in your flashlight. For a moment, it looked like an eye.',
+    '🌬️ From 420 meters below — a sound like stone grinding. The mountain speaks.',
+  ],
+};
