@@ -243,8 +243,8 @@ export function generateFishingVillageMap() {
     rz(ZONE_DOCK, 'soldier'),
     rz(ZONE_DOCK, 'heavy'),
     rz(ZONE_WAREHOUSE, 'scav'),
-    rz(ZONE_FOREST_W, 'sniper'),
-    rz(ZONE_FOREST_E, 'soldier'),
+    rz(ZONE_FOREST_W, 'soldier'),
+    rz(ZONE_FOREST_E, 'scav'),
     rz(ZONE_FOREST_NW, 'scav'),
 
     // Redneck with dog
