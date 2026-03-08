@@ -757,119 +757,15 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch/Pointer input — use Pointer Events for universal mobile support
+  // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
+  // Mobile input is handled entirely by MobileControls component with joystick
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    // Ensure pointer events are captured properly
     canvas.style.touchAction = 'none';
-
-    const screenToWorld = (clientX: number, clientY: number) => {
-      const cam = stateRef.current.camera;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      return { x: cam.x + (clientX - w / 2), y: cam.y + (clientY - h / 2) };
-    };
-
-    const findEnemyAtWorld = (wx: number, wy: number) => {
-      const hitRadius = 30;
-      for (const enemy of stateRef.current.enemies) {
-        if (enemy.state === 'dead') continue;
-        const dx = enemy.pos.x - wx;
-        const dy = enemy.pos.y - wy;
-        if (Math.sqrt(dx * dx + dy * dy) < hitRadius) return enemy;
-      }
-      return null;
-    };
-
-    const findInteractableAtWorld = (wx: number, wy: number) => {
-      const radius = 40;
-      const st = stateRef.current;
-      for (const lc of st.lootContainers) {
-        if (!lc.looted && Math.sqrt((lc.pos.x - wx) ** 2 + (lc.pos.y - wy) ** 2) < radius) return true;
-      }
-      for (const dp of st.documentPickups) {
-        if (!dp.collected && Math.sqrt((dp.pos.x - wx) ** 2 + (dp.pos.y - wy) ** 2) < radius) return true;
-      }
-      for (const enemy of st.enemies) {
-        if (enemy.state === 'dead' && !enemy.looted && Math.sqrt((enemy.pos.x - wx) ** 2 + (enemy.pos.y - wy) ** 2) < radius) return true;
-      }
-      return false;
-    };
-
-    // Track active pointers for multi-touch
-    const activePointers = new Map<number, 'move' | 'aim'>();
-
-    const onPointerDown = (e: PointerEvent) => {
-      // Skip mouse events — handled separately with mousedown/mouseup
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      canvas.setPointerCapture(e.pointerId);
-      unlockSpeech();
-
-      const world = screenToWorld(e.clientX, e.clientY);
-      const enemy = findEnemyAtWorld(world.x, world.y);
-      if (enemy) {
-        activePointers.set(e.pointerId, 'aim');
-        aimTouchRef.current = e.pointerId;
-        const dx = world.x - stateRef.current.player.pos.x;
-        const dy = world.y - stateRef.current.player.pos.y;
-        inputRef.current.aimX = dx;
-        inputRef.current.aimY = dy;
-        inputRef.current.shooting = true;
-      } else if (findInteractableAtWorld(world.x, world.y)) {
-        activePointers.set(e.pointerId, 'move');
-        moveTouchRef.current = e.pointerId;
-        inputRef.current.moveTarget = world;
-        inputRef.current.moveX = 0;
-        inputRef.current.moveY = 0;
-        inputRef.current.interact = true;
-      } else {
-        activePointers.set(e.pointerId, 'move');
-        moveTouchRef.current = e.pointerId;
-        inputRef.current.moveTarget = world;
-        inputRef.current.moveX = 0;
-        inputRef.current.moveY = 0;
-      }
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      const role = activePointers.get(e.pointerId);
-      if (!role) return;
-      if (role === 'move' && e.pointerId === moveTouchRef.current) {
-        inputRef.current.moveTarget = screenToWorld(e.clientX, e.clientY);
-      }
-      if (role === 'aim' && e.pointerId === aimTouchRef.current) {
-        const world = screenToWorld(e.clientX, e.clientY);
-        inputRef.current.aimX = world.x - stateRef.current.player.pos.x;
-        inputRef.current.aimY = world.y - stateRef.current.player.pos.y;
-        inputRef.current.shooting = true;
-      }
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      const role = activePointers.get(e.pointerId);
-      activePointers.delete(e.pointerId);
-      if (e.pointerId === moveTouchRef.current) moveTouchRef.current = null;
-      if (e.pointerId === aimTouchRef.current) { aimTouchRef.current = null; inputRef.current.shooting = false; }
-    };
-
-    canvas.addEventListener('pointerdown', onPointerDown);
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerup', onPointerUp);
-    canvas.addEventListener('pointercancel', onPointerUp);
-
-    return () => {
-      canvas.removeEventListener('pointerdown', onPointerDown);
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerup', onPointerUp);
-      canvas.removeEventListener('pointercancel', onPointerUp);
-    };
+    // No canvas-level pointer events needed — MobileControls handles touch,
+    // mouse handlers above handle desktop
+    return () => {};
   }, []);
 
   // Save highscore on tab close / navigate away (abandoned)
