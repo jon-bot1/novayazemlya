@@ -125,7 +125,7 @@ export function generateFishingVillageMap() {
   // WALLS — Cabins & dock structures
   // ══════════════════════════════════════
   const cabinW = 120;
-  const cabinH = 80;
+  const cabinH = 120; // taller to fit 70px door gap
 
   const makeCabin = (cx: number, cy: number, doorSide: 'east' | 'west'): Wall[] => {
     const walls: Wall[] = [];
@@ -133,12 +133,12 @@ export function generateFishingVillageMap() {
     walls.push(makeWall(cx, cy + cabinH - T, cabinW, T, W));
     if (doorSide === 'east') {
       walls.push(makeWall(cx, cy, T, cabinH, W));
-      walls.push(makeWall(cx + cabinW - T, cy, T, 25, W));
-      walls.push(makeWall(cx + cabinW - T, cy + 55, T, cabinH - 55, W));
+      walls.push(makeWall(cx + cabinW - T, cy, T, 20, W));
+      walls.push(makeWall(cx + cabinW - T, cy + 90, T, cabinH - 90, W)); // 70px gap (20..90)
     } else {
       walls.push(makeWall(cx + cabinW - T, cy, T, cabinH, W));
-      walls.push(makeWall(cx, cy, T, 25, W));
-      walls.push(makeWall(cx, cy + 55, T, cabinH - 25, W));
+      walls.push(makeWall(cx, cy, T, 20, W));
+      walls.push(makeWall(cx, cy + 90, T, cabinH - 90, W)); // 70px gap (20..90)
     }
     return walls;
   };
