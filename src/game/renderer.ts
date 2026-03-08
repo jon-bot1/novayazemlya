@@ -3087,6 +3087,37 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText(g.timer.toFixed(1), g.pos.x, g.pos.y + bob - 12);
   }
 
+  // ── NACHALNIK NET CAST ──
+  const netCast = (state as any)._netCast;
+  if (netCast) {
+    const t = 1 - Math.max(0, netCast.timer) / Math.max(0.01, netCast.maxTimer || 1);
+    const nx = netCast.from.x + (netCast.to.x - netCast.from.x) * t;
+    const ny = netCast.from.y + (netCast.to.y - netCast.from.y) * t;
+    const nr = 16 + Math.sin(state.time * 18) * 2;
+
+    ctx.strokeStyle = 'rgba(210, 200, 170, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(netCast.from.x, netCast.from.y);
+    ctx.lineTo(nx, ny);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(210, 200, 170, 0.25)';
+    ctx.beginPath();
+    ctx.arc(nx, ny, nr, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(210, 200, 170, 0.95)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI * 2 * i) / 6 + state.time * 5;
+      ctx.beginPath();
+      ctx.moveTo(nx, ny);
+      ctx.lineTo(nx + Math.cos(a) * nr, ny + Math.sin(a) * nr);
+      ctx.stroke();
+    }
+  }
+
   // ── PARTICLES — batched by color for fewer draw calls ──
   {
     const particlesByColor = new Map<string, Array<{x: number, y: number, r: number, a: number}>>();
