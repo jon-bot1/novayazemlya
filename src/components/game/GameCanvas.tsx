@@ -261,7 +261,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
               Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. 
               It has existed in the mountain since before the ice age — the miners disturbed it, and it absorbed them. 
-              Survey engineer Nils Stålhandske — VARG's father — was taken by it in 1957. The mountain keeps what it takes.
+              Survey engineer Nils Stålhandske was taken by it in 1957. The mountain keeps what it takes.
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
               <span className="text-muted-foreground">HP</span><span className="text-danger">500</span>
