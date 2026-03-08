@@ -55,8 +55,10 @@ interface HomeBaseProps {
 }
 
 export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, rerollCount }) => {
-  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
+  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
+  const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
   const level = getLevelForXp(stash.xp);
