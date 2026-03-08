@@ -90,6 +90,52 @@ export const UPGRADES: Upgrade[] = [
     maxLevel: 3,
     effect: '+5% critical hit chance per level',
   },
+  // ── SKILL TREE (new passive upgrades) ──
+  {
+    id: 'quick_reload',
+    name: 'Quick Hands',
+    icon: '⚡',
+    description: 'Faster reload speed',
+    cost: 400,
+    maxLevel: 3,
+    effect: '-15% reload time per level',
+  },
+  {
+    id: 'silent_step',
+    name: 'Silent Step',
+    icon: '🤫',
+    description: 'Quieter footsteps — reduced detection radius',
+    cost: 500,
+    maxLevel: 3,
+    effect: '-10% noise radius per level',
+  },
+  {
+    id: 'iron_body',
+    name: 'Iron Constitution',
+    icon: '💪',
+    description: 'Increased maximum health',
+    cost: 600,
+    maxLevel: 3,
+    effect: '+15 max HP per level',
+  },
+  {
+    id: 'big_backpack',
+    name: 'Pack Mule',
+    icon: '🎒',
+    description: 'Even more inventory space',
+    cost: 700,
+    maxLevel: 2,
+    effect: '+6 inventory slots per level',
+  },
+  {
+    id: 'endurance',
+    name: 'Endurance Training',
+    icon: '🫁',
+    description: 'Increased stamina pool',
+    cost: 450,
+    maxLevel: 2,
+    effect: '+20% max stamina per level',
+  },
 ];
 
 // Consumable items for sale at trader
