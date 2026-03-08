@@ -109,14 +109,14 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       />
 
       {/* Right side action buttons — combat */}
-      <div className="absolute bottom-32 right-4 flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className={`absolute right-4 flex flex-col gap-2 items-center pointer-events-auto ${isLandscape ? 'bottom-16' : 'bottom-32'}`} style={{ zIndex: 50 }}>
         <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} variant="small" />
         <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; }} variant="small" />
         <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; }} variant="small" />
       </div>
 
       {/* Left side action buttons — utility */}
-      <div className="absolute bottom-32 left-[124px] flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className={`absolute flex flex-col gap-2 items-center pointer-events-auto ${isLandscape ? 'bottom-16 left-[108px]' : 'bottom-32 left-[124px]'}`} style={{ zIndex: 50 }}>
         <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" />
         <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} variant="small" />
         <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} variant="small" />
