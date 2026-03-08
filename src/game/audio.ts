@@ -683,28 +683,7 @@ export function startAmbient(mapId: string) {
     sources.push(hum);
     gains.push(humGain);
   } else if (mapId === 'fishing_village') {
-    // Ocean waves — low rumble + rhythmic sweep
-    const wave = ctx.createOscillator();
-    wave.type = 'sine';
-    wave.frequency.setValueAtTime(55, now);
-    const waveGain = ctx.createGain();
-    waveGain.gain.setValueAtTime(0, now);
-    waveGain.gain.linearRampToValueAtTime(0.010, now + 2);
-    // Modulate volume for wave rhythm
-    const waveLfo = ctx.createOscillator();
-    waveLfo.type = 'sine';
-    waveLfo.frequency.setValueAtTime(0.08, now); // ~5s wave cycle
-    const waveLfoGain = ctx.createGain();
-    waveLfoGain.gain.setValueAtTime(0.006, now);
-    waveLfo.connect(waveLfoGain).connect(waveGain.gain);
-    waveLfo.start(now);
-    
-    wave.connect(waveGain).connect(master);
-    wave.start(now);
-    sources.push(wave, waveLfo);
-    gains.push(waveGain);
-    
-    // (seagull tone removed — too harsh high frequency)
+    // Ambient removed — oscillator tones were too harsh
   } else if (mapId === 'hospital') {
     // Industrial hum — electrical buzz + eerie drone
     const buzz = ctx.createOscillator();
