@@ -3731,8 +3731,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   (state as any)._prevPy = state.player.pos.y;
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    '#c0ee99', '#88cc55', '#2a3a1a', playerBlink,
-    'beret', '#8a5545', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
+    '#6a8a4a', '#4a6a2a', '#1a2a1a', playerBlink,
+    'beret', '#5a3a2a', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
   );
 
   // (player label removed)
