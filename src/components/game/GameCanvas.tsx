@@ -494,7 +494,7 @@ async function syncStashToDb(playerName: string, stash: StashState) {
 }
 
 async function loadStashFromDb(playerName: string): Promise<StashState | null> {
-  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return null;
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return null;
   try {
     const name = playerName.trim().slice(0, 20);
     const { data } = await supabase.from('player_progress').select('id,player_name,rubles,raid_count,extraction_count,stash_items,upgrades,xp,level').eq('player_name', name).maybeSingle();
