@@ -248,8 +248,8 @@ export function generateHospitalMap() {
     // Locked in the basement — fast, melee-focused, horrifying
     (() => {
       const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
-      (boss as any)._bossId = 'patient_zero';
-      (boss as any)._bossTitle = 'ПАЦИЕНТ НОЛЬ';
+      (boss as any)._bossId = 'uzbek';
+      (boss as any)._bossTitle = 'УЗБЕК';
       boss.hp = 600; boss.maxHp = 600;
       boss.speed = 1.60; // very fast — charges at you
       boss.damage = 55;  // devastating melee-range hits
