@@ -548,17 +548,45 @@ export const HUD: React.FC<HUDProps> = ({
                 );
               })()}
 
-              {/* Accuracy (approximate) */}
-              {killCount > 0 && (
+              {/* Accuracy — real calculation from shots fired/hit */}
+              {(shotsFired || 0) > 0 && (
                 <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '850ms', animationFillMode: 'backwards' }}>
                   <span>Accuracy:</span>
-                  <span className="text-foreground">{achievementStats ? `${Math.min(100, Math.round(((achievementStats.headshotKills + killCount) / Math.max(1, killCount * 3)) * 100))}%` : '—'}</span>
+                  <span className="text-foreground">{Math.round(((shotsHit || 0) / (shotsFired || 1)) * 100)}% ({shotsHit}/{shotsFired})</span>
                 </div>
               )}
 
-              {/* Damage taken / dealt */}
+              {/* Damage dealt/taken */}
+              {(damageDealt || 0) > 0 && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '870ms', animationFillMode: 'backwards' }}>
+                  <span>Damage Dealt:</span>
+                  <span className="text-accent">{damageDealt}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '890ms', animationFillMode: 'backwards' }}>
+                <span>Damage Taken:</span>
+                <span className={`${(damageTaken || 0) > 200 ? 'text-danger' : 'text-foreground'}`}>{damageTaken || 0}</span>
+              </div>
+
+              {/* K/D-style ratio */}
+              {killCount > 0 && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '910ms', animationFillMode: 'backwards' }}>
+                  <span>Efficiency:</span>
+                  <span className="text-foreground">{((damageDealt || 0) / Math.max(1, (damageTaken || 1))).toFixed(1)}:1</span>
+                </div>
+              )}
+
+              {/* Weather survived */}
+              {weather && weather.type !== 'clear' && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '920ms', animationFillMode: 'backwards' }}>
+                  <span>Weather:</span>
+                  <span className="text-foreground">{weather.type === 'blizzard' ? '🌨️ Blizzard' : weather.type === 'fog' ? '🌫️ Fog' : weather.type === 'rain' ? '🌧️ Rain' : weather.type === 'dust' ? '💨 Dust' : '❄️ Snow'}</span>
+                </div>
+              )}
+
+              {/* Cause of death */}
               {gameOver && (
-                <div className="flex justify-between text-sm font-mono text-danger/80 animate-in fade-in" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+                <div className="flex justify-between text-sm font-mono text-danger/80 animate-in fade-in" style={{ animationDelay: '940ms', animationFillMode: 'backwards' }}>
                   <span>Cause of Death:</span>
                   <span className="text-danger text-right text-[11px] max-w-[180px] truncate">{deathCause?.replace(/^[^\w]*/, '').slice(0, 40) || 'Unknown'}</span>
                 </div>
