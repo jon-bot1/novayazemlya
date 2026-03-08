@@ -984,8 +984,7 @@ export const GameCanvas: React.FC = () => {
           xp: newXp,
           level: newLevel,
         };
-        saveStash(updated);
-        syncStashToDb(playerName, updated);
+        persistStash(updated, playerName);
         return updated;
       });
     }
