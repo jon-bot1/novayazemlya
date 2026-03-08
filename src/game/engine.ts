@@ -617,11 +617,39 @@ function generateEnemyLoot(enemy: Enemy) {
   return baseLoot;
 }
 
-export function createGameState(mapId: MapId = 'objekt47'): GameState {
+export function createGameState(mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
   const mapEnemies = mapId === 'objekt47' ? map.enemies : map.enemies.filter(e => e.type !== 'sniper');
+
+  // === DYNAMIC DIFFICULTY — scale enemy stats based on player progression ===
+  // Each level adds ~2% stat boost, each extraction adds ~4%, with per-enemy randomization
+  const difficultyBase = 1 + Math.min(0.5, (playerLevel - 1) * 0.02 + extractionCount * 0.04);
+  for (const enemy of mapEnemies) {
+    // Per-enemy random variance: ±15% so not all enemies are identical
+    const variance = 0.85 + Math.random() * 0.30;
+    const scale = difficultyBase * variance;
+    
+    // Don't scale bosses — they're already tuned
+    if (enemy.type === 'boss') continue;
+    
+    // Scale HP, damage, and awareness decay (harder = slower decay)
+    enemy.maxHp = Math.round(enemy.maxHp * scale);
+    enemy.hp = enemy.maxHp;
+    enemy.damage = Math.round(enemy.damage * (0.9 + (scale - 1) * 0.6)); // damage scales slower
+    enemy.awarenessDecay = Math.max(0.05, enemy.awarenessDecay / (0.8 + (scale - 1) * 0.5));
+    
+    // Higher difficulty: slightly faster fire rate (lower = faster)
+    if (scale > 1.1) {
+      enemy.fireRate = Math.max(300, enemy.fireRate * (1 - (scale - 1) * 0.15));
+    }
+    
+    // Occasional extra enemy alertness at higher levels
+    if (difficultyBase > 1.2 && Math.random() < 0.2) {
+      enemy.alertRange = Math.min(400, enemy.alertRange * 1.15);
+    }
+  }
   const state: GameState = {
     player,
     enemies: mapEnemies,
