@@ -88,6 +88,9 @@ export const DEATH_LINES: Record<string, string[]> = {
   sniper:  ['...тум...ан...'],
   boss:    [], // Boss has special death sequence
   dog:     ['*whimper*'],
+  cultist: ['Вещество... прими меня...', 'Бореалис... вижу свет...', 'Братья...', 'Алтарь... зовёт...'],
+  miner_cult: ['Berget... tar mig hem...', 'Stålhandske... jag kommer...', 'Malmen... glödde...', 'Djupet...'],
+  svarta_sol: ['Mission... failed...', 'Sol... Invictus...', 'The runes...', 'Thule...'],
 };
 
 // === BOSS DEATH MONOLOGUE — shown in sequence ===
