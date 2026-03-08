@@ -142,6 +142,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                     <span className="text-accent">{s.score ?? 0}</span>
                     <span className={rl.color}>{rl.icon}</span>
                   </div>
+                  {/* Achievements display disabled — code preserved
                   {earnedAchievements.length > 0 && (
                     <div className="flex gap-1 px-1 ml-5 mb-0.5">
                       <TooltipProvider delayDuration={200}>
@@ -158,6 +159,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                       </TooltipProvider>
                     </div>
                   )}
+                  */}
                 </div>
               );
             })}
