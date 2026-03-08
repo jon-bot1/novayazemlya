@@ -54,6 +54,7 @@ interface HomeBaseProps {
 
 export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
+  const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
   const level = getLevelForXp(stash.xp);
