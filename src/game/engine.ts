@@ -5267,7 +5267,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addKillFeed(state, enemy.type, 'Silent Takedown');
             addMessage(state, `🗡️ SILENT TAKEDOWN! +Stealth bonus`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ccff', 8);
-            // NO sound event — completely silent kill
+            notifyAllyDeath(state, enemy, 'Silent Takedown');
+            trackWeaponMasteryKill(state, undefined, 'Silent Takedown');
             return false;
           }
 
