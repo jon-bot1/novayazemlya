@@ -1107,10 +1107,6 @@ export const GameCanvas: React.FC = () => {
             if (nameLower === 'test2') {
               st.player.pos = { x: 920, y: 620 };
             }
-            if (nameLower === 'test2') {
-              // Spawn indoors in HQ
-              st.player.pos = { x: 920, y: 620 };
-            }
 
             lastTimeRef.current = 0;
             extractedRef.current = false;
