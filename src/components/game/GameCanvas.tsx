@@ -1153,6 +1153,7 @@ export const GameCanvas: React.FC = () => {
           stash={stash}
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
+            setSelectedMapId(mapId);
             // Apply upgrades to game state
             stateRef.current = createGameState(mapId);
             const st = stateRef.current;
