@@ -691,7 +691,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Force walk if stamina depleted
   const effectiveMode = (input.movementMode === 'sprint' && state.player.stamina <= 0) ? 'walk' : input.movementMode;
   const finalSpeed = effectiveMode === 'sprint' ? baseSpeed : state.player.speed * speedMultipliers[effectiveMode] * (1 - Math.min(0.35, weightPenalty));
-  const playerSpeed = state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed;
+  const netSlowTimer = Math.max(0, (state as any)._playerNetSlowTimer || 0);
+  (state as any)._playerNetSlowTimer = netSlowTimer;
+  const netSlowMult = netSlowTimer > 0 ? 0.48 : 1;
+  const playerSpeed = (state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed) * netSlowMult;
   // Store movement state for headshot calc
   (state as any)._lastMoveX = moveX;
   (state as any)._lastMoveY = moveY;
