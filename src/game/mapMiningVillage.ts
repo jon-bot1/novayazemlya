@@ -383,7 +383,7 @@ export function generateMiningVillageMap() {
     rLoot(ZONE_CREW, 'desk', 'archive'),
     rLoot(ZONE_MACHINE_HALL, 'crate', 'military'),
     rLoot(ZONE_MACHINE_HALL, 'crate', 'common'),
-    makeLoot(machX + 50, machY + 50, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(machX + 50, machY + 50, 'weapon_cabinet', 'weapon_cabinet_swedish'),
     rLoot(ZONE_SHED, 'crate', 'military'),
     rLoot(ZONE_SHED, 'barrel', 'common'),
     rLoot(ZONE_VILLAGE_CENTER, 'barrel', 'common'),
