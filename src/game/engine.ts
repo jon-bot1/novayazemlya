@@ -5334,6 +5334,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, method);
+            trackWeaponMasteryKill(state, b.weaponName, method);
           } else {
             // Hit reaction speech bubble (15% chance)
             if (!enemy.speechBubble && Math.random() < 0.15) {
