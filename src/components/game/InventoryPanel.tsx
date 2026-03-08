@@ -125,7 +125,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropIte
 
       {/* Item grid — backpack contents */}
       <div className="flex-1 overflow-y-auto px-1.5 pb-1 scrollbar-thin">
-        <div className="grid grid-cols-4 gap-[3px]">
+        <div className="grid grid-cols-6 sm:grid-cols-4 gap-1 sm:gap-[3px]">
           {Array.from({ length: maxSlots }).map((_, slotIdx) => {
             const item = items[slotIdx];
             const isEmpty = !item;

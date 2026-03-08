@@ -1441,7 +1441,7 @@ export const GameCanvas: React.FC = () => {
         </div>
         {/* Inventory Panel — toggled with Tab/I */}
         {showInventory && (
-          <div className="absolute top-12 right-3 z-30">
+          <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-30">
             <InventoryPanel
               items={backpackItems}
               inCover={hudState.inCover}
