@@ -405,6 +405,123 @@ If you're reading this, you're already too close.
     hasCode: false,
     found: false,
   },
+  // ═══ CASSETTE TAPES — audio log style entries ═══
+  {
+    id: 'tape_1',
+    title: '📼 Cassette Tape — Sgt. Ivanov',
+    author: 'Sgt. Ivanov (audio recording)',
+    date: '03.12.1984',
+    classification: 'OPEN',
+    content: `[TAPE RECORDING — POOR QUALITY, BACKGROUND STATIC]
+
+[Click]
+
+...recording. This is Sergeant Ivanov, 3rd platoon. Date is... December 3rd, I think. Hard to tell anymore. The sun barely rises here.
+
+[Long pause]
+
+They told us this was a routine posting. Guard duty. Six months and home. What a joke. The things I've seen in that bunker... nobody goes home from this. Not really.
+
+[Sound of wind]
+
+Petrov disappeared last night. Just... gone. His bunk was still warm. Boot prints led to the south entrance, then stopped. Just stopped. In the middle of the snow. No tracks leading away.
+
+The lieutenant says he deserted. But where would he go? There's nothing for 200 kilometers.
+
+[Voice cracks]
+
+I found his lighter by the ventilation shaft. The one his wife gave him. He'd never leave that behind.
+
+I'm keeping this tape hidden. If someone finds it... tell my family I love them. Tell them I tried.
+
+[Click]`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'tape_2',
+    title: '📼 Cassette Tape — Unknown Officer',
+    author: 'Unknown officer (audio recording)',
+    date: '???',
+    classification: 'SECRET',
+    content: `[TAPE RECORDING — CLEAR AUDIO, SOUNDS OF TYPING IN BACKGROUND]
+
+This is an operational log. Classified.
+
+The B-7 compound is exceeding projections. Subject response rates are... remarkable. Out of fourteen subjects, three show viable transformation markers. The rest are... regrettable losses.
+
+[Typing stops]
+
+I've been ordered to accelerate the timeline. Moscow wants results before spring. They don't understand — you can't rush biology. You can't rush what we're creating here.
+
+[Sound of glass clinking]
+
+Osipovitj came to the lab today. He stood in the observation gallery for two hours. Didn't say a word. Just... watched. His eyes have that glow now. The same one Subject 7 developed in week six.
+
+I asked him if he felt different. He smiled. Said: "I feel everything, Doctor. Every heartbeat in this facility. Every footstep. Every lie."
+
+[Long silence]
+
+I should be concerned. Instead I'm... fascinated.
+
+God help me, I'm becoming like Kravtsov.
+
+[Click]`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'note_1',
+    title: '📝 Handwritten Note (crumpled)',
+    author: 'Unknown',
+    date: '???',
+    classification: 'OPEN',
+    content: `Map of safe routes through minefield:
+
+    MINE MINE MINE
+    ↓    ↓    ↓
+→ → X → → X → → X →
+    ↓    ↓
+    SAFE  MINE
+    ↓
+→ → → SAFE → SAFE → →
+              ↓
+    MINE  → EXIT
+
+NOTE: This was drawn months ago. They may have moved them since.
+Trust NOTHING.
+
+P.S. The searchlight rotates every 8 seconds. Sprint between the 3rd and 5th second.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'note_2',
+    title: '📝 Scrawled Warning (blood-stained)',
+    author: 'Unknown',
+    date: '???',
+    classification: 'OPEN',
+    content: `DO NOT TRUST THE DOCTOR
+
+He says he wants to help. He says the injections will make you stronger.
+He LIES.
+
+I watched him inject Subject 4. The screaming lasted six hours.
+When it stopped, Subject 4 wasn't screaming anymore.
+He was LAUGHING.
+
+Three things I know:
+1. The elevator to sublevel 4 still works — keycard in the director's office
+2. The emergency exit behind the boiler room was welded shut, but TNT would fix that
+3. Whatever is in cell B-0... DON'T OPEN IT. I don't care what Kravtsov says. DON'T.
+
+If you're here to rescue us — it's too late.
+If you're here to destroy this place — do it. Burn it all.
+
+— Someone who used to be a person`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
