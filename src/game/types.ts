@@ -327,6 +327,9 @@ export interface GameState {
   chokeholdTarget: string | null; // enemy id being choked
   chokeholdProgress: number; // 0-2 seconds
   laserTarget: Vec2 | null; // current laser pointer target (for rendering)
+  // Kravtsov fear mechanic
+  fearTimer: number; // seconds of fear remaining (forced flee, can't shoot)
+  fearSourcePos: Vec2 | null; // position to flee FROM
 }
 
 export interface SoundEvent {
