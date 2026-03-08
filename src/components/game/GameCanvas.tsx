@@ -612,6 +612,8 @@ export const GameCanvas: React.FC = () => {
     const keys = new Set<string>();
 
     const updateKeys = () => {
+      // On mobile, joystick sets moveX/moveY — don't overwrite with keyboard state
+      if (isMobile) return;
       let mx = 0, my = 0;
       if (keys.has('w') || keys.has('arrowup') || keys.has('keyw')) my -= 1;
       if (keys.has('s') || keys.has('arrowdown') || keys.has('keys')) my += 1;
@@ -753,7 +755,7 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('wheel', onWheel);
     };
-  }, [showInventory, showIntel, readingDoc]);
+  }, [showInventory, showIntel, readingDoc, isMobile]);
 
   // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
   // Mobile input is handled entirely by MobileControls component with joystick
