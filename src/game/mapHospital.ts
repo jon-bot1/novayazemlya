@@ -258,7 +258,7 @@ export function generateHospitalMap() {
       boss.shootRange = 40; // almost pure melee
       boss.loot = [
         createExtractionCode(),
-        createValuable('Patient Zero Blood Sample', 2000, '🩸'),
+        createValuable('Uzbek Blood Sample', 2000, '🩸'),
         createValuable('Old Dog Tags', 500, '💀'),
       ];
       (boss as any)._patrolWaypoints = [
