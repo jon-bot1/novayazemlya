@@ -963,34 +963,7 @@ export const GameCanvas: React.FC = () => {
       const lootValue = lootItems.reduce((s, i) => s + i.value, 0);
 
       // Check objective completion
-      const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
-      const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
-      const completedObjectives = checkObjectiveCompletion(objectives, {
-        bossKilled,
-        sniperKilled,
-        terminalsHacked: state.terminalsHacked,
-        documentsCollected: state.documentsCollected,
-        killCount: state.killCount,
-        headshotKills: state.headshotKills,
-        lootValue,
-        alarmTriggered: !!(state as any)._alarmEverTriggered,
-        bodiesLooted: state.bodiesLooted,
-        timeSeconds: state.time,
-        tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-        
-        alarmsHacked: state.terminalsHacked,
-        mosinKills: state.mosinKills,
-        wallsBreached: state.wallsBreached,
-        grenadeKills: state.grenadeKills,
-        dogsNeutralized: state.dogsNeutralized,
-        longShots: state.longShots,
-        knifeDistanceKills: state.knifeDistanceKills,
-        cachesLooted: state.cachesLooted,
-        convertKill: !!(state as any)._convertKill,
-        fuelDestroyed: !!(state as any)._fuelDestroyed,
-        ammoDestroyed: !!(state as any)._ammoDestroyed,
-        radioDisabled: !!(state as any)._radioDisabled,
-      });
+      const completedObjectives = checkObjectiveCompletion(objectives, buildObjectivePayload(state));
       setObjectives(completedObjectives);
       const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
       const objectiveXp = completedObjectives.filter(o => o.completed).reduce((s, o) => s + Math.floor(o.reward / 2), 0);
