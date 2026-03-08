@@ -1650,6 +1650,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (input.interact) {
     // Loot containers — require line of sight (no looting through walls)
     for (const lc of state.lootContainers) {
+      if (lc.type === 'weapon_drop') continue; // handled separately
       if (!lc.looted && dist(state.player.pos, lc.pos) < 70 && hasLineOfSight(state, state.player.pos, lc.pos)) {
         lc.looted = true;
         state.cachesLooted++;
