@@ -1013,6 +1013,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // === ELEVATOR BLACKOUT FADE ===
+  if ((state as any)._elevatorFade > 0) {
+    (state as any)._elevatorFade -= dt;
+    // Swap map at midpoint (when fully black)
+    if (!(state as any)._elevatorSwapped && (state as any)._elevatorFade <= 1.0) {
+      (state as any)._elevatorSwapped = true;
+      performMineElevatorTransition(state, (state as any)._elevatorFadeDir);
+    }
+    // Freeze player during fade
+    return state;
+  }
+
   // Track HP at start of frame for damage-taken calculation
   const _hpAtFrameStart = state.player.hp;
 
@@ -2675,8 +2687,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         inExtraction = true;
         state.extractionProgress += dt;
         if (state.extractionProgress >= ep.timer) {
-          // Perform level transition
-          performMineElevatorTransition(state, (ep as any)._elevatorDirection);
+          // Start blackout fade, then perform transition mid-fade
+          (state as any)._elevatorFadeDir = (ep as any)._elevatorDirection;
+          (state as any)._elevatorFade = 2.0; // total fade duration (1s black-in, 1s black-out)
+          (state as any)._elevatorSwapped = false;
           state.extractionProgress = 0;
         }
         continue; // skip normal extraction logic for elevator

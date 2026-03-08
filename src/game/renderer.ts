@@ -4502,7 +4502,28 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // Flashbang stun effect — white screen + dizzy stars
+  // === ELEVATOR BLACKOUT FADE ===
+  const elevFade = (state as any)._elevatorFade as number | undefined;
+  if (elevFade !== undefined && elevFade > 0) {
+    // 2.0→1.0 = fade to black, 1.0→0.0 = fade from black
+    const alpha = elevFade > 1.0
+      ? 1.0 - (elevFade - 1.0) // 0→1 as timer goes 2→1
+      : elevFade;               // 1→0 as timer goes 1→0
+    ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(1, alpha)})`;
+    ctx.fillRect(0, 0, w, h);
+    // Show text at peak darkness
+    if (alpha > 0.7) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#888';
+      ctx.font = 'bold 18px monospace';
+      ctx.textAlign = 'center';
+      const dir = (state as any)._elevatorFadeDir;
+      ctx.fillText(dir === 'down' ? '⛏ DESCENDING...' : '⛏ ASCENDING...', w / 2, h / 2);
+      ctx.restore();
+    }
+  }
+
   if (state.flashbangTimer > 0) {
     const alpha = Math.min(0.9, state.flashbangTimer * 0.6);
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
