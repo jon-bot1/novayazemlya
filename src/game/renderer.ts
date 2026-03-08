@@ -1195,8 +1195,105 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Ground tiles with terrain zones
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
-  // Zone labels — map-specific
+  // Map identification
   const mapId = (state as any)._mapId || 'novaya_zemlya';
+
+  // ── HOSPITAL DEPARTMENT FLOOR OVERLAYS & WALL SIGNS ──
+  if (mapId === 'hospital') {
+    const BX = 400, BY = 300, BW = 1600, BH = 1800;
+    const deptZones = [
+      // Ward West (blue-green)
+      { x: BX + 10, y: BY + 10, w: 190, h: 280, color: 'rgba(40, 140, 160, 0.08)', borderColor: 'rgba(40, 140, 160, 0.25)', label: 'WARD 1', labelColor: '#4aa8b8' },
+      { x: BX + 10, y: BY + 410, w: 480, h: 180, color: 'rgba(40, 140, 160, 0.06)', borderColor: 'rgba(40, 140, 160, 0.20)', label: 'WARD 2', labelColor: '#4aa8b8' },
+      { x: BX + 10, y: BY + 1110, w: 480, h: 280, color: 'rgba(40, 140, 160, 0.06)', borderColor: 'rgba(40, 140, 160, 0.20)', label: 'WARD 3 — ISOLATION', labelColor: '#4aa8b8' },
+      // Laboratory (toxic green)
+      { x: BX + BW - 340, y: BY + 10, w: 330, h: 580, color: 'rgba(80, 180, 60, 0.07)', borderColor: 'rgba(80, 180, 60, 0.25)', label: 'LABORATORY', labelColor: '#60b840' },
+      // Admin Office (amber)
+      { x: BX + BW - 340, y: BY + 1110, w: 330, h: 280, color: 'rgba(200, 160, 60, 0.06)', borderColor: 'rgba(200, 160, 60, 0.22)', label: 'ADMIN OFFICE', labelColor: '#c8a040' },
+      // Basement (red)
+      { x: BX + 110, y: BY + 1510, w: BW - 220, h: 260, color: 'rgba(180, 40, 40, 0.08)', borderColor: 'rgba(180, 40, 40, 0.30)', label: '⚠ BASEMENT — RESTRICTED', labelColor: '#cc4444' },
+      // Courtyard (natural)
+      { x: BX + 510, y: BY + 610, w: 580, h: 480, color: 'rgba(80, 140, 60, 0.06)', borderColor: 'rgba(80, 140, 60, 0.18)', label: 'COURTYARD', labelColor: '#6a9a4a' },
+      // Reception (warm white)
+      { x: BX + BW / 2 - 190, y: BY + BH - 190, w: 380, h: 180, color: 'rgba(200, 180, 140, 0.07)', borderColor: 'rgba(200, 180, 140, 0.22)', label: 'RECEPTION', labelColor: '#c8b48c' },
+      // Corridors (neutral)
+      { x: BX + BW / 2 - 45, y: BY + 10, w: 90, h: 280, color: 'rgba(150, 150, 150, 0.05)', borderColor: 'rgba(150, 150, 150, 0.15)', label: '', labelColor: '' },
+      { x: BX + BW / 2 - 45, y: BY + 1110, w: 90, h: 480, color: 'rgba(150, 150, 150, 0.05)', borderColor: 'rgba(150, 150, 150, 0.15)', label: '', labelColor: '' },
+    ];
+
+    for (const dz of deptZones) {
+      if (!isOnScreen(dz.x + dz.w / 2, dz.y + dz.h / 2, cx, cy, w, h, Math.max(dz.w, dz.h))) continue;
+
+      // Floor color overlay
+      ctx.fillStyle = dz.color;
+      ctx.fillRect(dz.x, dz.y, dz.w, dz.h);
+
+      // Colored border strip on floor edges (like painted lines)
+      ctx.strokeStyle = dz.borderColor;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(dz.x + 1, dz.y + 1, dz.w - 2, dz.h - 2);
+
+      // Corner accent marks
+      const cm = 12;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = dz.borderColor.replace(/[\d.]+\)$/, '0.5)');
+      // Top-left
+      ctx.beginPath(); ctx.moveTo(dz.x, dz.y + cm); ctx.lineTo(dz.x, dz.y); ctx.lineTo(dz.x + cm, dz.y); ctx.stroke();
+      // Top-right
+      ctx.beginPath(); ctx.moveTo(dz.x + dz.w - cm, dz.y); ctx.lineTo(dz.x + dz.w, dz.y); ctx.lineTo(dz.x + dz.w, dz.y + cm); ctx.stroke();
+      // Bottom-left
+      ctx.beginPath(); ctx.moveTo(dz.x, dz.y + dz.h - cm); ctx.lineTo(dz.x, dz.y + dz.h); ctx.lineTo(dz.x + cm, dz.y + dz.h); ctx.stroke();
+      // Bottom-right
+      ctx.beginPath(); ctx.moveTo(dz.x + dz.w - cm, dz.y + dz.h); ctx.lineTo(dz.x + dz.w, dz.y + dz.h); ctx.lineTo(dz.x + dz.w, dz.y + dz.h - cm); ctx.stroke();
+    }
+
+    // Wall-mounted department signs (rendered as small plaques on walls)
+    const wallSigns = [
+      // Ward signs (on west outer wall)
+      { x: BX + 12, y: BY + 50, label: 'WARD 1', color: '#4aa8b8', bg: 'rgba(20, 60, 70, 0.85)' },
+      { x: BX + 12, y: BY + 450, label: 'WARD 2', color: '#4aa8b8', bg: 'rgba(20, 60, 70, 0.85)' },
+      { x: BX + 12, y: BY + 1140, label: 'WARD 3', color: '#4aa8b8', bg: 'rgba(20, 60, 70, 0.85)' },
+      // Lab sign (on east wall)
+      { x: BX + BW - 22, y: BY + 50, label: 'LAB', color: '#60b840', bg: 'rgba(30, 60, 20, 0.85)' },
+      // Office sign
+      { x: BX + BW - 22, y: BY + 1140, label: 'OFFICE', color: '#c8a040', bg: 'rgba(60, 50, 20, 0.85)' },
+      // Basement sign (above stairs)
+      { x: BX + BW / 2, y: BY + 1490, label: '⚠ BASEMENT', color: '#ff4444', bg: 'rgba(80, 20, 20, 0.9)' },
+      // Reception sign (above main door)
+      { x: BX + BW / 2, y: BY + BH - 210, label: 'RECEPTION', color: '#c8b48c', bg: 'rgba(60, 50, 30, 0.85)' },
+      // Emergency exit north
+      { x: BX + BW / 2, y: BY + 15, label: 'EXIT ↑', color: '#44cc44', bg: 'rgba(20, 50, 20, 0.85)' },
+      // Courtyard
+      { x: BX + 510, y: BY + 590, label: 'COURTYARD', color: '#6a9a4a', bg: 'rgba(30, 50, 20, 0.85)' },
+    ];
+
+    for (const sign of wallSigns) {
+      if (!isOnScreen(sign.x, sign.y, cx, cy, w, h, 100)) continue;
+      ctx.save();
+      ctx.font = 'bold 7px monospace';
+      const textW = ctx.measureText(sign.label).width;
+      const pw = textW + 8;
+      const ph = 12;
+      const sx = sign.x - pw / 2;
+      const sy = sign.y - ph / 2;
+
+      // Sign background
+      ctx.fillStyle = sign.bg;
+      ctx.fillRect(sx, sy, pw, ph);
+      // Sign border
+      ctx.strokeStyle = sign.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx, sy, pw, ph);
+      // Sign text
+      ctx.fillStyle = sign.color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sign.label, sign.x, sign.y);
+      ctx.restore();
+    }
+  }
+
+  // Zone labels — map-specific
   const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
     novaya_zemlya: [
       { x: 1600, y: 1100, label: 'HANGAR', sub: 'Main Building', size: 22 },
