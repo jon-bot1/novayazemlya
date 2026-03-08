@@ -419,27 +419,56 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
   }
 }
 
-// Assign tactical roles to enemies in combat — distribute flankers and suppressors
+// Assign tactical roles to enemies in combat — squad-aware coordination with randomization
 function assignTacticalRole(state: GameState, enemy: Enemy) {
-  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav' || enemy.type === 'dog' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') {
-    enemy.tacticalRole = (enemy.type === 'scav' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') ? 'assault' : 'none';
+  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'dog') {
+    enemy.tacticalRole = 'none';
     return;
   }
-  // Count current roles in radio group
-  let flankers = 0, suppressors = 0;
+
+  // Personality-based random override: ~15% chance enemy ignores coordination and picks random role
+  if (Math.random() < 0.15) {
+    const randomRoles: TacticalRole[] = ['assault', 'flanker', 'suppressor'];
+    enemy.tacticalRole = randomRoles[Math.floor(Math.random() * randomRoles.length)];
+    return;
+  }
+
+  // Count current roles in squad (same radio group or nearby)
+  let flankers = 0, suppressors = 0, assaults = 0, squadSize = 0;
+  const squadMembers: Enemy[] = [];
   for (const ally of state.enemies) {
     if (ally === enemy || ally.state === 'dead') continue;
-    if (ally.radioGroup !== enemy.radioGroup && distSq(ally.pos, enemy.pos) > 160000) continue; // 400²
+    if (ally.type === 'turret' || ally.type === 'boss' || ally.type === 'dog') continue;
+    const sameGroup = ally.radioGroup === enemy.radioGroup;
+    const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
+    if (!sameGroup && !closeEnough) continue;
+    squadMembers.push(ally);
+    squadSize++;
     if (ally.tacticalRole === 'flanker') flankers++;
-    if (ally.tacticalRole === 'suppressor') suppressors++;
+    else if (ally.tacticalRole === 'suppressor') suppressors++;
+    else assaults++;
   }
-  // Heavies prefer suppression, soldiers prefer flanking
+
+  // Squad composition logic: aim for balanced squad
+  // Ideal: 1 suppressor per 3 members, 1 flanker per 2 members, rest assault
+  const idealSuppressors = Math.max(1, Math.floor((squadSize + 1) / 3));
+  const idealFlankers = Math.max(1, Math.floor((squadSize + 1) / 2));
+
+  // Type-based preferences with squad awareness
   if (enemy.type === 'heavy') {
-    enemy.tacticalRole = suppressors < 2 ? 'suppressor' : 'assault';
+    // Heavies prefer suppression but can assault if squad has enough suppressors
+    if (suppressors < idealSuppressors) enemy.tacticalRole = 'suppressor';
+    else enemy.tacticalRole = Math.random() < 0.7 ? 'assault' : 'flanker';
   } else if (enemy.type === 'soldier' || enemy.type === 'svarta_sol') {
-    if (flankers < 2) enemy.tacticalRole = 'flanker';
+    // Soldiers are versatile — fill gaps
+    if (flankers < idealFlankers && suppressors >= 1) enemy.tacticalRole = 'flanker';
     else if (suppressors < 1) enemy.tacticalRole = 'suppressor';
-    else enemy.tacticalRole = 'assault';
+    else enemy.tacticalRole = Math.random() < 0.6 ? 'assault' : 'flanker';
+  } else if (enemy.type === 'scav' || enemy.type === 'redneck') {
+    // Scavs/rednecks mostly rush but occasionally flank
+    enemy.tacticalRole = Math.random() < 0.2 ? 'flanker' : 'assault';
+  } else if (enemy.type === 'cultist' || enemy.type === 'miner_cult') {
+    enemy.tacticalRole = Math.random() < 0.3 ? 'flanker' : 'assault';
   } else {
     enemy.tacticalRole = 'assault';
   }
