@@ -62,7 +62,7 @@ interface HomeBaseProps {
 
 export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft'>('mission');
-  const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
+  const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
   const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
