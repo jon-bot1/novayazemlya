@@ -33,9 +33,10 @@ function getRendererTerrainGrid(state: GameState): TerrainGrid {
   return _rendererTerrainGrid;
 }
 
-// Viewport check — is position within visible area (with margin)
+// Viewport check — is position within visible area (with margin scaled by render distance)
 function isOnScreen(x: number, y: number, cx: number, cy: number, w: number, h: number, margin: number = 100): boolean {
-  return x > cx - margin && x < cx + w + margin && y > cy - margin && y < cy + h + margin;
+  const m = margin * _rdm;
+  return x > cx - m && x < cx + w + m && y > cy - m && y < cy + h + m;
 }
 
 // Simple LOS check for renderer using spatial grid — larger step for speed
