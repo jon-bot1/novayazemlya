@@ -3868,9 +3868,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (!(enemy as any)._coverDecided) {
           (enemy as any)._coverDecided = true;
           // Soldiers and heavies may seek cover instead of rushing
-          if ((enemy.type === 'soldier' || enemy.type === 'heavy') && Math.random() < 0.3) {
+          // Enemies with _seekCoverChance personality trait may take cover
+          const coverChance = (enemy as any)._seekCoverChance ?? 0.3;
+          if (coverChance > 0 && Math.random() < coverChance) {
             (enemy as any)._seekCover = true;
             (enemy as any)._coverTimer = 30; // max 30s in cover
+          }
           }
         }
 
