@@ -19,16 +19,18 @@
 // and in extreme cases — absorption. The mountain takes them.
 //
 // THE PLAYER:
-// Codename VARG. Former Swedish military intelligence (MUST),
-// declared KIA during a failed operation in East Berlin, 1984.
-// Recruited by a secret NATO task force for one purpose:
-// locate and destroy all Substance Zero sites before the
-// Soviets can weaponize it.
+// Designation: Operatör 8. A field operative of NORDVAKT — a
+// secret Nordic stay-behind defense organization established
+// during the early Cold War by the Scandinavian intelligence
+// services. NORDVAKT operates independently of NATO and the
+// Warsaw Pact, answering only to a council of Nordic defense
+// chiefs who officially deny its existence.
 //
-// Personal stake: VARG's father, Nils Stålhandske, was a survey
-// engineer who disappeared inside Norrberget Mine in 1957 while
-// investigating the magnetic anomaly. His body was never found.
-// His cassette recorder was.
+// Operatör 8 was recruited from Swedish military intelligence
+// (MUST) after distinguishing himself in deep-cover operations
+// across the Eastern Bloc. Declared KIA during a failed
+// exfiltration in East Berlin, 1984 — in reality extracted by
+// NORDVAKT and given a new identity.
 //
 // THE OPERATION:
 // Four sites. Four raids. Each reveals intel leading to the next.
@@ -53,8 +55,7 @@
 // 4. GRUVSAMHÄLLET — The original discovery site. The Swedish
 //    mine where it all began. The Gruvrå isn't a spirit — it's
 //    what happens when Substance Zero accumulates enough mass
-//    to develop consciousness. Stålhandske didn't disappear.
-//    The mountain absorbed him.
+//    to develop consciousness.
 //
 // THE TRUTH:
 // The four sites are connected by the same geological vein.
@@ -63,29 +64,31 @@
 // entire vein — and that requires the nuclear codes hidden
 // in Objekt 47's deep storage.
 //
-// VARG must recover the codes, plant charges at the deepest
+// Operatör 8 must recover the codes, plant charges at the deepest
 // point of each site, and trigger a synchronized detonation
 // that will seal the vein forever.
 //
-// Or die trying — like his father before him.
+// But NORDVAKT has its own agenda. And NATO. And the Soviets.
+// And the mountain itself.
 // ══════════════════════════════════════════════════════════════
 
 export const STORY_ARC = {
   title: 'OPERATION AURORA BOREALIS',
-  subtitle: 'NATO CLASSIFIED — EYES ONLY — CLEARANCE ULTRAVIOLET',
+  subtitle: 'NORDVAKT CLASSIFIED — EYES ONLY — CLEARANCE ULTRAVIOLET',
 
   playerDossier: {
-    codename: 'VARG',
+    codename: 'OPERATÖR 8',
     realName: '[REDACTED]',
     nationality: 'Swedish',
     formerUnit: 'MUST (Militära Underrättelse- och Säkerhetstjänsten)',
+    organization: 'NORDVAKT — Nordic Stay-Behind Defense Organization',
     status: 'Officially KIA — East Berlin, 1984',
-    handler: 'CONTROL (NATO Task Force AURORA)',
-    background: `Born 1955, son of survey engineer Nils Stålhandske who vanished inside Norrberget Mine in 1957. Grew up obsessed with his father's disappearance. Joined Swedish military intelligence at 22. Recruited by NATO black ops after proving himself in deep-cover missions across the Eastern Bloc.
+    handler: 'STYRESMAN (NORDVAKT Operations Chief)',
+    background: `Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Distinguished operative — fluent in Russian, Finnish, and Norwegian. Trained in Arctic survival, demolitions, and close-quarters combat.
 
-Declared killed in action during a failed exfiltration in East Berlin — in reality, extracted by NATO and given a new identity. Now operates as a ghost: no country, no name, no backup.
+Declared killed in action during a failed exfiltration in East Berlin — in reality, extracted by NORDVAKT and given a new identity. Now operates as a ghost: no country, no name, no backup.
 
-VARG carries his father's compass — the needle permanently bent toward magnetic north since the day Nils entered the mine. It still points toward Norrberget.`,
+NORDVAKT selected Operatör 8 for Operation Aurora Borealis based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
   },
 
   missionBriefing: `OPERATION AURORA BOREALIS — FINAL BRIEFING
@@ -107,9 +110,9 @@ ENDGAME: Trigger synchronized demolition charges at the deepest point of each si
 
 WARNING: Extended exposure to Substance Zero causes paranoia, magnetic sensitivity, hallucinations, and in extreme cases — physical absorption into the rock. Limit time underground. Trust your instruments. If your compass starts spinning — leave immediately.
 
-HANDLER NOTE: VARG — I know this is personal. Your father died trying to understand what's in that mountain. You're going to finish what he started. But don't let revenge cloud your judgment. Complete the mission. Come home alive.
+HANDLER NOTE: Operatör 8 — this operation exists outside all official channels. NATO does not know we are here. Moscow does not know we are here. If you are captured, NORDVAKT will deny your existence. Complete the mission. Secure the intelligence. Trust no one — not even CONTROL.
 
-— CONTROL`,
+— STYRESMAN`,
 
   siteIntel: {
     objekt47: {
@@ -133,7 +136,7 @@ HANDLER NOTE: VARG — I know this is personal. Your father died trying to under
     mining_village: {
       name: 'NORRBERGET MINE',
       role: 'ORIGINAL DISCOVERY SITE',
-      connection: 'Where it all began. Swedish miners first encountered Substance Zero in 1947 at 420 meters depth. The mine was officially closed in 1964 due to "ore depletion." In reality, Mine Director Holmström sealed the deepest levels after multiple incidents — including the disappearance of survey engineer Nils Stålhandske (VARG\'s father) in 1957. The Soviet GRU, tipped off by a mole in the Swedish geological survey, has since infiltrated the site and reopened the sealed levels. What they found below is not a mineral deposit. It is a consciousness. The miners called it Gruvrå. It has been in the mountain since before the ice. Its guardians — Ort and Stoll — are crystalline formations that move. Slowly. Patiently. The mountain remembers everyone who enters. And it keeps what it takes.',
+      connection: 'Where it all began. Swedish miners first encountered Substance Zero in 1947 at 420 meters depth. The mine was officially closed in 1964 due to "ore depletion." In reality, Mine Director Holmström sealed the deepest levels after multiple incidents — including the disappearance of survey engineer Nils Stålhandske in 1957. The Soviet GRU, tipped off by a mole in the Swedish geological survey, has since infiltrated the site and reopened the sealed levels. What they found below is not a mineral deposit. It is a consciousness. The miners called it Gruvrå. It has been in the mountain since before the ice. Its guardians — Ort and Stoll — are crystalline formations that move. Slowly. Patiently. The mountain remembers everyone who enters. And it keeps what it takes.',
       maskirovka: 'The Swedish government denies the mine\'s existence. Maps of the area show only forest. The village has been erased from census records since 1965. Soviet presence is disguised as a "geological research partnership" — a fiction maintained by compromised officials in Stockholm.',
     },
   },
@@ -198,26 +201,24 @@ Kravtsov's research notes contain the Substance Zero countermeasure formula. Wit
 The hospital maintains civilian cover. Some patients and staff are genuine — avoid unnecessary casualties. Kravtsov works in the east wing lab. The Uzbek is confined in the basement — DO NOT enter the basement unless necessary.
 
 PRIMARY: Recover Kravtsov's countermeasure formula from the east wing lab.
-SECONDARY: Document evidence of human experimentation for NATO tribunal.
+SECONDARY: Document evidence of human experimentation for tribunal.
 TERTIARY: Neutralize Dr. Kravtsov. Contain or eliminate The Uzbek.
 
 HANDLER NOTE: Kravtsov is brilliant and paranoid. He has likely booby-trapped his research. The Uzbek was once a man named Farukh. What Kravtsov did to him is an atrocity. If you can put him down, it would be a mercy.`,
 
     mining_village: `SITE BRIEFING — NORRBERGET MINE
 
-This is where your father disappeared, VARG. I won't pretend this is just another mission for you.
-
 Soviet GRU has reopened the sealed levels below 400m. They're attempting to extract raw Substance Zero directly from the source — the consciousness the miners called Gruvrå. The operation is running under cover of a "geological research partnership" with compromised Swedish officials.
 
-The mine has two levels. Surface: village, crew quarters, machinery. Underground: tunnel network leading to the deep chamber where Gruvrå resides. Access via the mine elevator. Its guardians — Ort and Stoll — are not human. They are crystallized Substance Zero formations that move and attack.
+The mine has two levels. Surface: village, crew quarters, machinery. Underground: tunnel network leading to the deep chamber where Gruvrå resides. Access via the mine elevator. Its guardians — Ort and Stoll — are crystallized Substance Zero formations that move and attack.
+
+NORDVAKT has a particular interest in this site. It is on Nordic soil. Whatever is found here belongs to us — not NATO, not Moscow.
 
 PRIMARY: Reach the deep chamber. Plant demolition charges.
-SECONDARY: Recover your father's survey equipment and field notes.
+SECONDARY: Recover Stålhandske's survey equipment and field notes.
 TERTIARY: Destroy Gruvrå — or seal it permanently.
 
-HANDLER NOTE: VARG — whatever you find down there about your father, the mission comes first. The vein must be collapsed. If Gruvrå has truly achieved consciousness, it will resist. The mountain doesn't want to die.
-
-Good luck. CONTROL out.`,
+HANDLER NOTE: Operatör 8 — Norrberget is NORDVAKT's highest priority. The substance beneath this mountain may be the key to Nordic defense independence for the next century. Gather everything you can. STYRESMAN out.`,
   };
   return briefings[mapId] || briefings.objekt47;
 }

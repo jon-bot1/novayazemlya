@@ -911,27 +911,25 @@ P.S. The confiscated Stålhandske tape is in my safe. What he recorded before hi
   },
   {
     id: 'doc_sz_3',
-    title: 'VARG\'s Personal Journal (encrypted)',
-    author: 'VARG',
+    title: 'Operatör 8 — Personal Journal (encrypted)',
+    author: 'Operatör 8',
     date: '28.12.1984',
     classification: 'TOP SECRET',
     content: `PERSONAL — NOT FOR OPERATIONAL FILE
 
-Day one of Aurora Borealis. CONTROL handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
+Day one of Aurora Borealis. STYRESMAN handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
 
-Father disappeared when I was two years old. Mother never recovered. She kept his compass on the kitchen table — the needle bent, always pointing north-northeast. Toward Norrberget. She said it broke the day he went into the mine. I think she was right, but not in the way she meant. The compass didn't break. It found what it was looking for.
+NORDVAKT recruited me after East Berlin. They said I was dead — officially. Good. The dead have no loyalties, no attachments, no countries. That's what they wanted. An operator with nothing to lose.
 
-CONTROL says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it's the same thing my father found at Norrberget. The same thing that took him.
+STYRESMAN says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it connects to the Swedish mine at Norrberget. The same geological vein. Thousands of kilometers of it, running beneath our feet.
 
-Four sites. Four raids. CONTROL says destroy them all. Collapse the vein.
+Four sites. Four raids. STYRESMAN says secure the intelligence, deny Substance Zero to all parties. But I've read between the lines. NORDVAKT doesn't want to destroy it. They want to CONTROL it. A Nordic deterrent. Something that would make Scandinavia untouchable.
 
-I'll do it. But not just for NATO. Not just for the mission.
+I'm not sure that's possible. The reports on what happened to the miners at Norrberget — the absorption, the crystallization — this isn't a weapon you control. This is something that controls you.
 
-I'm going into that mine, CONTROL. I'm going to find out what happened to Nils Stålhandske. And if the mountain took him — I'm going to take him back.
+But orders are orders. And the dead don't ask questions.
 
-Or I'm going to burn it all down trying.
-
-— VARG`,
+— Operatör 8`,
     hasCode: false,
     found: false,
   },
