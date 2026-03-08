@@ -37,6 +37,9 @@ export const INVESTIGATE_LINES: Record<string, string[]> = {
   redneck: ['What was that?', 'Hear somethin\'...', 'Somethin\' movin\'!'],
   shocker: ['Шум! Внимание!', 'Слышу!'],
   sniper:  [],
+  cultist: ['Вещество дрожит...', 'Кто нарушил покой?', 'Братья, тихо...'],
+  miner_cult: ['Hör du det?', 'Nåt rör sig...', 'I tunneln...'],
+  svarta_sol: ['Movement detected.', 'Investigating.'],
 };
 
 // === PANIC ===
