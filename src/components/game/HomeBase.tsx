@@ -580,37 +580,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           })()}
         </div>
 
-        {/* Intel Tab — Document Archive with Story Context */}
+        {/* Archive Tab — Numbered document list */}
         {tab === 'intel' && (
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
-            {/* Story Progress Header */}
             <div className="border border-accent/30 rounded p-3 bg-accent/5">
-              <h3 className="text-[10px] font-display text-accent uppercase tracking-wider mb-1">📡 OPERATION AURORA BOREALIS — Intelligence Summary</h3>
-              <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">Documents:</span>
-                  <span className="text-foreground">{foundDocs.length}/{LORE_DOCUMENTS.length}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">Codes Found:</span>
-                  <span className="text-accent">{foundDocs.filter(d => d.hasCode && d.code).length}/{LORE_DOCUMENTS.filter(d => d.hasCode).length}</span>
-                </div>
+              <h3 className="text-[10px] font-display text-accent uppercase tracking-wider mb-1">📄 ARCHIVE — Collected Documents</h3>
+              <div className="text-[9px] font-mono text-muted-foreground">
+                {foundDocs.length}/{LORE_DOCUMENTS.length} documents recovered
               </div>
-              {foundDocs.length < 5 && (
-                <p className="text-[8px] font-mono text-muted-foreground/60 mt-2 italic">
-                  "Every document recovered brings us closer to understanding the Substance Zero network. Search desks, bodies, and archives during raids." — CONTROL
-                </p>
-              )}
-              {foundDocs.length >= 5 && foundDocs.length < 15 && (
-                <p className="text-[8px] font-mono text-warning/60 mt-2 italic">
-                  "The pieces are coming together. The four sites are connected — one geological vein, one conspiracy. Keep digging." — CONTROL
-                </p>
-              )}
-              {foundDocs.length >= 15 && (
-                <p className="text-[8px] font-mono text-accent/80 mt-2 italic">
-                  "VARG — you now know more about Substance Zero than anyone alive. Use this knowledge. Complete the mission. Collapse the vein." — CONTROL
-                </p>
-              )}
             </div>
 
             {readingDoc ? (
@@ -646,44 +623,27 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                   )}
                 </div>
               </div>
-            ) : foundDocs.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-xs font-mono text-muted-foreground mb-3">
-                  No documents collected yet. Find them during raids.
-                </p>
-                <div className="border border-border/30 rounded p-3 bg-background/30 text-left">
-                  <p className="text-[9px] font-display text-warning uppercase tracking-wider mb-1">🔍 Where to look</p>
-                  <ul className="text-[9px] font-mono text-muted-foreground/70 space-y-0.5">
-                    <li>• Desks and archives in office buildings</li>
-                    <li>• Bodies of officers and commanders</li>
-                    <li>• Walls and surfaces — look for carvings and graffiti</li>
-                    <li>• Equipment cases left behind by researchers</li>
-                  </ul>
-                </div>
-              </div>
             ) : (
-              <>
-                {/* Group documents by location */}
-                {[
-                  { label: '☢️ Objekt 47', filter: (d: LoreDocument) => ['doc_1','doc_2','doc_3','doc_4','doc_5','doc_6','doc_7','tape_1','tape_2','note_1','note_2'].includes(d.id) },
-                  { label: '⚓ Fishing Village', filter: (d: LoreDocument) => d.id.startsWith('doc_v') },
-                  { label: '🏥 Hospital', filter: (d: LoreDocument) => d.id.startsWith('doc_h') },
-                  { label: '⛏️ Norrberget Mine', filter: (d: LoreDocument) => d.id.startsWith('doc_mine') },
-                  { label: '🌐 Cross-Site Intel', filter: (d: LoreDocument) => d.id.startsWith('doc_sz') },
-                  { label: '❄️ Arctic Legends', filter: (d: LoreDocument) => d.id.startsWith('doc_legend') },
-                  { label: '🌊 Coastal Lore', filter: (d: LoreDocument) => d.id.startsWith('doc_russenorsk') },
-                ].map(group => {
-                  const groupDocs = foundDocs.filter(group.filter);
-                  if (groupDocs.length === 0) return null;
+              <div className="flex flex-col gap-0.5">
+                {LORE_DOCUMENTS.map((doc, idx) => {
+                  const num = String(idx + 1).padStart(2, '0');
+                  const isFound = doc.found;
                   return (
-                    <div key={group.label}>
-                      <p className="text-[9px] font-display text-muted-foreground uppercase tracking-wider mb-1 mt-1">{group.label}</p>
-                      {groupDocs.map(doc => (
-                        <button
-                          key={doc.id}
-                          className="flex items-center gap-3 p-2.5 border border-border rounded hover:border-accent/50 hover:bg-accent/5 transition-colors text-left w-full mb-1"
-                          onClick={() => setReadingDoc(doc)}
-                        >
+                    <button
+                      key={doc.id}
+                      className={`flex items-center gap-3 p-2 border rounded text-left w-full transition-colors ${
+                        isFound
+                          ? 'border-border hover:border-accent/50 hover:bg-accent/5'
+                          : 'border-border/20 opacity-40 cursor-default'
+                      }`}
+                      onClick={() => isFound && setReadingDoc(doc)}
+                      disabled={!isFound}
+                    >
+                      <span className={`text-[10px] font-mono w-6 text-center ${isFound ? 'text-accent' : 'text-muted-foreground/50'}`}>
+                        {num}
+                      </span>
+                      {isFound ? (
+                        <>
                           <span className="text-base">
                             {doc.classification === 'TOP SECRET' ? '🔴' : doc.classification === 'SECRET' ? '🟡' : '⚪'}
                           </span>
@@ -692,12 +652,16 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                             <p className="text-[8px] font-mono text-muted-foreground">{doc.author} — {doc.date}</p>
                           </div>
                           {doc.hasCode && <span className="text-[9px] font-mono text-accent">☢</span>}
-                        </button>
-                      ))}
-                    </div>
+                        </>
+                      ) : (
+                        <div className="flex-1">
+                          <p className="text-[11px] font-mono text-muted-foreground/40">— CLASSIFIED —</p>
+                        </div>
+                      )}
+                    </button>
                   );
                 })}
-              </>
+              </div>
             )}
           </div>
         )}
