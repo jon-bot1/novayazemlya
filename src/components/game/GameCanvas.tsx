@@ -1343,13 +1343,23 @@ export const GameCanvas: React.FC = () => {
                 return updated;
               });
             }
-            setObjectives(generateMissionObjectives(selectedMapId));
-            setRerollCount(c => c + 1);
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            const nextRerollCount = (rerollsByMapRef.current[selectedMapId] || 0) + 1;
+            rerollsByMapRef.current[selectedMapId] = nextRerollCount;
+            setObjectives(nextObjectives);
+            setRerollCount(nextRerollCount);
           }}
           onMapChange={(mapId: MapId) => {
             setSelectedMapId(mapId);
-            setObjectives(generateMissionObjectives(mapId));
-            setRerollCount(0);
+            if (!objectivesByMapRef.current[mapId]) {
+              objectivesByMapRef.current[mapId] = generateMissionObjectives(mapId);
+            }
+            if (rerollsByMapRef.current[mapId] == null) {
+              rerollsByMapRef.current[mapId] = 0;
+            }
+            setObjectives(objectivesByMapRef.current[mapId]);
+            setRerollCount(rerollsByMapRef.current[mapId]);
           }}
           onReturnToMenu={() => {
             setGamePhase('intro');
