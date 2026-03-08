@@ -1245,6 +1245,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.currentAmmo += transferred;
         state.player.ammoReserves[wpnReload.ammoType] -= transferred;
         state.player.maxAmmo = magSize;
+        // Safety clamp — never exceed magazine size
+        state.player.currentAmmo = Math.min(state.player.currentAmmo, magSize);
         addMessage(state, `🔄 Reloaded! ${state.player.currentAmmo}/${magSize}`, 'info');
       }
     }
