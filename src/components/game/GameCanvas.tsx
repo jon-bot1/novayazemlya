@@ -26,6 +26,40 @@ import { supabase } from '@/integrations/supabase/client';
 const TIME_LIMIT = 300; // 5 minutes
 const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
 
+const createDefaultInputState = (): InputState => ({
+  moveX: 0,
+  moveY: 0,
+  aimX: 0,
+  aimY: 0,
+  shooting: false,
+  shootPressed: false,
+  interact: false,
+  heal: false,
+  throwGrenade: false,
+  cycleThrowable: false,
+  movementMode: 'walk',
+  moveTarget: null,
+  takeCover: false,
+  useTNT: false,
+  useSpecial: false,
+  reload: false,
+  throwKnife: false,
+  chokehold: false,
+  throwRock: false,
+});
+
+const createInitialObjectivesByMap = (): Record<MapId, MissionObjective[]> => ({
+  objekt47: generateMissionObjectives('objekt47'),
+  fishing_village: generateMissionObjectives('fishing_village'),
+  hospital: generateMissionObjectives('hospital'),
+});
+
+const createInitialRerollsByMap = (): Record<MapId, number> => ({
+  objekt47: 0,
+  fishing_village: 0,
+  hospital: 0,
+});
+
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
