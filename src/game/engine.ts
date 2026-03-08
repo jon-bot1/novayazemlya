@@ -2610,6 +2610,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {
+      // ── ELEVATOR TRANSITION (mining village level swap) ──
+      const isElevator = (ep as any)._isElevator;
+      if (isElevator) {
+        if (state.extractionProgress === 0) {
+          const dir = (ep as any)._elevatorDirection;
+          addMessage(state, dir === 'down' ? '⛏ DESCENDING INTO THE MINE...' : '⛏ ASCENDING TO SURFACE...', 'intel');
+        }
+        inExtraction = true;
+        state.extractionProgress += dt;
+        if (state.extractionProgress >= ep.timer) {
+          // Perform level transition
+          performMineElevatorTransition(state, (ep as any)._elevatorDirection);
+          state.extractionProgress = 0;
+        }
+        continue; // skip normal extraction logic for elevator
+      }
+
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
         if (isObjekt47) {
           const missing: string[] = [];
