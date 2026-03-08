@@ -1236,7 +1236,7 @@ export const GameCanvas: React.FC = () => {
   const backpackItems = backpackEntries.map((entry) => entry.item);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
+    <div className="relative w-screen h-[100dvh] overflow-hidden bg-background touch-none">
       <div className="relative w-full h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
