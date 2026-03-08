@@ -56,10 +56,11 @@ interface HomeBaseProps {
   onRerollObjectives: (cost: number) => void;
   onMapChange: (mapId: MapId) => void;
   onCraft: (recipeId: string) => void;
+  onReturnToMenu?: () => void;
   rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, rerollCount }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
@@ -107,6 +108,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               <span>{xpInfo.current}/{xpInfo.needed}</span>
             </div>
           </div>
+          {onReturnToMenu && (
+            <button
+              onClick={onReturnToMenu}
+              className="mt-3 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+            >
+              ← Return to Main Menu
+            </button>
+          )}
         </div>
 
         {/* Tabs */}

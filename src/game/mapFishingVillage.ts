@@ -108,9 +108,9 @@ export function generateFishingVillageMap() {
     // Main road (vertical, center)
     { x: 620, y: 200, w: 100, h: 1150, type: 'asphalt' },
     // Side road to dock
-    { x: 420, y: 1300, w: 350, h: 70, type: 'asphalt' },
-    // Dock platform (base of pier)
-    { x: 420, y: 1370, w: 450, h: 80, type: 'concrete' },
+    { x: 500, y: 1300, w: 250, h: 80, type: 'asphalt' },
+    // Dock building — two rooms extending into sea
+    { x: 500, y: 1380, w: 370, h: 330, type: 'concrete' },
     // Village grass
     { x: 180, y: 280, w: 870, h: 1050, type: 'grass' },
     // Dirt around cabins
@@ -118,13 +118,11 @@ export function generateFishingVillageMap() {
     { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
     { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
-    // === PIER / KAJ extending into the sea ===
-    { x: 590, y: 1450, w: 160, h: 430, type: 'concrete' },
     // === WATER / SEA — big blue area ===
     { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
-    // Water flanking the dock platform
-    { x: 0, y: 1370, w: 400, h: 630, type: 'water' },
-    { x: 890, y: 1370, w: MAP_W - 890, h: 630, type: 'water' },
+    // Water flanking the dock
+    { x: 0, y: 1380, w: 480, h: 620, type: 'water' },
+    { x: 880, y: 1380, w: MAP_W - 880, h: 620, type: 'water' },
   ];
 
   // ══════════════════════════════════════
@@ -166,18 +164,20 @@ export function generateFishingVillageMap() {
     ...westCabins.flatMap(c => makeCabin(c.x, c.y, 'east')),
     ...eastCabins.flatMap(c => makeCabin(c.x, c.y, 'west')),
 
-    // === DOCK PLATFORM === (80px gap for entry)
-    makeWall(430, 1380, 150, T, STONE), // north-left
-    makeWall(660, 1380, 210, T, STONE), // north-right (gap 580..660 = 80px)
-    makeWall(430, 1450, 150, T, STONE), // south-left
-    makeWall(760, 1450, 110, T, STONE), // south-right
-    makeWall(430, 1380, T, 70, STONE),  // west edge
-    makeWall(870, 1380, T, 70, STONE),  // east edge
-
-    // === PIER / KAJ extending into sea ===
-    makeWall(590, 1450, T, 430, STONE),  // west wall of pier
-    makeWall(750, 1450, T, 430, STONE),  // east wall of pier
-    makeWall(590, 1880, 160, T, STONE),  // south end of pier
+    // === DOCK — two rooms extending into the sea ===
+    // Dock north wall with 80px entrance from land
+    makeWall(500, 1380, 130, T, STONE),   // north-left
+    makeWall(710, 1380, 160, T, STONE),   // north-right (gap 630..710 = 80px)
+    // Dock west wall
+    makeWall(500, 1380, T, 320, STONE),
+    // Dock east wall
+    makeWall(860, 1380, T, 320, STONE),
+    // Dock south wall — 80px gap for south entrance from water
+    makeWall(500, 1700, 180, T, STONE),   // south-left
+    makeWall(760, 1700, 100, T, STONE),   // south-right (gap 680..760 = 80px)
+    // Center divider wall — splits into two rooms, 80px gap for passage between rooms
+    makeWall(680, 1390, T, 140, STONE),  // upper part
+    makeWall(680, 1610, T, 90, STONE),   // lower part (gap 1530..1610 = 80px)
 
     // Warehouse at dock (70px door gap on east wall)
     makeWall(320, 1250, 150, T, WD),
@@ -208,8 +208,9 @@ export function generateFishingVillageMap() {
   const ZONE_EAST_VILLAGE = { x: 730, y: 380, w: 280, h: 600 };
   const ZONE_ROAD_NORTH = { x: 600, y: 300, w: 140, h: 350 };
   const ZONE_ROAD_SOUTH = { x: 600, y: 700, w: 140, h: 500 };
-  const ZONE_DOCK = { x: 440, y: 1380, w: 420, h: 70 };
-  const ZONE_PIER = { x: 600, y: 1470, w: 140, h: 380 };
+  const ZONE_DOCK = { x: 510, y: 1390, w: 340, h: 300 };
+  const ZONE_DOCK_WEST = { x: 510, y: 1390, w: 160, h: 300 };
+  const ZONE_DOCK_EAST = { x: 690, y: 1390, w: 160, h: 300 };
   const ZONE_WAREHOUSE = { x: 330, y: 1260, w: 120, h: 80 };
   const ZONE_FOREST_NW = { x: 30, y: 30, w: 300, h: 250 };
   const ZONE_FOREST_NE = { x: MAP_W - 220, y: 30, w: 190, h: 250 };
@@ -320,7 +321,7 @@ export function generateFishingVillageMap() {
     makeLoot(380, 1300, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_DOCK, 'crate', 'valuable'),
     rLoot(ZONE_DOCK, 'barrel', 'common'),
-    rLoot(ZONE_PIER, 'crate', 'military'),
+    rLoot(ZONE_DOCK_EAST, 'crate', 'military'),
     rLoot(ZONE_STORE, 'desk', 'desk'),
     rLoot(ZONE_STORE, 'locker', 'valuable'),
     makeLoot(510, 390, 'weapon_cabinet', 'weapon_cabinet'),
@@ -443,7 +444,7 @@ export function generateFishingVillageMap() {
   // EXTRACTION POINTS
   // ══════════════════════════════════════
   const allExfils: ExtractionPoint[] = [
-    { pos: { x: 670, y: 1850 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
+    { pos: { x: 680, y: 1680 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
     { pos: { x: 80, y: 800 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL WEST' },
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL EAST' },
   ];
@@ -461,12 +462,11 @@ export function generateFishingVillageMap() {
       pos: { x: c.x + cabinW / 2, y: c.y + cabinH / 2 }, radius: 80, color: '#ffcc66', intensity: 0.5, type: 'window' as const,
     })),
     { pos: { x: 540, y: 390 }, radius: 100, color: '#ffdd88', intensity: 0.6, type: 'ceiling' },
-    { pos: { x: 550, y: 1410 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 800, y: 1410 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 670, y: 1500 }, radius: 120, color: '#ddddcc', intensity: 0.4, type: 'ceiling' },
-    { pos: { x: 670, y: 1700 }, radius: 100, color: '#ddddcc', intensity: 0.3, type: 'ceiling' },
+    { pos: { x: 590, y: 1500 }, radius: 120, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
+    { pos: { x: 770, y: 1500 }, radius: 120, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
+    { pos: { x: 680, y: 1650 }, radius: 100, color: '#ddddcc', intensity: 0.4, type: 'ceiling' },
     { pos: { x: 400, y: 1310 }, radius: 100, color: '#ff8844', intensity: 0.4, type: 'fire' },
-    { pos: { x: 670, y: 1850 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
+    { pos: { x: 680, y: 1680 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: 80, y: 800 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
   ];
