@@ -2627,6 +2627,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else if (bossId === 'kravtsov') {
           if (enemy.bossPhase === 1) { enemy.speechBubble = 'МУТАГЕН... АКТИВИРОВАН!'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = 'НАУКА... ТРЕБУЕТ... ЖЕРТВ!'; enemy.speechBubbleTimer = 3; }
+        } else if (bossId === 'gruvra') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = '*BERGET SKAKAR*'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = '*RASET BÖRJAR*'; enemy.speechBubbleTimer = 3; }
         } else {
           if (enemy.bossPhase === 1) { enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!'; enemy.speechBubbleTimer = 3; }
