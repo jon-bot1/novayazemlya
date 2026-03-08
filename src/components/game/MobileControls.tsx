@@ -58,8 +58,15 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
   const modeIcons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
   const modes: Array<'sneak' | 'walk' | 'sprint'> = ['sneak', 'walk', 'sprint'];
 
+  React.useEffect(() => {
+    setCurrentMode(movementMode);
+  }, [movementMode]);
+
   return (
-    <div className="sm:hidden absolute inset-0 z-40" style={{ pointerEvents: 'none' }}>
+    <div
+      className="sm:hidden absolute inset-0 z-40 touch-none pointer-events-auto"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       {/* Left joystick — movement */}
       <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={130} />
 
