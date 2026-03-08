@@ -2521,7 +2521,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody) {
       for (const dead of state.enemies) {
         if (dead.state !== 'dead' || dead === enemy) continue;
-        if (dist(enemy.pos, dead.pos) < 80 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) {
+        if (distSq(enemy.pos, dead.pos) < 6400 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) { // 80²
           (enemy as any)._discoveredBody = true;
           enemy.state = 'investigate';
           enemy.investigateTarget = { ...dead.pos };
@@ -2529,7 +2529,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Alert nearby allies
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
-            if (dist(ally.pos, enemy.pos) < 300 && ally.state !== 'chase' && ally.state !== 'attack') {
+            if (distSq(ally.pos, enemy.pos) < 90000 && ally.state !== 'chase' && ally.state !== 'attack') { // 300²
               ally.state = 'investigate';
               ally.investigateTarget = { ...dead.pos };
               if (!ally.speechBubble) {
