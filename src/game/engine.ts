@@ -426,8 +426,8 @@ function generateEnemyLoot(enemy: Enemy) {
 }
 
 export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
-  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : generateMap();
-  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : createInitialPlayer();
+  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
+  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
   return {
     player,
     enemies: map.enemies,
