@@ -487,7 +487,7 @@ export function createFishingVillagePlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
   const knife = WEAPON_TEMPLATES.knife();
   return {
-    pos: { x: 750, y: 230 },
+    pos: { x: 670, y: 230 },
     hp: 100,
     maxHp: 100,
     speed: 1.69,
