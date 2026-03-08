@@ -2614,6 +2614,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
         else if (bossId === 'uzbek') phaseNames = UZBEK_PHASES;
         else if (bossId === 'nachalnik') phaseNames = NACHALNIK_PHASES;
+        else if (bossId === 'gruvra') phaseNames = GRUVRA_PHASES;
         else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         
         if (phaseNames[enemy.bossPhase!]) {
