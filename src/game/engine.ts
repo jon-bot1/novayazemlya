@@ -5624,5 +5624,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   state.camera.x += (state.player.pos.x - state.camera.x) * camLerp;
   state.camera.y += (state.player.pos.y - state.camera.y) * camLerp;
 
+  // Track damage taken this frame
+  const dmgThisFrame = _hpAtFrameStart - state.player.hp;
+  if (dmgThisFrame > 0) {
+    (state as any)._damageTaken = ((state as any)._damageTaken || 0) + dmgThisFrame;
+  }
+
   return state;
 }
