@@ -403,6 +403,27 @@ export function generateMap() {
       }
       return result;
     })(),
+
+    // === ORDO BOREALIS CULTISTS — 2-3, lurking in dark corners of the base ===
+    ...(() => {
+      const cultZones = [ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_HANGAR_B, ZONE_OFFICES_BOT];
+      const count = 2 + Math.floor(Math.random() * 2); // 2-3
+      const result: Enemy[] = [];
+      for (let i = 0; i < count; i++) {
+        const zone = cultZones[Math.floor(Math.random() * cultZones.length)];
+        const cultist = rz(zone, 'cultist');
+        (cultist as any)._cultFaction = 'ordo_borealis';
+        result.push(cultist);
+      }
+      return result;
+    })(),
+
+    // === SVARTA SOLEN OPERATIVE — rare spawn (30% chance), elite tactical ===
+    ...(Math.random() < 0.3 ? [(() => {
+      const op = rz(pick(allOutsideZones), 'svarta_sol');
+      (op as any)._cultFaction = 'svarta_sol';
+      return op;
+    })()] : []),
   ];
 
   // Save base enemy count before adding officers (index math depends on this)
