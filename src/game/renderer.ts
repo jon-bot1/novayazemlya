@@ -1009,7 +1009,7 @@ type MapPalette = {
 };
 
 const MAP_PALETTES: Record<string, MapPalette> = {
-  novaya_zemlya: {
+  objekt47: {
     terrain: {
       grass: ['#3a4a2e', '#3e4e32'],
       dirt: ['#5a5040', '#5e5444'],
