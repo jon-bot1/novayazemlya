@@ -405,8 +405,8 @@ function WorldSection() {
       
       <div className="space-y-2 mb-3">
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
-          <strong className="text-destructive">THEORY: VARG IS ALREADY EXPOSED</strong><br/>
-          The compass VARG carries has pointed toward Norrberget since 1957. His father's compass. Magnetic anomaly — or has VARG been Stage 1 since childhood? The mountain may have been calling him his entire life.
+          <strong className="text-destructive">THEORY: NORDVAKT'S TRUE AGENDA</strong><br/>
+          STYRESMAN's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
         </div>
         <div className="border-l-2 border-accent/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-accent">THEORY: CONTROL IS AGENT FALKE</strong><br/>
@@ -422,7 +422,7 @@ function WorldSection() {
         </div>
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: THE OPERATION IS A SACRIFICE</strong><br/>
-          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if CONTROL knows the demolition team won't survive? What if VARG was chosen because he's expendable — a ghost who's already "dead"?
+          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if STYRESMAN knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
         </div>
       </div>
 
