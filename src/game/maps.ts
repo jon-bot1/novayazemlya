@@ -12,7 +12,7 @@ export interface MapInfo {
 
 export const MAPS: MapInfo[] = [
   {
-    id: 'novaya_zemlya',
+    id: 'objekt47',
     name: 'Objekt 47',
     description: 'Military base on Novaya Zemlya. Hangars, offices, watchtowers. Heavy enemy presence.',
     icon: '🏭',

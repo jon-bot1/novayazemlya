@@ -509,7 +509,7 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
     soundEvents: [],
     flashbangTimer: 0,
     backpackCapacity: 0,
-    mineFieldZone: mapId === 'novaya_zemlya' ? { x: 400, y: 1400, w: 350, h: 300 } : { x: -999, y: -999, w: 0, h: 0 },
+    mineFieldZone: mapId === 'objekt47' ? { x: 400, y: 1400, w: 350, h: 300 } : { x: -999, y: -999, w: 0, h: 0 },
     reinforcementTimer: 90 + Math.random() * 30,
     reinforcementsSpawned: 0,
     maxReinforcements: 6,

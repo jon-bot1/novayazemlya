@@ -130,7 +130,7 @@ function shuffle<T>(arr: T[]): T[] {
   return result;
 }
 
-export function generateMissionObjectives(mapId: MapId = 'novaya_zemlya'): MissionObjective[] {
+export function generateMissionObjectives(mapId: MapId = 'objekt47'): MissionObjective[] {
   const { main: mainPool, bonus: bonusPool } = MAP_OBJECTIVES[mapId];
   const main = shuffle(mainPool)[0];
   const bonuses = shuffle(bonusPool).slice(0, 1 + Math.floor(Math.random() * 2)); // 1-2 bonus

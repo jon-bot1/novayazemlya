@@ -459,7 +459,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     🔒 Locked — {selMap.unlockRequirement! - stash.extractionCount} more extraction{selMap.unlockRequirement! - stash.extractionCount !== 1 ? 's' : ''} needed
                   </div>
                 )}
-                {selectedMap === 'novaya_zemlya' && (
+                {selectedMap === 'objekt47' && (
                   <div className="flex gap-3 items-start">
                     <span className="text-2xl">★</span>
                     <div>

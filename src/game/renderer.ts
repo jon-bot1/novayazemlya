@@ -1339,7 +1339,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       { x: 2000, y: 1250, label: 'FIRE ESCAPE', sub: 'East', size: 9 },
     ],
   };
-  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.novaya_zemlya;
+  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.objekt47;
   const labelColor = mapId === 'hospital' ? '#a0a0a0' : '#c8c8b4';
   for (const z of zoneLabels) {
     if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue;
