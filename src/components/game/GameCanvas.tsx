@@ -199,14 +199,14 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           {/* Player Dossier */}
           <div className="border border-primary/40 rounded p-3 bg-primary/5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-display text-primary">🐺 Codename: VARG</span>
+              <span className="text-sm font-display text-primary">🛡️ Designation: OPERATÖR 8</span>
               <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
-              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by a secret NATO task force for one purpose: locate and destroy all Substance Zero sites.
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization. Answers to STYRESMAN.
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
-              <span className="text-warning">Personal stake:</span> VARG's father, <span className="text-accent">Nils Stålhandske</span>, was a survey engineer who disappeared inside Norrberget Mine in 1957 while investigating the magnetic anomaly. His body was never found. His compass still points toward the mountain.
+              <span className="text-warning">Mission:</span> Secure Substance Zero intelligence for NORDVAKT. Deny SZ-0 to NATO, Moscow, and all other parties. Trust no one.
             </p>
           </div>
 

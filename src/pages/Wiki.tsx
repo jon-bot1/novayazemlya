@@ -452,8 +452,8 @@ function WorldSection() {
         <div><span className="text-accent">1978:</span> First Ordo Borealis cell forms among Objekt 47 researchers.</div>
         <div><span className="text-accent">1980:</span> Nachalnik establishes the smuggling pipeline.</div>
         <div><span className="text-accent">1983:</span> Hospital №6 begins human experimentation. Project REBIRTH launched.</div>
-        <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. VARG "killed" in East Berlin.</div>
-        <div><span className="text-accent">1985:</span> NATO Task Force AURORA activated. Operation Aurora Borealis begins.</div>
+        <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. Operatör 8 "killed" in East Berlin. Recruited by NORDVAKT.</div>
+        <div><span className="text-accent">1985:</span> NORDVAKT activates Operation Aurora Borealis. Operatör 8 deployed.</div>
       </div>
     </>
   );
