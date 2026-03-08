@@ -37,6 +37,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss:    { hp: 550, speed: 1.00, damage: 44, alertRange: 380, shootRange: 190, fireRate: 530 },
     turret:  { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },
     shocker: { hp: 65, speed: 1.10, damage: 42, alertRange: 200, shootRange: 36,  fireRate: 680 },
+    miner_cult: { hp: 90, speed: 0.80, damage: 28, alertRange: 180, shootRange: 90, fireRate: 1100 },
+    svarta_sol: { hp: 115, speed: 1.00, damage: 28, alertRange: 320, shootRange: 170, fireRate: 800 },
   };
   // Mining village personality: rednecks are brave & territorial, dogs are vicious
   const personality: Record<string, any> = {
