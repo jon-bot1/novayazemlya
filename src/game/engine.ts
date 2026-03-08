@@ -1288,6 +1288,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         addMessage(state, '⚠ No reserve ammo for this weapon!', 'warning');
       }
+    } else if (!isMelee && state.player.currentAmmo >= getMagSize(wpn)) {
+      addMessage(state, '⚠ Magazine already full!', 'info');
     }
   } else {
     input.reload = false;
