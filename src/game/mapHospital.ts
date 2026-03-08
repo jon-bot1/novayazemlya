@@ -178,12 +178,12 @@ export function generateHospitalMap() {
     // (gap from BX+BW-280 to BX+BW-200 = 80px)
 
     // ═══ COURTYARD walls (open area in center) ═══
-    // North wall — 80px gap at west for access from corridor
-    makeWall(BX + 580, BY + 600, 520, T, TILE),
-    // (gap from x=BX+500 to BX+580 = 80px)
-    // South wall — 80px gap at east
-    makeWall(BX + 500, BY + 1100, 520, T, TILE),
-    // (gap from x=BX+1020 to BX+1100 = 80px)
+    // North wall — west gap + center gap for through-route
+    makeWall(BX + 580, BY + 600, 170, T, TILE),
+    makeWall(BX + 850, BY + 600, 250, T, TILE),
+    // South wall — center gap + east gap for through-route
+    makeWall(BX + 500, BY + 1100, 250, T, TILE),
+    makeWall(BX + 850, BY + 1100, 170, T, TILE),
     // West wall — 80px gap near bottom
     makeWall(BX + 500, BY + 600, T, 400, TILE),
     // (gap y=BY+1000 to BY+1080 = 80px)
