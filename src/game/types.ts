@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee' | 'electric'
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack' | 'special';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack' | 'special' | 'weapon_mod';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
