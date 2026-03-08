@@ -2411,7 +2411,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
         }
         // Phase transition speech bubbles
-        if (bossId === 'patient_zero') {
+        if (bossId === 'uzbek') {
           if (enemy.bossPhase === 1) { enemy.speechBubble = '*ЦЕПИ ТРЕЩАТ*'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = '*НЕЧЕЛОВЕЧЕСКИЙ ВОЙ*'; enemy.speechBubbleTimer = 3; }
         } else if (bossId === 'kravtsov') {
