@@ -1128,6 +1128,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // === NOISE METER — compute player noise level for HUD ===
+  {
+    const baseNoise: Record<MovementMode, number> = { sneak: 0.05, walk: 0.25, sprint: 0.75 };
+    let noise = baseNoise[effectiveMode] || 0.25;
+    noise *= terrainMult;
+    const silentBonus = (state as any)._noiseReduction || 0;
+    if (silentBonus > 0) noise *= (1 - silentBonus);
+    if ((state as any)._playerHiding) noise = 0;
+    else if (state.player.inCover && !state.player.peeking) noise *= 0.5;
+    // Gunfire spike — recent shots massively increase noise
+    const recentShots = state.soundEvents.filter(se => state.time - se.time < 0.5 && se.radius >= 100);
+    if (recentShots.length > 0) noise = Math.min(1, noise + 0.5);
+    // Smooth the noise value
+    const prevNoise = (state as any)._playerNoiseLevel || 0;
+    (state as any)._playerNoiseLevel = prevNoise + (noise - prevNoise) * Math.min(1, dt * 8);
+  }
+
   // Hide flags already set in combined cover+hide loop above
 
   // === HIDE SYSTEM (Q key) — hide at trees/bushes, become invisible ===
