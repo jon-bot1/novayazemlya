@@ -118,19 +118,17 @@ export function generateHospitalMap() {
     // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
     makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
     makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
-    // North wall of reception — center opening aligned with corridor (100px)
-    makeWall(BX + BW / 2 - 250, BY + BH - 250, 200, T, TILE),  // left block
-    makeWall(BX + BW / 2 + 50, BY + BH - 250, 200, T, TILE),   // right block
-    // (gap x=BX+BW/2-50 .. BX+BW/2+50)
+    // North wall of reception — wide center opening aligned with corridor (160px)
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, 170, T, TILE),  // left block
+    makeWall(BX + BW / 2 + 80, BY + BH - 250, 170, T, TILE),   // right block
+    // (gap x=BX+BW/2-80 .. BX+BW/2+80)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
     // Main north-south corridor (center, 100px wide)
     // North segment: from building top down to cross-corridor top (y=BY+300)
     makeWall(BX + BW / 2 - 50, BY + T, T, 300 - T, TILE),
     makeWall(BX + BW / 2 + 50, BY + T, T, 300 - T, TILE),
-    // South segment: from courtyard south (y=BY+1100) toward reception — stop 80px short to leave opening
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 250 - 80, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 250 - 80, TILE),
+    // South segment removed to avoid sealed pocket above reception; central atrium remains fully traversable
 
     // East-west corridor (y=300-400) — connects to N-S corridor via open intersection
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
