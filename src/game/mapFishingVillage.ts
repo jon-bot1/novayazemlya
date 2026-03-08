@@ -149,17 +149,17 @@ export function generateFishingVillageMap() {
     return walls;
   };
 
-  // West cabins (doors face road = east) — close to center road
+  // West cabins (doors face road = east)
   const westCabins = [
-    { x: 350, y: 420 },
-    { x: 320, y: 620 },
-    { x: 360, y: 850 },
+    { x: 330, y: 420 },
+    { x: 300, y: 620 },
+    { x: 340, y: 850 },
   ];
-  // East cabins (doors face road = west) — close to center road
+  // East cabins (doors face road = west) — pulled closer
   const eastCabins = [
-    { x: 880, y: 400 },
-    { x: 910, y: 630 },
-    { x: 870, y: 870 },
+    { x: 780, y: 400 },
+    { x: 810, y: 630 },
+    { x: 770, y: 870 },
   ];
 
   const walls: Wall[] = [
