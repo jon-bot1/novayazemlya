@@ -5185,6 +5185,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist > 250) state.longShots++;
             if (killDist < 50) state.knifeDistanceKills++;
             if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+            notifyAllyDeath(state, enemy, isCrit ? 'Headshot' : (b.weaponName || 'Bullet'));
+            trackWeaponMasteryKill(state, b.weaponName, isCrit ? 'Headshot' : 'Bullet');
           } else {
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
