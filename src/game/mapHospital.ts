@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone, Item } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKeycard, createArmor, createValuable, createDogFood } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKeycard, createArmor, createValuable, createDogFood, createTNT } from './items';
 
 // Hospital: 2400x2400
 // Layout: Large abandoned hospital building with corridors, wards, basement, and courtyard
@@ -118,11 +118,10 @@ export function generateHospitalMap() {
     // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
     makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
     makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
-    // North wall of reception — two 80px gaps (left and center-right)
-    makeWall(BX + BW / 2 - 250, BY + BH - 250, 120, T, TILE),  // far left
-    makeWall(BX + BW / 2 - 50, BY + BH - 250, 100, T, TILE),   // center block
-    makeWall(BX + BW / 2 + 130, BY + BH - 250, 120, T, TILE),  // far right
-    // (gaps: x -130..-50 = 80px, x +50..+130 = 80px)
+    // North wall of reception — center opening aligned with corridor (100px)
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, 200, T, TILE),  // left block
+    makeWall(BX + BW / 2 + 50, BY + BH - 250, 200, T, TILE),   // right block
+    // (gap x=BX+BW/2-50 .. BX+BW/2+50)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
     // Main north-south corridor (center, 100px wide)
@@ -179,12 +178,12 @@ export function generateHospitalMap() {
     // (gap from BX+BW-280 to BX+BW-200 = 80px)
 
     // ═══ COURTYARD walls (open area in center) ═══
-    // North wall — 80px gap at west for access from corridor
-    makeWall(BX + 580, BY + 600, 520, T, TILE),
-    // (gap from x=BX+500 to BX+580 = 80px)
-    // South wall — 80px gap at east
-    makeWall(BX + 500, BY + 1100, 520, T, TILE),
-    // (gap from x=BX+1020 to BX+1100 = 80px)
+    // North wall — west gap + center gap for through-route
+    makeWall(BX + 580, BY + 600, 170, T, TILE),
+    makeWall(BX + 850, BY + 600, 250, T, TILE),
+    // South wall — center gap + east gap for through-route
+    makeWall(BX + 500, BY + 1100, 250, T, TILE),
+    makeWall(BX + 850, BY + 1100, 170, T, TILE),
     // West wall — 80px gap near bottom
     makeWall(BX + 500, BY + 600, T, 400, TILE),
     // (gap y=BY+1000 to BY+1080 = 80px)
@@ -383,6 +382,7 @@ export function generateHospitalMap() {
     makeLoot(BX + 800, BY + 1600, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_CORRIDOR_N, 'locker', 'locker'),
     rLoot(ZONE_PARKING, 'crate', 'common'),
+    { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createTNT()], looted: false, type: 'crate' as const },
     { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createExtractionCode()], looted: false, type: 'archive' as const },
   ];
 

@@ -567,6 +567,15 @@ export function generateMap() {
       looted: false,
       type: 'archive' as const,
     },
+    // Guaranteed TNT spawn (all maps should always have at least one)
+    {
+      id: `loot_${containerId++}`,
+      pos: randIn(ZONE_STORAGE_A.x, ZONE_STORAGE_A.y, ZONE_STORAGE_A.w, ZONE_STORAGE_A.h),
+      size: 24,
+      items: [createTNT()],
+      looted: false,
+      type: 'crate' as const,
+    },
     // Guard booth loot
     rLoot({ x: 1355, y: 1710, w: 30, h: 55 }, 'desk', 'desk'),
     rLoot({ x: 1355, y: 1710, w: 30, h: 55 }, 'locker', 'locker'),
