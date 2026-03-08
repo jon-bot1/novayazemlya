@@ -405,8 +405,8 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
 
 // Assign tactical roles to enemies in combat — distribute flankers and suppressors
 function assignTacticalRole(state: GameState, enemy: Enemy) {
-  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav' || enemy.type === 'dog' || enemy.type === 'redneck') {
-    enemy.tacticalRole = (enemy.type === 'scav' || enemy.type === 'redneck') ? 'assault' : 'none';
+  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav' || enemy.type === 'dog' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') {
+    enemy.tacticalRole = (enemy.type === 'scav' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') ? 'assault' : 'none';
     return;
   }
   // Count current roles in radio group

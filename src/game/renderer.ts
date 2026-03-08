@@ -2878,6 +2878,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
         shocker: { body: '#3a5a8a', outline: '#2a4a7a', eye: '#aaf', hat: 'helmet', hatColor: '#2244aa' },
         redneck: { body: '#8a6a4a', outline: '#6a4a2a', eye: '#331', hat: 'bandana', hatColor: '#aa5533' },
+        cultist: { body: '#2a1a2a', outline: '#1a0a1a', eye: '#ff44ff', hat: 'none', hatColor: '#000' },
+        miner_cult: { body: '#4a3a2a', outline: '#2a1a0a', eye: '#ffaa00', hat: 'ushanka', hatColor: '#3a2a1a' },
+        svarta_sol: { body: '#1a1a2a', outline: '#0a0a1a', eye: '#ff0000', hat: 'beret', hatColor: '#0a0a0a' },
       };
       let cfg = configs[enemy.type];
       // Sleeper: skin-colored body (underwear), no hat, messy hair
