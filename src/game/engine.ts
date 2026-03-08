@@ -475,9 +475,11 @@ function generateEnemyLoot(enemy: Enemy) {
 export function createGameState(mapId: MapId = 'objekt47'): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
+  // Hard safety: Sniper Tuman should only exist on Objekt 47
+  const mapEnemies = mapId === 'objekt47' ? map.enemies : map.enemies.filter(e => e.type !== 'sniper');
   const state: GameState = {
     player,
-    enemies: map.enemies,
+    enemies: mapEnemies,
     bullets: [],
     grenades: [],
     placedTNTs: [],
@@ -534,7 +536,7 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
     propagandaTimer: 0,
     dogsNeutralized: 0,
     dogsKilled: 0,
-    totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
+    totalDogsOnMap: mapEnemies.filter(e => e.type === 'dog').length,
     emptyMagTimer: 0,
     disguised: false,
     disguiseTimer: 0,
@@ -679,6 +681,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       moveY = 0;
     }
   }
+
+  // Input deadzone to prevent drift (especially touch/controller edge-cases)
+  if (Math.abs(moveX) < 0.12) moveX = 0;
+  if (Math.abs(moveY) < 0.12) moveY = 0;
 
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
   
@@ -1276,7 +1282,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     input.reload = false;
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
     if (!isMelee && state.player.currentAmmo < getMagSize(wpn)) {
-      const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+      const ammoType = wpn.ammoType;
+      const ammoAvail = ammoType ? (state.player.ammoReserves[ammoType] || 0) : 0;
       if (ammoAvail > 0) {
         state.player.reloading = true;
         let reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
@@ -1289,7 +1296,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.reloadTime = reloadTime;
         addMessage(state, '🔄 RELOADING...', 'info');
       } else {
-        addMessage(state, '⚠ No reserve ammo for this weapon!', 'warning');
+        addMessage(state, state.player.currentAmmo <= 0
+          ? '⚠ Magazine empty — no reserve ammo!'
+          : '⚠ No reserve ammo for this weapon!', 'warning');
       }
     } else if (!isMelee && state.player.currentAmmo >= getMagSize(wpn)) {
       addMessage(state, '⚠ Magazine already full!', 'info');

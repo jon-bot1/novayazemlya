@@ -26,6 +26,40 @@ import { supabase } from '@/integrations/supabase/client';
 const TIME_LIMIT = 300; // 5 minutes
 const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
 
+const createDefaultInputState = (): InputState => ({
+  moveX: 0,
+  moveY: 0,
+  aimX: 0,
+  aimY: 0,
+  shooting: false,
+  shootPressed: false,
+  interact: false,
+  heal: false,
+  throwGrenade: false,
+  cycleThrowable: false,
+  movementMode: 'walk',
+  moveTarget: null,
+  takeCover: false,
+  useTNT: false,
+  useSpecial: false,
+  reload: false,
+  throwKnife: false,
+  chokehold: false,
+  throwRock: false,
+});
+
+const createInitialObjectivesByMap = (): Record<MapId, MissionObjective[]> => ({
+  objekt47: generateMissionObjectives('objekt47'),
+  fishing_village: generateMissionObjectives('fishing_village'),
+  hospital: generateMissionObjectives('hospital'),
+});
+
+const createInitialRerollsByMap = (): Record<MapId, number> => ({
+  objekt47: 0,
+  fishing_village: 0,
+  hospital: 0,
+});
+
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
@@ -589,7 +623,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false, throwRock: false });
+  const inputRef = useRef<InputState>(createDefaultInputState());
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const updateKeysRef = useRef<() => void>(() => {});
@@ -598,8 +632,10 @@ export const GameCanvas: React.FC = () => {
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
-  const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
-  const [rerollCount, setRerollCount] = useState(0);
+  const objectivesByMapRef = useRef<Record<MapId, MissionObjective[]>>(createInitialObjectivesByMap());
+  const rerollsByMapRef = useRef<Record<MapId, number>>(createInitialRerollsByMap());
+  const [objectives, setObjectives] = useState<MissionObjective[]>(() => objectivesByMapRef.current.objekt47);
+  const [rerollCount, setRerollCount] = useState(rerollsByMapRef.current.objekt47);
   const extractedRef = useRef(false);
   const dbSyncedRef = useRef(false);
 
@@ -776,6 +812,21 @@ export const GameCanvas: React.FC = () => {
       }
     };
 
+    const resetMovementInput = () => {
+      keys.clear();
+      inputRef.current.moveX = 0;
+      inputRef.current.moveY = 0;
+      inputRef.current.moveTarget = null;
+      inputRef.current.shooting = false;
+      inputRef.current.shootPressed = false;
+      inputRef.current.movementMode = 'walk';
+    };
+
+    const onWindowBlur = () => resetMovementInput();
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') resetMovementInput();
+    };
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('mousedown', onMouseDown);
@@ -783,6 +834,8 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('contextmenu', onContextMenu);
     window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('blur', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       updateKeysRef.current = () => {};
@@ -793,6 +846,8 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('blur', onWindowBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [showInventory, showIntel, readingDoc, isMobile]);
 
@@ -970,7 +1025,11 @@ export const GameCanvas: React.FC = () => {
 
         // Live objective tracking
         if (hudUpdateCounter % 18 === 0) {
-          setObjectives(prev => checkObjectiveCompletion(prev, buildObjectivePayload(state)));
+          setObjectives(prev => {
+            const next = checkObjectiveCompletion(prev, buildObjectivePayload(state));
+            objectivesByMapRef.current[selectedMapId] = next;
+            return next;
+          });
         }
       }
 
@@ -1079,6 +1138,7 @@ export const GameCanvas: React.FC = () => {
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
             setSelectedMapId(mapId);
+            inputRef.current = createDefaultInputState();
             // Apply upgrades to game state
             stateRef.current = createGameState(mapId);
             const st = stateRef.current;
@@ -1283,13 +1343,23 @@ export const GameCanvas: React.FC = () => {
                 return updated;
               });
             }
-            setObjectives(generateMissionObjectives(selectedMapId));
-            setRerollCount(c => c + 1);
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            const nextRerollCount = (rerollsByMapRef.current[selectedMapId] || 0) + 1;
+            rerollsByMapRef.current[selectedMapId] = nextRerollCount;
+            setObjectives(nextObjectives);
+            setRerollCount(nextRerollCount);
           }}
           onMapChange={(mapId: MapId) => {
             setSelectedMapId(mapId);
-            setObjectives(generateMissionObjectives(mapId));
-            setRerollCount(0);
+            if (!objectivesByMapRef.current[mapId]) {
+              objectivesByMapRef.current[mapId] = generateMissionObjectives(mapId);
+            }
+            if (rerollsByMapRef.current[mapId] == null) {
+              rerollsByMapRef.current[mapId] = 0;
+            }
+            setObjectives(objectivesByMapRef.current[mapId]);
+            setRerollCount(rerollsByMapRef.current[mapId]);
           }}
           onReturnToMenu={() => {
             setGamePhase('intro');
@@ -1370,7 +1440,10 @@ export const GameCanvas: React.FC = () => {
             setStarted(false);
             setGamePhase('homebase');
             // Reroll objectives for next raid
-            setObjectives(generateMissionObjectives(selectedMapId));
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            rerollsByMapRef.current[selectedMapId] = 0;
+            setObjectives(nextObjectives);
             setRerollCount(0);
           }}
         />
