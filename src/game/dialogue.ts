@@ -88,7 +88,7 @@ export const KRAVTSOV_DEATH_MONOLOGUE = [
   '...наука... не прощает...',
 ];
 
-export const PATIENT_ZERO_DEATH_MONOLOGUE = [
+export const UZBEK_DEATH_MONOLOGUE = [
   'ААААРРРГХ...',
   '...свобода...?',
   '...так долго... в темноте...',
@@ -102,7 +102,7 @@ export const KRAVTSOV_TAUNTS: string[][] = [
   ['КРОВЬ... НУЖНА КРОВЬ!', 'ЭКСПЕРИМЕНТ... ДОЛЖЕН... ПРОДОЛЖАТЬСЯ!', 'Я НЕ ОСТАНОВЛЮСЬ!'],
 ];
 
-export const PATIENT_ZERO_TAUNTS: string[][] = [
+export const UZBEK_TAUNTS: string[][] = [
   ['ААААА!!', '*рычание*', 'ВЫПУСТИТЕ!!', '*скрежет*', 'ТЕМНО... ТАК ТЕМНО...'],
   ['ГОЛОДЕН!!', '*вой*', 'БОЛЬШЕ НЕ БУДУ... ТИХИМ!', 'СВОБОООДА!!'],
   ['*нечеловеческий крик*', 'УБЬЮ... ВСЕХ...', '*хрип*'],
@@ -114,10 +114,10 @@ export const KRAVTSOV_PHASES = [
   '⚠ ДОКТОР КРАВЦОВ ВВОДИТ МУТАГЕН!',
   '☠ КРАВЦОВ В БЕЗУМИИ — БЕРЕГИСЬ!',
 ];
-export const PATIENT_ZERO_PHASES = [
+export const UZBEK_PHASES = [
   '',
-  '⚠ ПАЦИЕНТ НОЛЬ ВЫРЫВАЕТСЯ ИЗ ОКОВ!',
-  '☠ ПАЦИЕНТ НОЛЬ В ЯРОСТИ — ОН НЕВЕРОЯТНО БЫСТР!',
+  '⚠ УЗБЕК ВЫРЫВАЕТСЯ ИЗ ОКОВ!',
+  '☠ УЗБЕК В ЯРОСТИ — ОН НЕВЕРОЯТНО БЫСТР!',
 ];
 
 // === IDLE CHATTER — type-specific ambient lines ===

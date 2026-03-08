@@ -7,13 +7,13 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, PATIENT_ZERO_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, PATIENT_ZERO_TAUNTS, KRAVTSOV_PHASES, PATIENT_ZERO_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
 
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
-  if (bossId === 'patient_zero') return [...PATIENT_ZERO_DEATH_MONOLOGUE];
+  if (bossId === 'uzbek') return [...UZBEK_DEATH_MONOLOGUE];
   return [...BOSS_DEATH_MONOLOGUE];
 }
 
@@ -21,7 +21,7 @@ function getBossDeathMonologue(enemy: Enemy): string[] {
 function getBossTitle(enemy: Enemy): string {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
-  if (bossId === 'patient_zero') return 'ПАЦИЕНТ НОЛЬ';
+  if (bossId === 'uzbek') return 'УЗБЕК';
   return 'COMMANDANT OSIPOVITJ';
 }
 
@@ -2404,14 +2404,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const bossId = (enemy as any)._bossId;
         let phaseNames: string[];
         if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
-        else if (bossId === 'patient_zero') phaseNames = PATIENT_ZERO_PHASES;
+        else if (bossId === 'uzbek') phaseNames = UZBEK_PHASES;
         else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
         }
         // Phase transition speech bubbles
-        if (bossId === 'patient_zero') {
+        if (bossId === 'uzbek') {
           if (enemy.bossPhase === 1) { enemy.speechBubble = '*ЦЕПИ ТРЕЩАТ*'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = '*НЕЧЕЛОВЕЧЕСКИЙ ВОЙ*'; enemy.speechBubbleTimer = 3; }
         } else if (bossId === 'kravtsov') {
@@ -2423,14 +2423,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
-          if (bossId === 'patient_zero') {
+          if (bossId === 'uzbek') {
             enemy.speed = 2.20; enemy.damage = 65; enemy.fireRate = 350;
           } else {
             enemy.fireRate = 350; enemy.speed = 1.49; enemy.damage = 35;
           }
         }
         if (enemy.bossPhase === 2) {
-          if (bossId === 'patient_zero') {
+          if (bossId === 'uzbek') {
             enemy.speed = 2.80; enemy.damage = 80; enemy.fireRate = 300;
           } else {
             enemy.fireRate = 250; enemy.speed = 1.89; enemy.damage = 40;
@@ -2445,8 +2445,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         let pool: string[];
         if (bossId === 'kravtsov') {
           pool = KRAVTSOV_TAUNTS[Math.min(phase, 2)];
-        } else if (bossId === 'patient_zero') {
-          pool = PATIENT_ZERO_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'uzbek') {
+          pool = UZBEK_TAUNTS[Math.min(phase, 2)];
         } else {
           const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
           const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];

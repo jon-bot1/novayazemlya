@@ -91,7 +91,7 @@ const VILLAGE_BONUS: ObjectiveTemplate[] = [
 // ═══════════════════════════════════════
 const HOSPITAL_MAIN: ObjectiveTemplate[] = [
   { id: 'kill_doctor', name: 'Eliminate Dr. Kravtsov', icon: '🧪', description: 'Kill Doctor Kravtsov, the experimenter, in the east wing lab', reward: 550, isMain: true },
-  { id: 'kill_patient_zero', name: 'Destroy Patient Zero', icon: '🩸', description: 'Kill Patient Zero — the ancient test subject locked in the basement', reward: 600, isMain: true },
+  { id: 'kill_uzbek', name: 'Destroy the Uzbek', icon: '🩸', description: 'Kill the Uzbek — the ancient test subject locked in the basement', reward: 600, isMain: true },
   { id: 'clear_basement', name: 'Purge the Basement', icon: '🔦', description: 'Eliminate all enemies in the hospital basement', reward: 500, isMain: true },
   { id: 'hack_lab', name: 'Steal Research Data', icon: '💻', description: 'Hack the lab terminal and extract the data', reward: 450, isMain: true },
   { id: 'collect_all_docs', name: 'Recover Patient Files', icon: '📚', description: 'Collect all classified documents in the hospital', reward: 450, isMain: true },
@@ -218,7 +218,7 @@ export function checkObjectiveCompletion(
       case 'forest_trail': completed = stats.extractionName !== 'SPEEDBOAT' && !!stats.extractionName; break;
       // Hospital specific
       case 'kill_doctor': completed = stats.bossKilled; break;
-      case 'kill_patient_zero': completed = stats.bossKilled && stats.killCount >= 2; break; // at least 2 boss-type kills
+      case 'kill_uzbek': completed = stats.bossKilled && stats.killCount >= 2; break; // at least 2 boss-type kills
       case 'clear_basement': completed = stats.killCount >= 6; break;
       case 'hack_lab': completed = stats.alarmsHacked >= 1; break;
       case 'rooftop_escape': completed = stats.extractionName === 'ROOFTOP HELICOPTER'; break;

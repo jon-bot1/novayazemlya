@@ -244,12 +244,12 @@ export function generateHospitalMap() {
       return boss;
     })(),
 
-    // ═══ BOSS 2 — Пациент Ноль (Patient Zero) ═══
+    // ═══ BOSS 2 — Узбек (The Uzbek) ═══
     // Locked in the basement — fast, melee-focused, horrifying
     (() => {
       const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
-      (boss as any)._bossId = 'patient_zero';
-      (boss as any)._bossTitle = 'ПАЦИЕНТ НОЛЬ';
+      (boss as any)._bossId = 'uzbek';
+      (boss as any)._bossTitle = 'УЗБЕК';
       boss.hp = 600; boss.maxHp = 600;
       boss.speed = 1.60; // very fast — charges at you
       boss.damage = 55;  // devastating melee-range hits
@@ -258,7 +258,7 @@ export function generateHospitalMap() {
       boss.shootRange = 40; // almost pure melee
       boss.loot = [
         createExtractionCode(),
-        createValuable('Patient Zero Blood Sample', 2000, '🩸'),
+        createValuable('Uzbek Blood Sample', 2000, '🩸'),
         createValuable('Old Dog Tags', 500, '💀'),
       ];
       (boss as any)._patrolWaypoints = [
@@ -289,8 +289,8 @@ export function generateHospitalMap() {
     }
   }
 
-  // Patient Zero has no bodyguards — but add extra shockers nearby as "failed experiments"
-  const pzIdx = enemies.findIndex(e => (e as any)._bossId === 'patient_zero');
+  // Uzbek has no bodyguards — but add extra shockers nearby as "failed experiments"
+  const pzIdx = enemies.findIndex(e => (e as any)._bossId === 'uzbek');
   if (pzIdx >= 0) {
     const pz = enemies[pzIdx];
     for (const offset of [{ x: -60, y: -30 }, { x: 60, y: -30 }, { x: 0, y: 40 }]) {
