@@ -42,10 +42,15 @@ export function getItemRarity(value: number, category: string): Rarity {
     return 'uncommon';
   }
   if (category === 'weapon') {
-    if (value >= 5000) return 'legendary';
-    if (value >= 3000) return 'epic';
-    if (value >= 1800) return 'rare';
-    if (value >= 1000) return 'uncommon';
+    // Rarity based on calculated value (damage × 100)
+    // Ksp 58 (2000) → legendary, Mosin (5000) → legendary, Ak4 (2400) → epic
+    // AKM (2000) → epic, AK-74 (1600) → rare, PPSh/Kpist (~800-1000) → uncommon
+    // Makarov/Revolver (~1500-2200) → rare (sidearms punch above weight in value)
+    // TOZ (1100) → uncommon
+    if (value >= 4000) return 'legendary';
+    if (value >= 2000) return 'epic';
+    if (value >= 1400) return 'rare';
+    if (value >= 800) return 'uncommon';
     return 'common';
   }
   if (category === 'key') return 'rare';

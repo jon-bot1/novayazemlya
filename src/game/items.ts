@@ -200,24 +200,59 @@ export const createGoggles = (): Item => ({
 });
 
 export const WEAPON_TEMPLATES = {
-  //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
-  //                                name         ammo       dmg  icon  bulletSpd range fireRate fireMode
-  // AK weapons NERFED: less damage, more spread, slower fire rate — ammo scarcity is the real balance lever
-  makarov: () => { const w = createWeapon('PM Makarov',    '9x18',     12, '🔫',   8.4,     45,   400,   'single'); w.weaponSlot = 'secondary'; return w; },
-  ak74:    () => { const w = createWeapon('AK-74',         '5.45x39',  18, '🔫',   10.8,    65,   320,   'auto'); w.weaponSlot = 'primary'; return w; },
-  akm:     () => { const w = createWeapon('AKM',           '7.62x39',  22, '🔫',   9.6,     55,   420,   'auto'); w.weaponSlot = 'primary'; return w; },
-  toz:     () => { const w = createWeapon('TOZ-34',        '12gauge',  13, '🔫',   7.2,     22,   1000,  'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.55; return w; },
-  mosin:   () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 55, '🔫',   13.2,    100,  1600,  'single'); w.weaponSlot = 'primary'; return w; },
-  ppsh:    () => { const w = createWeapon('PPSh-41',       '9x18',      6, '🔫',   6,       20,   90,    'auto'); w.weaponSlot = 'primary'; return w; },
-  // Secondary weapons
-  revolver: () => { const w = createWeapon('Nagant M1895', '9x18',     18, '🔫',   8.4,     50,   700,   'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
-  baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3.6,      8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
-  knife:    () => { const w = createWeapon('Combat Knife', '9x18',     45, '🗡️',   3.6,      6,   280,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
+  // ═══════════════════════════════════════════════════════════════════
+  // WEAPON BALANCE ALGORITHM
+  // ─────────────────────────────────────────────────────────────────
+  // Target effective DPS (damage per second) tiers:
+  //   Tier 1 (sidearms):   ~25-35 eDPS   — always available, weak
+  //   Tier 2 (SMGs/shotgun): ~40-55 eDPS — high ROF or burst, short range
+  //   Tier 3 (rifles):     ~35-45 eDPS   — balanced, auto penalty applied
+  //   Tier 4 (precision):  ~35-40 eDPS   — single-shot, long range, high per-hit
+  //   Tier 5 (heavy):      ~50-60 eDPS   — rare, heavy, ammo-hungry
+  //
+  // Auto weapons: raw DPS is reduced by 0.6x accuracy factor (spread/recoil)
+  // Formula: eDPS = (damage × 1000 / fireRate) × (auto ? 0.6 : 1.0)
+  // Tradeoffs: high damage → slow fire / short range / small mag / heavy
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ── SIDEARMS (Tier 1) ──────────────────────────────────────────
+  // Makarov:   15 × 1000/420 = 35.7 eDPS, mag 8        → common sidearm
+  makarov:  () => { const w = createWeapon('PM Makarov',    '9x18',     15, '🔫',  8,    40,  420,  'single'); w.weaponSlot = 'secondary'; return w; },
+  // Revolver:  22 × 1000/800 = 27.5 eDPS, mag 7        → slow but punchy
+  revolver: () => { const w = createWeapon('Nagant M1895',  '9x18',     22, '🔫',  9,    50,  800,  'single'); w.weaponSlot = 'secondary'; w.weight = 1; return w; },
+
+  // ── MELEE (special tier — no ammo) ─────────────────────────────
+  baton:    () => { const w = createWeapon('Baton',         '9x18',     10, '🔫',  3.6,   8,  500,  'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
+  knife:    () => { const w = createWeapon('Combat Knife',  '9x18',     40, '🗡️',  3.6,   6,  300,  'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
+
+  // ── SMGs (Tier 2) ──────────────────────────────────────────────
+  // PPSh:  8 × 1000/100 × 0.6 = 48 eDPS, mag 35        → bullet hose, low per-hit
+  ppsh:     () => { const w = createWeapon('PPSh-41',       '9x18',      8, '🔫',  6,    22,  100,  'auto'); w.weaponSlot = 'primary'; return w; },
+  // Kpist: 10 × 1000/120 × 0.6 = 50 eDPS, mag 36       → Swedish SMG, slightly better
+  kpist45:  () => { const w = createWeapon('Kpist m/45',    '9x18',     10, '🔫',  7,    25,  120,  'auto'); w.weaponSlot = 'primary'; w.weight = 2.5; w.description = 'Carl Gustaf SMG — high ROF, burns through ammo'; return w; },
+
+  // ── SHOTGUN (Tier 2) ──────────────────────────────────────────
+  // TOZ: 11×5 pellets = 55 potential, but spread → ~33 eDPS at range, mag 2
+  toz:      () => { const w = createWeapon('TOZ-34',        '12gauge',  11, '🔫',  7,    20, 1100,  'single'); w.weaponSlot = 'primary'; w.isBuckshot = true; w.pelletCount = 5; w.coneAngle = 0.55; return w; },
+
+  // ── ASSAULT RIFLES (Tier 3) — auto penalty keeps eDPS in check ─
+  // AK-74: 16 × 1000/280 × 0.6 = 34.3 eDPS, mag 30    → controllable, common
+  ak74:     () => { const w = createWeapon('AK-74',         '5.45x39',  16, '🔫', 10,    60,  280,  'auto'); w.weaponSlot = 'primary'; return w; },
+  // AKM:   20 × 1000/360 × 0.6 = 33.3 eDPS, mag 30     → harder hitting, slower
+  akm:      () => { const w = createWeapon('AKM',           '7.62x39',  20, '🔫',  9,    50,  360,  'auto'); w.weaponSlot = 'primary'; return w; },
+  // Ak 4:  24 × 1000/400 × 0.6 = 36 eDPS, mag 20        → battle rifle, heavy
+  ak4:      () => { const w = createWeapon('Ak 4',          '7.62x39',  24, '🔫', 11,    70,  400,  'auto'); w.weaponSlot = 'primary'; w.weight = 4; w.description = 'Ak 4 (HK G3) — hard-hitting battle rifle, heavy recoil'; return w; },
+
+  // ── PRECISION (Tier 4) ─────────────────────────────────────────
+  // Mosin: 50 × 1000/1800 = 27.8 eDPS, mag 5           → one-shot potential, very slow
+  mosin:    () => { const w = createWeapon('Mosin-Nagant',  '7.62x54R', 50, '🔫', 13,    95, 1800,  'single'); w.weaponSlot = 'primary'; return w; },
+
+  // ── HEAVY / LEGENDARY (Tier 5) ─────────────────────────────────
+  // Ksp 58: 20 × 1000/160 × 0.6 = 75 eDPS BUT weight 6, mag 50, rare ammo
+  ksp58:    () => { const w = createWeapon('Ksp 58',        '7.62x54R', 20, '🔫', 10,    75,  160,  'auto'); w.weaponSlot = 'primary'; w.weight = 6; w.description = 'Ksp 58 (FN MAG) — devastating but extremely heavy, eats ammo'; return w; },
+
+  // ── SPECIAL ────────────────────────────────────────────────────
   laser:    () => { const w = createWeapon('Laser Designator', '9x18', 0, '🔴', 0, 0, 3000, 'single'); w.weaponSlot = 'primary'; w.weight = 1; w.description = 'Laser designator — calls in mortar fire on target. 3s delay.'; (w as any).isLaserDesignator = true; return w; },
-  // Swedish weapons (Gruvsamhället map)
-  kpist45:  () => { const w = createWeapon('Kpist m/45',      '9x18',     9,  '🔫',   7.2,     28,   100,   'auto'); w.weaponSlot = 'primary'; w.weight = 2.5; w.description = 'Carl Gustaf SMG — Swedish 9mm, high rate of fire, moderate damage'; return w; },
-  ak4:      () => { const w = createWeapon('Ak 4',            '7.62x39',  26, '🔫',   11.4,    75,   360,   'auto'); w.weaponSlot = 'primary'; w.weight = 4; w.description = 'Swedish Ak 4 (HK G3) — hard-hitting 7.62 battle rifle'; return w; },
-  ksp58:    () => { const w = createWeapon('Ksp 58',           '7.62x54R', 24, '🔫',   10.8,    80,   140,   'auto'); w.weaponSlot = 'primary'; w.weight = 5; w.description = 'Ksp 58 (FN MAG) — belt-fed machine gun, devastating sustained fire'; return w; },
 };
 
 // ── WEAPON MODIFICATIONS ──
