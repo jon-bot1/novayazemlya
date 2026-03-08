@@ -267,7 +267,10 @@ export function generateHospitalMap() {
     // ═══ BOSS 1 — Доктор Кравцов (The Experimenter) ═══
     // Found in the lab/east wing, surrounded by his "subjects"
     (() => {
-      const boss = makeEnemy(BX + BW - 280, BY + 500, 'boss');
+      const kravtsovZones = [ZONE_LAB_E, ZONE_OFFICE_E, ZONE_COURTYARD];
+      const kz = kravtsovZones[Math.floor(Math.random() * kravtsovZones.length)];
+      const kp = randIn(kz.x, kz.y, kz.w, kz.h);
+      const boss = makeEnemy(kp.x, kp.y, 'boss');
       (boss as any)._bossId = 'kravtsov';
       (boss as any)._bossTitle = 'ДОКТОР КРАВЦОВ';
       boss.hp = 400; boss.maxHp = 400;
@@ -283,10 +286,10 @@ export function generateHospitalMap() {
         createValuable('Mutagen Sample', 1200, '🧪'),
       ];
       (boss as any)._patrolWaypoints = [
-        { x: BX + BW - 330, y: BY + 430 },
-        { x: BX + BW - 180, y: BY + 430 },
-        { x: BX + BW - 180, y: BY + 580 },
-        { x: BX + BW - 330, y: BY + 580 },
+        { x: kp.x - 80, y: kp.y - 60 },
+        { x: kp.x + 80, y: kp.y - 60 },
+        { x: kp.x + 80, y: kp.y + 60 },
+        { x: kp.x - 80, y: kp.y + 60 },
       ];
       (boss as any)._waypointIdx = 0;
       boss.patrolTarget = (boss as any)._patrolWaypoints[0];
