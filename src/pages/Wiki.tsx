@@ -221,9 +221,9 @@ function FactionsSection() {
 
       <div className="border border-border rounded p-3 mb-3 bg-card/50">
         <div className="text-sm font-display text-foreground mb-1">🛡️ NORDVAKT — Nordic Stay-Behind Defense Organization</div>
-        <P>A secret Nordic defense organization established during the early Cold War by the Scandinavian intelligence services. Operates independently of NATO and the Warsaw Pact. Operatör 8 is their field operative for Aurora Borealis. STYRESMAN is the operations chief.</P>
+        <P>A secret Nordic defense organization established during the early Cold War by the Scandinavian intelligence services. Operates independently of NATO and the Warsaw Pact. Operatör 8 is their field operative for Operation Grindvakt. Styrelsen is the operations council.</P>
         <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
-          <div><span className="text-accent">Units:</span> Operatör 8 (player), STYRESMAN (handler)</div>
+          <div><span className="text-accent">Units:</span> Operatör 8 (player), Styrelsen (handler)</div>
           <div><span className="text-accent">Agenda:</span> Secure SZ-0 intelligence. Establish Nordic defense independence. Deny the substance to NATO and Moscow alike.</div>
         </div>
       </div>
