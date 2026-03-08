@@ -885,56 +885,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // === NEARBY WEAPON SWAP (E-to-swap, no popup) ===
-  if ((state as any)._nearbyWeapon) {
-    const nw = (state as any)._nearbyWeapon;
-    // Expire after 5s or if player walks away
-    if (state.time - nw.time > 5 || dist(state.player.pos, nw.pos) > 85) {
-      // Drop weapon back on ground
-      state.lootContainers.push({
-        id: `nearby_weapon_${Date.now()}`,
-        pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
-        size: 20,
-        items: [nw.item],
-        looted: false,
-        type: 'body',
-      });
-      delete (state as any)._nearbyWeapon;
-    } else if (input.interact) {
-      // E pressed again — do the swap
-      const oldWpn = nw.replacing;
-      if (nw.slot === 'primary') {
-        state.player.primaryWeapon = nw.item;
-        if (state.player.activeSlot === 3) state.player.equippedWeapon = nw.item;
-      } else {
-        state.player.sidearm = nw.item;
-        if (state.player.activeSlot === 2) state.player.equippedWeapon = nw.item;
+  // === WEAPON DROP PICKUP (E near weapon_drop) ===
+  if (input.interact) {
+    for (const lc of state.lootContainers) {
+      if (lc.type !== 'weapon_drop' || lc.looted) continue;
+      if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
+        pickupWeaponDrop(state, lc);
+        input.interact = false; // consume E press
+        break;
       }
-      if (!state.player.inventory.includes(nw.item)) state.player.inventory.push(nw.item);
-      // Remove old weapon from inventory and drop it
-      if (oldWpn) {
-        const oldIdx = state.player.inventory.indexOf(oldWpn);
-        if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
-        state.lootContainers.push({
-          id: `dropped_weapon_${Date.now()}`,
-          pos: { x: nw.pos.x + (Math.random() - 0.5) * 8, y: nw.pos.y + (Math.random() - 0.5) * 8 },
-          size: 20,
-          items: [oldWpn],
-          looted: false,
-          type: 'body',
-        });
-      }
-      if (nw.item.ammoType) setWeaponAmmo(state, nw.item);
-      addMessage(state, `🔫 Swapped to ${nw.item.name}!`, 'info');
-      delete (state as any)._nearbyWeapon;
-      input.interact = false; // consume the E press
     }
-  }
-
-  // Legacy pending weapon cleanup
-  if (state.pendingWeapon) {
-    state.pendingWeapon = null;
-    delete (state as any)._pendingWeaponPos;
   }
 
   // Speed boost countdown
