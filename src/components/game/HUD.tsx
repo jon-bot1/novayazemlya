@@ -129,6 +129,7 @@ interface HUDProps {
   onReturnToBase?: () => void;
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
+  isMobile?: boolean;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
