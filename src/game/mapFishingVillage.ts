@@ -166,18 +166,23 @@ export function generateFishingVillageMap() {
     ...westCabins.flatMap(c => makeCabin(c.x, c.y, 'east')),
     ...eastCabins.flatMap(c => makeCabin(c.x, c.y, 'west')),
 
-    // === DOCK PLATFORM === (80px gap for entry)
-    makeWall(430, 1380, 150, T, STONE), // north-left
-    makeWall(660, 1380, 210, T, STONE), // north-right (gap 580..660 = 80px)
-    makeWall(430, 1450, 150, T, STONE), // south-left
-    makeWall(760, 1450, 110, T, STONE), // south-right
-    makeWall(430, 1380, T, 70, STONE),  // west edge
-    makeWall(870, 1380, T, 70, STONE),  // east edge
-
-    // === PIER / KAJ extending into sea ===
-    makeWall(590, 1450, T, 430, STONE),  // west wall of pier
-    makeWall(750, 1450, T, 430, STONE),  // east wall of pier
-    makeWall(590, 1880, 160, T, STONE),  // south end of pier
+    // === DOCK — two rooms extending into the sea ===
+    // Dock north wall with 80px entrance from land
+    makeWall(500, 1380, 130, T, STONE),   // north-left
+    makeWall(710, 1380, 160, T, STONE),   // north-right (gap 630..710 = 80px)
+    // Dock west wall
+    makeWall(500, 1380, T, 320, STONE),
+    // Dock east wall
+    makeWall(860, 1380, T, 320, STONE),
+    // Dock south wall (end in water)
+    makeWall(500, 1700, 360, T, STONE),
+    // Center divider wall — splits into two rooms, 80px gap for passage between rooms
+    makeWall(680, 1390, T, 140, STONE),  // upper part
+    makeWall(680, 1610, T, 90, STONE),   // lower part (gap 1530..1610 = 80px)
+    // South entrance from pier tip (80px gap in south wall)
+    // gap at x=680..760 in south wall
+    makeWall(500, 1700, 180, T, STONE),   // south-left (already above, replace)
+    makeWall(760, 1700, 100, T, STONE),   // south-right
 
     // Warehouse at dock (70px door gap on east wall)
     makeWall(320, 1250, 150, T, WD),
