@@ -1293,7 +1293,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  // Zone labels — map-specific
   const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
     novaya_zemlya: [
       { x: 1600, y: 1100, label: 'HANGAR', sub: 'Main Building', size: 22 },
