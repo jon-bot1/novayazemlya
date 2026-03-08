@@ -261,7 +261,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-12 right-2 sm:right-3 flex flex-col items-end gap-1 scale-[0.8] sm:scale-100 origin-bottom-right">
+      <div className={`absolute ${bottomOffset} right-2 sm:right-3 flex flex-col items-end gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-right`}>
         {/* Active weapon — compact */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">
