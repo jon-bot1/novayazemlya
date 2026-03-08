@@ -21,7 +21,7 @@ export const MAPS: MapInfo[] = [
   {
     id: 'fishing_village',
     name: 'The Fishing Village',
-    description: 'Abandoned coastal fishing village. Cabins, forest road, dock with speedboat.',
+    description: 'Coastal fishing village. Cabins, forest road, dock with speedboat.',
     icon: '🏚️',
     size: '1400×2000',
     unlockRequirement: 3,
@@ -29,7 +29,7 @@ export const MAPS: MapInfo[] = [
   {
     id: 'hospital',
     name: 'The Hospital',
-    description: 'Abandoned Soviet hospital. Narrow corridors, dark rooms, horror atmosphere.',
+    description: 'Soviet hospital. Narrow corridors, dark rooms, horror atmosphere.',
     icon: '🏥',
     size: '2400×2400',
     unlockRequirement: 6,
@@ -37,7 +37,7 @@ export const MAPS: MapInfo[] = [
   {
     id: 'mining_village',
     name: 'Gruvsamhället',
-    description: 'Abandoned Swedish mining village. Two levels — surface village and underground mine. Boss Gruvrå lurks below.',
+    description: 'Swedish mining village. Two levels — surface village and underground mine. Boss Gruvrå lurks below.',
     icon: '⛏️',
     size: '2000×2800',
     unlockRequirement: 10,

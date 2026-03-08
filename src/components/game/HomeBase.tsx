@@ -671,7 +671,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                   { label: '⛏️ Norrberget Mine', filter: (d: LoreDocument) => d.id.startsWith('doc_mine') },
                   { label: '🌐 Cross-Site Intel', filter: (d: LoreDocument) => d.id.startsWith('doc_sz') },
                   { label: '❄️ Arctic Legends', filter: (d: LoreDocument) => d.id.startsWith('doc_legend') },
-                  { label: '🌊 Russenorsk Coastal Lore', filter: (d: LoreDocument) => d.id.startsWith('doc_russenorsk') },
+                  { label: '🌊 Coastal Lore', filter: (d: LoreDocument) => d.id.startsWith('doc_russenorsk') },
                 ].map(group => {
                   const groupDocs = foundDocs.filter(group.filter);
                   if (groupDocs.length === 0) return null;
