@@ -1365,6 +1365,7 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
   _frameTime = state.time;
+  _rdm = getRenderDistMultiplier();
   ctx.clearRect(0, 0, w, h);
 
   // Screenshake
