@@ -1306,6 +1306,172 @@ TRANSLATOR'S NOTE (Ólafsdóttir, 1978): The unusual loanwords in this text do n
     hasCode: false,
     found: false,
   },
+  // ═══════════════════════════════════════════════════════════
+  // RUSSENORSK COASTAL LEGENDS — oral traditions from the northernmost shore
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'doc_russenorsk_1',
+    title: 'The Boiling Sea — A Pomor-Norse Oral Account',
+    author: 'Transcribed by Fr. Henrik Norum, Vardø parish',
+    date: '~1847 (oral tradition, est. 16th c.)',
+    classification: 'OPEN',
+    content: `COLLECTED ORAL HISTORY — RUSSENORSK DIALECT
+Transcribed from the testimony of Fjodor "Gamle-Fjansen" Kuznetsov, fisherman, Hamningberg.
+
+Original russenorsk (phonetic reconstruction):
+"På sjøen, på den aller nordligaste, der havet går slutt — der koker sjøen. Ikke som gryte, nei. Som sjøen bli sint. Boblene kommer opp, store som hus, og vannet bli hvitt. Fisk dør. Fugl flyr. Og lyset — Gospodi — lyset kommer fra under vannet."
+
+TRANSLATION:
+"On the sea, on the very northernmost, where the ocean ends — there the sea boils. Not like a pot, no. Like the sea becomes angry. The bubbles come up, big as houses, and the water turns white. Fish die. Birds flee. And the light — God help us — the light comes from under the water."
+
+Kuznetsov claimed his grandfather had sailed within sight of the phenomenon, which the mixed Pomor-Norwegian fishing communities called "det kokande havet" (the boiling sea). The event occurred during a winter without aurora — unusual in itself — and lasted three days.
+
+"Bestefar sa det luktet som stein som brenner. Ikke svovel. Stein. Og etterpå fløt det opp ting fra bunnen. Steiner som lyste i mørket. Blå steiner. De tok dem med. Alle som rørte dem ble syke. Men de kunne se i mørket etterpå. Og de hørte... noe. Under isen. Noe som snakket."
+
+"Grandfather said it smelled like burning stone. Not sulphur. Stone. And afterwards, things floated up from the bottom. Stones that glowed in the dark. Blue stones. They took them along. Everyone who touched them fell ill. But they could see in the dark afterwards. And they heard... something. Under the ice. Something that spoke."
+
+PARISH NOTE (Norum): I record this testimony not because I believe it, but because I have heard the same account — with identical details — from seven separate families across three villages that have no contact with one another. The consistency is troubling.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_russenorsk_2',
+    title: 'The Mountain and the Comet — Bardufoss Fragment',
+    author: 'Unknown narrator; recorded by Dr. Astrid Solheim, UiT',
+    date: '1962 (recording) / tradition est. pre-1700',
+    classification: 'SECRET',
+    content: `REEL-TO-REEL TRANSCRIPT — UiT Arctic Folklore Archive, Tape BF-0044
+Narrator: Elderly woman, name redacted, Bardufoss area. Speaks in a mix of Norwegian, Sámi loanwords, and archaic russenorsk expressions.
+
+"Berget visste at kometen kom. Lenge før mennesker hadde øyne å se med, visste berget. Fordi berget og kometen er av samma ting. Samma substans. De er... bror og søster? Nei. De er samma vesen, delt i to. En del falt ned og ble berg. En del fortsatte å fly og ble komet.
+
+Og hver gang kometen passerer — hvert tusende år, kanskje, kanskje mer — da våkner berget. Det strekker seg. Det roper. Og kometen roper tilbake. Det er det vi ser. Det vi kaller nordlyset. Det er ikke lys. Det er et rop. En samtale mellom to deler av noe som ble splittet da verden ble til.
+
+De gamle sa: 'Når lyset er som sterkest, er berget som mest våkent. Da må du ikke gå inn. Da tar berget deg. Ikke for å drepe deg. For å bruke deg. Som en munn bruker en tunge. Berget trenger stemmer. Det har glemt sin egen.'"
+
+DR. SOLHEIM'S NOTE: The informant refused payment. She said the story "does not belong to anyone" and that she was merely "returning it to the air." She died eleven days after this recording. Her family reported that in her final hours she spoke in a language none of them recognized.
+
+SUPPLEMENTARY (classified addendum, 1983): Spectral analysis of the 1961 and 1986 comet passages shows anomalous electromagnetic resonance patterns in the Novaya Zemlya geological stratum. The frequency signature is... structured. Not random. The patterns match no known natural phenomenon. File cross-referenced with PROJECT AURORA BOREALIS.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_russenorsk_3',
+    title: 'Vägvisare utan namn — The Nameless Guides',
+    author: 'Captain Petter Dahl, Norwegian Coast Guard (ret.)',
+    date: '11.02.1971',
+    classification: 'SECRET',
+    content: `PERSONAL TESTIMONY — submitted to Norwegian Defence Intelligence (E-tjenesten)
+Classification upgraded to SECRET by order of Dir. Karlsen, 1972.
+
+I am writing this because I am 74 years old and I do not believe anyone will take me seriously, so there is nothing left to lose.
+
+Between 1938 and 1952, during my service along the Finnmark coast and later during the war and reconstruction, I encountered on FIVE separate occasions individuals whom the coastal communities call "vägvisare" — pathfinders or guides. They have no other name.
+
+They appear in the worst conditions. Blizzards that kill visibility. Sea fog so thick you cannot see your own hand. The kind of weather where experienced men die.
+
+A figure appears. Always alone. Always walking, never running. They do not speak. They gesture — follow me. And if you follow, you survive. They lead you to shelter, to the correct heading, away from the rocks. Then they are gone.
+
+Physical description: Impossible to determine. They wear heavy clothing appropriate to the weather. Their faces are always obscured — hoods, scarves, snow. But here is the detail that made me write this report:
+
+THEY LEAVE NO FOOTPRINTS.
+
+I verified this personally in 1947, during a February storm off Berlevåg. A figure led our patrol to a sheltered cove. When the storm cleared, our tracks were visible in the snow. His were not. The snow where he had walked was not compressed. It was FROZEN. Solid ice, in the exact shape of footsteps, but raised — as if the snow had crystallized upward where he stepped rather than compressing down.
+
+The locals do not discuss this openly. When pressed, the oldest fishermen — those who still speak the old russenorsk pidgin — say the vägvisare are "bergets folk." The mountain's people. They say: "De passer på oss fordi vi passer på hemmeligheten." They watch over us because we keep the secret.
+
+What secret?
+
+No one will say.
+
+I asked a Pomor elder in Kiberg, a man named Grigorij, about this in 1949. He looked at me for a very long time. Then he said, in his broken russenorsk: "Fjellet sover. Vi holder det sovende. Hvis det våkner helt — havet koker igjen. Sist det skjedde, forsvant en hel øy."
+
+"The mountain sleeps. We keep it sleeping. If it wakes fully — the sea boils again. Last time that happened, an entire island disappeared."
+
+I have checked the geological records. There IS a missing island in the Novaya Zemlya archipelago. Soviet charts from 1933 show an island — designated NZ-14 — that does not appear on any chart after 1938. It is listed as "submerged due to seismic activity."
+
+No seismic event was recorded in that area during that period.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_russenorsk_4',
+    title: 'Isolation Protocol — Northern Station Ø',
+    author: 'Dr. Marit Ødegaard, Station Ø meteorologist',
+    date: '03.12.1979',
+    classification: 'TOP SECRET',
+    content: `PERSONAL LOG — NOT FOR TRANSMISSION
+Station Ø, Bjørnøya relay. Day 187 of winter rotation.
+
+There are four of us at the station. Hansen, Kovacs, Petrov, and myself. We have been alone for 187 days. The supply ship will not come until April.
+
+The isolation does things to the mind. I know this. I studied it. I wrote my thesis on "Arctic Hysteria and the Phenomenology of Polar Isolation." I know all the symptoms. Auditory hallucinations. Paranoia. The sense of a presence.
+
+But this is not that.
+
+Day 140: Kovacs reports hearing rhythmic knocking from beneath the station floor. We check. The station is built on rock. Solid basalt. There is nothing below us but stone.
+
+Day 151: Hansen sees lights in the water. Not the aurora reflected — lights UNDER the surface. Moving in geometric patterns. Triangles. Hexagons. He photographs them. The photographs show nothing.
+
+Day 158: Petrov stops sleeping. Says he doesn't need to. Says the mountain is teaching him. When I ask which mountain — we are on a flat island — he points NORTH. Toward Novaya Zemlya. 300 kilometers of open Arctic sea.
+
+Day 165: I hear the knocking. It IS rhythmic. It IS real. It comes from below. I put my ear to the floor and I hear... not knocking. Breathing. Slow, vast breathing. As if the rock itself is alive.
+
+Day 170: The aurora is wrong. I have studied polar optics for eleven years. The aurora does not behave like this. It is... focused. It forms a column — a single vertical pillar of green light — directly over our station. It persists for nine hours. This is electromagnetically impossible.
+
+Day 178: We all hear it now. Not breathing. Words. In a language that is not a language. Sounds that feel like they have MEANING but bypass the ears entirely. They arrive in the chest. In the bones.
+
+Day 183: Petrov draws the words. He says he can see them. He fills seventeen pages with symbols that look like frost crystals arranged into sentences. I photograph these. The photographs show the symbols clearly.
+
+Day 187: I understand now. The isolation is not the disease. The isolation is the POINT. The settlements understood this. The old russenorsk communities positioned themselves as a barrier — a ring of silence around the northern coast. Their isolation was not poverty. It was PURPOSE. They are the keepers. The vägvisare are the sentinels. And the mountain...
+
+The mountain is patient. It has waited for millions of years. It can wait longer.
+
+But it is listening.
+
+I will burn this log before the supply ship arrives.
+
+[NOTE: This document was recovered from Station Ø during decommissioning in 1994. It was found inside a sealed steel thermos, buried in the permafrost beneath the station foundation. Dr. Ødegaard reported "an uneventful rotation" in her official debriefing. She resigned from the meteorological service in 1980 and moved to a small fishing village on the Finnmark coast. She has not been interviewed.]`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_russenorsk_5',
+    title: 'Det Intensiva Ljuset — The Intense Light',
+    author: 'Collective testimony, Hamningberg fishing collective',
+    date: 'Various, compiled 1953',
+    classification: 'OPEN',
+    content: `COMPILED ORAL TESTIMONIES — Norwegian Folklore Institute
+Subject: "Det intensiva ljuset" (The Intense Light)
+Collected across seven hamlets on the Varanger Peninsula, 1951–1953.
+
+Multiple independent witnesses describe a recurring phenomenon they call "det intensiva ljuset" — an auroral event distinct from normal northern lights. Key distinguishing features reported consistently across all communities:
+
+1. COLOR: Not the usual green-white. Described as "the blue you see when you close your eyes too hard" and "the color of very deep ice." One informant: "Ikke blå. Ikke grønn. En farge som ikke finnes. Som øyet finner opp fordi hjernen ikke vet hva den ser."
+("Not blue. Not green. A color that doesn't exist. One the eye invents because the brain doesn't know what it's seeing.")
+
+2. SOUND: Normal aurora is silent. This is not. Every witness reports a low sound — not heard, FELT. Described as "a cathedral organ playing one note below the floor" and "the hum a mountain would make if mountains could hum."
+
+3. BEHAVIOR: The light does not drift or shimmer. It MOVES WITH PURPOSE. It crosses the sky in straight lines. It stops. It changes direction at sharp angles. Several witnesses report it descending — coming down from the sky and touching the ground. Where it touches, "the snow turns to glass."
+
+4. AFTERMATH: For 2-3 days following an appearance, compasses malfunction. Radio reception fills with what one operator describes as "voices speaking a language made of static." Dogs refuse to go outside. Reindeer herds move south without being driven.
+
+TESTIMONY OF ANNA JOSEFSEN, age 82, Hamningberg:
+"Min bestemor sa det slik: 'Lyset er ikke lys. Det er en dør. Og noen ganger, når døren åpner seg, kan du se gjennom. Ikke opp til himmelen. Ned. Ned gjennom berget, gjennom jorden, helt ned til der alt begynte. Og der nede er det noe som ser tilbake.'"
+
+"My grandmother said it like this: 'The light is not light. It is a door. And sometimes, when the door opens, you can see through. Not up to the sky. Down. Down through the mountain, through the earth, all the way to where everything began. And down there, something looks back.'"
+
+TESTIMONY OF GRIGORIJ ANTONOV, age 77, Kiberg (Pomor descent, speaks russenorsk):
+"На sjøen vi sier: 'Когда ljuset kommer, ikke se opp. Se på havet. Havet forteller sannheten. Himmelen lyger.' Og det er sant. Når det ljuset brenner, ser du det i vannet — bølgene stopper. Havet blir stille som glass. Og under glasset ser du former. Store former. Beveger seg sakte. Noe enormt. Noe som sover, men drømmer med øynene åpne."
+
+"On the sea we say: 'When the light comes, don't look up. Look at the sea. The sea tells the truth. The sky lies.' And it's true. When that light burns, you see it in the water — the waves stop. The sea becomes still as glass. And under the glass you see shapes. Large shapes. Moving slowly. Something enormous. Something that sleeps, but dreams with its eyes open."
+
+COLLECTOR'S NOTE (Dr. Arne Fjeld, 1953): I began this project as a straightforward folklore survey. I am ending it because I can no longer sleep. Not because of fear. Because every night, since I began transcribing these testimonies, I dream of a color I cannot name. And in the dream, I understand what it means. But when I wake, the understanding is gone, and all that remains is the certainty — absolute and bone-deep — that something under the northern mountains is aware of us.
+
+I am returning to Oslo. I recommend this file be sealed.`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
