@@ -1,5 +1,5 @@
 // Map registry — central place to define available maps
-export type MapId = 'novaya_zemlya' | 'fishing_village';
+export type MapId = 'novaya_zemlya' | 'fishing_village' | 'hospital';
 
 export interface MapInfo {
   id: MapId;
@@ -7,6 +7,7 @@ export interface MapInfo {
   description: string;
   icon: string;
   size: string;
+  unlockRequirement?: number; // extractions needed to unlock
 }
 
 export const MAPS: MapInfo[] = [
@@ -23,5 +24,14 @@ export const MAPS: MapInfo[] = [
     description: 'Övergiven fiskeby vid kusten. Stugor, skogsväg, kaj med snabbåt.',
     icon: '🏚️',
     size: '2800×2000',
+    unlockRequirement: 3,
+  },
+  {
+    id: 'hospital',
+    name: 'Sjukhuset',
+    description: 'Övergivet sovjetiskt sjukhus. Trånga korridorer, mörka rum, horror-stämning.',
+    icon: '🏥',
+    size: '2400×2400',
+    unlockRequirement: 6,
   },
 ];

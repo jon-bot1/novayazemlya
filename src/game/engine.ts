@@ -1,6 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
 import { generateFishingVillageMap, createFishingVillagePlayer } from './mapFishingVillage';
+import { generateHospitalMap, createHospitalPlayer } from './mapHospital';
 import { MapId } from './maps';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
@@ -425,8 +426,8 @@ function generateEnemyLoot(enemy: Enemy) {
 }
 
 export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
-  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : generateMap();
-  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : createInitialPlayer();
+  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
+  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
   return {
     player,
     enemies: map.enemies,
@@ -553,6 +554,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // Decay screenshake
+  if ((state as any)._screenShake > 0) {
+    (state as any)._screenShake = Math.max(0, (state as any)._screenShake - dt * 4);
+  }
+
   // Player movement — blocked when flashbanged (stunned)
   let moveX = input.moveX;
   let moveY = input.moveY;
@@ -633,6 +639,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.deathCause = '💥 Stepped on a landmine';
       addMessage(state, '💥 MINE! You stepped on a landmine!', 'damage');
       playExplosion();
+      (state as any)._screenShake = 1.0;
       spawnParticles(state, newPos.x, newPos.y, '#ff4400', 25);
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
@@ -1580,6 +1587,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (bestIdx >= 0) state.wallsBreached++;
     addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
     playExplosion();
+    (state as any)._screenShake = 1.2;
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 12);
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 8);
     state.soundEvents.push({ pos: { ...tnt.pos }, radius: 500, time: state.time });
@@ -1619,6 +1627,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     spawnParticles(state, m.pos.x, m.pos.y, '#ffcc44', 18);
     spawnParticles(state, m.pos.x, m.pos.y, '#444', 12);
     playExplosion();
+    (state as any)._screenShake = 1.5;
     state.soundEvents.push({ pos: { ...m.pos }, radius: 600, time: state.time });
 
     for (const enemy of state.enemies) {
@@ -3995,6 +4004,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         spawnParticles(state, g.pos.x, g.pos.y, '#ffcc44', 15);
         spawnParticles(state, g.pos.x, g.pos.y, '#444', 10);
         playExplosion();
+        (state as any)._screenShake = 1.0;
         state.soundEvents.push({ pos: { ...g.pos }, radius: 500, time: state.time });
 
         for (const enemy of state.enemies) {
