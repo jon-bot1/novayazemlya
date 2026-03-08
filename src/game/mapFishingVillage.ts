@@ -246,7 +246,8 @@ export function generateFishingVillageMap() {
     // Boss — Dock Master
     (() => {
       const boss = makeEnemy(750, 1600, 'boss');
-      boss.loot = [
+      (boss as any)._bossId = 'dock_master';
+      (boss as any)._bossTitle = 'DOCK MASTER';
         WEAPON_TEMPLATES.ak74(),
         createKeycard(),
         createValuable('Boat Keys', 500, '🔑'),
