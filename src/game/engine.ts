@@ -1300,6 +1300,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addKillFeed(state, target.type, 'Chokehold');
         addMessage(state, `🤫 CHOKEHOLD KILL — completely silent!`, 'kill');
         spawnParticles(state, target.pos.x, target.pos.y, '#8844cc', 10);
+        notifyAllyDeath(state, target, 'Chokehold');
+        trackWeaponMasteryKill(state, undefined, 'Chokehold');
         state.chokeholdTarget = null;
         state.chokeholdProgress = 0;
       }
