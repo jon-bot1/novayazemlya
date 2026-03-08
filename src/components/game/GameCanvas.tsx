@@ -1024,7 +1024,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: intro
   if (gamePhase === 'intro') {
     return (
-      <div className="relative w-screen h-screen overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
         <IntroScreen onStart={async (name) => {
           setPlayerName(name);
           // Try loading from DB first
