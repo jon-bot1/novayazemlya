@@ -529,162 +529,286 @@ If you're here to destroy this place — do it. Burn it all.
   // ═══════════════════════════════════════════════
   {
     id: 'doc_mine_1',
-    title: 'Geologisk Rapport — Norrberget',
-    author: 'Dr. Erik Lindqvist, Bergsstatens Utredningskommitté',
+    title: 'Geological Survey — Norrberget',
+    author: 'Dr. Erik Lindqvist, State Geological Commission',
     date: '03.09.1947',
     classification: 'SECRET',
-    content: `RAPPORT — Geologisk undersökning av Norrberget
+    content: `REPORT — Geological survey of Norrberget
 
-Provborrningar i sektion 7-12 avslöjar en anomali. Malmådern är rik — järn, koppar, spår av sällsynta jordartsmetaller — men kärnan i berget uppvisar en struktur vi inte kan förklara.
+Core samples from Section 7-12 reveal an anomaly. The ore vein is rich — iron, copper, traces of rare earth metals — but the heart of the mountain exhibits a structure we cannot explain.
 
-Stenmaterialet i den djupaste kärnan (420m) är inte granit. Det är inte gnejs. Det liknar inget i vårt register. Materialet absorberar ljud. Borrkronan saktade ner av sig själv, som om berget vägrade.
+The stone material at the deepest core (420m) is not granite. It is not gneiss. It resembles nothing in our registry. The material absorbs sound. The drill bit slowed on its own, as if the mountain refused.
 
-Bergmästare Holmström insisterar på att vi fortsätter. Malmvärdet motiverar investeringen. Men jag noterar att tre av borroperatörerna har rapporterat huvudvärk och sömnproblem sedan vi nådde 380m.
+Mine Director Holmström insists we continue. The ore value justifies the investment. But I note that three drill operators have reported headaches and sleep disturbances since we reached 380m.
 
-Rekommendation: Fortsätt med försiktighet. Installera seismiska sensorer i sektion 10.
+Recommendation: Proceed with caution. Install seismic sensors in Section 10.
 
-BILAGA: Kärna 7-12C uppvisar kristallformationer som inte överensstämmer med känd mineralogi. Prov skickat till Uppsala.`,
+APPENDIX: Core 7-12C exhibits crystal formations inconsistent with known mineralogy. Sample sent to Uppsala University for analysis.`,
     hasCode: false,
     found: false,
   },
   {
     id: 'doc_mine_2',
-    title: '📼 Kassettband — Gruvarbetare Svensson',
-    author: 'Karl-Erik Svensson, Bergsprängare',
+    title: '📼 Cassette Tape — Miner Svensson',
+    author: 'Karl-Erik Svensson, Blaster',
     date: '15.11.1952',
     classification: 'OPEN',
-    content: `[KASSETTBAND — Inspelat i manskapsboden, skift 3]
+    content: `[CASSETTE TAPE — Recorded in the crew quarters, shift 3]
 
-*Skrapande ljud, en tändare*
+*Scraping sound, a lighter clicking*
 
-...det var på nattskiftet. Ort fyra, den djupaste. Vi hade sprängt en ny salva och väntat på ventilationen. Pettersson gick in först.
+...it was the night shift. Drift four, the deepest one. We'd blasted a new round and waited for ventilation. Pettersson went in first.
 
-Han stannade. Sa ingenting. Bara stod där med lampan riktad neråt.
+He stopped. Said nothing. Just stood there with his lamp pointed down.
 
-Jag gick fram och tittade. Under stenmassorna... det var inte berg. Det var något annat. Mörkt, nästan svart, men det... pulserade. Svagt, som ett hjärta.
+I walked up and looked. Under the rubble... it wasn't rock. It was something else. Dark, almost black, but it... pulsed. Faintly, like a heartbeat.
 
-Pettersson sa "det andas". Jag sa att han var galen. Men jag hörde det också. Inte med öronen — i bröstet. Som basfrekvensen från en enorm maskin under oss.
+Pettersson said "it's breathing." I told him he was crazy. But I heard it too. Not with my ears — in my chest. Like the bass frequency of an enormous machine beneath us.
 
-Vi täckte över det och rapporterade till Holmström. Han sa åt oss att inte prata om det. Nästa dag var hålrummet fyllt med betong.
+We covered it up and reported to Holmström. He told us not to talk about it. Next day the cavity was filled with concrete.
 
-Men ibland, på nattskiftet, kan man fortfarande höra det. Berget andas.
+But sometimes, on the night shift, you can still hear it. The mountain breathes.
 
-*Band slut*`,
+*Tape ends*`,
     hasCode: false,
     found: false,
   },
   {
     id: 'doc_mine_3',
-    title: 'Incidentrapport №14 — Ras i Ort 7',
-    author: 'Bergmästare G. Holmström',
+    title: 'Incident Report №14 — Collapse in Drift 7',
+    author: 'Mine Director G. Holmström',
     date: '22.03.1958',
     classification: 'SECRET',
-    content: `INCIDENTRAPPORT — Norrbergets Gruva AB
+    content: `INCIDENT REPORT — Norrberget Mining AB
 
-Kl 02:14 den 22 mars inträffade ett ras i Ort 7, 390m-nivån. Tre arbetare instängda. Räddningsinsats påbörjad.
+At 02:14 on March 22, a collapse occurred in Drift 7, 390m level. Three workers trapped. Rescue operation initiated.
 
-Kl 04:30: Kontakt med instängda via borrhål. Alla tre vid liv. Rapporterar "inte ensamma". Tolkas som chockreaktion.
+04:30: Contact established with trapped workers via drill hole. All three alive. Report "not alone down here." Interpreted as shock reaction.
 
-Kl 06:15: Borr når hålrum. Arbetare Nilsson och Bergström evakuerade. Arbetare Dahl vägrar komma ut. Säger att "det vill inte att vi går". Dahl bärs ut med tvång.
+06:15: Drill reaches cavity. Workers Nilsson and Bergström evacuated. Worker Dahl refuses to leave. Says "it doesn't want us to go." Dahl removed by force.
 
-Kl 08:00: Dahl inlagd på sjukhus. Talar osammanhängande om "kungen i berget" och "de som vaktar portarna — Ort och Stoll". Läkare diagnosticerar akut stressreaktion.
+08:00: Dahl admitted to hospital. Speaks incoherently about "the king in the mountain" and "the ones who guard the gates — Ort and Stoll." Doctor diagnoses acute stress reaction.
 
-NOTERING: Dahl avskedades den 1 april. Hans journal är hemligstämplad. Rasets orsak förblir oförklarad — seismograf visar INGEN geologisk aktivitet vid tillfället. Berget rörde sig utan orsak.
+NOTE: Dahl was dismissed on April 1st. His medical file has been classified. The cause of the collapse remains unexplained — seismograph shows NO geological activity at the time. The mountain moved without cause.
 
-ÅTGÄRD: Ort 7 stängd permanent. Betongtätning av nedgång.`,
+ACTION: Drift 7 permanently sealed. Concrete barrier installed at entrance.`,
     hasCode: true,
     code: 'BERG-44',
-    codeHint: 'Coordinates mentioned in Holmströms sealed addendum',
+    codeHint: 'Coordinates mentioned in Holmström\'s sealed addendum',
     found: false,
   },
   {
     id: 'doc_mine_4',
-    title: 'Brev till Bergmästare Holmström (aldrig skickat)',
-    author: 'Arne Dahl, f.d. gruvarbetare',
+    title: 'Letter to Mine Director Holmström (never sent)',
+    author: 'Arne Dahl, former miner',
     date: '05.07.1961',
     classification: 'OPEN',
     content: `Holmström,
 
-Du vet vad som finns där nere. Du har alltid vetat.
+You know what's down there. You've always known.
 
-Det var inget ras. BERGET STÄNGDE PORTEN. Det stängde oss inne för att vi var nära. Vi var nära HONOM.
+It wasn't a collapse. THE MOUNTAIN CLOSED THE GATE. It shut us in because we were close. We were close to HIM.
 
-Gruvrån. Han som fanns i berget innan gruvan. Innan samhället. Innan Sverige. Han ÄR berget. Varje tunnel vi borrar är ett sår i hans kropp. Varje salva en smärta.
+The Gruvrå. He who existed in the mountain before the mine. Before the village. Before Sweden. He IS the mountain. Every tunnel we drill is a wound in his body. Every blast a pain.
 
-Han har vakter. Jag såg dem i mörkret — Ort och Stoll. De ser ut som sten men de rör sig. Långsamt, tålmodigt. De vaktar ingången till kammaren.
+He has guards. I saw them in the darkness — Ort and Stoll. They look like stone but they move. Slowly, patiently. They guard the entrance to the chamber.
 
-Tre år har gått och jag hör honom fortfarande. I drömmar. I tystnaden. Han viskar: "Sluta gräva."
+Three years have passed and I still hear him. In dreams. In silence. He whispers: "Stop digging."
 
-Vi slutade inte. Och nu är gruvan en del av honom. Hissschaktet är hans strupe. Tunnlarna är hans ådror. Malmen är hans blod.
+We didn't stop. And now the mine is part of him. The elevator shaft is his throat. The tunnels are his veins. The ore is his blood.
 
-Stäng gruvan, Holmström. Stäng den innan det är för sent.
+Shut the mine, Holmström. Shut it before it's too late.
 
 — Dahl
 
-P.S. Krossa inte de svarta kristallerna. Det är hans ögon.`,
+P.S. Do not crush the black crystals. They are his eyes.`,
     hasCode: false,
     found: false,
   },
   {
     id: 'doc_mine_5',
-    title: '📝 Klotter på gruvvägg (ristat med borrstål)',
-    author: 'Okänd',
+    title: '📝 Scrawled on mine wall (carved with drill steel)',
+    author: 'Unknown',
     date: '???',
     classification: 'OPEN',
-    content: `ORT VAKTAR VÄST
-STOLL VAKTAR ÖST
-GRUVRÅN SOVER I MITTEN
+    content: `ORT GUARDS THE WEST
+STOLL GUARDS THE EAST
+GRUVRÅ SLEEPS IN THE CENTER
 
-KORSA INTE LINJEN VID 420m
+DO NOT CROSS THE LINE AT 420m
 
-DE SVARTA STENARNA SER DIG
+THE BLACK STONES SEE YOU
 
-Tre saker du behöver veta:
-1. Hissen fungerar men den går DJUPARE än kartan visar
-2. TNT skadar honom — men gör honom arg
-3. Om lampan flimrar — SPRING
+Three things you need to know:
+1. The elevator works but it goes DEEPER than the map shows
+2. TNT hurts him — but makes him angry
+3. If the lamp flickers — RUN
 
-Han var här före oss.
-Han kommer vara här efter oss.
+He was here before us.
+He will be here after us.
 
-BERGET MINNS.`,
+THE MOUNTAIN REMEMBERS.`,
     hasCode: false,
     found: false,
   },
   {
     id: 'doc_mine_cassette',
-    title: '📼 Kassettband — Sista inspelningen',
-    author: 'Bergmästare Holmström',
+    title: '📼 Cassette Tape — Final Recording',
+    author: 'Mine Director Holmström',
     date: '31.12.1963',
     classification: 'TOP SECRET',
-    content: `[KASSETTBAND — Funnet i manskapsboden, oöppnat sedan 1963]
+    content: `[CASSETTE TAPE — Found in crew quarters, unopened since 1963]
 
-*Brus, vindljud, avlägset maskinbuller*
+*Static, wind noise, distant machinery*
 
-Det här är Gustav Holmström, bergmästare vid Norrbergets Gruva. Nyårsafton 1963. Alla har gått hem. Jag är ensam.
+This is Gustav Holmström, mine director at Norrberget Mine. New Year's Eve, 1963. Everyone has gone home. I am alone.
 
-*Paus*
+*Pause*
 
-Jag har fattat beslutet. Gruvan stängs den 15 januari. Officiellt: malmådern uttömd. I verkligheten...
+I have made my decision. The mine closes on January 15th. Officially: ore vein exhausted. In reality...
 
-*Djup suck*
+*Deep sigh*
 
-Dahl hade rätt. Om allt. Vi borrade för djupt. Nådde något vi inte borde ha nått. Inte malm — inte sten — utan en varelse. Eller... ett medvetande. Inbäddat i berget sedan innan isen smälte.
+Dahl was right. About everything. We drilled too deep. Reached something we should never have reached. Not ore — not stone — but a being. Or... a consciousness. Embedded in the mountain since before the ice melted.
 
-Arbetarna kallar den Gruvrå. Jag kallade dem vidskepliga. Men förra veckan... förra veckan rörde sig väggen i Ort 7. Inte ras — RÖRDE SIG. Som andning.
+The workers call it Gruvrå. I called them superstitious. But last week... last week the wall in Drift 7 MOVED. Not a collapse — MOVED. Like breathing.
 
-Och vakterna — Ort och Stoll. Två formationer av svart kristall, tre meter höga, vid ingången till det djupaste hålrummet. Geologerna säger att de är naturliga. Men de har... ansikten. Och de stod inte där i september.
+And the guardians — Ort and Stoll. Two formations of black crystal, three meters tall, at the entrance to the deepest chamber. The geologists say they're natural. But they have... faces. And they weren't there in September.
 
-Jag fyller igen de djupaste ortarna med betong. Spränger hissschaktet under 400m. Förseglar allt med —
+I'm filling the deepest drifts with concrete. Blasting the elevator shaft below 400m. Sealing everything with —
 
-*Skarpt ljud — sten som spricker*
-*Tystnad i fem sekunder*
+*Sharp sound — stone cracking*
+*Five seconds of silence*
 
-...herregud. Ljuset... det flimrar.
+...dear God. The light... it's flickering.
 
-Ort stå —
+Ort is sta—
 
-*BAND SLUT*`,
+*TAPE ENDS*`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_stalhandske_1',
+    title: 'Survey Engineer Stålhandske — Field Notes',
+    author: 'Ing. Björn Stålhandske, Royal Survey Office',
+    date: '14.06.1955',
+    classification: 'SECRET',
+    content: `FIELD NOTES — Norrberget Magnetic Survey
+
+Day 1: Arrived at Norrberget Mining Village. Tasked with mapping magnetic anomalies in Sections 8-12 by order of the Royal Survey Office. Mine Director Holmström greeted me personally. Seemed nervous.
+
+Day 3: Readings are extraordinary. The magnetic field at 350m depth is 400% above regional average. My compass spins freely below 300m. Instruments behave as if there's a massive ferromagnetic body beneath us, but the geology doesn't support it.
+
+Day 5: Reached 400m with portable magnetometer. Readings went OFF SCALE. The needle bent. Not figuratively — the physical needle of my analog backup instrument bent toward the east wall. I've never seen anything like this in 20 years of fieldwork.
+
+Day 6: Holmström asked me not to include the 400m readings in my official report. I refused. He offered money. I still refused.
+
+Day 7: Found a chamber behind the sealed concrete in Drift 7. There's a gap — maybe 30cm — at the top. I shone my flashlight through.
+
+I saw the crystals. Black. Tall. Arranged in a semicircle around... something. The magnetometer reading through the gap was so high it broke the instrument.
+
+I need to go back. I need to see what's in the center of that circle.
+
+— Stålhandske`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_stalhandske_2',
+    title: '📼 Cassette Tape — Stålhandske\'s Last Recording',
+    author: 'Ing. Björn Stålhandske',
+    date: '19.06.1955',
+    classification: 'TOP SECRET',
+    content: `[CASSETTE TAPE — Found in Stålhandske's abandoned equipment case, Drift 7 entrance]
+
+*Heavy breathing, echoing footsteps on stone*
+
+Stålhandske, Royal Survey Office, supplementary recording. June 19th. It's... I think it's around midnight. I came back alone. Brought tools to widen the gap in the Drift 7 seal.
+
+*Scraping of concrete, grunting*
+
+I'm through. The chamber is... larger than I expected. Much larger. The crystals are — God, they're beautiful. Obsidian black but with an inner glow. Like captured starlight. There must be thirty of them, each three meters tall, forming a perfect circle.
+
+*Footsteps, slower now*
+
+And in the center... it's not a void. There's a shape. Like a figure carved from the mountain itself. But the proportions are wrong — too old, too angular. Pre-human. Pre-everything.
+
+The magnetometer is useless down here. The field is so strong my watch has stopped.
+
+*Long pause*
+
+It opened its eyes.
+
+*Silence — then a deep, subsonic rumble*
+
+They're not crystals. They're not rock formations. They're TEETH. The whole circle — it's a MOUTH.
+
+And Ort — the western formation — it's moving. Toward me. Slowly. Like a glacier. But WATCHING.
+
+I need to —
+
+*Running footsteps, stumbling*
+
+The exit — the concrete — it's CLOSING. The gap is shrinking. HOW IS THE CONCRETE —
+
+*Scraping, desperate hammering*
+
+HOLMSTRÖM! SOMEONE! THE MOUNTAIN IS —
+
+*Complete silence*
+
+*Ten seconds of dead air*
+
+*A single sound: stone grinding against stone, like a door closing*
+
+*TAPE ENDS*`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_stalhandske_3',
+    title: 'Missing Persons Report — Björn Stålhandske',
+    author: 'Inspector Lennart Grip, County Police',
+    date: '28.06.1955',
+    classification: 'SECRET',
+    content: `MISSING PERSONS REPORT — County Police, Norrbotten
+
+Subject: Björn Stålhandske, age 43, Survey Engineer, Royal Survey Office
+Last seen: June 18, 1955, Norrberget Mining Village
+
+SUMMARY:
+Stålhandske arrived at Norrberget Mine on June 14 for a routine magnetic survey. Was quartered in Cabin 3 at the mining village. Reported to work daily through June 18.
+
+On June 19, workers arriving for morning shift found:
+- Stålhandske's cabin empty, bed unslept in
+- His equipment case at the entrance to sealed Drift 7
+- The concrete seal on Drift 7 INTACT (no signs of tampering)
+- A cassette recorder inside the equipment case (tape confiscated by Mine Director Holmström — see note)
+
+INVESTIGATION:
+- All mine tunnels searched. No trace of Stålhandske.
+- Holmström claims Stålhandske left on foot during the night. No witnesses.
+- Stålhandske's car remains in the village parking area.
+- His wallet, passport, and personal effects remain in Cabin 3.
+- The cassette tape was surrendered to County Police but subsequently transferred to military custody by order of Colonel Varga, Northern Military District.
+
+NOTE FROM INVESTIGATING OFFICER:
+The concrete seal on Drift 7 shows no damage. If Stålhandske entered Drift 7, he did so without breaking the seal. This is physically impossible.
+
+However, I note the following: when I placed my hand on the concrete seal, it was WARM. Concrete at 390m depth should be approximately 12°C. The seal was at least 30°C.
+
+Additionally, workers report that since Stålhandske's disappearance, the magnetic anomaly readings at 350m have increased by 15%.
+
+Almost as if the mountain gained mass.
+
+STATUS: CASE CLOSED — Classified by military order.
+Filed as: "Presumed desertion."
+
+— Inspector Grip
+
+PERSONAL ADDENDUM (not in official file):
+I don't believe he deserted. I believe the mountain took him. And I believe Holmström knows it.`,
     hasCode: false,
     found: false,
   },
