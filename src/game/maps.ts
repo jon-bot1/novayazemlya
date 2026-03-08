@@ -21,7 +21,7 @@ export const MAPS: MapInfo[] = [
   {
     id: 'fishing_village',
     name: 'The Fishing Village',
-    description: 'Abandoned coastal fishing village. Cabins, forest road, dock with speedboat.',
+    description: 'Coastal fishing village. Cabins, forest road, dock with speedboat.',
     icon: '🏚️',
     size: '1400×2000',
     unlockRequirement: 3,
