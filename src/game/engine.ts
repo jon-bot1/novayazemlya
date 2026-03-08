@@ -1655,12 +1655,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         lc.looted = true;
         state.cachesLooted++;
         for (const item of lc.items) {
+          // Weapons drop on the ground separately — player picks up manually
+          if (item.category === 'weapon' && item.damage) {
+            spawnWeaponDrop(state, item, lc.pos);
+            continue;
+          }
           if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          // Ammo & TNT handled by tryPickupItem — no extra logic needed here
           // Auto-equip backpack
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
@@ -1670,10 +1674,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
-          }
-          // Weapons drop on the ground separately — player picks up manually
-          if (item.category === 'weapon' && item.damage) {
-            spawnWeaponDrop(state, item, lc.pos);
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
