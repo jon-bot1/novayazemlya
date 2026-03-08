@@ -1831,6 +1831,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       });
     }
     state.player.lastShot = state.time;
+    if (!isMelee) (state as any)._shotsFired = ((state as any)._shotsFired || 0) + (wpn?.isBuckshot ? (wpn.pelletCount || 5) : 1);
     
     // === AMMO CONSUMPTION — deduct from magazine ===
     if (!isMelee) {
