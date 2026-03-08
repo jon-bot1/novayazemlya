@@ -3996,6 +3996,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 // Stuck at wall — escape and resume patrol
                 const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
                 if (escapeStep) enemy.pos = escapeStep;
+                else relocateEnemyToOpenArea(state, enemy);
                 enemy.state = 'patrol';
                 enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
                 (enemy as any)._stuckCounter = 0;
