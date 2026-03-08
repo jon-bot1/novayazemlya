@@ -2979,6 +2979,42 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           ctx.stroke();
         }
       }
+      // Cultist label with occult glow
+      if (enemy.type === 'cultist') {
+        const pulse = 0.5 + Math.sin(state.time * 4) * 0.3;
+        ctx.fillStyle = `rgba(200, 80, 255, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔮 CULTIST', enemy.pos.x, enemy.pos.y - R - 10);
+        // Purple aura
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, R + 6 + Math.sin(state.time * 3) * 3, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(160, 40, 220, ${0.15 + Math.sin(state.time * 2) * 0.1})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      // Miner cult label with amber glow
+      if (enemy.type === 'miner_cult') {
+        const pulse = 0.5 + Math.sin(state.time * 3) * 0.3;
+        ctx.fillStyle = `rgba(255, 180, 40, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⛏️ KULTIST', enemy.pos.x, enemy.pos.y - R - 10);
+        // Amber aura
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, R + 5 + Math.sin(state.time * 2.5) * 2, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(200, 140, 20, ${0.15 + Math.sin(state.time * 2) * 0.08})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      // Svarta Solen label with red tactical glow
+      if (enemy.type === 'svarta_sol') {
+        const pulse = 0.6 + Math.sin(state.time * 6) * 0.3;
+        ctx.fillStyle = `rgba(255, 40, 40, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('☀️ SVARTA SOLEN', enemy.pos.x, enemy.pos.y - R - 10);
+      }
     }
 
     // Status icons
