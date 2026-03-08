@@ -2746,7 +2746,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < 500;
+          const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
             // Add reaction delay for radio-alerted allies
             if (ally.type !== 'boss' && ally.type !== 'turret') {
