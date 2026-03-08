@@ -95,101 +95,115 @@ export function generateHospitalMap() {
   ];
 
   // ═══ WALLS — Hospital building ═══
-  // D = door gap width
-  const D = 50;
+  // G = minimum door gap width (player radius=28, need ≥60, use 80 for comfort)
+  const G = 80;
 
   const walls: Wall[] = [
     // ═══ OUTER WALLS ═══
-    // North wall — door gap at center for emergency exit
-    makeWall(BX, BY, BW / 2 - 30, T, DARK),
-    makeWall(BX + BW / 2 + 30, BY, BW / 2 - 30, T, DARK),
-    // South wall — MAIN ENTRANCE (wide double-door gap center)
+    // North wall — emergency exit gap center (80px)
+    makeWall(BX, BY, BW / 2 - G / 2, T, DARK),
+    makeWall(BX + BW / 2 + G / 2, BY, BW / 2 - G / 2, T, DARK),
+    // South wall — MAIN ENTRANCE (wide 120px gap center)
     makeWall(BX, BY + BH - T, BW / 2 - 60, T, DARK),
     makeWall(BX + BW / 2 + 60, BY + BH - T, BW / 2 - 60, T, DARK),
-    // West wall — side entrance gap at y+700
+    // West wall — side entrance gap at y+700 (80px gap)
     makeWall(BX, BY, T, 700, DARK),
-    makeWall(BX, BY + 750, T, BH - 750, DARK),
-    // East wall — fire escape gap at y+900
+    makeWall(BX, BY + 700 + G, T, BH - 700 - G, DARK),
+    // East wall — fire escape gap at y+900 (80px gap)
     makeWall(BX + BW - T, BY, T, 900, DARK),
-    makeWall(BX + BW - T, BY + 950, T, BH - 950, DARK),
+    makeWall(BX + BW - T, BY + 900 + G, T, BH - 900 - G, DARK),
 
     // ═══ MAIN ENTRANCE — RECEPTION & WAITING ROOM ═══
-    // Reception area: south end of building, center
-    // Reception desk (horizontal wall acting as counter)
-    makeWall(BX + BW / 2 - 120, BY + BH - 150, 240, T, TILE),
-    // Waiting room side walls (open at south to main entrance)
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, T, 150, TILE),  // west side, gap at bottom
-    makeWall(BX + BW / 2 + 200, BY + BH - 200, T, 150, TILE),  // east side, gap at bottom
-    // North wall of reception (separates from corridors) — gap center for corridor access
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, 150, T, TILE),
-    makeWall(BX + BW / 2 + 50, BY + BH - 200, 150, T, TILE),
+    // Reception desk (horizontal counter)
+    makeWall(BX + BW / 2 - 100, BY + BH - 140, 200, T, TILE),
+    // Waiting room side walls — shorter, leaving 80px gap to south outer wall
+    makeWall(BX + BW / 2 - 200, BY + BH - 200, T, 120, TILE),  // west side
+    makeWall(BX + BW / 2 + 200, BY + BH - 200, T, 120, TILE),  // east side
+    // North wall of reception — 80px gap center for corridor, plus side doors
+    makeWall(BX + BW / 2 - 200, BY + BH - 200, 160, T, TILE),  // left part
+    makeWall(BX + BW / 2 + 40, BY + BH - 200, 160, T, TILE),   // right part (80px gap)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
-    // Main north-south corridor (center) — with gaps for cross-corridors
+    // Main north-south corridor (center, 100px wide)
+    // North segment: from building top to cross-corridor
     makeWall(BX + BW / 2 - 50, BY + T, T, 280, TILE),
     makeWall(BX + BW / 2 + 50, BY + T, T, 280, TILE),
-    // Continue south of courtyard to reception
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, 500, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, 500, TILE),
+    // South segment: from courtyard south to reception north wall
+    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 210, TILE),
+    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 210, TILE),
 
-    // East-west corridor (north, y=300-400)
+    // East-west corridor (y=300-400) — connects to N-S corridor via open intersection
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + BW / 2 + 50, BY + 300, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + T, BY + 400, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + BW / 2 + 50, BY + 400, BW / 2 - 50 - T, T, TILE),
 
     // ═══ ROOMS — West Wing (wards) ═══
-    // Ward 1 (NW room: x=BX..BX+200, y=BY..BY+300) — door gap at bottom-right
-    makeWall(BX + 200, BY + T, T, 240, CONCRETE),
-    makeWall(BX + 200, BY + 300, T, 0, CONCRETE), // no wall below corridor
-    // Ward 2 (SW room: x=BX..BX+490, y=BY+400..BY+1100) — door at top-right corner
-    makeWall(BX + T, BY + 600, 150, T, CONCRETE),
-    makeWall(BX + 200, BY + 600, 290, T, CONCRETE), // gap at x=150..200
-    // Ward 3 (below courtyard, west: x=BX..BX+500, y=BY+1100..BY+1500)
-    makeWall(BX + T, BY + 1100, 440, T, CONCRETE),  // gap at x=450..500 for corridor
-    makeWall(BX + 250, BY + 1100, T, 250, CONCRETE),
-    makeWall(BX + 250, BY + 1400, T, 0, CONCRETE),
-    makeWall(BX + T, BY + 1400, 200, T, CONCRETE),
-    makeWall(BX + 250, BY + 1400, 240, T, CONCRETE),  // gap at x=200..250
+    // Ward 1 (NW: x=BX..BX+200, y=BY..BY+300) — 80px door gap near corridor
+    makeWall(BX + 200, BY + T, T, 210, CONCRETE),
+    // (gap y=BY+220 to BY+300 = 80px opening into cross-corridor area)
+
+    // Ward 2 (x=BX..BX+490, y=BY+400..BY+1100) — 80px door gap at top
+    makeWall(BX + T, BY + 600, 110, T, CONCRETE),
+    makeWall(BX + 190, BY + 600, 300, T, CONCRETE), // gap x=120..190 = 80px
+
+    // Ward 3 (x=BX..BX+500, y=BY+1100..BY+1500)
+    // Top wall — 80px gap at east end to connect to corridor
+    makeWall(BX + T, BY + 1100, 410, T, CONCRETE),
+    // Inner divider
+    makeWall(BX + 250, BY + 1100, T, 220, CONCRETE),
+    // South wall — 80px gap
+    makeWall(BX + T, BY + 1400, 170, T, CONCRETE),
+    makeWall(BX + 250, BY + 1400, 240, T, CONCRETE),
 
     // ═══ ROOMS — East Wing (labs/offices) ═══
-    // Lab NE room (x=BX+BW-350..BX+BW, y=BY..BY+600) — door gap at left wall bottom
-    makeWall(BX + BW - 200, BY + T, T, 240, CONCRETE),
-    makeWall(BX + BW - 200, BY + 300, T, 0, CONCRETE),
-    makeWall(BX + BW - 200, BY + 400, T, 150, CONCRETE),
-    makeWall(BX + BW - 200, BY + 600, T, 0, CONCRETE),
-    // Lab south wall — door gap at left end
-    makeWall(BX + BW - 350, BY + 400, T, 150, CONCRETE),
-    makeWall(BX + BW - 350, BY + 600, 100, T, CONCRETE), // gap at x+100..x+150
-    makeWall(BX + BW - 200, BY + 600, 200, T, CONCRETE),
-    // Office (x=BX+BW-350..BX+BW, y=BY+1100..BY+1500) — door at top-left
-    makeWall(BX + BW - 200, BY + 1100, T, 300, CONCRETE),
+    // Lab area (x=BX+BW-350..BX+BW, y=BY..BY+600)
+    // Inner wall along corridor — 80px gap for entry from cross-corridor
+    makeWall(BX + BW - 200, BY + T, T, 210, CONCRETE),
+    // (gap y=BY+220 to BY+300 = 80px)
+    makeWall(BX + BW - 200, BY + 400, T, 200, CONCRETE),
+    // Lab west wall (deeper lab room)
+    makeWall(BX + BW - 350, BY + 400, T, 120, CONCRETE),
+    // (gap at y=BY+520 to BY+600 = 80px)
+    // Lab south wall — 80px gap at west end
+    makeWall(BX + BW - 250, BY + 600, 250, T, CONCRETE),
+    // (gap from x=BX+BW-350 to BX+BW-250 = 100px)
+
+    // Office (x=BX+BW-350..BX+BW, y=BY+1100..BY+1400) — 80px door at top-left
     makeWall(BX + BW - 350, BY + 1100, T, 300, CONCRETE),
-    makeWall(BX + BW - 350, BY + 1100, 100, T, CONCRETE), // gap at x+100..x+150
+    makeWall(BX + BW - 200, BY + 1100, T, 300, CONCRETE),
+    // Top wall with 80px gap
+    makeWall(BX + BW - 350, BY + 1100, 70, T, CONCRETE),
     makeWall(BX + BW - 200, BY + 1100, 200, T, CONCRETE),
+    // (gap from BX+BW-280 to BX+BW-200 = 80px)
 
     // ═══ COURTYARD walls (open area in center) ═══
-    // North wall — gap west side for access
-    makeWall(BX + 550, BY + 600, 550, T, TILE),
-    // South wall — gap east side
-    makeWall(BX + 500, BY + 1100, 550, T, TILE),
-    // West wall — gap at bottom
+    // North wall — 80px gap at west for access from corridor
+    makeWall(BX + 580, BY + 600, 520, T, TILE),
+    // (gap from x=BX+500 to BX+580 = 80px)
+    // South wall — 80px gap at east
+    makeWall(BX + 500, BY + 1100, 520, T, TILE),
+    // (gap from x=BX+1020 to BX+1100 = 80px)
+    // West wall — 80px gap near bottom
     makeWall(BX + 500, BY + 600, T, 400, TILE),
-    makeWall(BX + 500, BY + 1050, T, 50, TILE),
-    // East wall — gap at top
-    makeWall(BX + 1100, BY + 650, T, 450, TILE),
+    // (gap y=BY+1000 to BY+1080 = 80px)
+    makeWall(BX + 500, BY + 1080, T, 20, TILE),
+    // East wall — 80px gap near top
+    makeWall(BX + 1100, BY + 680, T, 420, TILE),
+    // (gap from y=BY+600 to BY+680 = 80px)
 
     // ═══ BASEMENT AREA (south end, y=BY+1500..BY+1780) ═══
-    // North wall of basement — gap at center for stairs down
+    // North wall — 100px gap at center for stairs
     makeWall(BX + 100, BY + 1500, BW / 2 - 150, T, DARK),
     makeWall(BX + BW / 2 + 50, BY + 1500, BW / 2 - 150, T, DARK),
+    // Side walls
     makeWall(BX + 100, BY + 1500, T, 280, DARK),
     makeWall(BX + BW - 100, BY + 1500, T, 280, DARK),
-    // Basement room dividers — each with door gap at top
-    makeWall(BX + 400, BY + 1550, T, 230, DARK),
-    makeWall(BX + 700, BY + 1550, T, 230, DARK),
-    makeWall(BX + 1000, BY + 1550, T, 230, DARK),
-    makeWall(BX + 1300, BY + 1550, T, 230, DARK),
+    // Room dividers — start 80px below north wall (gap at top for passage)
+    makeWall(BX + 400, BY + 1580, T, 200, DARK),
+    makeWall(BX + 700, BY + 1580, T, 200, DARK),
+    makeWall(BX + 1000, BY + 1580, T, 200, DARK),
+    makeWall(BX + 1300, BY + 1580, T, 200, DARK),
   ];
 
   // ═══ ZONES ═══
