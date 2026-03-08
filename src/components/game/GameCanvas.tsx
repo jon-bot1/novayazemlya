@@ -1043,6 +1043,54 @@ export const GameCanvas: React.FC = () => {
     };
   }, [started]);
 
+  // ── Spectator heartbeat: send live stats every 5s ──
+  useEffect(() => {
+    if (!started || !playerName || playerName === '__anonymous__') return;
+    const isTestUser = playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3';
+    if (isTestUser) return;
+
+    const sendHeartbeat = async (status = 'playing') => {
+      const state = stateRef.current;
+      if (!state) return;
+      try {
+        await (supabase as any).from('active_sessions').upsert({
+          player_name: playerName,
+          map_id: selectedMapId,
+          hp: Math.round(state.player.hp),
+          max_hp: state.player.maxHp,
+          kills: state.killCount,
+          rubles: stash.rubles,
+          level: stash.level,
+          position_x: Math.round(state.player.pos.x),
+          position_y: Math.round(state.player.pos.y),
+          enemies_alive: state.enemies.filter(e => e.state !== 'dead').length,
+          time_elapsed: Math.round(state.time),
+          status,
+          last_heartbeat: new Date().toISOString(),
+        }, { onConflict: 'player_name' });
+      } catch { /* silent */ }
+    };
+
+    // Initial heartbeat
+    sendHeartbeat();
+    const interval = setInterval(() => {
+      const state = stateRef.current;
+      if (!state) return;
+      const status = state.gameOver ? 'dead' : state.extracted ? 'extracted' : 'playing';
+      sendHeartbeat(status);
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+      // Final status update
+      const state = stateRef.current;
+      if (state) {
+        const status = state.extracted ? 'extracted' : state.gameOver ? 'dead' : 'abandoned';
+        sendHeartbeat(status);
+      }
+    };
+  }, [started, playerName, selectedMapId]);
+
   // Handle extraction → transfer loot to stash + check objectives
   useEffect(() => {
     if (hudState.extracted && !extractedRef.current) {
