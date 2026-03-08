@@ -1888,7 +1888,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
         ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+        ctx.fillText(`† ${(enemy as any)._bossTitle || 'OSIPOVITJ'} †`, enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
       }
 
       if (!enemy.looted) {
