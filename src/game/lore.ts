@@ -367,25 +367,27 @@ Known as: "Nachalnik" (The Boss)
 Last known position: Fishing Village Pier Authority
 
 BACKGROUND:
-Dragunov served 8 years in the Soviet Navy, Black Sea Fleet. Dishonorably discharged in 1980 after an incident involving the disappearance of three crew members during a storm. Investigation inconclusive.
+Dragunov served 8 years in the Soviet Navy, Black Sea Fleet. Dishonorably discharged in 1980 after an incident involving the disappearance of three crew members during a storm. Investigation inconclusive — witnesses reported Dragunov was found on deck alone, speaking to the sea in an unknown language. Blood was found on the hull below the waterline, but not human blood. Chemical analysis inconclusive.
 
-After discharge, he established control over a small fishing village on the northern coast. Within two years, he had turned the legitimate fishing operation into a smuggling network — weapons, contraband, and occasionally people.
+After discharge, he established control over a small fishing village on the northern coast. Within two years, he had turned the legitimate fishing operation into a smuggling network — weapons, contraband, and Substance Zero shipments in lead-lined containers.
 
 DISTINGUISHING FEATURES:
-- Always carries a massive industrial fish hook, repurposed as a close-combat weapon. Hook is approximately 40cm long, sharpened to a razor edge.
-- Missing left ring finger (fishing accident, 1976)
-- Tattoo of an anchor on right forearm
+- Always carries a massive industrial fish hook, repurposed as a close-combat weapon. Hook is approximately 40cm long, sharpened to a razor edge. The hook is inscribed with symbols that match no known alphabet — Dragunov claims "the sea taught him"
+- Missing left ring finger (claims fishing accident, 1976 — medical records show clean severance inconsistent with accident, consistent with ritual amputation)
+- Tattoo of an anchor on right forearm — close inspection reveals the anchor's chain forms a spiral that does not end; it continues beneath the skin in raised scarring
 - Speaks with a deep voice, rarely shouts — his men fear his quiet commands more than any officer's screams
 
 KNOWN ASSOCIATES:
-- Two personal bodyguards, former navy men
-- Pack of trained dogs used for perimeter security
+- Pack of trained dogs used for perimeter security — dogs will not enter the dock building after dark
 - Network of "redneck" smugglers from nearby settlements
 
-WARNING:
-Dragunov is extremely dangerous in close quarters. Multiple reports of him using his hook to incapacitate opponents before they can draw weapons. He is known to charge directly at armed targets — do NOT let him close the distance.
+PSYCHOLOGICAL NOTE:
+Dragunov sleeps on the pier. Not in a cabin — on the wooden dock itself, exposed to the elements. Guards report he sleeps with one hand in the water. On mornings after strong aurora displays, the water around the pier is significantly warmer than the surrounding sea. Fish gather beneath the dock in unnatural numbers during these events, floating motionless, facing the same direction.
 
-His men call him "Nachalnik" — The Boss. On the pier, his word is law.
+WARNING:
+Dragunov is extremely dangerous in close quarters. He is known to charge directly at armed targets — do NOT let him close the distance.
+
+His men call him "Nachalnik" — The Boss. On the pier, his word is law. And the sea, it seems, obeys him too.
 
 — MVD Coastal Division, File #847-V`,
     hasCode: false,
