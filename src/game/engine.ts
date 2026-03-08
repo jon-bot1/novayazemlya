@@ -4663,7 +4663,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         addMessage(state, `Hit! -${Math.floor(dmg)}HP`, 'damage');
         if (state.player.hp <= 0) {
-          const srcLabel = b.sourceType === 'boss' ? 'Commandant Osipovitj' : b.sourceType === 'sniper' ? 'Sniper Tuman' : b.sourceType ? b.sourceType.toUpperCase() : 'unknown';
+          const srcLabel = getDamageSourceLabel(state, b.sourceType, b.sourceId);
           state.deathCause = `🔫 Shot by ${srcLabel}`;
         }
         return false;
