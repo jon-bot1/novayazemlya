@@ -312,21 +312,22 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               return (
                 <button
                   key={m.id}
-                  disabled={locked}
                   className={`flex flex-col items-start gap-1 p-3 rounded border transition-colors text-left ${
                     locked
-                      ? 'border-border/30 bg-secondary/10 opacity-50 cursor-not-allowed'
+                      ? selectedMap === m.id
+                        ? 'border-border/50 bg-secondary/10 opacity-70'
+                        : 'border-border/30 bg-secondary/10 opacity-50 hover:opacity-60 hover:border-border/40'
                       : selectedMap === m.id
                       ? 'border-accent bg-accent/10 text-foreground'
                       : 'border-border/50 bg-secondary/20 text-muted-foreground hover:border-foreground/30'
                   }`}
-                  onClick={() => { if (!locked) { setSelectedMap(m.id); onMapChange(m.id); } }}
+                  onClick={() => { setSelectedMap(m.id); if (!locked) onMapChange(m.id); }}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{locked ? '🔒' : m.icon}</span>
-                    <span className="text-xs font-display">{m.name}</span>
+                    <span className={`text-xs font-display ${locked ? 'text-muted-foreground/60' : ''}`}>{m.name}</span>
                   </div>
-                  <p className="text-[9px] font-mono leading-tight">{m.description}</p>
+                  <p className={`text-[9px] font-mono leading-tight ${locked ? 'text-muted-foreground/40' : ''}`}>{m.description}</p>
                   {locked ? (
                     <span className="text-[8px] font-mono text-warning/80">🔒 {m.unlockRequirement} extractions needed</span>
                   ) : (
