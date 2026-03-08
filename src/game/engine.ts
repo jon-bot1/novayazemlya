@@ -1627,6 +1627,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     spawnParticles(state, m.pos.x, m.pos.y, '#ffcc44', 18);
     spawnParticles(state, m.pos.x, m.pos.y, '#444', 12);
     playExplosion();
+    (state as any)._screenShake = 1.5;
     state.soundEvents.push({ pos: { ...m.pos }, radius: 600, time: state.time });
 
     for (const enemy of state.enemies) {
