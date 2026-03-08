@@ -11,6 +11,9 @@ export const ALERT_LINES: Record<string, string[]> = {
   redneck: ['HEY! WHO\'S THERE?!', 'GET OFF MY LAND!', 'I SEE YA!', 'TRESPASSER!!'],
   shocker: ['⚡ ОБНАРУЖЕН!', 'ПОПАЛСЯ!', 'ЭЛЕКТРИЧЕСТВО НЕ ЖДЁТ!', 'ГОТОВ К РАЗРЯДУ!'],
   sniper:  ['...цель...', '...вижу...'],
+  cultist: ['НЕЧИСТЫЙ!!', 'БРАТЬЯ! ВРАГ ОРДЕНА!', 'БОРЕАЛИС ВИДИТ ТЕБЯ!', 'ЖЕРТВА ПРИШЛА САМА!', 'ВО ИМЯ ВЕЩЕСТВА!'],
+  miner_cult: ['BERGET VARNAR!', 'INKRÄKTARE I DRIFTEN!', 'STÅLHANDSKE SKA HÄMNAS!', 'DU STÖR RITUALEN!', 'MALMEN ROPAR!'],
+  svarta_sol: ['TARGET ACQUIRED.', 'HYPERBOREAN PROTOCOL.', 'RUNE BEARER — ENGAGE.', 'SOL INVICTUS.'],
 };
 
 // === LOST SIGHT ===
