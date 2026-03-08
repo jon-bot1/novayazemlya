@@ -862,10 +862,19 @@ export const GameCanvas: React.FC = () => {
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
       updateKeysRef.current();
+      const prevHp = stateRef.current.player.hp;
+      const prevKills = stateRef.current.killCount;
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
       stateRef.current = state;
       inputRef.current.interact = false;
       inputRef.current.shootPressed = false; // clear single-frame flag
+
+      // Haptic feedback on mobile
+      if (isMobile) {
+        if (state.player.hp < prevHp) hapticDamage();
+        if (state.killCount > prevKills) hapticKill();
+        if (inputRef.current.shooting) hapticShoot();
+      }
 
       // 5-minute timer — game over with reinforcements
       if (state.time >= TIME_LIMIT && !state.gameOver && !state.extracted && !reinforcementsSpawned) {
