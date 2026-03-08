@@ -363,4 +363,5 @@ export interface InputState {
   reload: boolean; // manual reload (R key)
   throwKnife: boolean; // throw knife for silent ranged kill (F key)
   chokehold: boolean; // hold E behind enemy for silent chokehold
+  throwRock: boolean; // throw distraction rock (middle mouse / C key)
 }

@@ -565,7 +565,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createGameState());
-  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false });
+  const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false, throwRock: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const moveTouchRef = useRef<number | null>(null);
@@ -685,6 +685,12 @@ export const GameCanvas: React.FC = () => {
       unlockSpeech();
       if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
       if (showInventory || showIntel || readingDoc) return;
+      if (e.button === 1) {
+        // Middle click = throw distraction rock
+        e.preventDefault();
+        inputRef.current.throwRock = true;
+        return;
+      }
       if (e.button === 2) {
         // Right-click hold = charge grenade throw
         e.preventDefault();
@@ -1426,7 +1432,7 @@ export const GameCanvas: React.FC = () => {
         </div>
 
         <div className="hidden sm:block absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
-          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · Tab bag · 1-3 weapons
+          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
         </div>
         {/* Inventory Panel — toggled with Tab/I */}
         {showInventory && (

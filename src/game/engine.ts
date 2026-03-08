@@ -876,6 +876,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // === THROW DISTRACTION ROCK (Middle click / C key) ===
+  if (input.throwRock) {
+    input.throwRock = false;
+    // Throw rock to where mouse is pointing (world position)
+    const rockTargetX = state.camera.x + input.aimX;
+    const rockTargetY = state.camera.y + input.aimY;
+    const rockDist = dist(state.player.pos, { x: rockTargetX, y: rockTargetY });
+    const maxRockDist = 250;
+    const clampedDist = Math.min(rockDist, maxRockDist);
+    const angle = Math.atan2(rockTargetY - state.player.pos.y, rockTargetX - state.player.pos.x);
+    const landPos = {
+      x: state.player.pos.x + Math.cos(angle) * clampedDist,
+      y: state.player.pos.y + Math.sin(angle) * clampedDist,
+    };
+    // Create sound event at landing position (moderate noise — attracts enemies)
+    state.soundEvents.push({ pos: { ...landPos }, radius: 180, time: state.time });
+    // Visual tracking
+    if (!(state as any)._thrownRocks) (state as any)._thrownRocks = [];
+    (state as any)._thrownRocks.push({ pos: { ...landPos }, time: state.time });
+    // Clean old rocks
+    (state as any)._thrownRocks = (state as any)._thrownRocks.filter((r: any) => state.time - r.time < 4);
+    addMessage(state, '🪨 Rock thrown — enemies will investigate', 'info');
+    // Very quiet throw sound from player position
+    state.soundEvents.push({ pos: { ...state.player.pos }, radius: 15, time: state.time });
+  }
+
   // Peek fire — shooting while in cover (breaks hiding)
   if (state.player.inCover) {
     state.player.peeking = input.shooting;
@@ -1974,7 +2000,61 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.bullets = state.bullets.slice(-100);
   }
 
-  // Update enemies
+  // === CONTEXTUAL TUTORIAL — first-time tips ===
+  {
+    if (!(state as any)._tutorialsSeen) (state as any)._tutorialsSeen = new Set<string>();
+    const seen = (state as any)._tutorialsSeen as Set<string>;
+    const currentTip = (state as any)._activeTutorialTip;
+    const tipAge = currentTip ? state.time - currentTip.startTime : 999;
+    
+    // Only show one tip at a time, wait until current fades
+    if (!currentTip || tipAge > 6) {
+      let newTip: { text: string; worldPos?: { x: number; y: number }; startTime: number } | null = null;
+
+      // Tip: First enemy nearby — teach sneaking
+      if (!seen.has('sneak') && state.enemies.some(e => e.state !== 'dead' && dist(state.player.pos, e.pos) < 200)) {
+        seen.add('sneak');
+        newTip = { text: 'Hold Ctrl to sneak · Enemies have vision cones', startTime: state.time };
+      }
+      // Tip: Low HP — teach healing
+      else if (!seen.has('heal') && state.player.hp < 50 && state.player.hp > 0) {
+        seen.add('heal');
+        newTip = { text: 'Press H to heal · Bandages stop bleeding', startTime: state.time };
+      }
+      // Tip: Near cover object — teach cover
+      else if (!seen.has('cover') && state.coverNearby && !state.player.inCover) {
+        seen.add('cover');
+        newTip = { text: 'Press Q near obstacles to take cover', startTime: state.time };
+      }
+      // Tip: First kill — teach looting
+      else if (!seen.has('loot') && state.killCount === 1) {
+        seen.add('loot');
+        newTip = { text: 'Press E near bodies to loot · Weapons drop separately', startTime: state.time };
+      }
+      // Tip: Got a weapon — teach reload
+      else if (!seen.has('reload') && state.player.primaryWeapon && state.player.currentAmmo < state.player.maxAmmo) {
+        seen.add('reload');
+        newTip = { text: 'Press R to reload · Ammo stored in vest', startTime: state.time };
+      }
+      // Tip: Multiple enemies ahead — teach rock distraction
+      else if (!seen.has('rock') && state.enemies.filter(e => e.state !== 'dead' && dist(state.player.pos, e.pos) < 300).length >= 2) {
+        seen.add('rock');
+        newTip = { text: 'Middle click to throw distraction rock', startTime: state.time };
+      }
+      // Tip: Behind an unaware enemy — teach chokehold
+      else if (!seen.has('chokehold') && state.enemies.some(e => e.state !== 'dead' && e.awareness < 0.3 && dist(state.player.pos, e.pos) < 80)) {
+        seen.add('chokehold');
+        newTip = { text: 'Press E behind unaware enemy for silent chokehold', startTime: state.time };
+      }
+
+      if (newTip) {
+        (state as any)._activeTutorialTip = newTip;
+      } else if (tipAge > 6) {
+        (state as any)._activeTutorialTip = null;
+      }
+    }
+  }
+
   // Reset stealth detection tracking — recalculated per frame
   (state as any)._stealthDetection = 0;
   (state as any)._stealthNearestState = 'idle';
