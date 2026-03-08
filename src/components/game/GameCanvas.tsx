@@ -238,7 +238,46 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             PERSONNEL DOSSIER — All Operational Zones
           </div>
 
-          {/* Boss */}
+          {/* Gruvrå */}
+          <div className="border border-accent/40 rounded p-3 bg-accent/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-accent">⛏️ Gruvrå</span>
+              <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">BOSS — MINE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. 
+              It has existed in the mountain since before the ice age — the miners disturbed it, and it absorbed them. 
+              Survey engineer Nils Stålhandske — VARG's father — was taken by it in 1957. The mountain keeps what it takes.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-danger">500</span>
+              <span className="text-muted-foreground">Location</span><span className="text-foreground">Deep chamber, 420m underground</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">40</span>
+              <span className="text-muted-foreground">Special</span><span className="text-warning">Cave-in attack, 3 phases, Swedish speech</span>
+              <span className="text-muted-foreground">Guards</span><span className="text-accent">ORT (west) & STOLL (east) — crystal formations</span>
+              <span className="text-muted-foreground">Drops</span><span className="text-loot">👑 Gruvrås Krona, 💎 Rare Ore</span>
+            </div>
+          </div>
+
+          {/* Ort & Stoll */}
+          <div className="border border-accent/30 rounded p-3 bg-accent/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-accent">🪨 ORT & STOLL</span>
+              <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">BODYGUARDS — MINE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Crystallized Substance Zero formations, three meters tall, guarding the entrance to Gruvrå's chamber. 
+              They look like stone but they move — slowly, patiently. They have faces. 
+              Miner Dahl saw them in 1958. They weren't there in September. By March, they were.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-warning">200 / 180</span>
+              <span className="text-muted-foreground">Roles</span><span className="text-foreground">ORT — aggressive melee / STOLL — ranged suppressor</span>
+              <span className="text-muted-foreground">Alert</span><span className="text-foreground">280-300px</span>
+            </div>
+          </div>
+
+          {/* Commandant */}
           <div className="border border-danger/40 rounded p-3 bg-danger/5">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm font-display text-danger">💀 Commandant Osipovitj</span>
