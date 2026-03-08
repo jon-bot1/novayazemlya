@@ -1,9 +1,9 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone, Item } from './types';
 import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable, createTNT, createDogFood } from './items';
 
-// Fishing Village: 2800x2000
-// Layout: Forest top, cabins along a road running north-south, dock/pier at bottom with speedboat
-const MAP_W = 2800;
+// Fishing Village: 1600x2000
+// Layout: Forest top, cabins along a road running north-south, dock/pier at bottom, sea at very bottom
+const MAP_W = 1600;
 const MAP_H = 2000;
 
 let enemyId = 10000; // offset to avoid collision with main map
