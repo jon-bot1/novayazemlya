@@ -1414,7 +1414,7 @@ export const GameCanvas: React.FC = () => {
           <ActionButton label="🎒" onPress={() => { setShowInventory(v => !v); setShowIntel(false); }} className="absolute top-14 right-[4.5rem] pointer-events-auto" variant="action" />
 
           {/* Bottom-center: movement mode + grenade cycle */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto z-40">
             {(['sneak', 'walk', 'sprint'] as const).map(mode => {
               const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
               const isActive = inputRef.current.movementMode === mode;
@@ -1426,8 +1426,7 @@ export const GameCanvas: React.FC = () => {
                       ? 'bg-primary/60 border-primary text-primary-foreground'
                       : 'bg-secondary/30 border-border/40 text-muted-foreground'
                     }`}
-                  onTouchStart={(e) => { e.preventDefault(); inputRef.current.movementMode = mode; }}
-                  onMouseDown={() => { inputRef.current.movementMode = mode; }}
+                  onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.movementMode = mode; }}
                 >
                   {icons[mode]}
                 </button>
@@ -1435,7 +1434,7 @@ export const GameCanvas: React.FC = () => {
             })}
             <button
               className="px-3 py-2 rounded text-xs font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
-              onTouchStart={(e) => { e.preventDefault(); inputRef.current.cycleThrowable = true; }}
+              onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.cycleThrowable = true; }}
             >
               🔄
             </button>
