@@ -576,6 +576,7 @@ export const GameCanvas: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
+  const [selectedMapId, setSelectedMapId] = useState<MapId>('novaya_zemlya');
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
   const [rerollCount, setRerollCount] = useState(0);
   const extractedRef = useRef(false); // prevent double extraction
