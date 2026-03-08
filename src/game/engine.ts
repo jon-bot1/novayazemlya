@@ -2430,7 +2430,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
         }
         if (enemy.bossPhase === 2) {
-          if (bossId === 'patient_zero') {
+          if (bossId === 'uzbek') {
             enemy.speed = 2.80; enemy.damage = 80; enemy.fireRate = 300;
           } else {
             enemy.fireRate = 250; enemy.speed = 1.89; enemy.damage = 40;
