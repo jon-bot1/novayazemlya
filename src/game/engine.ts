@@ -1454,6 +1454,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     (state as any)._recoilBloom = Math.min(0.35, (state as any)._recoilBloom + bloomRate);
     
     const muzzleAngle = state.player.angle;
+    addMuzzleFlash(state, state.player.pos.x + Math.cos(muzzleAngle) * 25, state.player.pos.y + Math.sin(muzzleAngle) * 25, true);
     spawnParticles(state, state.player.pos.x + Math.cos(muzzleAngle) * 20, state.player.pos.y + Math.sin(muzzleAngle) * 20, '#ffaa44', 3);
     
     // Reduce durability (sidearms and melee skip)
