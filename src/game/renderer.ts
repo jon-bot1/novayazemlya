@@ -4237,7 +4237,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     for (let bi = 0; bi < bosses.length; bi++) {
       const boss = bosses[bi];
       const bossId = (boss as any)._bossId;
-      const bossTitle = bossId === 'kravtsov' ? 'ДОКТОР КРАВЦОВ' : bossId === 'uzbek' ? 'УЗБЕК — SUBJECT 7' : bossId === 'nachalnik' ? 'НАЧАЛЬНИК' : 'COMMANDANT OSIPOVITJ';
+      const bossTitle = bossId === 'kravtsov' ? 'ДОКТОР КРАВЦОВ' : bossId === 'uzbek' ? 'УЗБЕК — SUBJECT 7' : bossId === 'nachalnik' ? 'NACHALNIK' : 'COMMANDANT OSIPOVITJ';
       const ratio = boss.hp / boss.maxHp;
       const phase = boss.bossPhase || 0;
       const barW = Math.min(400, w * 0.55);

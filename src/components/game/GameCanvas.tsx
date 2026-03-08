@@ -50,6 +50,15 @@ const createDefaultInputState = (): InputState => ({
   throwRock: false,
 });
 
+const safeCreateGameState = (mapId: MapId = 'objekt47'): GameState => {
+  try {
+    return createGameState(mapId);
+  } catch (error) {
+    console.error('Failed to create game state:', error);
+    return createGameState('objekt47');
+  }
+};
+
 const createInitialObjectivesByMap = (): Record<MapId, MissionObjective[]> => ({
   objekt47: generateMissionObjectives('objekt47'),
   fishing_village: generateMissionObjectives('fishing_village'),
@@ -765,17 +774,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const initialState = useRef<GameState | null>(null);
-  if (!initialState.current) {
-    try {
-      initialState.current = createGameState();
-    } catch (e) {
-      console.error('Failed to create game state:', e);
-      initialState.current = createGameState('objekt47');
-    }
-  }
-  const stateRef = useRef<GameState>(initialState.current);
-  if (!stateRef.current) stateRef.current = initialState.current;
+  const stateRef = useRef<GameState>(safeCreateGameState());
   const inputRef = useRef<InputState>(createDefaultInputState());
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
@@ -1074,11 +1073,19 @@ export const GameCanvas: React.FC = () => {
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
       updateKeysRef.current();
-      if (!stateRef.current) return;
-      const prevHp = stateRef.current.player.hp;
-      const prevKills = stateRef.current.killCount;
-      const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
-      if (!state) return;
+      let currentState = stateRef.current;
+      if (!currentState) {
+        currentState = safeCreateGameState(selectedMapId);
+        stateRef.current = currentState;
+      }
+      const prevHp = currentState.player.hp;
+      const prevKills = currentState.killCount;
+      let state = currentState;
+      try {
+        state = updateGame(currentState, inputRef.current, dt, cssW, cssH) || currentState;
+      } catch (error) {
+        console.error('Game loop update failed:', error);
+      }
       stateRef.current = state;
       inputRef.current.interact = false;
       inputRef.current.shootPressed = false; // clear single-frame flag
@@ -1348,7 +1355,7 @@ export const GameCanvas: React.FC = () => {
             setSelectedMapId(mapId);
             inputRef.current = createDefaultInputState();
             // Apply upgrades to game state
-            stateRef.current = createGameState(mapId);
+            stateRef.current = safeCreateGameState(mapId);
             const st = stateRef.current;
             const ups = stash.upgrades;
             // Backpack upgrade
