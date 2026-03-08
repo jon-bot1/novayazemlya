@@ -3399,15 +3399,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
-              if (ally.type !== 'boss' && ally.type !== 'turret') {
-                (ally as any)._reactionDelay = 0.2 + Math.random() * 0.8;
-                (ally as any)._reactionDelayDone = true;
-                (ally as any)._pendingState = 'chase';
-                ally.investigateTarget = { ...state.player.pos };
-              } else {
-                ally.state = 'chase';
-                ally.investigateTarget = { ...state.player.pos };
-              }
+              // Directly activate — no reaction delay (was causing infinite freeze loop)
+              ally.state = 'chase';
+              ally.investigateTarget = { ...state.player.pos };
+              ally.awareness = Math.max(ally.awareness, 0.8);
               assignTacticalRole(state, ally);
               ally.radioAlert = 1.5;
             } else if (ally.state === 'chase' || ally.state === 'flank') {
