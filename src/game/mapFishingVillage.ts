@@ -278,7 +278,7 @@ export function generateFishingVillageMap() {
       const bp = randIn(bz.x, bz.y, bz.w, bz.h);
       const boss = makeEnemy(bp.x, bp.y, 'boss');
       (boss as any)._bossId = 'nachalnik';
-      (boss as any)._bossTitle = 'НАЧАЛЬНИК';
+      (boss as any)._bossTitle = 'NACHALNIK';
       // Fish hook melee attack — massive close-range damage
       (boss as any)._hookAttack = true;
       (boss as any)._hookRange = 55; // close range hook sweep

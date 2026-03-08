@@ -1064,7 +1064,7 @@ const MAP_PALETTES: Record<string, MapPalette> = {
     concreteDetail: 'rgba(80,80,70,0.1)',
     waterFoam: 'rgba(180,210,230,0.08)',
     wallStain: 'rgba(50,40,25,0.1)',
-    puddles: true,
+    puddles: false,
     debrisChance: 0.04,
   },
   hospital: {
@@ -1122,7 +1122,11 @@ function ensureGroundCanvas(state: GameState) {
   
   for (let tx = 0; tx < _groundMapW; tx += tileSize) {
     for (let ty = 0; ty < _groundMapH; ty += tileSize) {
-      const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
+      let terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
+      // Force dry dock interior floor in Fishing Village
+      if (mapId === 'fishing_village' && tx >= 500 && tx < 870 && ty >= 1380 && ty < 1710) {
+        terrain = 'concrete';
+      }
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
       const colors = palette.terrain[terrain] || palette.terrain['grass'];
       gctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
