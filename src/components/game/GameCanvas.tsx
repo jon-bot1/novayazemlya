@@ -1041,9 +1041,12 @@ export const GameCanvas: React.FC = () => {
     };
 
     rafRef.current = requestAnimationFrame(loop);
+    // Start ambient sound for this map
+    startAmbient(selectedMapId);
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
+      stopAmbient();
     };
   }, [started]);
 
