@@ -1266,7 +1266,9 @@ export const GameCanvas: React.FC = () => {
             stateRef={stateRef}
             onToggleInventory={() => { setShowInventory(v => !v); setShowIntel(false); }}
             onToggleIntel={() => { setShowIntel(v => !v); setShowInventory(false); }}
+            onCloseDoc={() => setReadingDoc(null)}
             movementMode={hudState.movementMode}
+            hasDoc={!!readingDoc}
           />
         )}
 
