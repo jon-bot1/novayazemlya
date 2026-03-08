@@ -83,7 +83,7 @@ export const STORY_ARC = {
     formerUnit: 'MUST (Militära Underrättelse- och Säkerhetstjänsten)',
     organization: 'NORDVAKT — Nordic Stay-Behind Defense Organization',
     status: 'Officially KIA — East Berlin, 1984',
-    handler: 'STYRESMAN (NORDVAKT Operations Chief)',
+    handler: 'Styrelsen (NORDVAKT Operations Council)',
     background: `Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Distinguished operative — fluent in Russian, Finnish, and Norwegian. Trained in Arctic survival, demolitions, and close-quarters combat.
 
 Declared killed in action during a failed exfiltration in East Berlin — in reality, extracted by NORDVAKT and given a new identity. Now operates as a ghost: no country, no name, no backup.
