@@ -166,33 +166,39 @@ export function generateFishingVillageMap() {
     ...westCabins.flatMap(c => makeCabin(c.x, c.y, 'east')),
     ...eastCabins.flatMap(c => makeCabin(c.x, c.y, 'west')),
 
-    // === DOCK / PIER === (80px gap in north wall for entry)
-    makeWall(520, 1530, 180, T, STONE), // north-left
-    makeWall(780, 1530, 200, T, STONE), // north-right (gap 700..780 = 80px)
-    makeWall(520, 1690, 460, T, STONE), // south edge
-    makeWall(520, 1530, T, 160, STONE), // west edge
-    makeWall(980, 1530, T, 160, STONE), // east edge
+    // === DOCK PLATFORM === (80px gap for entry)
+    makeWall(430, 1380, 150, T, STONE), // north-left
+    makeWall(660, 1380, 210, T, STONE), // north-right (gap 580..660 = 80px)
+    makeWall(430, 1450, 150, T, STONE), // south-left
+    makeWall(760, 1450, 110, T, STONE), // south-right
+    makeWall(430, 1380, T, 70, STONE),  // west edge
+    makeWall(870, 1380, T, 70, STONE),  // east edge
+
+    // === PIER / KAJ extending into sea ===
+    makeWall(590, 1450, T, 430, STONE),  // west wall of pier
+    makeWall(750, 1450, T, 430, STONE),  // east wall of pier
+    makeWall(590, 1880, 160, T, STONE),  // south end of pier
 
     // Warehouse at dock (70px door gap on east wall)
-    makeWall(380, 1400, 150, T, WD),
-    makeWall(380, 1500, 150, T, WD),
-    makeWall(380, 1400, T, 100, WD),
-    makeWall(520, 1400, T, 15, WD),
-    makeWall(520, 1485, T, 15, WD), // gap 1415..1485 = 70px
+    makeWall(320, 1250, 150, T, WD),
+    makeWall(320, 1350, 150, T, WD),
+    makeWall(320, 1250, T, 100, WD),
+    makeWall(460, 1250, T, 15, WD),
+    makeWall(460, 1335, T, 15, WD), // gap 1265..1335 = 70px
 
     // Old fishing shack (70px door gap on east wall)
-    makeWall(250, 1280, 100, T, W),
-    makeWall(250, 1370, 100, T, W), // taller shack (90px)
-    makeWall(250, 1280, T, 90, W),
-    makeWall(340, 1280, T, 10, W),
-    makeWall(340, 1350, T, 20, W), // gap 1290..1350 = 60px (tight but OK)
+    makeWall(200, 1140, 100, T, W),
+    makeWall(200, 1230, 100, T, W),
+    makeWall(200, 1140, T, 90, W),
+    makeWall(290, 1140, T, 10, W),
+    makeWall(290, 1210, T, 20, W), // gap 1150..1210 = 60px
 
     // General store / bar (north village) — 70px door gap on east wall
-    makeWall(500, 340, 180, T, WD),
-    makeWall(500, 440, 180, T, WD),
-    makeWall(500, 340, T, 100, WD),
-    makeWall(670, 340, T, 15, WD),
-    makeWall(670, 425, T, 15, WD), // gap 355..425 = 70px
+    makeWall(460, 340, 180, T, WD),
+    makeWall(460, 440, 180, T, WD),
+    makeWall(460, 340, T, 100, WD),
+    makeWall(630, 340, T, 15, WD),
+    makeWall(630, 425, T, 15, WD), // gap 355..425 = 70px
   ];
 
   // ══════════════════════════════════════
