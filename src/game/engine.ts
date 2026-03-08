@@ -3970,10 +3970,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
               (enemy as any)._stuckCounter++;
               if ((enemy as any)._stuckCounter > 10) {
-                // Stuck at wall — give up investigation
+                // Stuck at wall — escape and resume patrol
+                const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
+                if (escapeStep) enemy.pos = escapeStep;
                 enemy.state = 'patrol';
-                const rAngle2 = Math.random() * Math.PI * 2;
-                enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle2) * 200, y: enemy.pos.y + Math.sin(rAngle2) * 200 };
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
                 (enemy as any)._stuckCounter = 0;
               }
             } else {
