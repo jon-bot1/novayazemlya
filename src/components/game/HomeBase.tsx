@@ -67,6 +67,10 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft' | 'mastery'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const [showEndingChoice, setShowEndingChoice] = useState(false);
+  const [chosenEnding, setChosenEnding] = useState<GameEnding | null>(null);
+  const [endingPhase, setEndingPhase] = useState<'choice' | 'narrative' | 'epilogue'>('choice');
+  const [completedEndingId, setCompletedEndingId] = useState<string | null>(hasCompletedEnding);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
   // Restore found docs from localStorage on mount (or unlock all for test3)
   React.useEffect(() => {
