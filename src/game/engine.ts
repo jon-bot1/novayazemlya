@@ -567,6 +567,9 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;
+  (state as any)._killFeed = [];
+  (state as any)._bloodStains = [];
+  (state as any)._muzzleFlashes = [];
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
