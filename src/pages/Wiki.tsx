@@ -406,7 +406,7 @@ function WorldSection() {
       <div className="space-y-2 mb-3">
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: NORDVAKT'S TRUE AGENDA</strong><br/>
-          STYRESMAN's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
+          Styrelsen's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
         </div>
         <div className="border-l-2 border-accent/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-accent">THEORY: CONTROL IS AGENT FALKE</strong><br/>
