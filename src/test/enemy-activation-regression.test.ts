@@ -50,4 +50,29 @@ describe('Enemy activation regression', () => {
       expect(['chase', 'attack', 'flank', 'suppress']).toContain(enemy.state);
     }
   });
+
+  it('direct contact should break hiding and aggro multiple enemy types', () => {
+    const targets = ['scav', 'heavy', 'boss', 'soldier', 'redneck'] as const;
+
+    for (const type of targets) {
+      const state = createGameState('fishing_village');
+      const enemy = state.enemies.find(e => e.type === type);
+      expect(enemy, `missing ${type} on fishing_village`).toBeTruthy();
+      if (!enemy) continue;
+
+      state.player.pos = { x: enemy.pos.x, y: enemy.pos.y };
+      state.player.inCover = true;
+      state.player.peeking = false;
+      (state as any)._playerHiding = true;
+      state.disguised = false;
+
+      for (let i = 0; i < 20; i++) {
+        updateGame(state, idleInput, 1 / 60, 1200, 800);
+      }
+
+      expect((state as any)._playerHiding, `${type} did not reveal hidden player on contact`).toBe(false);
+      expect(enemy.awareness, `${type} awareness too low after hidden contact`).toBeGreaterThanOrEqual(0.75);
+      expect(['chase', 'attack', 'flank', 'suppress']).toContain(enemy.state);
+    }
+  });
 });
