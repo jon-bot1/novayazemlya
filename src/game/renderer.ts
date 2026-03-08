@@ -3012,7 +3012,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // ── INTERACTION PROMPTS — only check nearby items ──
   for (const lc of state.lootContainers) {
-    if (lc.looted) continue;
+    if (lc.looted || lc.type === 'weapon_drop') continue;
     if (dist2d(state.player.pos, lc.pos) < 70) {
       ctx.fillStyle = 'rgba(255, 230, 80, 0.9)';
       ctx.font = 'bold 10px sans-serif';
