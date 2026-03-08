@@ -608,6 +608,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // Nachalnik net status
+  if ((state as any)._playerNetSlowTimer > 0) {
+    (state as any)._playerNetSlowTimer = Math.max(0, (state as any)._playerNetSlowTimer - dt);
+  }
+  if ((state as any)._netCast) {
+    (state as any)._netCast.timer -= dt;
+    if ((state as any)._netCast.timer <= 0) (state as any)._netCast = null;
+  }
+
   // Decay screenshake
   if ((state as any)._screenShake > 0) {
     (state as any)._screenShake = Math.max(0, (state as any)._screenShake - dt * 4);
