@@ -462,43 +462,31 @@ async function syncStashToDb(playerName: string, stash: StashState) {
   try {
     const name = playerName.trim().slice(0, 20);
     const token = getWriteToken(name);
-    const { data: existing } = await supabase.from('player_progress').select('id').eq('player_name', name).maybeSingle();
-    if (existing && token) {
-      // Use REST API directly to pass custom header for write_token verification
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/player_progress?player_name=eq.${encodeURIComponent(name)}`;
-      await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          'x-write-token': token,
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({
-          rubles: stash.rubles,
-          raid_count: stash.raidCount,
-          extraction_count: stash.extractionCount,
-          stash_items: stash.items,
-          upgrades: stash.upgrades,
-          xp: stash.xp,
-          level: stash.level,
-        }),
-      });
-    } else if (!existing) {
-      const { data: inserted } = await supabase.from('player_progress').insert({
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-progress`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    };
+    if (token) headers['x-write-token'] = token;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
         player_name: name,
         rubles: stash.rubles,
         raid_count: stash.raidCount,
         extraction_count: stash.extractionCount,
-        stash_items: stash.items as any,
-        upgrades: stash.upgrades as any,
+        stash_items: stash.items,
+        upgrades: stash.upgrades,
         xp: stash.xp,
         level: stash.level,
-      }).select('write_token').single();
-      if (inserted?.write_token) {
-        setWriteToken(name, inserted.write_token);
-      }
+      }),
+    });
+
+    const result = await res.json();
+    if (result.write_token) {
+      setWriteToken(name, result.write_token);
     }
   } catch (e) {
     console.error('Failed to sync stash to DB:', e);
