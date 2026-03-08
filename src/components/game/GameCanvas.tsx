@@ -179,7 +179,24 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'story' && (
         <>
           <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
-            OPERATION AURORA BOREALIS — ULTRAVIOLET CLEARANCE
+            OPERATION GRINDVAKT — ULTRAVIOLET CLEARANCE
+          </div>
+
+          {/* Prologue */}
+          <div className="border border-border rounded p-3 bg-card/50">
+            <h3 className="text-xs font-display text-foreground uppercase tracking-wider mb-2">📖 Prologue</h3>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
+              The year is <span className="text-accent">1985</span>. The Cold War has reached a stalemate — but beneath the ice, something older than human civilization is shifting. Deep in the Arctic bedrock, from the mountains of northern Sweden to the frozen wastes of <span className="text-accent">Novaya Zemlya</span>, a geological vein pulses with an unknown substance.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              The Soviets found it first. They built facilities to mine it, refine it, weaponize it. NATO caught wind and sent reconnaissance teams. None returned. The superpowers are circling — but a third party has been watching from the shadows.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization, established during the early Cold War by Scandinavian intelligence services. They answer to no alliance. They serve no superpower. Their mission: ensure the North remains sovereign, no matter the cost.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              You are <span className="text-accent">Operatör 8</span>. And this is <span className="text-warning">Operation Grindvakt</span>.
+            </p>
           </div>
 
           {/* Substance Zero */}
@@ -189,10 +206,10 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               Beneath the Arctic bedrock — from <span className="text-accent">Norrberget</span> in Sweden across the Kola Peninsula to <span className="text-accent">Novaya Zemlya</span> — runs a geological vein of an unknown material. NATO calls it <span className="text-warning">Substance Zero</span>. The Soviets call it <span className="text-warning">Вещество Ноль</span>. The miners at Norrberget called it <span className="text-warning">"the blood of the mountain."</span>
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
-              When refined, it amplifies nuclear chain reactions by a <span className="text-danger">factor of twelve</span>. A warhead the size of a briefcase could level a city. The Cold War's ultimate escalation.
+              It predates human civilization. When refined, it amplifies nuclear chain reactions by a <span className="text-danger">factor of twelve</span>. A warhead the size of a briefcase could level a city. Both superpowers want it. Neither should have it.
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
-              But Substance Zero is not inert. It <span className="text-danger">resists extraction</span>. Workers go mad. Equipment fails. In extreme cases — the mountain <span className="text-danger">absorbs</span> them.
+              But Substance Zero is not inert. It <span className="text-danger">resists extraction</span>. Workers develop psychosis, magnetic sensitivity, and in extreme cases — <span className="text-danger">physical absorption</span> into the rock itself. The mountain takes what it wants.
             </p>
           </div>
 
@@ -203,10 +220,13 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
-              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization. Answers to Styrelsen.
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed exfiltration in East Berlin, 1984. In reality — extracted by <span className="text-accent">NORDVAKT</span> and given a new identity. A ghost operative answering only to <span className="text-accent">Styrelsen</span>, the NORDVAKT operations council.
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
-              <span className="text-warning">Mission:</span> Secure Substance Zero intelligence for NORDVAKT. Deny SZ-0 to NATO, Moscow, and all other parties. Trust no one.
+              Fluent in Russian, Finnish, and Norwegian. Trained in Arctic survival, demolitions, and close-quarters combat. Selected for Grindvakt based on psychological profile: <span className="text-muted-foreground">high resilience, low attachment, comfortable with moral ambiguity.</span>
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              <span className="text-warning">Mission:</span> Infiltrate four Soviet sites along the Substance Zero vein. Recover intelligence. Sabotage extraction. Decide who gets the truth — and who gets buried with it.
             </p>
           </div>
 
@@ -214,26 +234,39 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div className="border border-border rounded p-3">
             <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">🗺️ The Four Sites</h3>
             <div className="space-y-2 text-[10px] font-mono text-foreground/70">
-              <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Nuclear codes in Osipovitj's safe. <span className="text-muted-foreground">The heart of the operation.</span></p>
-              <p>█ <span className="text-accent">COASTAL VILLAGE</span> — Maritime smuggling pipeline. Nachalnik ships refined SZ-0 to foreign buyers. <span className="text-muted-foreground">The export terminal.</span></p>
-              <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation. Kravtsov creates SZ-0-resistant soldiers. <span className="text-muted-foreground">The research lab.</span></p>
-              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. NORDVAKT's highest priority. <span className="text-muted-foreground">The source.</span></p>
+              <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Commandant Osipovitj guards the nuclear codes in his personal safe. He hasn't slept in weeks. He hears <span className="text-warning">orders from below</span>.</p>
+              <p>█ <span className="text-accent">COASTAL VILLAGE "RYBNAYA"</span> — Maritime smuggling pipeline. Nachalnik — former Soviet naval officer — ships refined SZ-0 to buyers worldwide. The fishing boats carry more than fish.</p>
+              <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation facility. Dr. Kravtsov creates SZ-0-resistant soldiers through Project REBIRTH. The Uzbek was Test Subject 7. What Kravtsov did to him is an atrocity.</p>
+              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery site, on Nordic soil. The consciousness the miners called <span className="text-warning">Gruvrå</span> lurks below — with crystalline guardians Ort & Stoll. <span className="text-accent">NORDVAKT's highest priority.</span></p>
             </div>
           </div>
 
-          {/* The Maskirovka */}
-          <div className="border border-danger/30 rounded p-3 bg-danger/5">
-            <h3 className="text-xs font-display text-danger uppercase tracking-wider mb-2">🎭 Maskirovka</h3>
-            <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
-              Every site hides behind a cover story. Objekt 47 is a "weather station." The village is "abandoned." The hospital treats "polar syndrome." Norrberget is "geologically exhausted." All lies. Soviet GRU maintains these fictions through compromised officials, false satellite imagery, and eliminated witnesses. Three NATO reconnaissance teams have gone missing attempting to verify these sites. You are the fourth attempt.
-            </p>
+          {/* The Factions */}
+          <div className="border border-warning/40 rounded p-3 bg-warning/5">
+            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">⚔️ The Factions</h3>
+            <div className="space-y-2 text-[10px] font-mono text-foreground/70">
+              <p><span className="text-accent">NORDVAKT</span> — Your employer. A secret Nordic stay-behind network. They want SZ-0 for Nordic defense independence. Their motives are pragmatic — perhaps too pragmatic.</p>
+              <p><span className="text-muted-foreground">NATO</span> — Not the good guys. They've lost three recon teams and want to appropriate SZ-0 for their own weapons programs. They will designate anyone who stands in their way as hostile — including you.</p>
+              <p><span className="text-danger">SOVIET GRU</span> — Built the four sites. Already weaponizing SZ-0. Commandant Osipovitj, Dr. Kravtsov, and Nachalnik each run a piece of the operation.</p>
+              <p><span className="text-warning">THE MOUNTAIN</span> — Substance Zero is not a resource. It may be alive. It has absorbed miners, soldiers, and an entire survey engineer. It keeps what it takes.</p>
+            </div>
           </div>
 
           {/* The Endgame */}
-          <div className="border border-warning/40 rounded p-3 bg-warning/5">
-            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">💥 Endgame</h3>
+          <div className="border border-danger/40 rounded p-3 bg-danger/5">
+            <h3 className="text-xs font-display text-danger uppercase tracking-wider mb-2">💥 Endgame — Five Endings</h3>
             <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
-              Recover the nuclear detonation codes from Objekt 47. Plant demolition charges at the deepest point of each site. Trigger a synchronized detonation to permanently collapse the geological vein and deny Substance Zero to all parties. The substance regenerates — destroying one site alone changes nothing. <span className="text-danger">All four must fall.</span>
+              Recover intelligence from all four sites. When enough intel is gathered, you face the final choice: <span className="text-accent">who do you give it to?</span>
+            </p>
+            <div className="space-y-1 mt-2 text-[10px] font-mono text-foreground/60">
+              <p>🛡️ <span className="text-accent">NORDVAKT</span> — Report to Styrelsen. Secure SZ-0 for Nordic sovereignty.</p>
+              <p>🏛️ <span className="text-muted-foreground">NATO</span> — Submit to the alliance. Betray your own people.</p>
+              <p>☭ <span className="text-danger">SOVIET UNION</span> — Hand the codes to Moscow. Let the bear keep its prize.</p>
+              <p>🔮 <span className="text-warning">THE CULTS</span> — Surrender to the mountain. Become part of something older.</p>
+              <p>🔥 <span className="text-foreground">BURN EVERYTHING</span> — Destroy all intel. Let the mountain sleep.</p>
+            </div>
+            <p className="text-[10px] font-mono text-foreground/50 leading-relaxed mt-2 italic">
+              Every choice has consequences. None of them are clean.
             </p>
           </div>
 
