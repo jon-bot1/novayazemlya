@@ -118,6 +118,8 @@ export function generateFishingVillageMap() {
     { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
     { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
+    // === Dock/pier floor — concrete, NOT water ===
+    { x: 500, y: 1380, w: 370, h: 330, type: 'concrete' },
     // === WATER / SEA — big blue area ===
     { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
     // Water flanking the dock
