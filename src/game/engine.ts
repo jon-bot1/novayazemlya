@@ -2224,6 +2224,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addKillFeed(state, enemy.type, 'Mortar');
           addMessage(state, `💀 ${enemy.type.toUpperCase()} eliminated by mortar!`, 'kill');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, 'Mortar');
+            trackWeaponMasteryKill(state, undefined, 'Mortar');
         }
       }
     }
