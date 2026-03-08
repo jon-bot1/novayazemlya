@@ -652,7 +652,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   
   // Stamina system: sprinting drains stamina, walking/sneaking recovers it
   if (input.movementMode === 'sprint' && moveLen > 0.1) {
-    state.player.stamina = Math.max(0, state.player.stamina - 8.64 * dt);
+    state.player.stamina = Math.max(0, state.player.stamina - 7.34 * dt);
   } else if (input.movementMode === 'sneak') {
     state.player.stamina = Math.min(state.player.maxStamina, state.player.stamina + 8 * dt);
   } else {
