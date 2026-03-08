@@ -4451,7 +4451,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       case 'patrol': {
         if (enemy.type === 'turret') break;
         if (enemy.type === 'sniper') { enemy.state = 'idle'; break; } // Snipers never patrol — stay still
-        // Bodyguards follow their boss during patrol
+        // Bodyguards follow their boss during patrol (only if tethered)
         if ((enemy as any)._bodyguardOf) {
           const boss = state.enemies.find(e => e.id === (enemy as any)._bodyguardOf);
           if (boss && boss.state !== 'dead') {
