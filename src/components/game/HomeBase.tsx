@@ -56,6 +56,7 @@ interface HomeBaseProps {
   onRerollObjectives: (cost: number) => void;
   onMapChange: (mapId: MapId) => void;
   onCraft: (recipeId: string) => void;
+  onReturnToMenu?: () => void;
   rerollCount: number;
 }
 
