@@ -1031,6 +1031,7 @@ const MAP_PALETTES: Record<string, MapPalette> = {
       asphalt: ['#3c3c3a', '#40403e'],
       concrete: ['#5a5a50', '#5e5e54'],
       forest: ['#2c3c1e', '#304024'],
+      water: ['#1a3a4a', '#1e3e50'],
     },
     outside: '#1c2c16',
     ambientOverlay: 'rgba(180, 160, 100, 0.03)', // warm coastal tint
