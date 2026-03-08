@@ -2,12 +2,13 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, Soun
 import { generateMap, createInitialPlayer } from './map';
 import { generateFishingVillageMap, createFishingVillagePlayer } from './mapFishingVillage';
 import { generateHospitalMap, createHospitalPlayer } from './mapHospital';
+import { generateMiningVillageMap, createMiningVillagePlayer } from './mapMiningVillage';
 import { MapId } from './maps';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
 import { hasBloodStains, hasMuzzleFlash, addHitMarker, getNightEnemyBuffs } from './graphics';
 
 // VFX helpers
@@ -46,6 +47,7 @@ function getBossDeathMonologue(enemy: Enemy): string[] {
   if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
   if (bossId === 'uzbek') return [...UZBEK_DEATH_MONOLOGUE];
   if (bossId === 'nachalnik') return [...NACHALNIK_DEATH_MONOLOGUE];
+  if (bossId === 'gruvra') return [...GRUVRA_DEATH_MONOLOGUE];
   return [...BOSS_DEATH_MONOLOGUE];
 }
 
@@ -55,6 +57,7 @@ function getBossTitle(enemy: Enemy): string {
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
   if (bossId === 'uzbek') return 'УЗБЕК';
   if (bossId === 'nachalnik') return 'НАЧАЛЬНИК';
+  if (bossId === 'gruvra') return 'GRUVRÅ';
   return 'COMMANDANT OSIPOVITJ';
 }
 
@@ -71,6 +74,13 @@ function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
     } else if (mapId === 'objekt47') {
       (enemy as any)._bossId = 'osipovitj';
       (enemy as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
+    } else if (mapId === 'mining_village') {
+      (enemy as any)._bossId = 'gruvra';
+      (enemy as any)._bossTitle = 'GRUVRÅ';
+      (enemy as any)._caveInAttack = true;
+      (enemy as any)._caveInCooldown = (enemy as any)._caveInCooldown || 0;
+      (enemy as any)._caveInRadius = (enemy as any)._caveInRadius || 120;
+      (enemy as any)._caveInDamage = (enemy as any)._caveInDamage || 45;
     }
   }
 }
@@ -524,8 +534,8 @@ function generateEnemyLoot(enemy: Enemy) {
 }
 
 export function createGameState(mapId: MapId = 'objekt47'): GameState {
-  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
-  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
+  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
+  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
   const mapEnemies = mapId === 'objekt47' ? map.enemies : map.enemies.filter(e => e.type !== 'sniper');
   const state: GameState = {
@@ -2604,6 +2614,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
         else if (bossId === 'uzbek') phaseNames = UZBEK_PHASES;
         else if (bossId === 'nachalnik') phaseNames = NACHALNIK_PHASES;
+        else if (bossId === 'gruvra') phaseNames = GRUVRA_PHASES;
         else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         
         if (phaseNames[enemy.bossPhase!]) {
@@ -2616,6 +2627,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else if (bossId === 'kravtsov') {
           if (enemy.bossPhase === 1) { enemy.speechBubble = 'МУТАГЕН... АКТИВИРОВАН!'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = 'НАУКА... ТРЕБУЕТ... ЖЕРТВ!'; enemy.speechBubbleTimer = 3; }
+        } else if (bossId === 'gruvra') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = '*BERGET SKAKAR*'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = '*RASET BÖRJAR*'; enemy.speechBubbleTimer = 3; }
         } else {
           if (enemy.bossPhase === 1) { enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!'; enemy.speechBubbleTimer = 3; }
           else if (enemy.bossPhase === 2) { enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!'; enemy.speechBubbleTimer = 3; }
@@ -2648,6 +2662,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pool = UZBEK_TAUNTS[Math.min(phase, 2)];
         } else if (bossId === 'nachalnik') {
           pool = NACHALNIK_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'gruvra') {
+          pool = GRUVRA_TAUNTS[Math.min(phase, 2)];
         } else {
           const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
           const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];

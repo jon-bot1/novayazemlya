@@ -1,5 +1,5 @@
 // Map registry — central place to define available maps
-export type MapId = 'objekt47' | 'fishing_village' | 'hospital';
+export type MapId = 'objekt47' | 'fishing_village' | 'hospital' | 'mining_village';
 
 export interface MapInfo {
   id: MapId;
@@ -33,5 +33,13 @@ export const MAPS: MapInfo[] = [
     icon: '🏥',
     size: '2400×2400',
     unlockRequirement: 6,
+  },
+  {
+    id: 'mining_village',
+    name: 'Gruvsamhället',
+    description: 'Abandoned Swedish mining village. Two levels — surface village and underground mine. Boss Gruvrå lurks below.',
+    icon: '⛏️',
+    size: '2000×2800',
+    unlockRequirement: 10,
   },
 ];

@@ -54,12 +54,14 @@ const createInitialObjectivesByMap = (): Record<MapId, MissionObjective[]> => ({
   objekt47: generateMissionObjectives('objekt47'),
   fishing_village: generateMissionObjectives('fishing_village'),
   hospital: generateMissionObjectives('hospital'),
+  mining_village: generateMissionObjectives('mining_village'),
 });
 
 const createInitialRerollsByMap = (): Record<MapId, number> => ({
   objekt47: 0,
   fishing_village: 0,
   hospital: 0,
+  mining_village: 0,
 });
 
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {

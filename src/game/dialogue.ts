@@ -163,6 +163,28 @@ export const HIT_LINES: Record<string, string[]> = {
   boss:    ['ХА! ЩЕКОТНО!', 'МАЛО!', 'ЕЩЁ!', 'ЭТО ВСЁ?!'],
 };
 
+// === GRUVRÅ DEATH MONOLOGUE ===
+export const GRUVRA_DEATH_MONOLOGUE = [
+  'BERGET... FALLER...',
+  'NI KAN INTE... TA MALMEN...',
+  'ORT OCH STOLL... FÖRLÅT MIG...',
+  '...djupet... kallar...',
+];
+
+// === GRUVRÅ TAUNTS ===
+export const GRUVRA_TAUNTS: string[][] = [
+  ['BERGET ÄR MITT!', 'NI BORDE ALDRIG KOMMIT HIT!', 'GRUVAN SLUKAR ALLA!', 'HÖR NI BERGET RYTA?!'],
+  ['STENARNA FALLER PÅ ER!', 'ORT! STOLL! KROSSA DEM!', 'NI ÄR INSTÄNGDA!'],
+  ['*BERGET SKAKAR* ALLA DÖR HÄR NERE!!', 'INGEN KOMMER UPP LEVANDE!', 'SISTA SKIFTET!'],
+];
+
+// === GRUVRÅ PHASE MESSAGES ===
+export const GRUVRA_PHASES = [
+  '',
+  '⚠ GRUVRÅ FRAMKALLAR ETT RAS!',
+  '☠ GRUVRÅ ÄR I URSINNE — GRUVAN KOLLAPSAR!',
+];
+
 // Helper to pick a random line
 export function pickLine(pool: Record<string, string[]>, type: string): string | null {
   const lines = pool[type];
