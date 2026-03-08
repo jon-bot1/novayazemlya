@@ -171,6 +171,9 @@ export const IDLE_LINES: Record<string, string[]> = {
   redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*', 'Somethin\' ain\'t right in them tunnels...', 'Dogs been howlin\' all night...', '*hums a tune*', 'Ain\'t nobody comin\' out here...', 'My granddaddy warned me about this place...'],
   shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*', 'Батареи от Вещества... не разряжаются...', '*искры*', 'Кожа горит...', 'Чувствую ток... везде...', 'Мне нравится боль.'],
   sniper:  [], // snipers are silent
+  cultist: ['*бормочет молитву*', 'Вещество гудит сегодня...', 'Братья скоро соберутся...', '*рисует символы на стене*', 'Бореалис... я слышу тебя...', 'Жертва будет принесена в полночь...', '*покачивается в трансе*', 'Сияние... скоро...'],
+  miner_cult: ['*knackar på bergväggen*', 'Stålhandske talar till mig...', 'Malmen glöder ikväll...', '*mumlar en sång*', 'Kristallerna... pulserar...', 'Vi grävde för djupt...', '*stirrar in i väggen*', 'Absorption... snart...'],
+  svarta_sol: ['*checks equipment*', '*adjusts scope*', 'Perimeter secure.', '*examines rune stone*', 'Hyperborean readings nominal.', '*silent hand signal*'],
 };
 
 // === MAP-SPECIFIC IDLE LINES — override for Swedish map ===
