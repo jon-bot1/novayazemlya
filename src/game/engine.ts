@@ -3870,7 +3870,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
           };
           state.enemies.push(minion);
-          addMessage(state, '📻 Osipovitj calls reinforcements!', 'warning');
+          addMessage(state, `📻 ${getBossTitle(enemy)} calls reinforcements!`, 'warning');
           spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
