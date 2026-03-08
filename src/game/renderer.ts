@@ -1295,7 +1295,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // Zone labels — map-specific
   const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
-    novaya_zemlya: [
+    objekt47: [
       { x: 1600, y: 1100, label: 'HANGAR', sub: 'Main Building', size: 22 },
       { x: 1300, y: 1000, label: 'HANGAR A', sub: 'West Hall', size: 14 },
       { x: 1300, y: 1400, label: 'HANGAR B', sub: 'South Hall', size: 12 },
