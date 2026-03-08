@@ -3848,13 +3848,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.soundEvents.push({ pos: { ...g.pos }, radius: 200, time: state.time });
         const gasRadius = 60; // small radius — only hits 1 enemy
         let closest: Enemy | null = null;
-        let closestDist = gasRadius;
+        let closestDistSq = gasRadius * gasRadius;
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead' || enemy.type === 'boss' || enemy.type === 'turret' || enemy.type === 'sniper' || (enemy as any)._isBodyguard || enemy.friendly) continue;
-          const d = dist(g.pos, enemy.pos);
-          if (d < closestDist && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+          const dSq = distSq(g.pos, enemy.pos);
+          if (dSq < closestDistSq && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             closest = enemy;
-            closestDist = d;
+            closestDistSq = dSq;
           }
         }
         if (closest) {
