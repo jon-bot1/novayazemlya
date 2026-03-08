@@ -977,6 +977,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.killCount++;
         state.sneakKills++;
         if (target.type === 'dog') state.dogsKilled++;
+        addKillFeed(state, target.type, 'Chokehold');
         addMessage(state, `🤫 CHOKEHOLD KILL — completely silent!`, 'kill');
         spawnParticles(state, target.pos.x, target.pos.y, '#8844cc', 10);
         state.chokeholdTarget = null;
