@@ -3369,23 +3369,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 5 + Math.random() * 3;
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
-        // Alert all allies in group + nearby
+        // Alert all allies in group + nearby — directly set state, no reaction delay
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
-            // Add reaction delay for radio-alerted allies
-            if (ally.type !== 'boss' && ally.type !== 'turret') {
-              (ally as any)._reactionDelay = 0.3 + Math.random() * 0.7;
-              (ally as any)._reactionDelayDone = true;
-              (ally as any)._pendingState = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-            } else {
-              ally.state = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-            }
+            ally.state = 'chase';
+            ally.investigateTarget = { ...state.player.pos };
+            ally.awareness = Math.max(ally.awareness, 0.9);
             assignTacticalRole(state, ally);
             ally.radioAlert = 2;
           }
