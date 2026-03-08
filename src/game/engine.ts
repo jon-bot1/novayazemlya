@@ -1012,13 +1012,33 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   // === WEAPON DROP PICKUP (E near weapon_drop) ===
+  // Only pick up weapons if NO container/alarm/document is closer (prevents cycling)
   if (input.interact) {
+    let nearestContainerDist = Infinity;
     for (const lc of state.lootContainers) {
-      if (lc.type !== 'weapon_drop' || lc.looted) continue;
-      if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
-        pickupWeaponDrop(state, lc);
-        input.interact = false; // consume E press
-        break;
+      if (lc.type === 'weapon_drop' || lc.looted) continue;
+      const d = dist(state.player.pos, lc.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    for (const dp of state.documentPickups) {
+      if (dp.collected) continue;
+      const d = dist(state.player.pos, dp.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    for (const ap of state.alarmPanels) {
+      if (ap.hacked) continue;
+      const d = dist(state.player.pos, ap.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    // Only pick up weapon drop if nothing else interactive is closer
+    if (nearestContainerDist > 70) {
+      for (const lc of state.lootContainers) {
+        if (lc.type !== 'weapon_drop' || lc.looted) continue;
+        if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
+          pickupWeaponDrop(state, lc);
+          input.interact = false; // consume E press
+          break;
+        }
       }
     }
   }
