@@ -7,11 +7,13 @@ interface MobileControlsProps {
   stateRef: React.MutableRefObject<any>;
   onToggleInventory: () => void;
   onToggleIntel: () => void;
+  onCloseDoc: () => void;
   movementMode: 'sneak' | 'walk' | 'sprint';
+  hasDoc: boolean;
 }
 
 export const MobileControls: React.FC<MobileControlsProps> = ({
-  inputRef, stateRef, onToggleInventory, onToggleIntel, movementMode,
+  inputRef, stateRef, onToggleInventory, onToggleIntel, onCloseDoc, movementMode, hasDoc,
 }) => {
   const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>(movementMode);
   const aimTouchRef = useRef<number | null>(null);
