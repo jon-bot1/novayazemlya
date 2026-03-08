@@ -1766,7 +1766,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
           }
           if (item.category === 'weapon' && item.damage) {
-            handleWeaponPickup(state, item, enemy.pos);
+            spawnWeaponDrop(state, item, enemy.pos);
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
