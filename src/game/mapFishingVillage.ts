@@ -362,12 +362,12 @@ export function generateFishingVillageMap() {
   const props: Prop[] = [
     // Trees along road
     ...Array.from({ length: 10 }, (_, i) => ({
-      pos: { x: 680 + (Math.random() > 0.5 ? -50 : 120) + Math.random() * 20, y: 320 + i * 110 },
+      pos: { x: 600 + (Math.random() > 0.5 ? -50 : 120) + Math.random() * 20, y: 320 + i * 100 },
       w: 26 + Math.random() * 14, h: 26 + Math.random() * 14,
       type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
     })),
     // Dense forest top
-    ...Array.from({ length: 18 }, (_, i) => ({
+    ...Array.from({ length: 16 }, (_, i) => ({
       pos: { x: 60 + i * 85 + Math.random() * 30, y: 40 + Math.random() * 200 },
       w: 28 + Math.random() * 18, h: 28 + Math.random() * 18,
       type: (Math.random() > 0.3 ? 'pine_tree' : 'tree') as Prop['type'],
@@ -378,27 +378,36 @@ export function generateFishingVillageMap() {
       w: 26 + Math.random() * 16, h: 26 + Math.random() * 16,
       type: 'pine_tree' as Prop['type'],
     })),
-    // East forest
-    ...Array.from({ length: 8 }, (_, i) => ({
-      pos: { x: MAP_W - 30 - Math.random() * 120, y: 300 + i * 140 + Math.random() * 50 },
+    // East forest — tighter
+    ...Array.from({ length: 6 }, (_, i) => ({
+      pos: { x: MAP_W - 30 - Math.random() * 80, y: 300 + i * 170 + Math.random() * 50 },
       w: 26 + Math.random() * 16, h: 26 + Math.random() * 16,
       type: 'pine_tree' as Prop['type'],
     })),
+    // Rocky east terrain — boulders
+    ...Array.from({ length: 5 }, () => ({
+      pos: { x: 1060 + Math.random() * 180, y: 400 + Math.random() * 400 },
+      w: 18 + Math.random() * 14, h: 16 + Math.random() * 12,
+      type: 'sandbags' as Prop['type'], // reuse as rocks
+    })),
     // Bushes around cabins
-    ...Array.from({ length: 14 }, () => ({
-      pos: { x: 250 + Math.random() * 1000, y: 380 + Math.random() * 600 },
+    ...Array.from({ length: 12 }, () => ({
+      pos: { x: 250 + Math.random() * 800, y: 380 + Math.random() * 600 },
       w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
       type: 'bush' as Prop['type'],
     })),
-    // Dock props
-    { pos: { x: 600, y: 1570 }, w: 28, h: 28, type: 'wood_crate' },
-    { pos: { x: 650, y: 1590 }, w: 24, h: 24, type: 'wood_crate' },
-    { pos: { x: 880, y: 1560 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 920, y: 1580 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 750, y: 1670 }, w: 40, h: 14, type: 'sandbags' },
+    // Dock platform props
+    { pos: { x: 500, y: 1400 }, w: 28, h: 28, type: 'wood_crate' },
+    { pos: { x: 550, y: 1420 }, w: 24, h: 24, type: 'wood_crate' },
+    { pos: { x: 800, y: 1400 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 840, y: 1420 }, w: 22, h: 22, type: 'barrel_stack' },
+    // Pier props
+    { pos: { x: 650, y: 1600 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 700, y: 1700 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 670, y: 1830 }, w: 40, h: 14, type: 'sandbags' },
     // Fishing shack area
-    { pos: { x: 280, y: 1300 }, w: 26, h: 26, type: 'wood_crate' },
-    { pos: { x: 310, y: 1320 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 240, y: 1170 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 270, y: 1190 }, w: 22, h: 22, type: 'barrel_stack' },
     // Cabin yard props
     ...westCabins.map(c => ({
       pos: { x: c.x - 25, y: c.y + 20 }, w: 22, h: 22, type: 'barrel_stack' as Prop['type'],
@@ -407,19 +416,19 @@ export function generateFishingVillageMap() {
       pos: { x: c.x + cabinW + 12, y: c.y + 30 }, w: 26, h: 26, type: 'wood_crate' as Prop['type'],
     })),
     // Vehicle wreck on road
-    { pos: { x: 720, y: 950 }, w: 55, h: 28, type: 'vehicle_wreck' },
-    { pos: { x: 700, y: 600 }, w: 50, h: 25, type: 'vehicle_wreck' },
+    { pos: { x: 650, y: 900 }, w: 55, h: 28, type: 'vehicle_wreck' },
+    { pos: { x: 640, y: 550 }, w: 50, h: 25, type: 'vehicle_wreck' },
     // Sandbags around dock entrance
-    { pos: { x: 540, y: 1440 }, w: 60, h: 16, type: 'sandbags' },
-    { pos: { x: 900, y: 1440 }, w: 60, h: 16, type: 'sandbags' },
+    { pos: { x: 480, y: 1350 }, w: 60, h: 16, type: 'sandbags' },
+    { pos: { x: 800, y: 1350 }, w: 60, h: 16, type: 'sandbags' },
     // Road signs
-    { pos: { x: 730, y: 290 }, w: 12, h: 12, type: 'road_sign' },
-    { pos: { x: 760, y: 1380 }, w: 12, h: 12, type: 'road_sign' },
+    { pos: { x: 650, y: 290 }, w: 12, h: 12, type: 'road_sign' },
+    { pos: { x: 680, y: 1280 }, w: 12, h: 12, type: 'road_sign' },
     // Concrete barriers at dock
-    { pos: { x: 620, y: 1510 }, w: 50, h: 16, type: 'concrete_barrier' },
-    { pos: { x: 850, y: 1510 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 560, y: 1360 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 780, y: 1360 }, w: 50, h: 16, type: 'concrete_barrier' },
     // Searchlight at dock
-    { pos: { x: 750, y: 1540 }, w: 16, h: 16, type: 'searchlight' },
+    { pos: { x: 670, y: 1390 }, w: 16, h: 16, type: 'searchlight' },
   ];
 
   // ══════════════════════════════════════
