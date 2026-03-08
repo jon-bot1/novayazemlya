@@ -1345,8 +1345,8 @@ function ensureGroundCanvas(state: GameState) {
           gctx.fillStyle = 'rgba(140,120,60,0.1)';
           gctx.fillRect(tx + 10 + hash % 20, ty + 12 + hash2 % 20, 3, 1);
         } else if (mapId === 'fishing_village' && terrain === 'grass') {
-          // Driftwood fragments
-          gctx.strokeStyle = 'rgba(80,60,35,0.12)';
+          // Frozen twigs under snow
+          gctx.strokeStyle = 'rgba(140,150,160,0.1)';
           gctx.lineWidth = 1.5;
           gctx.beginPath();
           gctx.moveTo(tx + 10 + hash % 15, ty + 20 + hash2 % 10);
