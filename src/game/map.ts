@@ -142,9 +142,9 @@ export function generateMap() {
 
     // === HANGAR BUILDING (offset by HX, HY) ===
     // Outer walls with door gaps — non-rectangular shape with extensions
-    // Top wall — door gap at HX+500 to HX+560
+    // Top wall — door gap at HX+500 to HX+580 (80px)
     makeWall(HX, HY, 500, T, WD),
-    makeWall(HX + 560, HY, HW - 560, T, WD),
+    makeWall(HX + 580, HY, HW - 580, T, WD),
     // Bottom wall — door gap at HX+300 to HX+380
     makeWall(HX, HY + HH - T, 300, T, WD),
     makeWall(HX + 380, HY + HH - T, HW - 380, T, WD),
