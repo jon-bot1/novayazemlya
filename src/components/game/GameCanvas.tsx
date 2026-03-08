@@ -1540,6 +1540,18 @@ export const GameCanvas: React.FC = () => {
           >
             GFX: {gfxQuality === 'high' ? '🔥' : '⚡'}
           </button>
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => {
+              const order: RenderDistance[] = ['far', 'normal', 'near'];
+              const idx = order.indexOf(renderDist);
+              const next = order[(idx + 1) % order.length];
+              setRenderDistance(next);
+              setRenderDist(next);
+            }}
+          >
+            🔭 {renderDist === 'far' ? 'FAR' : renderDist === 'normal' ? 'MED' : 'NEAR'}
+          </button>
         </div>
 
         {/* Inventory Panel */}
