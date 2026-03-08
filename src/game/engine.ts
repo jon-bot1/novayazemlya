@@ -4325,7 +4325,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           spawnParticles(state, state.player.pos.x, state.player.pos.y, '#ff2222', 4);
           addMessage(state, `💥 Shrapnel! -${Math.floor(dmg)}HP`, 'damage');
           if (state.player.hp <= 0) {
-            const srcLabel = g.sourceType === 'boss' ? 'Commandant Osipovitj' : g.sourceType ? g.sourceType.toUpperCase() : 'unknown';
+            const srcLabel = getDamageSourceLabel(state, g.sourceType, g.sourceId);
             state.deathCause = g.fromPlayer ? '💣 Killed by own grenade' : `💣 Grenade from ${srcLabel}`;
           }
         }
