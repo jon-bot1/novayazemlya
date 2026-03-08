@@ -1448,17 +1448,44 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (wpn as any)._maxDurability = 120;
     }
     
-    // Degradation penalties: accuracy worsens (not Mosin, not sidearms)
-    const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
-      ? (wpn as any)._durability / (wpn as any)._maxDurability 
-      : 1;
-    const degradedSpread = isMosinWpn ? 0.06 : 0.12 + (1 - durRatio) * 0.25;
-    
-    // Movement spread: moving adds inaccuracy, sneaking reduces it
-    const movingSpread = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
-    // Recoil bloom from consecutive shots
+    // === COMPREHENSIVE SPREAD SYSTEM ===
+    // Base spread per weapon class (tighter = more accurate)
+    const wpnName = (wpn?.name || '').toLowerCase();
+    const weaponBaseSpread: number = (() => {
+      if (isMosinWpn) return 0.03;  // bolt-action sniper — very precise
+      if (wpnName.includes('ak 4')) return 0.06; // battle rifle — precise
+      if (wpnName.includes('revolver')) return 0.07;
+      if (wpnName.includes('ak-74') || wpnName.includes('akm')) return 0.09; // assault rifles — moderate
+      if (wpnName.includes('ksp 58')) return 0.11; // MG — less accurate
+      if (wpnName.includes('ppsh') || wpnName.includes('kpist')) return 0.12; // SMGs — spray-y
+      if (wpnName.includes('makarov')) return 0.10; // pistol
+      if (wpnName.includes('toz')) return 0.08; // shotgun base (pellets add cone)
+      return 0.10; // default
+    })();
+
+    // Durability degrades accuracy
+    const durPenalty = (1 - durRatio) * 0.15;
+
+    // Movement spread — depends on movement mode AND weapon weight
+    const wpnWeight = wpn?.weight || 2;
+    const weightFactor = Math.min(1.5, wpnWeight / 4); // heavier weapons = more movement penalty
+    const movingSpread = moveLen > 0.1
+      ? (effectiveMode === 'sprint' ? 0.18 * weightFactor
+        : effectiveMode === 'walk' ? 0.07 * weightFactor
+        : 0.015) // sneaking — very stable
+      : -0.02; // standing still — slight accuracy bonus
+
+    // Recoil bloom from consecutive shots — weapon-specific rates
     const recoilBloom = (state as any)._recoilBloom || 0;
-    const totalSpread = Math.max(0.02, degradedSpread + movingSpread + recoilBloom);
+
+    // Sustained fire penalty — tracks how many shots fired recently
+    const sustainedShots = (state as any)._sustainedShots || 0;
+    const sustainedPenalty = isAutoFire ? Math.min(0.12, sustainedShots * 0.008) : 0; // auto-fire gets worse over time
+
+    // Cover bonus — in cover = more stable
+    const coverBonus = state.player.inCover ? -0.04 : 0;
+
+    const totalSpread = Math.max(0.02, weaponBaseSpread + durPenalty + movingSpread + recoilBloom + sustainedPenalty + coverBonus);
     
     const baseBulletSpeed = (wpn?.bulletSpeed || 8) * 1.5; // +50% base projectile speed (25% + 20%)
     const bulletSpeedBonus = (state as any)._bulletSpeedBonus || 0;
