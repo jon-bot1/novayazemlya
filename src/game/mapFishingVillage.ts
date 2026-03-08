@@ -435,8 +435,8 @@ export function generateFishingVillageMap() {
   // ALARM PANELS
   // ══════════════════════════════════════
   const alarmPanels: AlarmPanel[] = [
-    { id: 'alarm_intel', pos: { x: 550, y: 390 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
-    { id: 'alarm_disable', pos: { x: 440, y: 1450 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
+    { id: 'alarm_intel', pos: { x: 510, y: 390 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
+    { id: 'alarm_disable', pos: { x: 400, y: 1310 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
   ];
 
   // ══════════════════════════════════════
