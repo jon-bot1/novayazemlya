@@ -3269,8 +3269,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           delete (enemy as any)._pendingState;
           setSpeech(enemy, pickLine(ALERT_LINES, enemy.type), 2.5);
         }
+      } else {
+        // Override: if player is very close, break out of reaction delay immediately
+        if (forcedContact || (closeProximity && !state.disguised)) {
+          (enemy as any)._reactionDelay = 0;
+          delete (enemy as any)._pendingState;
+          enemy.awareness = 1.0;
+          enemy.state = 'chase';
+        } else {
+          continue; // frozen during reaction delay (only if player isn't right next to us)
+        }
       }
-      continue; // frozen during reaction delay
     }
 
     if (canSeePlayer) {
