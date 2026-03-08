@@ -68,7 +68,7 @@ function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
 
     if (mapId === 'fishing_village') {
       (enemy as any)._bossId = 'nachalnik';
-      (enemy as any)._bossTitle = 'НАЧАЛЬНИК';
+      (enemy as any)._bossTitle = 'NACHALNIK';
       (enemy as any)._hookAttack = true;
       (enemy as any)._hookRange = (enemy as any)._hookRange || 55;
       (enemy as any)._hookDamage = (enemy as any)._hookDamage || 60;

@@ -134,8 +134,8 @@ export const NACHALNIK_TAUNTS: string[][] = [
 // === NACHALNIK PHASE MESSAGES ===
 export const NACHALNIK_PHASES = [
   '',
-  '⚠ НАЧАЛЬНИК ДОСТАЁТ БОЛЬШОЙ КРЮК!',
-  '☠ НАЧАЛЬНИК В ЯРОСТИ — КРЮК СМЕРТОНОСЕН!',
+  '⚠ NACHALNIK ДОСТАЁТ БОЛЬШОЙ КРЮК!',
+  '☠ NACHALNIK В ЯРОСТИ — КРЮК СМЕРТОНОСЕН!',
 ];
 
 // === HOSPITAL BOSS TAUNTS ===
