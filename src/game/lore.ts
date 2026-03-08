@@ -167,7 +167,7 @@ RUN`,
     content: `INVENTORY LIST
 Storage No. 3, Objekt 47 "Severnyj Vektor"
 
-✓ Gas masks GP-7 — 240 pcs (12 decommissioned)
+✓ Gas masks GP-7 — 240 pcs (12 decommissioned — filters turned black overnight, cause unknown)
 ✓ RPK-74 — 6 pcs
 ✓ Ammunition 5.45x39 — 12,000 rds (actually ≈8,000, rest "disappeared")
 ✓ Ammunition 9x18 — 8,000 rds
@@ -177,11 +177,12 @@ Storage No. 3, Objekt 47 "Severnyj Vektor"
 ✓ Cigarettes "Prima" — 50 packs
 ✗ Container B-7 — MISSING (who took it?!)
 ✗ Documentation for project "Dawn" — MISSING
+✗ Ritual implements (box 14-C) — NOT ON MANIFEST. Found during inventory. Contains: 7 black candles, a bowl of frozen mercury (still liquid despite -30°C storage), a circle drawn in charcoal on the floor BENEATH the storage rack. Charcoal tested — not wood-based. Possibly calcite from 400m depth.
 
 NOTE: If anyone steals vodka from storage again — I'll shoot. I'm not joking.
 
 — Sidorov
-P.S. Mice ate three MREs. Or not mice. God knows what runs around here at night.`,
+P.S. Something ate three MREs. Tore through the packaging. Teeth marks in the metal tins. Not mice. Not rats. The teeth marks are HUMAN but the jaw width is approximately 20cm. I am requesting a transfer.`,
     hasCode: false,
     found: false,
   },
