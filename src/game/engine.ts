@@ -115,6 +115,26 @@ function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
+// ── CONDITIONAL EXFIL HELPERS ──
+function checkExfilRequirements(state: GameState, req: string): boolean {
+  switch (req) {
+    case 'keycard': return (state.player.keycardCount || 0) > 0;
+    case 'boss_dead': return state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
+    case 'no_alarm': return !state.alarmActive;
+    case 'breach': return state.wallsBreached > 0;
+    default: return true;
+  }
+}
+function getExfilRequirementMessage(req: string): string {
+  switch (req) {
+    case 'keycard': return 'Requires keycard 💳';
+    case 'boss_dead': return 'Kill the boss first';
+    case 'no_alarm': return 'Only available if alarm is OFF';
+    case 'breach': return 'Breach a wall first 🧨';
+    default: return 'Requirements not met';
+  }
+}
+
 // Fast squared distance — avoid sqrt when only comparing
 function distSq(a: Vec2, b: Vec2) {
   const dx = a.x - b.x;
