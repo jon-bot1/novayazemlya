@@ -539,18 +539,18 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
   // Bodyguards and boss get wider AND longer arc
   const isBodyguard = !!(enemy as any)._isBodyguard;
   const arcMap: Record<string, number> = {
-    scav: Math.PI * 0.35 - DEG15,
-    soldier: Math.PI * 0.45 - DEG15,
-    heavy: Math.PI * 0.6 - DEG15,
-    turret: Math.PI * 0.5 - DEG15,
-    boss: Math.PI * 0.7,
-    sniper: Math.PI * 0.15, // extremely narrow, laser-focused
-    shocker: Math.PI * 0.5 - DEG15, // wide arc for melee rush
-    cultist: Math.PI * 0.4 - DEG15,
-    miner_cult: Math.PI * 0.35 - DEG15,
-    svarta_sol: Math.PI * 0.5 - DEG15, // well-trained, wide arc
+    scav: Math.PI * 0.385,
+    soldier: Math.PI * 0.495,
+    heavy: Math.PI * 0.66,
+    turret: Math.PI * 0.55,
+    boss: Math.PI * 0.77,
+    sniper: Math.PI * 0.165,
+    shocker: Math.PI * 0.55,
+    cultist: Math.PI * 0.44,
+    miner_cult: Math.PI * 0.385,
+    svarta_sol: Math.PI * 0.55,
   };
-  let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
+  let arc = arcMap[enemy.type] || Math.PI * 0.495;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
   
   return angleDiff <= arc;
@@ -4472,9 +4472,47 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             // Check if target is reachable (LOS to target)
             const canReach = hasLineOfSight(state, enemy.pos, enemy.investigateTarget, enemy.elevated);
             if (!canReach) {
-              // Can't reach through wall — give up and patrol instead
-              enemy.state = 'patrol';
-              enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
+              // Can't see through wall — find nearest doorway/opening to peek or go through
+              // Search for gaps in walls (doorways are gaps between wall segments)
+              const target = enemy.investigateTarget;
+              let bestDoorPos: Vec2 | null = null;
+              let bestDoorDist = Infinity;
+              
+              // Scan for walkable positions between enemy and target near walls
+              const dirToTarget = normalize({ x: target.x - enemy.pos.x, y: target.y - enemy.pos.y });
+              const perpX = -dirToTarget.y;
+              const perpY = dirToTarget.x;
+              const scanDist = dist(enemy.pos, target);
+              
+              // Check positions along the perpendicular near walls for openings
+              for (let along = 0.2; along <= 0.8; along += 0.15) {
+                const midX = enemy.pos.x + (target.x - enemy.pos.x) * along;
+                const midY = enemy.pos.y + (target.y - enemy.pos.y) * along;
+                for (let side = -200; side <= 200; side += 30) {
+                  const testX = midX + perpX * side;
+                  const testY = midY + perpY * side;
+                  if (testX < 20 || testX > state.mapWidth - 20 || testY < 20 || testY > state.mapHeight - 20) continue;
+                  // Check if this point has LOS to both enemy and target
+                  if (hasLineOfSight(state, enemy.pos, { x: testX, y: testY }, enemy.elevated) &&
+                      hasLineOfSight(state, { x: testX, y: testY }, target, enemy.elevated)) {
+                    const d = dist(enemy.pos, { x: testX, y: testY });
+                    if (d < bestDoorDist) {
+                      bestDoorDist = d;
+                      bestDoorPos = { x: testX, y: testY };
+                    }
+                  }
+                }
+              }
+              
+              if (bestDoorPos) {
+                // Found an opening — go to it (peek/exit through door)
+                enemy.investigateTarget = bestDoorPos;
+                setSpeech(enemy, Math.random() < 0.5 ? 'ПРОВЕРЮ ВЫХОД!' : 'ВЫХОЖУ!', 2.0);
+              } else {
+                // No opening found — patrol instead
+                enemy.state = 'patrol';
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
+              }
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
