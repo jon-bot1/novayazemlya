@@ -216,6 +216,9 @@ export const COMBAT_LINES: Record<string, string[]> = {
   redneck: ['YEEHAW!', 'EAT LEAD!', 'THAT\'S MY PROPERTY!', 'GIT!', 'STAY DOWN!'],
   shocker: ['РАЗРЯД ГОТОВ!', 'БЛИЖЕ... ДА... БЛИЖЕ!', 'ПОЧУВСТВУЙ ТОК!', '*маниакальный смех*'],
   sniper:  [],
+  cultist: ['ВО ИМЯ БОРЕАЛИСА!', 'ЖЕРТВОПРИНОШЕНИЕ!', 'КРОВЬ НЕЧИСТОГО!', 'ВЕЩЕСТВО ВЕДЁТ ПУЛЮ!', 'АЛТАРЬ ТРЕБУЕТ!'],
+  miner_cult: ['FÖR STÅLHANDSKE!', 'MALMEN SJUNGER!', 'DU ÄR OFFRET!', 'BERGET KROSSAR DIG!'],
+  svarta_sol: ['SUPPRESSING.', 'FLANKING.', 'TARGET ENGAGED.', 'FIRE AND MANEUVER.', 'CLOSING IN.'],
 };
 
 // === GRUVRÅ DEATH MONOLOGUE ===
