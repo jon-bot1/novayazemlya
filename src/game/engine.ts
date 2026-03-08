@@ -3816,8 +3816,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
         if ((enemy as any)._mortarFleeRolled) continue;
-        const dToMortar = dist(m.pos, enemy.pos);
-        if (dToMortar < m.radius * 1.3 && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+        const mortarRadiusSq = (m.radius * 1.3) * (m.radius * 1.3);
+        const dToMortarSq = distSq(m.pos, enemy.pos);
+        if (dToMortarSq < mortarRadiusSq && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
           let fleeChance = 0.5;
           if (enemy.type === 'boss') fleeChance = 0.7;
           else if (enemy.type === 'heavy' || (enemy as any)._isBodyguard) fleeChance = 0.5;
