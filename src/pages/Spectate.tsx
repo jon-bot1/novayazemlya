@@ -108,19 +108,20 @@ const Spectate: React.FC = () => {
     );
   }
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
+    if (!authed) return;
     const { data } = await supabase
       .from('active_sessions')
       .select('*')
       .order('last_heartbeat', { ascending: false });
     if (data) setSessions(data as ActiveSession[]);
     setLoading(false);
-  };
+  }, [authed]);
 
   useEffect(() => {
+    if (!authed) return;
     fetchSessions();
 
-    // Realtime subscription
     const channel = supabase
       .channel('spectate-sessions')
       .on(
@@ -130,14 +131,13 @@ const Spectate: React.FC = () => {
       )
       .subscribe();
 
-    // Refresh stale check every 10s
     const interval = setInterval(fetchSessions, 10000);
 
     return () => {
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, []);
+  }, [authed, fetchSessions]);
 
   // Separate active (heartbeat < 15s ago) from stale
   const now = Date.now();
