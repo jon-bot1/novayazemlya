@@ -47,8 +47,12 @@ describe('Enemy activation regression', () => {
       }
 
       if (type === 'heavy') {
+        const currentHeavy = state.enemies.find(e => e.id === enemy.id);
         // Debug snapshot for heavy non-activation regression
         console.log('heavy debug', {
+          sameRef: currentHeavy === enemy,
+          currentState: currentHeavy?.state,
+          currentAwareness: currentHeavy?.awareness,
           state: enemy.state,
           awareness: enemy.awareness,
           hp: enemy.hp,
