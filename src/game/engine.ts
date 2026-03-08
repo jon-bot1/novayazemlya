@@ -4647,7 +4647,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
             } else {
               // Hit enemy panics too!
-              if (!(enemy as any)._panicTimer && Math.random() < 0.3) {
+              // Much lower panic chance from friendly fire (was 0.3, now 0.06) to prevent chain reactions
+              if (!(enemy as any)._panicTimer && Math.random() < 0.06) {
                 (enemy as any)._panicTimer = 1.5 + Math.random() * 1.5;
                 addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS from friendly fire!`, 'warning');
               }
