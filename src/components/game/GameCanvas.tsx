@@ -1657,6 +1657,7 @@ export const GameCanvas: React.FC = () => {
           activeUpgrades={stash.upgrades}
           isMobile={isMobile}
           mapId={selectedMapId}
+          noiseLevel={hudState.noiseLevel}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
