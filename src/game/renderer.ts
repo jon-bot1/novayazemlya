@@ -1072,7 +1072,7 @@ let _groundMapH = 0;
 let _groundMapId = '';
 
 function ensureGroundCanvas(state: GameState) {
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  const mapId = (state as any)._mapId || 'objekt47';
   if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
   _groundMapW = state.mapWidth;
   _groundMapH = state.mapHeight;
