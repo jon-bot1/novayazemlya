@@ -50,6 +50,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss:    { _cowardice: 0.0, _accuracy: 0.8, _aggression: 1.0, _seekCoverChance: 0.0 },
     turret:  { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
     shocker: { _cowardice: 0.1, _accuracy: 0.5, _aggression: 0.95, _seekCoverChance: 0.0 },
+    miner_cult: { _cowardice: 0.05, _accuracy: 0.60, _aggression: 0.95, _seekCoverChance: 0.0 },
+    svarta_sol: { _cowardice: 0.15, _accuracy: 0.88, _aggression: 0.65, _seekCoverChance: 0.55 },
   };
   const s = stats[type] || stats.scav;
   const p = personality[type] || personality.scav;
