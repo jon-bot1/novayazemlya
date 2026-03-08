@@ -788,7 +788,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     else if (terrain === 'dirt') terrainMult = 0.8;
     else if (terrain === 'forest') terrainMult = 0.6;
     if (Math.random() < footstepChance[effectiveMode]) {
-      state.soundEvents.push({ pos: { ...state.player.pos }, radius: footstepRadius[effectiveMode] * terrainMult, time: state.time });
+      let stepRadius = footstepRadius[effectiveMode] * terrainMult;
+      const silentBonus = (state as any)._noiseReduction || 0;
+      if (silentBonus > 0) stepRadius *= (1 - silentBonus);
+      state.soundEvents.push({ pos: { ...state.player.pos }, radius: stepRadius, time: state.time });
     }
   }
 
