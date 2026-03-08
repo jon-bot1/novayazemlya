@@ -512,6 +512,8 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     chokeholdProgress: 0,
     mortarStrikes: [],
     laserTarget: null,
+    fearTimer: 0,
+    fearSourcePos: null,
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;
