@@ -469,10 +469,11 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'briefing' && (
         <>
           <div>
-            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Operation Aurora Borealis</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
-              You operate from a <span className="text-accent">Safe House</span> between raids. 
-              Choose from <span className="text-accent">3 operational zones</span> — each with unique threats, bosses, and extraction points.
+              You are <span className="text-accent">VARG</span> — a ghost operative on a mission to destroy the Soviet Substance Zero program.
+              Operate from your <span className="text-accent">Safe House</span> between raids. 
+              Each operational zone holds intel, threats, and a piece of the puzzle.
               Randomized <span className="text-warning">objectives</span> give you main targets and bonus tasks that pay rubles.
             </p>
           </div>
@@ -484,22 +485,29 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <div className="flex gap-2 items-start">
                 <span className="text-base">☢️</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">Objekt 47 "Severnyj Vektor"</p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet military base. Open terrain, bunkers, and minefields. Boss: <span className="text-danger">Commandant Osipovitj</span> with two bodyguards in the underground bunker.</p>
+                  <p className="text-[11px] font-display text-foreground">Objekt 47 "Severnyj Vektor" — <span className="text-[9px] text-muted-foreground font-mono">EXTRACTION & REFINERY</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Soviet military base processing raw Substance Zero into weapons-grade material. <span className="text-danger">Commandant Osipovitj</span> guards the nuclear codes. Minefields, watchtowers, bunkers.</p>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
                 <span className="text-base">🐟</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">The Fishing Village <span className="text-[9px] text-warning font-mono">(3 extractions to unlock)</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Coastal smuggler village with docks, shacks, and a lighthouse. Boss: <span className="text-warning">Nachalnik</span> — shotgun-armed smuggler surrounded by redneck guards and dogs.</p>
+                  <p className="text-[11px] font-display text-foreground">Coastal Village "Rybnaya" <span className="text-[9px] text-warning font-mono">(3 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">SMUGGLING PIPELINE</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Maritime export terminal for refined SZ-0. <span className="text-warning">Nachalnik</span> ships the substance to foreign buyers via fishing boats. Redneck guards, dogs, trapped approaches.</p>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
                 <span className="text-base">🏥</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">The Hospital <span className="text-[9px] text-warning font-mono">(6 extractions to unlock)</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet hospital with narrow corridors and a dark basement. Two bosses: <span className="text-accent">Dr. Kravtsov</span> (fear attack) and <span className="text-danger">The Uzbek</span> (extreme speed) in the basement.</p>
+                  <p className="text-[11px] font-display text-foreground">Hospital №6 <span className="text-[9px] text-warning font-mono">(6 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">EXPERIMENTATION</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Disguised research facility. <span className="text-accent">Dr. Kravtsov</span> creates SZ-0-resistant soldiers. <span className="text-danger">The Uzbek</span> (Test Subject 7) is his most horrific result. Countermeasure formula critical for final operation.</p>
+                </div>
+              </div>
+              <div className="flex gap-2 items-start">
+                <span className="text-base">⛏️</span>
+                <div>
+                  <p className="text-[11px] font-display text-foreground">Norrberget Mine <span className="text-[9px] text-warning font-mono">(10 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">THE SOURCE</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Where VARG's father disappeared. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
                 </div>
               </div>
             </div>
