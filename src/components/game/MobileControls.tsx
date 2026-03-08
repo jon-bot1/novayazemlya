@@ -7,11 +7,13 @@ interface MobileControlsProps {
   stateRef: React.MutableRefObject<any>;
   onToggleInventory: () => void;
   onToggleIntel: () => void;
+  onCloseDoc: () => void;
   movementMode: 'sneak' | 'walk' | 'sprint';
+  hasDoc: boolean;
 }
 
 export const MobileControls: React.FC<MobileControlsProps> = ({
-  inputRef, stateRef, onToggleInventory, onToggleIntel, movementMode,
+  inputRef, stateRef, onToggleInventory, onToggleIntel, onCloseDoc, movementMode, hasDoc,
 }) => {
   const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>(movementMode);
   const aimTouchRef = useRef<number | null>(null);
@@ -113,6 +115,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
         <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} variant="small" />
         <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; }} variant="small" />
         <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; }} variant="small" />
+        <ActionButton label="🪨" onPress={() => { inputRef.current.throwRock = true; }} variant="small" />
       </div>
 
       {/* Left side action buttons — utility */}
@@ -121,12 +124,37 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
         <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" />
         <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} variant="small" />
         <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} variant="small" />
+        <ActionButton label="🎭" onPress={() => { inputRef.current.useSpecial = true; }} variant="small" />
       </div>
 
-      {/* Top bar — inventory + intel + mode */}
+      {/* Top bar — inventory + intel + close doc + weapon switch */}
       <div className="absolute top-2 right-2 flex gap-1.5 pointer-events-auto" style={{ zIndex: 50 }}>
+        {hasDoc && (
+          <ActionButton label="✕" onPress={onCloseDoc} variant="small" />
+        )}
         <ActionButton label="🎒" onPress={onToggleInventory} variant="small" />
         <ActionButton label="📄" onPress={onToggleIntel} variant="small" />
+      </div>
+
+      {/* Top left — weapon slots */}
+      <div className="absolute top-2 left-2 flex gap-1 pointer-events-auto" style={{ zIndex: 50 }}>
+        {([1, 2, 3] as const).map(slot => (
+          <button
+            key={slot}
+            className={`w-9 h-9 rounded text-xs font-mono border transition-colors touch-none select-none flex items-center justify-center
+              ${stateRef.current?.player?.activeSlot === slot
+                ? 'bg-primary/60 border-primary text-primary-foreground'
+                : 'bg-card/40 border-border/30 text-muted-foreground/60'
+              }`}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              inputRef.current.switchWeapon = slot;
+            }}
+          >
+            {slot === 1 ? '🔫' : slot === 2 ? '🗡' : '🔪'}
+          </button>
+        ))}
       </div>
 
       {/* Bottom center — movement mode selector */}
