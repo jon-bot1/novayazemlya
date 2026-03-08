@@ -337,7 +337,68 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         </div>
 
-        {/* Deploy */}
+        {/* Intel Tab — Document Archive */}
+        {tab === 'intel' && (
+          <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
+            {readingDoc ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  className="text-xs font-mono text-accent hover:text-accent/80 self-start"
+                  onClick={() => setReadingDoc(null)}
+                >
+                  ← Back to archive
+                </button>
+                <div className="border border-border rounded p-4 bg-background/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-display text-foreground">{readingDoc.title}</h3>
+                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                      readingDoc.classification === 'TOP SECRET' ? 'bg-red-900/30 text-red-400' :
+                      readingDoc.classification === 'SECRET' ? 'bg-yellow-900/30 text-yellow-400' :
+                      'bg-gray-800/30 text-gray-400'
+                    }`}>
+                      {readingDoc.classification}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 text-[9px] font-mono text-muted-foreground mb-3">
+                    <span>Author: {readingDoc.author}</span>
+                    <span>Date: {readingDoc.date}</span>
+                  </div>
+                  <pre className="text-[11px] font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                    {readingDoc.content}
+                  </pre>
+                  {readingDoc.hasCode && readingDoc.code && (
+                    <div className="mt-3 p-2 border border-accent/30 rounded bg-accent/5">
+                      <span className="text-[10px] font-mono text-accent">☢ CODE: {readingDoc.code}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : foundDocs.length === 0 ? (
+              <p className="text-xs font-mono text-muted-foreground text-center py-8">
+                No documents collected yet. Find them during raids.
+              </p>
+            ) : (
+              foundDocs.map(doc => (
+                <button
+                  key={doc.id}
+                  className="flex items-center gap-3 p-3 border border-border rounded hover:border-accent/50 hover:bg-accent/5 transition-colors text-left"
+                  onClick={() => setReadingDoc(doc)}
+                >
+                  <span className="text-lg">
+                    {doc.classification === 'TOP SECRET' ? '🔴' : doc.classification === 'SECRET' ? '🟡' : '⚪'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-display text-foreground truncate">{doc.title}</p>
+                    <p className="text-[9px] font-mono text-muted-foreground">{doc.author} — {doc.date}</p>
+                  </div>
+                  {doc.hasCode && <span className="text-[9px] font-mono text-accent">☢</span>}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+
         <button
           className="w-full px-6 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg mt-2"
           onClick={() => onDeploy(selectedMap)}
