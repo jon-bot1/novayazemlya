@@ -4082,7 +4082,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               (enemy as any)._coverPos = null;
               (enemy as any)._coverDecided = false;
               enemy.state = 'patrol';
-              enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
             } else {
               // Reposition to new cover spot
               (enemy as any)._coverPos = null;
