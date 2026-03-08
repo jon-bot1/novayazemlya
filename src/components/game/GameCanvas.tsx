@@ -458,7 +458,7 @@ function setWriteToken(name: string, token: string) {
 }
 
 async function syncStashToDb(playerName: string, stash: StashState) {
-  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return;
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return;
   try {
     const name = playerName.trim().slice(0, 20);
     const token = getWriteToken(name);
