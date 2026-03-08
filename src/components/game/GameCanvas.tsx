@@ -634,6 +634,7 @@ export const GameCanvas: React.FC = () => {
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
   const [gfxQuality, setGfxQuality] = useState<GraphicsQuality>(getGraphicsQuality);
+  const [renderDist, setRenderDist] = useState<RenderDistance>(getRenderDistance);
   const objectivesByMapRef = useRef<Record<MapId, MissionObjective[]>>(createInitialObjectivesByMap());
   const rerollsByMapRef = useRef<Record<MapId, number>>(createInitialRerollsByMap());
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => objectivesByMapRef.current.objekt47);
