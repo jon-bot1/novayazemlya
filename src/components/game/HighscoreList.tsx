@@ -142,6 +142,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                     <span className="text-accent">{s.score ?? 0}</span>
                     <span className={rl.color}>{rl.icon}</span>
                   </div>
+                  {/* Achievements display disabled — code preserved
                   {earnedAchievements.length > 0 && (
                     <div className="flex gap-1 px-1 ml-5 mb-0.5">
                       <TooltipProvider delayDuration={200}>
@@ -158,6 +159,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                       </TooltipProvider>
                     </div>
                   )}
+                  */}
                 </div>
               );
             })}
@@ -165,7 +167,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
         </div>
       )}
 
-      {/* Most Decorated */}
+      {/* Most Decorated section disabled — achievements hidden
       {decorated.length > 0 && (
         <div>
           <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏅 Most Decorated</h3>
@@ -193,28 +195,13 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                     <span className="text-muted-foreground">{i + 1}</span>
                     <span className="truncate">{s.player_name}</span>
                   </div>
-                  {earnedAchievements.length > 0 && (
-                    <div className="flex flex-wrap gap-1 px-1 ml-5 mb-0.5">
-                      <TooltipProvider delayDuration={200}>
-                        {earnedAchievements.map(a => (
-                          <Tooltip key={a.id}>
-                            <TooltipTrigger asChild>
-                              <span className="text-[10px] cursor-default">{TIER_LABEL[a.tier]}{a.icon}</span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs font-mono bg-background border-border">
-                              <span className="font-bold">{a.name}</span> — {a.desc}
-                            </TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </TooltipProvider>
-                    </div>
-                  )}
                 </div>
               );
             })}
           </div>
         </div>
       )}
+      */}
 
       {scores.length === 0 && decorated.length === 0 && (
         <p className="text-xs font-mono text-muted-foreground text-center">No highscores yet.</p>
