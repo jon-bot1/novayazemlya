@@ -108,9 +108,9 @@ export function generateFishingVillageMap() {
     // Main road (vertical, center)
     { x: 620, y: 200, w: 100, h: 1150, type: 'asphalt' },
     // Side road to dock
-    { x: 420, y: 1300, w: 350, h: 70, type: 'asphalt' },
-    // Dock platform (base of pier)
-    { x: 420, y: 1370, w: 450, h: 80, type: 'concrete' },
+    { x: 500, y: 1300, w: 250, h: 80, type: 'asphalt' },
+    // Dock building — two rooms extending into sea
+    { x: 500, y: 1380, w: 370, h: 330, type: 'concrete' },
     // Village grass
     { x: 180, y: 280, w: 870, h: 1050, type: 'grass' },
     // Dirt around cabins
@@ -118,13 +118,11 @@ export function generateFishingVillageMap() {
     { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
     { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
-    // === PIER / KAJ extending into the sea ===
-    { x: 590, y: 1450, w: 160, h: 430, type: 'concrete' },
     // === WATER / SEA — big blue area ===
     { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
-    // Water flanking the dock platform
-    { x: 0, y: 1370, w: 400, h: 630, type: 'water' },
-    { x: 890, y: 1370, w: MAP_W - 890, h: 630, type: 'water' },
+    // Water flanking the dock
+    { x: 0, y: 1380, w: 480, h: 620, type: 'water' },
+    { x: 880, y: 1380, w: MAP_W - 880, h: 620, type: 'water' },
   ];
 
   // ══════════════════════════════════════
