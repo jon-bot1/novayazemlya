@@ -90,7 +90,8 @@ const VILLAGE_BONUS: ObjectiveTemplate[] = [
 // HOSPITAL — Abandoned Soviet hospital objectives
 // ═══════════════════════════════════════
 const HOSPITAL_MAIN: ObjectiveTemplate[] = [
-  { id: 'kill_doctor', name: 'Eliminate Chief Doctor', icon: '💀', description: 'Kill the mutated Chief Doctor in the basement', reward: 550, isMain: true },
+  { id: 'kill_doctor', name: 'Eliminate Dr. Kravtsov', icon: '🧪', description: 'Kill Doctor Kravtsov, the experimenter, in the east wing lab', reward: 550, isMain: true },
+  { id: 'kill_patient_zero', name: 'Destroy Patient Zero', icon: '🩸', description: 'Kill Patient Zero — the ancient test subject locked in the basement', reward: 600, isMain: true },
   { id: 'clear_basement', name: 'Purge the Basement', icon: '🔦', description: 'Eliminate all enemies in the hospital basement', reward: 500, isMain: true },
   { id: 'hack_lab', name: 'Steal Research Data', icon: '💻', description: 'Hack the lab terminal and extract the data', reward: 450, isMain: true },
   { id: 'collect_all_docs', name: 'Recover Patient Files', icon: '📚', description: 'Collect all classified documents in the hospital', reward: 450, isMain: true },
