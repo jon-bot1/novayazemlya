@@ -3811,10 +3811,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Standing still, looking around slowly
         enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
-        // Occasionally start patrolling
-        if (Math.random() < 0.002) {
+        // Start patrolling frequently — enemies should feel alive
+        if (Math.random() < 0.012) {
           enemy.state = 'patrol';
-          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+          // Pick a patrol target with LOS validation
+          let ptx = enemy.pos.x + (Math.random() - 0.5) * 400;
+          let pty = enemy.pos.y + (Math.random() - 0.5) * 400;
+          ptx = Math.max(30, Math.min(state.mapWidth - 30, ptx));
+          pty = Math.max(30, Math.min(state.mapHeight - 30, pty));
+          // Validate target is reachable (not behind wall)
+          if (!hasLineOfSight(state, enemy.pos, { x: ptx, y: pty }, false)) {
+            // Try a closer, random direction instead
+            const angle = Math.random() * Math.PI * 2;
+            ptx = enemy.pos.x + Math.cos(angle) * 120;
+            pty = enemy.pos.y + Math.sin(angle) * 120;
+          }
+          enemy.patrolTarget = { x: ptx, y: pty };
         }
         break;
       }
