@@ -426,8 +426,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
-        {/* Map Selection */}
-        <div className="border border-border rounded p-3 bg-secondary/10">
+        {/* Map Selection — hidden on Archive tab */}
+        {tab !== 'intel' && <div className="border border-border rounded p-3 bg-secondary/10">
           <span className="text-xs font-display text-accent uppercase tracking-wider block mb-2">🗺️ Select Map</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {MAPS.map(m => {
