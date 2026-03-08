@@ -7,7 +7,23 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, PATIENT_ZERO_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, PATIENT_ZERO_TAUNTS, KRAVTSOV_PHASES, PATIENT_ZERO_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+
+// Helper: get boss-specific death monologue
+function getBossDeathMonologue(enemy: Enemy): string[] {
+  const bossId = (enemy as any)._bossId;
+  if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
+  if (bossId === 'patient_zero') return [...PATIENT_ZERO_DEATH_MONOLOGUE];
+  return [...BOSS_DEATH_MONOLOGUE];
+}
+
+// Helper: get boss display name for kill messages
+function getBossTitle(enemy: Enemy): string {
+  const bossId = (enemy as any)._bossId;
+  if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
+  if (bossId === 'patient_zero') return 'ПАЦИЕНТ НОЛЬ';
+  return 'COMMANDANT OSIPOVITJ';
+}
 
 // Helper: set speech bubble if enemy doesn't already have one
 function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
@@ -2385,38 +2401,58 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else enemy.bossPhase = 0;
       
       if (enemy.bossPhase !== oldPhase) {
-        const phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
+        const bossId = (enemy as any)._bossId;
+        let phaseNames: string[];
+        if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
+        else if (bossId === 'patient_zero') phaseNames = PATIENT_ZERO_PHASES;
+        else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
+        
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
         }
         // Phase transition speech bubbles
-        if (enemy.bossPhase === 1) {
-          enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!';
-          enemy.speechBubbleTimer = 3;
-        } else if (enemy.bossPhase === 2) {
-          enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!';
-          enemy.speechBubbleTimer = 3;
+        if (bossId === 'patient_zero') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = '*ЦЕПИ ТРЕЩАТ*'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = '*НЕЧЕЛОВЕЧЕСКИЙ ВОЙ*'; enemy.speechBubbleTimer = 3; }
+        } else if (bossId === 'kravtsov') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = 'МУТАГЕН... АКТИВИРОВАН!'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = 'НАУКА... ТРЕБУЕТ... ЖЕРТВ!'; enemy.speechBubbleTimer = 3; }
+        } else {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!'; enemy.speechBubbleTimer = 3; }
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
-          enemy.fireRate = 350;
-          enemy.speed = 1.49;
-          enemy.damage = 35;
+          if (bossId === 'patient_zero') {
+            enemy.speed = 2.20; enemy.damage = 65; enemy.fireRate = 350;
+          } else {
+            enemy.fireRate = 350; enemy.speed = 1.49; enemy.damage = 35;
+          }
         }
         if (enemy.bossPhase === 2) {
-          enemy.fireRate = 250;
-          enemy.speed = 1.89;
-          enemy.damage = 40;
+          if (bossId === 'patient_zero') {
+            enemy.speed = 2.80; enemy.damage = 80; enemy.fireRate = 300;
+          } else {
+            enemy.fireRate = 250; enemy.speed = 1.89; enemy.damage = 40;
+          }
         }
       }
 
       // Boss combat taunts — random speech bubbles
       if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.002) {
         const phase = enemy.bossPhase || 0;
-        const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
-        const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
-        const taunts2 = ['НЕЕЕТ!', 'ТЫ ОТВЕТИШЬ ЗА ЭТО!', 'Я ЕЩЁ СТОЮ!', 'НЕ СДАМСЯ...'];
-        const pool = phase === 2 ? taunts2 : phase === 1 ? taunts1 : taunts0;
+        const bossId = (enemy as any)._bossId;
+        let pool: string[];
+        if (bossId === 'kravtsov') {
+          pool = KRAVTSOV_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'patient_zero') {
+          pool = PATIENT_ZERO_TAUNTS[Math.min(phase, 2)];
+        } else {
+          const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
+          const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
+          const taunts2 = ['НЕЕЕТ!', 'ТЫ ОТВЕТИШЬ ЗА ЭТО!', 'Я ЕЩЁ СТОЮ!', 'НЕ СДАМСЯ...'];
+          pool = phase === 2 ? taunts2 : phase === 1 ? taunts1 : taunts0;
+        }
         enemy.speechBubble = pool[Math.floor(Math.random() * pool.length)];
         enemy.speechBubbleTimer = 2.5;
       }
@@ -2485,7 +2521,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           boss.hp = Math.min(boss.maxHp, boss.hp + heal);
           boss.speechBubble = 'ХОРОШО...';
           boss.speechBubbleTimer = 1.5;
-          addMessage(state, `🩹 Bodyguard heals Osipovitj +${heal}HP!`, 'warning');
+          addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
           spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
         }
         enemy.state = 'chase';
@@ -2971,7 +3007,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._bossHealGiven = 0;  // HP given so far
           enemy.speechBubble = 'СТИМУЛЯТОР...';
           enemy.speechBubbleTimer = 3;
-          addMessage(state, '💉 OSIPOVITJ IS INJECTING A STIM! (+50HP over 5s)', 'warning');
+          addMessage(state, `💉 ${getBossTitle(enemy)} IS INJECTING A STIM! (+50HP over 5s)`, 'warning');
         } else {
           (enemy as any)._healingTimer = 3.0;
           (enemy as any)._healDone = true;
@@ -3015,7 +3051,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           delete (enemy as any)._bossHealGiven;
           enemy.speechBubble = 'НАМНОГО ЛУЧШЕ!';
           enemy.speechBubbleTimer = 2;
-          addMessage(state, '💉 Osipovitj healed +50HP!', 'damage');
+          addMessage(state, `💉 ${getBossTitle(enemy)} healed +50HP!`, 'damage');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ff66', 8);
         } else {
           const healAmt = Math.min(25, enemy.maxHp - enemy.hp);
@@ -3788,7 +3824,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 sourceId: enemy.id,
                 sourceType: 'boss',
               });
-              addMessage(state, '💫 OSIPOVITJ throws FLASHBANG!', 'warning');
+              addMessage(state, `💫 ${getBossTitle(enemy)} throws FLASHBANG!`, 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
             } else {
               state.grenades.push({
@@ -3801,7 +3837,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 sourceId: enemy.id,
                 sourceType: 'boss',
               });
-              addMessage(state, '💣 OSIPOVITJ throws grenade!', 'warning');
+              addMessage(state, `💣 ${getBossTitle(enemy)} throws grenade!`, 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
@@ -3834,7 +3870,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
           };
           state.enemies.push(minion);
-          addMessage(state, '📻 Osipovitj calls reinforcements!', 'warning');
+          addMessage(state, `📻 ${getBossTitle(enemy)} calls reinforcements!`, 'warning');
           spawnParticles(state, sx, sy, '#ff8844', 8);
         }
         break;
@@ -4034,7 +4070,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.hp = 0;
             enemy.state = 'dead';
             if (enemy.type === 'boss') {
-              (enemy as any)._deathMonologue = [...BOSS_DEATH_MONOLOGUE];
+              (enemy as any)._deathMonologue = getBossDeathMonologue(enemy);
               (enemy as any)._deathMonologueTimer = 2.5;
               enemy.speechBubble = (enemy as any)._deathMonologue.shift();
               enemy.speechBubbleTimer = 2.5;
@@ -4047,7 +4083,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.killCount++;
             if (enemy.type === 'dog') state.dogsKilled++;
             state.grenadeKills++;
-            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
         }
@@ -4272,7 +4308,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             if (enemy.type === 'boss') {
-              (enemy as any)._deathMonologue = [...BOSS_DEATH_MONOLOGUE];
+              (enemy as any)._deathMonologue = getBossDeathMonologue(enemy);
               (enemy as any)._deathMonologueTimer = 2.5;
               enemy.speechBubble = (enemy as any)._deathMonologue.shift();
               enemy.speechBubbleTimer = 2.5;
@@ -4292,7 +4328,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist < 50) state.knifeDistanceKills++;
             
             if (!isCrit) {
-              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+              addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
