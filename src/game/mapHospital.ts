@@ -300,25 +300,28 @@ export function generateHospitalMap() {
     // ═══ BOSS 2 — Узбек (The Uzbek) ═══
     // Locked in the basement — fast, melee-focused, horrifying
     (() => {
-      const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
+      const uzbekZones = [ZONE_BASEMENT, ZONE_WARD_W3, ZONE_CORRIDOR_S];
+      const uz = uzbekZones[Math.floor(Math.random() * uzbekZones.length)];
+      const up = randIn(uz.x, uz.y, uz.w, uz.h);
+      const boss = makeEnemy(up.x, up.y, 'boss');
       (boss as any)._bossId = 'uzbek';
       (boss as any)._bossTitle = 'УЗБЕК';
       boss.hp = 600; boss.maxHp = 600;
-      boss.speed = 1.60; // very fast — charges at you
-      boss.damage = 55;  // devastating melee-range hits
+      boss.speed = 1.60;
+      boss.damage = 55;
       boss.fireRate = 400;
       boss.alertRange = 250;
-      boss.shootRange = 40; // almost pure melee
+      boss.shootRange = 40;
       boss.loot = [
         createExtractionCode(),
         createValuable('Uzbek Blood Sample', 2000, '🩸'),
         createValuable('Old Dog Tags', 500, '💀'),
       ];
       (boss as any)._patrolWaypoints = [
-        { x: BX + 200, y: BY + 1550 },
-        { x: BX + 600, y: BY + 1650 },
-        { x: BX + 900, y: BY + 1700 },
-        { x: BX + 400, y: BY + 1700 },
+        { x: up.x - 120, y: up.y - 60 },
+        { x: up.x + 120, y: up.y + 40 },
+        { x: up.x + 60, y: up.y + 80 },
+        { x: up.x - 60, y: up.y - 40 },
       ];
       (boss as any)._waypointIdx = 0;
       boss.patrolTarget = (boss as any)._patrolWaypoints[0];
