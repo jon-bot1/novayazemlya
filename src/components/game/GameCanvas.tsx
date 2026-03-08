@@ -88,7 +88,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </button>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-border">
+      <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
         <button
           className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'briefing' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
           onClick={() => setTab('briefing')}
