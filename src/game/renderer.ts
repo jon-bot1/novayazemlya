@@ -1031,6 +1031,7 @@ const MAP_PALETTES: Record<string, MapPalette> = {
       asphalt: ['#3c3c3a', '#40403e'],
       concrete: ['#5a5a50', '#5e5e54'],
       forest: ['#2c3c1e', '#304024'],
+      water: ['#1a3a4a', '#1e3e50'],
     },
     outside: '#1c2c16',
     ambientOverlay: 'rgba(180, 160, 100, 0.03)', // warm coastal tint
@@ -1137,6 +1138,23 @@ function ensureGroundCanvas(state: GameState) {
         gctx.fillStyle = 'rgba(200,180,60,0.08)';
         gctx.fillRect(tx + 20, ty, 6, tileSize);
       }
+      // Water wave details
+      if (terrain === 'water') {
+        gctx.strokeStyle = hash < 50 ? 'rgba(100,160,200,0.15)' : 'rgba(60,120,160,0.12)';
+        gctx.lineWidth = 0.8;
+        const wx = tx + (hash * 3) % 40;
+        const wy = ty + 10 + (hash * 7) % 25;
+        gctx.beginPath();
+        gctx.moveTo(wx, wy);
+        gctx.quadraticCurveTo(wx + 12, wy - 3, wx + 24, wy);
+        gctx.stroke();
+        if (hash < 30) {
+          gctx.beginPath();
+          gctx.moveTo(wx + 5, wy + 14);
+          gctx.quadraticCurveTo(wx + 18, wy + 11, wx + 30, wy + 14);
+          gctx.stroke();
+        }
+      }
     }
   }
 }
@@ -1196,15 +1214,16 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       { x: 2880, y: 330, label: 'WATCHTOWER NE', sub: '', size: 9 },
     ],
     fishing_village: [
-      { x: 750, y: 550, label: 'WEST HOUSES', sub: 'Cabins', size: 14 },
-      { x: 1700, y: 550, label: 'EAST HOUSES', sub: 'Cabins', size: 14 },
-      { x: 1130, y: 380, label: 'GENERAL STORE', sub: 'Shop', size: 12 },
-      { x: 1350, y: 600, label: 'COUNTRY ROAD', sub: '', size: 10 },
-      { x: 1400, y: 1800, label: 'THE DOCK', sub: 'Harbor', size: 18 },
-      { x: 960, y: 1690, label: 'WAREHOUSE', sub: '', size: 11 },
-      { x: 750, y: 1530, label: 'FISHING HUT', sub: '', size: 10 },
-      { x: 150, y: 200, label: 'FOREST NW', sub: '', size: 9 },
-      { x: 2650, y: 200, label: 'FOREST NE', sub: '', size: 9 },
+      { x: 420, y: 550, label: 'WEST HOUSES', sub: 'Cabins', size: 14 },
+      { x: 980, y: 550, label: 'EAST HOUSES', sub: 'Cabins', size: 14 },
+      { x: 580, y: 380, label: 'GENERAL STORE', sub: 'Shop', size: 12 },
+      { x: 750, y: 600, label: 'COUNTRY ROAD', sub: '', size: 10 },
+      { x: 750, y: 1550, label: 'THE DOCK', sub: 'Harbor', size: 18 },
+      { x: 450, y: 1450, label: 'WAREHOUSE', sub: '', size: 11 },
+      { x: 300, y: 1300, label: 'FISHING HUT', sub: '', size: 10 },
+      { x: 100, y: 150, label: 'FOREST NW', sub: '', size: 9 },
+      { x: 1400, y: 150, label: 'FOREST NE', sub: '', size: 9 },
+      { x: 750, y: 1750, label: 'THE SEA', sub: '', size: 16 },
     ],
     hospital: [
       { x: 1200, y: 700, label: 'THE HOSPITAL', sub: 'Main Building', size: 22 },

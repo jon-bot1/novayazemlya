@@ -219,7 +219,7 @@ export interface Prop {
   blocksPlayer?: boolean;
 }
 
-export type TerrainType = 'grass' | 'dirt' | 'asphalt' | 'concrete' | 'forest';
+export type TerrainType = 'grass' | 'dirt' | 'asphalt' | 'concrete' | 'forest' | 'water';
 
 export interface TerrainZone {
   x: number;
