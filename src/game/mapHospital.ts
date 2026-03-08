@@ -193,11 +193,12 @@ export function generateHospitalMap() {
   ];
 
   // ═══ ZONES ═══
-  const ZONE_ENTRANCE = { x: BX + BW / 2 - 100, y: BY + BH - 100, w: 200, h: 100 };
+  const ZONE_ENTRANCE = { x: BX + BW / 2 - 190, y: BY + BH - 190, w: 380, h: 180 };
+  const ZONE_RECEPTION = { x: BX + BW / 2 - 190, y: BY + BH - 190, w: 380, h: 180 };
   const ZONE_CORRIDOR_N = { x: BX + BW / 2 - 45, y: BY + 20, w: 90, h: 280 };
   const ZONE_CORRIDOR_S = { x: BX + BW / 2 - 45, y: BY + 1110, w: 90, h: 380 };
-  const ZONE_WARD_W = { x: BX + 20, y: BY + 20, w: 180, h: 570 };
-  const ZONE_WARD_W2 = { x: BX + 20, y: BY + 610, w: 480, h: 480 };
+  const ZONE_WARD_W = { x: BX + 20, y: BY + 20, w: 180, h: 270 };
+  const ZONE_WARD_W2 = { x: BX + 20, y: BY + 410, w: 480, h: 480 };
   const ZONE_WARD_W3 = { x: BX + 20, y: BY + 1110, w: 230, h: 380 };
   const ZONE_LAB_E = { x: BX + BW - 340, y: BY + 410, w: 330, h: 180 };
   const ZONE_OFFICE_E = { x: BX + BW - 340, y: BY + 1110, w: 330, h: 280 };
