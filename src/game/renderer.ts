@@ -1177,39 +1177,66 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Ground tiles with terrain zones
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
-  // Zone labels
-  const zoneLabels = [
-    { x: 1600, y: 1100, label: 'HANGAR', sub: 'Huvudbyggnad', size: 22 },
-    { x: 1300, y: 1000, label: 'HANGAR A', sub: 'Hall Väst', size: 14 },
-    { x: 1300, y: 1400, label: 'HANGAR B', sub: 'Hall Syd', size: 12 },
-    { x: 1600, y: 1000, label: 'KORRIDOR', sub: 'C-1', size: 10 },
-    { x: 1800, y: 870, label: 'KONTOR', sub: 'Befälsbyggnad', size: 13 },
-    { x: 1850, y: 1300, label: 'LAGER', sub: 'Förrådsdepå', size: 16 },
-    { x: 1510, y: 1780, label: 'HUVUDGRIND', sub: 'Södra infart', size: 14 },
-    { x: 500, y: 575, label: 'KASERN', sub: 'Baracker', size: 12 },
-    { x: 1500, y: 410, label: 'KOMMANDOPOST', sub: 'Ledningscentral', size: 12 },
-    { x: 2575, y: 650, label: 'AMMOBUNKER', sub: 'Östligt förråd', size: 11 },
-    { x: 530, y: 950, label: 'MOTORPOOL', sub: 'Fordonspark', size: 11 },
-    { x: 350, y: 330, label: 'VAKTTORN NV', sub: '', size: 9 },
-    { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
-  ];
+  // Zone labels — map-specific
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
+    novaya_zemlya: [
+      { x: 1600, y: 1100, label: 'HANGAR', sub: 'Huvudbyggnad', size: 22 },
+      { x: 1300, y: 1000, label: 'HANGAR A', sub: 'Hall Väst', size: 14 },
+      { x: 1300, y: 1400, label: 'HANGAR B', sub: 'Hall Syd', size: 12 },
+      { x: 1600, y: 1000, label: 'KORRIDOR', sub: 'C-1', size: 10 },
+      { x: 1800, y: 870, label: 'KONTOR', sub: 'Befälsbyggnad', size: 13 },
+      { x: 1850, y: 1300, label: 'LAGER', sub: 'Förrådsdepå', size: 16 },
+      { x: 1510, y: 1780, label: 'HUVUDGRIND', sub: 'Södra infart', size: 14 },
+      { x: 500, y: 575, label: 'KASERN', sub: 'Baracker', size: 12 },
+      { x: 1500, y: 410, label: 'KOMMANDOPOST', sub: 'Ledningscentral', size: 12 },
+      { x: 2575, y: 650, label: 'AMMOBUNKER', sub: 'Östligt förråd', size: 11 },
+      { x: 530, y: 950, label: 'MOTORPOOL', sub: 'Fordonspark', size: 11 },
+      { x: 350, y: 330, label: 'VAKTTORN NV', sub: '', size: 9 },
+      { x: 2880, y: 330, label: 'VAKTTORN NÖ', sub: '', size: 9 },
+    ],
+    fishing_village: [
+      { x: 750, y: 550, label: 'VÄSTRA BOSTÄDER', sub: 'Stugor', size: 14 },
+      { x: 1700, y: 550, label: 'ÖSTRA BOSTÄDER', sub: 'Stugor', size: 14 },
+      { x: 1130, y: 380, label: 'LANTHANDEL', sub: 'Butik', size: 12 },
+      { x: 1350, y: 600, label: 'LANDSVÄGEN', sub: '', size: 10 },
+      { x: 1400, y: 1800, label: 'KAJEN', sub: 'Hamn', size: 18 },
+      { x: 960, y: 1690, label: 'LAGERHUS', sub: '', size: 11 },
+      { x: 750, y: 1530, label: 'FISKESTUGA', sub: '', size: 10 },
+      { x: 150, y: 200, label: 'SKOG NV', sub: '', size: 9 },
+      { x: 2650, y: 200, label: 'SKOG NÖ', sub: '', size: 9 },
+    ],
+    hospital: [
+      { x: 1200, y: 700, label: 'SJUKHUSET', sub: 'Huvudbyggnad', size: 22 },
+      { x: 600, y: 500, label: 'AVDELNING VÄST', sub: 'Vårdsal', size: 13 },
+      { x: 600, y: 900, label: 'AVDELNING 2', sub: 'Vårdsal', size: 12 },
+      { x: 600, y: 1350, label: 'AVDELNING 3', sub: 'Isolering', size: 11 },
+      { x: 1850, y: 550, label: 'LABORATORIET', sub: 'Forskning', size: 14 },
+      { x: 1850, y: 1250, label: 'EXPEDITION', sub: 'Kontor', size: 13 },
+      { x: 1200, y: 870, label: 'INNERGÅRD', sub: 'Öppen yta', size: 14 },
+      { x: 1200, y: 1600, label: 'KÄLLAREN', sub: '⚠ FARLIGT', size: 16 },
+      { x: 1200, y: 450, label: 'KORRIDOR', sub: 'Norr', size: 10 },
+      { x: 1200, y: 1350, label: 'KORRIDOR', sub: 'Söder', size: 10 },
+      { x: 300, y: 2100, label: 'PARKERING', sub: '', size: 11 },
+    ],
+  };
+  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.novaya_zemlya;
+  const labelColor = mapId === 'hospital' ? '#a0a0a0' : '#c8c8b4';
   for (const z of zoneLabels) {
-    if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue; // skip off-screen labels
+    if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue;
     ctx.save();
-    ctx.globalAlpha = 0.14;
-    ctx.fillStyle = '#c8c8b4';
+    ctx.globalAlpha = mapId === 'hospital' ? 0.10 : 0.14;
+    ctx.fillStyle = labelColor;
     ctx.font = `bold ${z.size}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(z.label, z.x, z.y);
     if (z.sub) {
-      ctx.globalAlpha = 0.09;
+      ctx.globalAlpha = mapId === 'hospital' ? 0.07 : 0.09;
       ctx.font = `${Math.max(8, z.size - 6)}px sans-serif`;
       ctx.fillText(z.sub, z.x, z.y + z.size + 2);
     }
     ctx.restore();
   }
-
-
 
 
   // ── EXTRACTION ZONES — all visible, but only active one is highlighted ──
