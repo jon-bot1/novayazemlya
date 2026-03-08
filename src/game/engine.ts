@@ -2027,11 +2027,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         // Friendly AI: attack nearest non-friendly enemy
         let nearestHostile: Enemy | null = null;
-        let nearestDist = enemy.shootRange;
+        let nearestDistSq = enemy.shootRange * enemy.shootRange;
         for (const other of state.enemies) {
           if (other === enemy || other.state === 'dead' || other.friendly) continue;
-          const d = dist(enemy.pos, other.pos);
-          if (d < nearestDist) { nearestHostile = other; nearestDist = d; }
+          const dSq = distSq(enemy.pos, other.pos);
+          if (dSq < nearestDistSq) { nearestHostile = other; nearestDistSq = dSq; }
         }
         if (nearestHostile) {
           enemy.angle = Math.atan2(nearestHostile.pos.y - enemy.pos.y, nearestHostile.pos.x - enemy.pos.x);
