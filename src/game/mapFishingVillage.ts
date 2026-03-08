@@ -520,13 +520,14 @@ export function generateFishingVillageMap() {
 export function createFishingVillagePlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
   const knife = WEAPON_TEMPLATES.knife();
+  const grenade = createGrenade();
   return {
     pos: { x: 670, y: 230 },
     hp: 100,
     maxHp: 100,
     speed: 1.69,
     angle: Math.PI / 2, // facing south
-    inventory: [weapon, knife],
+    inventory: [weapon, knife, grenade],
     equippedWeapon: weapon,
     meleeWeapon: knife,
     sidearm: weapon,

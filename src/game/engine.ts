@@ -660,6 +660,37 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
+
+  // === SPAWN VALIDATION — nudge enemies out of walls ===
+  const spawnGrid = buildSpatialGrid(state.walls);
+  for (const enemy of state.enemies) {
+    if (collidesWithWallsGrid(spawnGrid, enemy.pos.x, enemy.pos.y, 10)) {
+      // Try nudging in 8 directions at increasing distances
+      let escaped = false;
+      for (let nudgeDist = 20; nudgeDist <= 120 && !escaped; nudgeDist += 20) {
+        for (let a = 0; a < 8; a++) {
+          const angle = (a / 8) * Math.PI * 2;
+          const nx = enemy.pos.x + Math.cos(angle) * nudgeDist;
+          const ny = enemy.pos.y + Math.sin(angle) * nudgeDist;
+          if (!collidesWithWallsGrid(spawnGrid, nx, ny, 12)) {
+            enemy.pos.x = nx;
+            enemy.pos.y = ny;
+            escaped = true;
+            break;
+          }
+        }
+      }
+    }
+    // Also validate patrol target is reachable
+    if (collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 4)) {
+      const angle = Math.random() * Math.PI * 2;
+      enemy.patrolTarget = {
+        x: enemy.pos.x + Math.cos(angle) * 100,
+        y: enemy.pos.y + Math.sin(angle) * 100,
+      };
+    }
+  }
+
   return state;
 }
 
@@ -3811,10 +3842,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Standing still, looking around slowly
         enemy.angle += Math.sin(state.time * 0.5 + enemy.pos.x * 0.01) * 0.005;
-        // Occasionally start patrolling
-        if (Math.random() < 0.002) {
+        // Start patrolling frequently — enemies should feel alive
+        if (Math.random() < 0.012) {
           enemy.state = 'patrol';
-          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+          // Pick a patrol target with LOS validation
+          let ptx = enemy.pos.x + (Math.random() - 0.5) * 400;
+          let pty = enemy.pos.y + (Math.random() - 0.5) * 400;
+          ptx = Math.max(30, Math.min(state.mapWidth - 30, ptx));
+          pty = Math.max(30, Math.min(state.mapHeight - 30, pty));
+          // Validate target is reachable (not behind wall)
+          if (!hasLineOfSight(state, enemy.pos, { x: ptx, y: pty }, false)) {
+            // Try a closer, random direction instead
+            const angle = Math.random() * Math.PI * 2;
+            ptx = enemy.pos.x + Math.cos(angle) * 120;
+            pty = enemy.pos.y + Math.sin(angle) * 120;
+          }
+          enemy.patrolTarget = { x: ptx, y: pty };
         }
         break;
       }
@@ -3851,18 +3894,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'idle';
         } else {
           const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
-          const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
-          // Wall-stuck detection: if barely moved, pick new direction
+          const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.65, dir.y * speed * 0.65, 10);
+          // Wall-stuck detection: if barely moved, pick new direction quickly
           if (dist(newPos, enemy.pos) < 0.1) {
             if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
             (enemy as any)._stuckCounter++;
-            if ((enemy as any)._stuckCounter > 30) {
-              // Try perpendicular directions
+            if ((enemy as any)._stuckCounter > 8) {
+              // Try perpendicular or random direction with LOS check
               const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-              enemy.patrolTarget = {
-                x: enemy.pos.x + Math.cos(perpAngle) * 150,
-                y: enemy.pos.y + Math.sin(perpAngle) * 150,
-              };
+              let nx = enemy.pos.x + Math.cos(perpAngle) * 180;
+              let ny = enemy.pos.y + Math.sin(perpAngle) * 180;
+              if (!hasLineOfSight(state, enemy.pos, { x: nx, y: ny }, false)) {
+                const rndAngle = Math.random() * Math.PI * 2;
+                nx = enemy.pos.x + Math.cos(rndAngle) * 100;
+                ny = enemy.pos.y + Math.sin(rndAngle) * 100;
+              }
+              enemy.patrolTarget = { x: nx, y: ny };
               (enemy as any)._stuckCounter = 0;
             }
           } else {
@@ -3894,7 +3941,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!canReach) {
               // Can't reach through wall — give up and patrol instead
               enemy.state = 'patrol';
-              enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+              const rAngle = Math.random() * Math.PI * 2;
+              enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle) * 200, y: enemy.pos.y + Math.sin(rAngle) * 200 };
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
@@ -3905,7 +3953,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if ((enemy as any)._stuckCounter > 10) {
                 // Stuck at wall — give up investigation
                 enemy.state = 'patrol';
-                enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+                const rAngle2 = Math.random() * Math.PI * 2;
+                enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle2) * 200, y: enemy.pos.y + Math.sin(rAngle2) * 200 };
                 (enemy as any)._stuckCounter = 0;
               }
             } else {
@@ -3926,7 +3975,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
           (enemy as any)._alertStart = 0;
           enemy.state = 'patrol';
-          enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 300, y: enemy.pos.y + (Math.random() - 0.5) * 300 };
+          const alertAngle = Math.random() * Math.PI * 2;
+          enemy.patrolTarget = { x: enemy.pos.x + Math.cos(alertAngle) * 300, y: enemy.pos.y + Math.sin(alertAngle) * 300 };
         }
         break;
       }

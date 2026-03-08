@@ -531,11 +531,12 @@ export function generateHospitalMap() {
 export function createHospitalPlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
   const knife = WEAPON_TEMPLATES.knife();
+  const grenade = createGrenade();
   return {
     pos: { x: 1200, y: 2300 },
     hp: 100, maxHp: 100, speed: 1.69,
     angle: -Math.PI / 2,
-    inventory: [weapon, knife],
+    inventory: [weapon, knife, grenade],
     equippedWeapon: weapon, meleeWeapon: knife,
     sidearm: weapon, primaryWeapon: null as any,
     activeSlot: 2 as 1 | 2 | 3,
