@@ -1,48 +1,58 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 
 interface JoystickProps {
   onMove: (x: number, y: number) => void;
   side: 'left' | 'right';
+  label?: string;
+  size?: number;
 }
 
-export const VirtualJoystick: React.FC<JoystickProps> = ({ onMove, side }) => {
+export const VirtualJoystick: React.FC<JoystickProps> = ({ onMove, side, label, size = 120 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [stickPos, setStickPos] = useState({ x: 0, y: 0 });
   const originRef = useRef({ x: 0, y: 0 });
+  const activeIdRef = useRef<number | null>(null);
+  const maxR = size * 0.3;
 
-  const handleStart = useCallback((clientX: number, clientY: number) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  const calcStick = useCallback((clientX: number, clientY: number) => {
+    const dx = clientX - originRef.current.x;
+    const dy = clientY - originRef.current.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    const clampedD = Math.min(d, maxR);
+    const angle = Math.atan2(dy, dx);
+    const nx = Math.cos(angle) * clampedD;
+    const ny = Math.sin(angle) * clampedD;
+    setStickPos({ x: nx, y: ny });
+    onMove(nx / maxR, ny / maxR);
+  }, [onMove, maxR]);
+
+  const handleStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (activeIdRef.current !== null) return;
+    const el = containerRef.current;
+    if (!el) return;
+    el.setPointerCapture(e.pointerId);
+    activeIdRef.current = e.pointerId;
+    const rect = el.getBoundingClientRect();
     originRef.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     setActive(true);
-    const dx = clientX - originRef.current.x;
-    const dy = clientY - originRef.current.y;
-    const maxR = 35;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    const clampedD = Math.min(d, maxR);
-    const angle = Math.atan2(dy, dx);
-    const nx = Math.cos(angle) * clampedD;
-    const ny = Math.sin(angle) * clampedD;
-    setStickPos({ x: nx, y: ny });
-    onMove(nx / maxR, ny / maxR);
-  }, [onMove]);
+    calcStick(e.clientX, e.clientY);
+  }, [calcStick]);
 
-  const handleMove = useCallback((clientX: number, clientY: number) => {
-    if (!active) return;
-    const dx = clientX - originRef.current.x;
-    const dy = clientY - originRef.current.y;
-    const maxR = 35;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    const clampedD = Math.min(d, maxR);
-    const angle = Math.atan2(dy, dx);
-    const nx = Math.cos(angle) * clampedD;
-    const ny = Math.sin(angle) * clampedD;
-    setStickPos({ x: nx, y: ny });
-    onMove(nx / maxR, ny / maxR);
-  }, [active, onMove]);
+  const handleMove = useCallback((e: React.PointerEvent) => {
+    if (e.pointerId !== activeIdRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    calcStick(e.clientX, e.clientY);
+  }, [calcStick]);
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback((e: React.PointerEvent) => {
+    if (e.pointerId !== activeIdRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    activeIdRef.current = null;
     setActive(false);
     setStickPos({ x: 0, y: 0 });
     onMove(0, 0);
@@ -51,33 +61,27 @@ export const VirtualJoystick: React.FC<JoystickProps> = ({ onMove, side }) => {
   return (
     <div
       ref={containerRef}
-      className={`absolute bottom-8 ${side === 'left' ? 'left-8' : 'right-8'} w-28 h-28 rounded-full border border-border/40 bg-secondary/20 backdrop-blur-sm flex items-center justify-center touch-none`}
-      onTouchStart={(e) => {
-        e.preventDefault();
-        const t = e.touches[0];
-        handleStart(t.clientX, t.clientY);
-      }}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        const t = e.touches[0];
-        handleMove(t.clientX, t.clientY);
-      }}
-      onTouchEnd={(e) => {
-        e.preventDefault();
-        handleEnd();
-      }}
-      onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
-      onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
-      onMouseUp={handleEnd}
-      onMouseLeave={handleEnd}
+      className={`absolute ${side === 'left' ? 'left-4 bottom-6' : 'right-4 bottom-6'} rounded-full border-2 border-border/30 bg-card/20 backdrop-blur-sm flex items-center justify-center touch-none select-none z-50 pointer-events-auto`}
+      style={{ width: size, height: size }}
+      onPointerDown={handleStart}
+      onPointerMove={handleMove}
+      onPointerUp={handleEnd}
+      onPointerCancel={handleEnd}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <div
-        className={`w-12 h-12 rounded-full bg-primary/60 border border-primary transition-colors ${active ? 'bg-primary/80' : ''}`}
-        style={{ transform: `translate(${stickPos.x}px, ${stickPos.y}px)` }}
+        className={`rounded-full bg-primary/50 border-2 border-primary/80 transition-colors ${active ? 'bg-primary/70 scale-110' : ''}`}
+        style={{
+          width: size * 0.38,
+          height: size * 0.38,
+          transform: `translate(${stickPos.x}px, ${stickPos.y}px)`,
+        }}
       />
-      <span className="absolute -top-5 text-muted-foreground text-xs font-mono">
-        {side === 'left' ? 'MOVE' : 'AIM'}
-      </span>
+      {label && (
+        <span className="absolute -top-5 text-muted-foreground text-[9px] font-mono uppercase tracking-wider">
+          {label}
+        </span>
+      )}
     </div>
   );
 };
@@ -86,23 +90,70 @@ interface ActionButtonProps {
   label: string;
   onPress: () => void;
   onRelease?: () => void;
-  variant?: 'fire' | 'action';
+  variant?: 'fire' | 'action' | 'small';
   className?: string;
+  active?: boolean;
 }
 
-export const ActionButton: React.FC<ActionButtonProps> = ({ label, onPress, onRelease, variant = 'action', className = '' }) => {
+export const ActionButton: React.FC<ActionButtonProps> = ({ label, onPress, onRelease, variant = 'action', className = '', active }) => {
   return (
     <button
-      className={`touch-none select-none rounded-full font-display text-xs uppercase tracking-wider z-40
+      className={`touch-none select-none rounded-full font-display uppercase tracking-wider z-50 pointer-events-auto
         ${variant === 'fire'
-          ? 'w-16 h-16 bg-destructive/40 border-2 border-destructive text-destructive-foreground active:bg-destructive/70'
-          : 'w-14 h-14 bg-primary/30 border border-primary/60 text-primary-foreground active:bg-primary/60'
+          ? 'w-20 h-20 text-lg bg-destructive/30 border-2 border-destructive/70 text-destructive-foreground active:bg-destructive/60'
+          : variant === 'small'
+          ? 'w-11 h-11 text-sm bg-card/40 border border-border/50 text-foreground/80 active:bg-card/70'
+          : `w-14 h-14 text-base bg-primary/25 border border-primary/50 text-primary-foreground active:bg-primary/50 ${active ? 'bg-primary/50 border-primary' : ''}`
         } ${className}`}
       onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); onPress(); }}
       onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); onRelease?.(); }}
+      onPointerCancel={(e) => { e.preventDefault(); e.stopPropagation(); onRelease?.(); }}
       onContextMenu={(e) => e.preventDefault()}
     >
       {label}
     </button>
+  );
+};
+
+// Fire zone: right side of screen for aim-and-shoot
+interface FireZoneProps {
+  onAimStart: (x: number, y: number) => void;
+  onAimMove: (x: number, y: number) => void;
+  onAimEnd: () => void;
+}
+
+export const FireZone: React.FC<FireZoneProps> = ({ onAimStart, onAimMove, onAimEnd }) => {
+  const activeIdRef = useRef<number | null>(null);
+
+  return (
+    <div
+      className="absolute top-0 right-0 w-1/2 h-full touch-none z-30 pointer-events-auto"
+      onPointerDown={(e) => {
+        if (activeIdRef.current !== null) return;
+        // Don't capture if touching a button
+        if ((e.target as HTMLElement).closest('button')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        activeIdRef.current = e.pointerId;
+        onAimStart(e.clientX, e.clientY);
+      }}
+      onPointerMove={(e) => {
+        if (e.pointerId !== activeIdRef.current) return;
+        e.preventDefault();
+        onAimMove(e.clientX, e.clientY);
+      }}
+      onPointerUp={(e) => {
+        if (e.pointerId !== activeIdRef.current) return;
+        activeIdRef.current = null;
+        onAimEnd();
+      }}
+      onPointerCancel={(e) => {
+        if (e.pointerId !== activeIdRef.current) return;
+        activeIdRef.current = null;
+        onAimEnd();
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+    />
   );
 };
