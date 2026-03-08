@@ -4716,6 +4716,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.loot = generateEnemyLoot(enemy);
               state.killCount++;
               if (enemy.type === 'dog') state.dogsKilled++;
+              addKillFeed(state, enemy.type, 'Friendly Fire');
               addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
             } else {
