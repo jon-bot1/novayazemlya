@@ -526,6 +526,41 @@ async function syncStashToDb(playerName: string, stash: StashState) {
   }
 }
 
+// Helper: persist stash to localStorage + DB
+function persistStash(stash: StashState, playerName: string) {
+  saveStash(stash);
+  syncStashToDb(playerName, stash);
+}
+
+// Helper: build objective completion payload from game state
+function buildObjectivePayload(state: GameState) {
+  return {
+    bossKilled: state.enemies.some(e => e.type === 'boss' && e.state === 'dead'),
+    sniperKilled: state.enemies.some(e => e.type === 'sniper' && e.state === 'dead'),
+    terminalsHacked: state.terminalsHacked,
+    documentsCollected: state.documentsCollected,
+    killCount: state.killCount,
+    headshotKills: state.headshotKills,
+    lootValue: state.player.inventory.reduce((s, i) => s + i.value, 0),
+    alarmTriggered: !!(state as any)._alarmEverTriggered,
+    bodiesLooted: state.bodiesLooted,
+    timeSeconds: state.time,
+    tntPlacedOnPlane: !!(state as any)._tntOnPlane,
+    alarmsHacked: state.terminalsHacked,
+    mosinKills: state.mosinKills,
+    wallsBreached: state.wallsBreached,
+    grenadeKills: state.grenadeKills,
+    dogsNeutralized: state.dogsNeutralized,
+    longShots: state.longShots,
+    knifeDistanceKills: state.knifeDistanceKills,
+    cachesLooted: state.cachesLooted,
+    convertKill: !!(state as any)._convertKill,
+    fuelDestroyed: !!(state as any)._fuelDestroyed,
+    ammoDestroyed: !!(state as any)._ammoDestroyed,
+    radioDisabled: !!(state as any)._radioDisabled,
+  };
+}
+
 async function loadStashFromDb(playerName: string): Promise<StashState | null> {
   if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return null;
   try {
