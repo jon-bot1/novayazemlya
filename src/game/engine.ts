@@ -7,13 +7,14 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
 
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
   if (bossId === 'uzbek') return [...UZBEK_DEATH_MONOLOGUE];
+  if (bossId === 'nachalnik') return [...NACHALNIK_DEATH_MONOLOGUE];
   return [...BOSS_DEATH_MONOLOGUE];
 }
 
@@ -482,7 +483,7 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     soundEvents: [],
     flashbangTimer: 0,
     backpackCapacity: 0,
-    mineFieldZone: { x: 400, y: 1400, w: 350, h: 300 },
+    mineFieldZone: mapId === 'novaya_zemlya' ? { x: 400, y: 1400, w: 350, h: 300 } : { x: -999, y: -999, w: 0, h: 0 },
     reinforcementTimer: 90 + Math.random() * 30,
     reinforcementsSpawned: 0,
     maxReinforcements: 6,
@@ -2440,6 +2441,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         let phaseNames: string[];
         if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
         else if (bossId === 'uzbek') phaseNames = UZBEK_PHASES;
+        else if (bossId === 'nachalnik') phaseNames = NACHALNIK_PHASES;
         else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
         
         if (phaseNames[enemy.bossPhase!]) {
@@ -2482,6 +2484,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pool = KRAVTSOV_TAUNTS[Math.min(phase, 2)];
         } else if (bossId === 'uzbek') {
           pool = UZBEK_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'nachalnik') {
+          pool = NACHALNIK_TAUNTS[Math.min(phase, 2)];
         } else {
           const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
           const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
@@ -3926,8 +3930,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
-          // Boss retreats if too close, then repositions
-          if (distToPlayer < enemy.shootRange * 0.5) {
+          // === NACHALNIK FISH HOOK ATTACK — devastating close-range melee ===
+          if ((enemy as any)._hookAttack && distToPlayer < ((enemy as any)._hookRange || 55)) {
+            const hookCd = (enemy as any)._hookCooldown || 0;
+            if (hookCd <= 0) {
+              const hookDmg = (enemy as any)._hookDamage || 60;
+              const phase = enemy.bossPhase || 0;
+              const finalDmg = Math.round(hookDmg * (1 + phase * 0.3)); // stronger in later phases
+              state.player.hp -= Math.max(0, finalDmg - state.player.armor * 0.3);
+              state.player.bleedRate = Math.max(state.player.bleedRate, 3); // hook causes heavy bleeding
+              (enemy as any)._hookCooldown = 2.0 - phase * 0.3; // faster in later phases
+              addMessage(state, `🪝 ${getBossTitle(enemy)} HOOKS you for ${finalDmg} damage!`, 'damage');
+              enemy.speechBubble = phase >= 2 ? 'ПОПАЛСЯ НА КРЮК!!' : phase >= 1 ? 'КРЮК НАЙДЁТ ТЕБЯ!' : 'НА КРЮК!';
+              enemy.speechBubbleTimer = 2.0;
+              (state as any)._screenShake = 0.5;
+              spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cc2222', 8);
+              playHit();
+            }
+          }
+          // Nachalnik charges toward player instead of retreating when close
+          if ((enemy as any)._hookAttack && distToPlayer < enemy.shootRange * 0.6) {
+            const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+            enemy.pos = tryMoveEnemy(state, enemy.pos, chargeDir.x * speed * 1.8, chargeDir.y * speed * 1.8, 12);
+          } else if (distToPlayer < enemy.shootRange * 0.5) {
             const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
             enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.5, retreatDir.y * speed * 1.5, 12);
           } else if (distToPlayer > enemy.shootRange * 0.8) {
@@ -3935,6 +3960,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const strafeAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + Math.PI * 0.5 * (Math.sin(state.time * 0.5) > 0 ? 1 : -1);
             enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(strafeAngle) * speed * 0.8, Math.sin(strafeAngle) * speed * 0.8, 12);
           }
+          // Update hook cooldown
+          if ((enemy as any)._hookCooldown > 0) (enemy as any)._hookCooldown -= dt;
         }
         // Boss: spawn reinforcements in phase 1+
         if (enemy.type === 'boss' && (enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {

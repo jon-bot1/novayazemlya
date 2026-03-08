@@ -712,11 +712,11 @@ export const GameCanvas: React.FC = () => {
       updateKeys();
     };
 
-    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const skipMouse = isMobile;
 
     const onMouseDown = (e: MouseEvent) => {
       // Skip synthetic mouse events on touch devices — handled by pointer events
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       unlockSpeech();
       if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
       if (showInventory || showIntel || readingDoc) return;
@@ -737,7 +737,7 @@ export const GameCanvas: React.FC = () => {
     };
     const onContextMenu = (e: Event) => { e.preventDefault(); };
     const onMouseUp = (e: MouseEvent) => {
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       if (e.button === 2) {
         // Right-click release = throw grenade with charged power
         const chargeStart = (stateRef.current as any)._grenadeChargeStart;
@@ -752,7 +752,7 @@ export const GameCanvas: React.FC = () => {
       inputRef.current.shooting = false; inputRef.current.shootPressed = false;
     };
     const onMouseMove = (e: MouseEvent) => {
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
