@@ -1355,7 +1355,7 @@ export const GameCanvas: React.FC = () => {
             setSelectedMapId(mapId);
             inputRef.current = createDefaultInputState();
             // Apply upgrades to game state
-            stateRef.current = safeCreateGameState(mapId);
+            stateRef.current = safeCreateGameState(mapId, stash.level || 1, stash.extractionCount || 0);
             const st = stateRef.current;
             const ups = stash.upgrades;
             // Backpack upgrade
