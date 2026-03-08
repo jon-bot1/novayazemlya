@@ -3264,25 +3264,24 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   const pulse = 0.6 + Math.sin(state.time * 2) * 0.2;
 
-  // Radial glow
-  // Flat glow circle instead of gradient for perf
-  ctx.fillStyle = `rgba(100, 255, 80, ${pulse * 0.12})`;
+  // Radial glow — subtle, muted
+  ctx.fillStyle = `rgba(80, 160, 60, ${pulse * 0.06})`;
   ctx.beginPath();
-  ctx.arc(state.player.pos.x, state.player.pos.y, 35, 0, Math.PI * 2);
+  ctx.arc(state.player.pos.x, state.player.pos.y, 30, 0, Math.PI * 2);
   ctx.fill();
 
-  // Ring — changes color when in cover
+  // Ring — muted colors
   ctx.beginPath();
-  ctx.arc(state.player.pos.x, state.player.pos.y, R + 8, 0, Math.PI * 2);
+  ctx.arc(state.player.pos.x, state.player.pos.y, R + 6, 0, Math.PI * 2);
   if (state.player.inCover) {
-    const coverPulse = 0.6 + Math.sin(state.time * 4) * 0.3;
+    const coverPulse = 0.4 + Math.sin(state.time * 4) * 0.2;
     ctx.strokeStyle = state.player.peeking
-      ? `rgba(255, 200, 60, ${coverPulse})`
-      : `rgba(80, 180, 255, ${coverPulse})`;
-    ctx.lineWidth = 4;
+      ? `rgba(200, 170, 50, ${coverPulse})`
+      : `rgba(60, 140, 200, ${coverPulse})`;
+    ctx.lineWidth = 2.5;
   } else {
-    ctx.strokeStyle = `rgba(120, 255, 80, ${pulse})`;
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = `rgba(80, 160, 60, ${pulse * 0.6})`;
+    ctx.lineWidth = 2;
   }
   ctx.stroke();
   ctx.restore();
