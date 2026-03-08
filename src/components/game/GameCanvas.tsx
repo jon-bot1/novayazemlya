@@ -821,7 +821,7 @@ export const GameCanvas: React.FC = () => {
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;
-    if (playerName.trim().toLowerCase() === 'test123') return;
+    if (playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return;
     const handleUnload = () => {
       const state = stateRef.current;
       if (!state || state.gameOver || state.extracted) return;
