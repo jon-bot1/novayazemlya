@@ -401,11 +401,13 @@ His men call him "Nachalnik" — The Boss. On the pier, his word is law. And the
     classification: 'OPEN',
     content: `Don't go near the pier at night.
 
-Nachalnik doesn't sleep. He sits on the dock with that hook, sharpening it on a stone. Scrape. Scrape. Scrape. You can hear it from the cabins.
+Nachalnik doesn't sleep. He sits on the dock with that hook, sharpening it on a stone. Scrape. Scrape. Scrape. You can hear it from the cabins. Sometimes the scraping changes rhythm and the sea responds — waves pulse in time with his hand. I've watched. The tide FOLLOWS his hook.
 
 Last month, Petya tried to steal a boat. They found him on the beach next morning. The hook had gone clean through his shoulder. He was alive. Nachalnik wanted him alive. So everyone could see.
 
-The speedboat is the only way out. And Nachalnik has the keys.
+But here's the strange part — Petya says Nachalnik wasn't the one who caught him. He says the WATER caught him. Says a wave rose up and wrapped around his legs like a hand. By the time he fell, Nachalnik was already standing over him. Hadn't moved from his spot on the dock. The distance was 40 meters.
+
+The speedboat is the only way out. And Nachalnik has the keys. He keeps them on a chain around his neck, next to a vial of something dark that glows faintly when the aurora is out.
 
 If you're reading this, you're already too close.
 
