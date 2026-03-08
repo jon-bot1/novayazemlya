@@ -685,6 +685,12 @@ export const GameCanvas: React.FC = () => {
       unlockSpeech();
       if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
       if (showInventory || showIntel || readingDoc) return;
+      if (e.button === 1) {
+        // Middle click = throw distraction rock
+        e.preventDefault();
+        inputRef.current.throwRock = true;
+        return;
+      }
       if (e.button === 2) {
         // Right-click hold = charge grenade throw
         e.preventDefault();
