@@ -431,13 +431,13 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* ═══════ GAME OVER / EXTRACTED ═══════ */}
       {(gameOver || extracted) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto">
-          <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h1 className={`text-3xl font-display ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto animate-in fade-in duration-500">
+          <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-700">
+            <h1 className={`text-3xl font-display tracking-wider ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
               {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
             </h1>
             {gameOver && deathCause && (
-              <p className="text-sm font-mono text-danger/90 text-center border border-danger/30 bg-danger/10 rounded px-3 py-1.5">{deathCause}</p>
+              <p className="text-sm font-mono text-danger/90 text-center border border-danger/30 bg-danger/10 rounded px-3 py-1.5 animate-in fade-in duration-1000">{deathCause}</p>
             )}
             {extracted && !hasExtractionCode && (
               <p className="text-sm font-mono text-warning text-center">
@@ -454,39 +454,50 @@ export const HUD: React.FC<HUDProps> = ({
             )}
             
             <div className="w-full border-t border-border pt-3 flex flex-col gap-2">
-              <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Time:</span>
-                <span className="text-foreground">{Math.floor(time / 60)}:{String(Math.floor(time % 60)).padStart(2, '0')}</span>
-              </div>
-              <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Eliminated:</span>
-                <span className="text-foreground">{killCount}</span>
-              </div>
-              <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Value:</span>
-                <span className="text-foreground">{player.inventory.reduce((s, i) => s + i.value, 0)}₽</span>
-              </div>
-              <div className="flex justify-between text-sm font-mono text-muted-foreground">
-                <span>Documents:</span>
-                <span className="text-foreground">{documentsFound}/{totalDocuments}</span>
-              </div>
-              <div className="flex justify-between text-sm font-mono text-muted-foreground">
+              {/* Animated stat rows */}
+              {[
+                { label: 'Time', value: `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`, delay: '100ms' },
+                { label: 'Eliminated', value: `${killCount}`, delay: '200ms' },
+                { label: 'Headshots', value: `${achievementStats?.headshotKills || 0}`, delay: '300ms' },
+                { label: 'Distance', value: `${achievementStats?.distanceTravelled || 0}m`, delay: '400ms' },
+                { label: 'Bodies Looted', value: `${achievementStats?.bodiesLooted || 0}`, delay: '500ms' },
+                { label: 'Caches Opened', value: `${achievementStats?.cachesLooted || 0}`, delay: '600ms' },
+                { label: 'Loot Value', value: `${player.inventory.reduce((s, i) => s + i.value, 0)}₽`, delay: '700ms' },
+                { label: 'Documents', value: `${documentsFound}/${totalDocuments}`, delay: '800ms' },
+              ].map((stat, i) => (
+                <div key={stat.label} className="flex justify-between text-sm font-mono text-muted-foreground animate-in slide-in-from-left-2 fade-in" style={{ animationDelay: stat.delay, animationFillMode: 'backwards' }}>
+                  <span>{stat.label}:</span>
+                  <span className="text-foreground">{stat.value}</span>
+                </div>
+              ))}
+
+              {/* Damage taken / dealt */}
+              {gameOver && (
+                <div className="flex justify-between text-sm font-mono text-danger/80 animate-in fade-in" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+                  <span>Cause of Death:</span>
+                  <span className="text-danger text-right text-[11px] max-w-[180px] truncate">{deathCause?.replace(/^[^\w]*/, '').slice(0, 40) || 'Unknown'}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
                 <span>Result:</span>
                 <span className={`font-display ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
                   {gameOver ? 'FAILED' : hasExtractionCode ? 'SUCCESS' : 'INCOMPLETE'}
                 </span>
               </div>
+
               {(() => {
                 const result = extracted ? (hasExtractionCode ? 'success' : 'almost') : gameOver ? 'kia' : 'mia';
                 const earned = achievementStats ? getHighestTierAchievements(achievementStats).map(a => a.id) : [];
                 const totalScore = calculateScore(killCount, time, result, earned.join(','));
                 return (
-                  <div className="flex justify-between text-sm font-mono mt-1 pt-1 border-t border-border">
+                  <div className="flex justify-between text-sm font-mono mt-1 pt-1 border-t border-border animate-in slide-in-from-bottom-2 fade-in" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
                     <span className="text-accent font-bold">SCORE:</span>
                     <span className="text-accent font-display text-lg">{totalScore}</span>
                   </div>
                 );
               })()}
+
               {codesFound.length > 0 && (
                 <div className="mt-2 border-t border-border pt-2">
                   <span className="text-xs font-mono text-warning">☢ CODES:</span>
@@ -498,7 +509,7 @@ export const HUD: React.FC<HUDProps> = ({
                 </div>
               )}
               {objectives && objectives.length > 0 && (
-                <div className="mt-2 border-t border-border pt-2">
+                <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1200ms', animationFillMode: 'backwards' }}>
                   <span className="text-xs font-mono text-accent">🎯 OBJECTIVES:</span>
                   <div className="flex flex-col gap-1 mt-1">
                     {objectives.map(obj => (
@@ -513,7 +524,7 @@ export const HUD: React.FC<HUDProps> = ({
                 </div>
               )}
               {onReturnToBase && (
-                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2" onClick={onReturnToBase}>
+                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2 animate-in fade-in" style={{ animationDelay: '1400ms', animationFillMode: 'backwards' }} onClick={onReturnToBase}>
                   🏠 RETURN TO BASE
                 </button>
               )}
@@ -523,7 +534,7 @@ export const HUD: React.FC<HUDProps> = ({
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
-                  <div className="mt-2 border-t border-border pt-2">
+                  <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1500ms', animationFillMode: 'backwards' }}>
                     <span className="text-xs font-mono text-accent">🏅 ACHIEVEMENTS:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {earned.map(a => (
