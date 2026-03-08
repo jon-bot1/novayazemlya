@@ -73,6 +73,13 @@ function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
     } else if (mapId === 'objekt47') {
       (enemy as any)._bossId = 'osipovitj';
       (enemy as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
+    } else if (mapId === 'mining_village') {
+      (enemy as any)._bossId = 'gruvra';
+      (enemy as any)._bossTitle = 'GRUVRÅ';
+      (enemy as any)._caveInAttack = true;
+      (enemy as any)._caveInCooldown = (enemy as any)._caveInCooldown || 0;
+      (enemy as any)._caveInRadius = (enemy as any)._caveInRadius || 120;
+      (enemy as any)._caveInDamage = (enemy as any)._caveInDamage || 45;
     }
   }
 }

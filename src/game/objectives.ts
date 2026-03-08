@@ -113,12 +113,35 @@ const HOSPITAL_BONUS: ObjectiveTemplate[] = [
 ];
 
 // ═══════════════════════════════════════
+// MINING VILLAGE — Swedish mining community objectives
+// ═══════════════════════════════════════
+const MINE_MAIN: ObjectiveTemplate[] = [
+  { id: 'kill_gruvra', name: 'Slay the Gruvrå', icon: '⛏️', description: 'Defeat Gruvrå, the spirit of the mine, in the underground boss arena', reward: 650, isMain: true },
+  { id: 'clear_mine', name: 'Purge the Tunnels', icon: '🔦', description: 'Eliminate all enemies in the underground mine', reward: 550, isMain: true },
+  { id: 'hack_mine_terminal', name: 'Mining Records', icon: '💻', description: 'Hack the underground terminal to retrieve geological data', reward: 500, isMain: true },
+  { id: 'collect_all_docs', name: 'Recover Expedition Logs', icon: '📚', description: 'Collect all documents scattered in the mining village', reward: 450, isMain: true },
+  { id: 'wipe_garrison', name: 'Clear the Surface', icon: '☠️', description: 'Eliminate at least 10 hostiles on the surface', reward: 500, isMain: true },
+];
+
+const MINE_BONUS: ObjectiveTemplate[] = [
+  { id: 'ghost_extract', name: 'Mine Specter', icon: '👻', description: 'Extract without triggering alarms or killing anyone', reward: 600, isMain: false },
+  { id: 'speedrun', name: 'Blast Shift', icon: '⏱', description: 'Extract within 120 seconds', reward: 400, isMain: false },
+  { id: 'loot_value', name: 'Ore Hoarder', icon: '💰', description: 'Extract with at least 700₽ worth of loot', reward: 300, isMain: false },
+  { id: 'headshots', name: 'Precision Drilling', icon: '🎯', description: 'Get 5 headshot kills', reward: 300, isMain: false },
+  { id: 'no_alarm', name: 'Silent Shift', icon: '🤫', description: 'Extract without triggering alarms', reward: 300, isMain: false },
+  { id: 'loot_caches', name: 'Supply Raid', icon: '📦', description: 'Loot 8 containers', reward: 200, isMain: false },
+  { id: 'hack_alarm', name: 'System Override', icon: '🔓', description: 'Hack 2 terminals', reward: 250, isMain: false },
+  { id: 'knife_kills', name: 'Pickaxe Justice', icon: '🗡️', description: 'Kill 3 enemies with the combat knife', reward: 300, isMain: false },
+];
+
+// ═══════════════════════════════════════
 // MAP → OBJECTIVE REGISTRY
 // ═══════════════════════════════════════
 const MAP_OBJECTIVES: Record<MapId, { main: ObjectiveTemplate[]; bonus: ObjectiveTemplate[] }> = {
   objekt47: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
   fishing_village: { main: VILLAGE_MAIN, bonus: VILLAGE_BONUS },
   hospital: { main: HOSPITAL_MAIN, bonus: HOSPITAL_BONUS },
+  mining_village: { main: MINE_MAIN, bonus: MINE_BONUS },
 };
 
 function shuffle<T>(arr: T[]): T[] {
