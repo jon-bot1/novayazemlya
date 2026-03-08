@@ -115,9 +115,9 @@ export function generateHospitalMap() {
 
     // ═══ MAIN ENTRANCE — RECEPTION & WAITING ROOM ═══
     // Reception desk (horizontal counter — NOT a wall blocker, just decoration)
-    // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
-    makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
-    makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
+    // Waiting room side walls — 80px gaps at top for corridor passage
+    makeWall(BX + BW / 2 - 250, BY + BH - 170, T, 80, TILE),  // west side (gap at top 80px)
+    makeWall(BX + BW / 2 + 250, BY + BH - 170, T, 80, TILE),  // east side (gap at top 80px)
     // North wall of reception — wide center opening aligned with corridor (160px)
     makeWall(BX + BW / 2 - 250, BY + BH - 250, 170, T, TILE),  // left block
     makeWall(BX + BW / 2 + 80, BY + BH - 250, 170, T, TILE),   // right block
