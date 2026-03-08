@@ -50,6 +50,15 @@ const createDefaultInputState = (): InputState => ({
   throwRock: false,
 });
 
+const safeCreateGameState = (mapId: MapId = 'objekt47'): GameState => {
+  try {
+    return createGameState(mapId);
+  } catch (error) {
+    console.error('Failed to create game state:', error);
+    return createGameState('objekt47');
+  }
+};
+
 const createInitialObjectivesByMap = (): Record<MapId, MissionObjective[]> => ({
   objekt47: generateMissionObjectives('objekt47'),
   fishing_village: generateMissionObjectives('fishing_village'),
