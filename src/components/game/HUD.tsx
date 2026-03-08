@@ -224,7 +224,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-LEFT: HP + Stamina + Medical ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-12 left-2 sm:left-3 flex flex-col gap-1 scale-[0.8] sm:scale-100 origin-bottom-left">
+      <div className={`absolute ${bottomOffset} left-2 sm:left-3 flex flex-col gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-left`}>
         {/* HP bar */}
         <div className="flex items-center gap-1.5">
           <div className="w-32 h-3 bg-background/60 rounded-sm overflow-hidden border border-border/30">
