@@ -1064,7 +1064,7 @@ const MAP_PALETTES: Record<string, MapPalette> = {
     concreteDetail: 'rgba(80,80,70,0.1)',
     waterFoam: 'rgba(180,210,230,0.08)',
     wallStain: 'rgba(50,40,25,0.1)',
-    puddles: true,
+    puddles: false,
     debrisChance: 0.04,
   },
   hospital: {
