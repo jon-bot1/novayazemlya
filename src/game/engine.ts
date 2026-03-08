@@ -1206,8 +1206,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Restore saved ammo for this weapon, or load from reserves
       const savedAmmo = (wpnForSlot as any)._loadedAmmo;
       if (savedAmmo !== undefined) {
-        state.player.currentAmmo = savedAmmo;
-        state.player.maxAmmo = getMagSize(wpnForSlot);
+        const mag = getMagSize(wpnForSlot);
+        state.player.currentAmmo = Math.min(savedAmmo, mag); // clamp to mag size
+        state.player.maxAmmo = mag;
       } else {
         // First equip — load from ammo reserves (no free ammo)
         setWeaponAmmo(state, wpnForSlot);
