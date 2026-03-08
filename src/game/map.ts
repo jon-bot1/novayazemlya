@@ -26,18 +26,32 @@ const FENCE = '#8a8a7a';
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
+  // OBJEKT 47 — elite military base: disciplined soldiers, heavy armor, professional
   const stats: Record<string, any> = {
-    scav: { hp: 50, speed: 0.72, damage: 12, alertRange: 175, shootRange: 85, fireRate: 1400 },
-    soldier: { hp: 80, speed: 0.90, damage: 22, alertRange: 280, shootRange: 140, fireRate: 900 },
-    heavy: { hp: 180, speed: 0.45, damage: 35, alertRange: 230, shootRange: 120, fireRate: 1600 },
-    turret: { hp: 250, speed: 0, damage: 25, alertRange: 280, shootRange: 145, fireRate: 900 },
-    boss: { hp: 550, speed: 1.10, damage: 40, alertRange: 400, shootRange: 200, fireRate: 550 },
-    sniper: { hp: 90, speed: 0.36, damage: 85, alertRange: 550, shootRange: 330, fireRate: 5500 },
-    shocker: { hp: 70, speed: 1.10, damage: 45, alertRange: 230, shootRange: 40, fireRate: 650 },
+    scav:    { hp: 50, speed: 0.72, damage: 12, alertRange: 175, shootRange: 85,  fireRate: 1400 },
+    soldier: { hp: 85, speed: 0.95, damage: 24, alertRange: 300, shootRange: 150, fireRate: 850 },
+    heavy:   { hp: 200, speed: 0.40, damage: 38, alertRange: 240, shootRange: 130, fireRate: 1500 },
+    turret:  { hp: 280, speed: 0, damage: 28, alertRange: 300, shootRange: 155, fireRate: 850 },
+    boss:    { hp: 600, speed: 1.15, damage: 42, alertRange: 420, shootRange: 210, fireRate: 500 },
+    sniper:  { hp: 90, speed: 0.36, damage: 85, alertRange: 550, shootRange: 330, fireRate: 5500 },
+    shocker: { hp: 75, speed: 1.15, damage: 48, alertRange: 240, shootRange: 42, fireRate: 600 },
     redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 210, shootRange: 70, fireRate: 1000 },
-    dog: { hp: 35, speed: 1.80, damage: 25, alertRange: 260, shootRange: 28, fireRate: 900 },
+    dog:     { hp: 35, speed: 1.80, damage: 25, alertRange: 260, shootRange: 28, fireRate: 900 },
+  };
+  // Personality traits per type — affects combat behavior
+  const personality: Record<string, any> = {
+    scav:    { _cowardice: 0.7, _accuracy: 0.6, _aggression: 0.2, _seekCoverChance: 0.15 },
+    soldier: { _cowardice: 0.2, _accuracy: 0.85, _aggression: 0.6, _seekCoverChance: 0.5 },
+    heavy:   { _cowardice: 0.0, _accuracy: 0.7, _aggression: 0.8, _seekCoverChance: 0.1 },
+    turret:  { _cowardice: 0.0, _accuracy: 0.9, _aggression: 1.0, _seekCoverChance: 0.0 },
+    boss:    { _cowardice: 0.0, _accuracy: 0.8, _aggression: 1.0, _seekCoverChance: 0.0 },
+    sniper:  { _cowardice: 0.5, _accuracy: 0.95, _aggression: 0.1, _seekCoverChance: 0.0 },
+    shocker: { _cowardice: 0.1, _accuracy: 0.5, _aggression: 1.0, _seekCoverChance: 0.0 },
+    redneck: { _cowardice: 0.4, _accuracy: 0.55, _aggression: 0.5, _seekCoverChance: 0.2 },
+    dog:     { _cowardice: 0.3, _accuracy: 1.0, _aggression: 0.9, _seekCoverChance: 0.0 },
   };
   const s = stats[type] || stats.scav;
+  const p = personality[type] || personality.scav;
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
@@ -60,11 +74,13 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     lastTacticalSwitch: 0,
     stunTimer: 0,
     awareness: 0,
-    awarenessDecay: 0.15,
+    awarenessDecay: type === 'soldier' ? 0.10 : type === 'scav' ? 0.22 : 0.15,
     elevated: false,
     friendly: false,
     friendlyTimer: 0,
   };
+  // Apply personality
+  Object.assign(enemy, p);
   if (type === 'boss') {
     enemy.bossPhase = 0;
     enemy.bossChargeTimer = 0;
