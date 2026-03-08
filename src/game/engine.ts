@@ -785,6 +785,24 @@ export function createGameState(mapId: MapId = 'objekt47', playerLevel: number =
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
   (state as any)._playerNoiseLevel = 0; // 0-1 noise meter for HUD
+  // Post-raid stat tracking
+  (state as any)._shotsFired = 0;
+  (state as any)._shotsHit = 0;
+  (state as any)._damageDealt = 0;
+  (state as any)._damageTaken = 0;
+  // Weather system — affects gameplay
+  const weatherRoll = Math.random();
+  const weatherMap: Record<string, { type: string; intensity: number }> = {
+    objekt47: weatherRoll < 0.3 ? { type: 'blizzard', intensity: 0.5 + Math.random() * 0.5 } : weatherRoll < 0.6 ? { type: 'snow', intensity: 0.3 + Math.random() * 0.3 } : { type: 'clear', intensity: 0 },
+    fishing_village: weatherRoll < 0.4 ? { type: 'fog', intensity: 0.4 + Math.random() * 0.4 } : weatherRoll < 0.7 ? { type: 'rain', intensity: 0.3 + Math.random() * 0.5 } : { type: 'clear', intensity: 0 },
+    hospital: weatherRoll < 0.5 ? { type: 'fog', intensity: 0.5 + Math.random() * 0.3 } : { type: 'clear', intensity: 0 },
+    mining_village: weatherRoll < 0.3 ? { type: 'dust', intensity: 0.4 + Math.random() * 0.4 } : weatherRoll < 0.6 ? { type: 'rain', intensity: 0.3 + Math.random() * 0.4 } : { type: 'clear', intensity: 0 },
+  };
+  const weather = weatherMap[mapId] || { type: 'clear', intensity: 0 };
+  (state as any)._weather = weather;
+  // Ambient events system
+  (state as any)._ambientEvents = [];
+  (state as any)._nextAmbientEventTime = 20 + Math.random() * 30;
   // Tag extraction points with difficulty multipliers
   for (const ep of state.extractionPoints) {
     // Harder exfils = longer timer = more reward
@@ -940,6 +958,66 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // Track HP at start of frame for damage-taken calculation
+  const _hpAtFrameStart = state.player.hp;
+
+  // === WEATHER GAMEPLAY EFFECTS ===
+  const weather = (state as any)._weather as { type: string; intensity: number } | undefined;
+  if (weather && weather.type !== 'clear') {
+    // Show weather message on first frame
+    if (!(state as any)._weatherAnnounced) {
+      (state as any)._weatherAnnounced = true;
+      const labels: Record<string, string> = {
+        blizzard: '🌨️ Blizzard conditions — reduced visibility and speed!',
+        snow: '❄️ Snowfall — slightly reduced visibility.',
+        fog: '🌫️ Dense fog — reduced detection range!',
+        rain: '🌧️ Rain — sound masked, reduced visibility.',
+        dust: '💨 Dust storm — reduced visibility and accuracy!',
+      };
+      if (labels[weather.type]) addMessage(state, labels[weather.type], 'info');
+    }
+  }
+
+  // === AMBIENT EVENTS ===
+  if (state.time >= ((state as any)._nextAmbientEventTime || 999)) {
+    const mapId = (state as any)._mapId as string || 'objekt47';
+    const events: Record<string, { msg: string; type: GameMessage['type'] }[]> = {
+      objekt47: [
+        { msg: '🚁 A helicopter passes in the distance...', type: 'info' },
+        { msg: '💥 A distant explosion echoes across the tundra.', type: 'info' },
+        { msg: '🐺 Wolf howls pierce the frozen air.', type: 'info' },
+        { msg: '📻 Static crackles from a nearby radio...', type: 'info' },
+        { msg: '🐦 Ravens scatter from a rooftop above.', type: 'info' },
+        { msg: '⚡ A power line sparks in the wind.', type: 'warning' },
+      ],
+      fishing_village: [
+        { msg: '🌊 Waves crash against the rocky shore.', type: 'info' },
+        { msg: '🚢 A foghorn sounds from somewhere offshore.', type: 'info' },
+        { msg: '🐦 Seagulls cry overhead.', type: 'info' },
+        { msg: '⚓ Chains rattle on an abandoned dock.', type: 'info' },
+        { msg: '💥 Something heavy falls in a warehouse nearby.', type: 'warning' },
+      ],
+      hospital: [
+        { msg: '💡 Fluorescent lights flicker and buzz.', type: 'info' },
+        { msg: '🚪 A door slams shut somewhere below.', type: 'warning' },
+        { msg: '📞 A phone rings unanswered in the darkness.', type: 'info' },
+        { msg: '🐀 Rats scurry across the floor.', type: 'info' },
+        { msg: '⚡ The generator stutters — lights dim briefly.', type: 'warning' },
+      ],
+      mining_village: [
+        { msg: '⛏️ Pickaxes echo from deep in the tunnels.', type: 'info' },
+        { msg: '💨 A gust of warm air rises from the mine shaft.', type: 'info' },
+        { msg: '🪨 Pebbles rain down from above.', type: 'warning' },
+        { msg: '📻 Chanting can be heard faintly below...', type: 'info' },
+        { msg: '💥 A distant cave-in rumbles through the ground.', type: 'warning' },
+      ],
+    };
+    const pool = events[mapId] || events.objekt47;
+    const evt = pool[Math.floor(Math.random() * pool.length)];
+    addMessage(state, evt.msg, evt.type);
+    (state as any)._nextAmbientEventTime = state.time + 30 + Math.random() * 40;
+  }
+
   // Nachalnik net status
   if ((state as any)._playerNetSlowTimer > 0) {
     (state as any)._playerNetSlowTimer = Math.max(0, (state as any)._playerNetSlowTimer - dt);
@@ -1049,7 +1127,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const netSlowTimer = Math.max(0, (state as any)._playerNetSlowTimer || 0);
   (state as any)._playerNetSlowTimer = netSlowTimer;
   const netSlowMult = netSlowTimer > 0 ? 0.48 : 1;
-  const playerSpeed = (state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed) * netSlowMult;
+  // Weather speed modifier
+  const weatherSpeedMod = (() => {
+    const w = (state as any)._weather as { type: string; intensity: number } | undefined;
+    if (!w || w.type === 'clear') return 1;
+    if (w.type === 'blizzard') return 1 - w.intensity * 0.20; // up to -20%
+    if (w.type === 'rain') return 1 - w.intensity * 0.08;    // up to -8%
+    if (w.type === 'dust') return 1 - w.intensity * 0.12;    // up to -12%
+    return 1;
+  })();
+  const playerSpeed = (state.speedBoostTimer > 0 ? finalSpeed * 1.5 : finalSpeed) * netSlowMult * weatherSpeedMod;
   // Store movement state for headshot calc
   (state as any)._lastMoveX = moveX;
   (state as any)._lastMoveY = moveY;
@@ -1813,6 +1900,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       });
     }
     state.player.lastShot = state.time;
+    if (!isMelee) (state as any)._shotsFired = ((state as any)._shotsFired || 0) + (wpn?.isBuckshot ? (wpn.pelletCount || 5) : 1);
     
     // === AMMO CONSUMPTION — deduct from magazine ===
     if (!isMelee) {
@@ -5180,6 +5268,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const isCrit = Math.random() < critChance;
           if (isCrit) {
             enemy.hp = 0;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + b.damage * 2; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
@@ -5190,6 +5279,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
             const actualDmg = b.damage * armorReduction;
             enemy.hp -= actualDmg;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + actualDmg; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
             addHitMarker(b.pos.x, b.pos.y, state.time, false, false, actualDmg);
@@ -5317,6 +5407,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           
           if (isCrit) {
             enemy.hp = 0;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + b.damage * 2; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
@@ -5327,6 +5418,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
             const actualDmg = b.damage * armorReduction;
             enemy.hp -= actualDmg;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + actualDmg; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
             addHitMarker(b.pos.x, b.pos.y, state.time, false, false, actualDmg);
@@ -5531,6 +5623,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const camLerp = 0.1;
   state.camera.x += (state.player.pos.x - state.camera.x) * camLerp;
   state.camera.y += (state.player.pos.y - state.camera.y) * camLerp;
+
+  // Track damage taken this frame
+  const dmgThisFrame = _hpAtFrameStart - state.player.hp;
+  if (dmgThisFrame > 0) {
+    (state as any)._damageTaken = ((state as any)._damageTaken || 0) + dmgThisFrame;
+  }
 
   return state;
 }

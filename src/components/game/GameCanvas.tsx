@@ -822,6 +822,16 @@ export const GameCanvas: React.FC = () => {
     pendingWeapon: null as any,
     noiseLevel: 0,
     nearInteractable: false,
+    weather: null as { type: string; intensity: number } | null,
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    damageTaken: 0,
+    enemyPositions: [] as { x: number; y: number; type: string; state: string }[],
+    extractionPositions: [] as { x: number; y: number; name: string; active: boolean }[],
+    objectivePositions: [] as { x: number; y: number }[],
+    mapWidth: 2400,
+    mapHeight: 2400,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -1173,7 +1183,6 @@ export const GameCanvas: React.FC = () => {
           noiseLevel: (state as any)._playerNoiseLevel || 0,
           nearInteractable: (() => {
             const p = state.player.pos;
-            // Check loot containers, gates, alarm panels, weapon drops, document pickups
             for (const lc of state.lootContainers) {
               if (!lc.looted && Math.hypot(lc.pos.x - p.x, lc.pos.y - p.y) < 70) return true;
             }
@@ -1188,6 +1197,18 @@ export const GameCanvas: React.FC = () => {
             }
             return false;
           })(),
+          weather: (state as any)._weather || null,
+          shotsFired: (state as any)._shotsFired || 0,
+          shotsHit: (state as any)._shotsHit || 0,
+          damageDealt: Math.round((state as any)._damageDealt || 0),
+          damageTaken: Math.round((state as any)._damageTaken || 0),
+          enemyPositions: state.enemies
+            .filter(e => e.state !== 'dead' && (e.state === 'chase' || e.state === 'attack' || e.state === 'suppress' || e.state === 'flank' || Math.hypot(e.pos.x - state.player.pos.x, e.pos.y - state.player.pos.y) < 300))
+            .map(e => ({ x: e.pos.x, y: e.pos.y, type: e.type, state: e.state })),
+          extractionPositions: state.extractionPoints.map(ep => ({ x: ep.pos.x, y: ep.pos.y, name: ep.name, active: ep.active })),
+          objectivePositions: state.lootContainers.filter(lc => !lc.looted && lc.type === 'archive').map(lc => ({ x: lc.pos.x, y: lc.pos.y })),
+          mapWidth: state.mapWidth,
+          mapHeight: state.mapHeight,
         });
 
         // Live objective tracking
@@ -1675,6 +1696,16 @@ export const GameCanvas: React.FC = () => {
           isMobile={isMobile}
           mapId={selectedMapId}
           noiseLevel={hudState.noiseLevel}
+          weather={hudState.weather}
+          shotsFired={hudState.shotsFired}
+          shotsHit={hudState.shotsHit}
+          damageDealt={hudState.damageDealt}
+          damageTaken={hudState.damageTaken}
+          enemyPositions={hudState.enemyPositions}
+          extractionPositions={hudState.extractionPositions}
+          objectivePositions={hudState.objectivePositions}
+          mapWidth={hudState.mapWidth}
+          mapHeight={hudState.mapHeight}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');

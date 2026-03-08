@@ -132,11 +132,21 @@ interface HUDProps {
   isMobile?: boolean;
   mapId?: string;
   noiseLevel?: number;
+  weather?: { type: string; intensity: number } | null;
+  shotsFired?: number;
+  shotsHit?: number;
+  damageDealt?: number;
+  damageTaken?: number;
+  enemyPositions?: { x: number; y: number; type: string; state: string }[];
+  extractionPositions?: { x: number; y: number; name: string; active: boolean }[];
+  objectivePositions?: { x: number; y: number }[];
+  mapWidth?: number;
+  mapHeight?: number;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
@@ -207,9 +217,15 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         )}
 
-        {/* Top-right: Minimap + Kill count */}
+        {/* Top-right: Enhanced Minimap + Kill count + Weather */}
         <div className="flex items-start gap-2">
           <div className="flex flex-col items-end gap-1">
+            {weather && weather.type !== 'clear' && (
+              <span className="text-[9px] font-mono text-foreground/50 bg-card/50 rounded px-1.5 py-0.5">
+                {weather.type === 'blizzard' ? '🌨️' : weather.type === 'snow' ? '❄️' : weather.type === 'fog' ? '🌫️' : weather.type === 'rain' ? '🌧️' : '💨'}
+                {weather.type.toUpperCase()}
+              </span>
+            )}
             <span className="text-[10px] font-mono text-foreground/60 bg-card/50 rounded px-1.5 py-0.5">☠ {killCount}</span>
             <button
               className="text-[10px] font-mono text-accent/70 hover:text-accent pointer-events-auto bg-card/50 rounded px-1.5 py-0.5"
@@ -220,7 +236,14 @@ export const HUD: React.FC<HUDProps> = ({
             </button>
           </div>
           <div className="hidden sm:block">
-            <MiniMap playerX={player.pos.x} playerY={player.pos.y} mapW={2400} mapH={2400} />
+            <EnhancedMiniMap
+              playerX={player.pos.x} playerY={player.pos.y}
+              playerAngle={player.angle}
+              mapW={mapWidth || 2400} mapH={mapHeight || 2400}
+              enemies={enemyPositions || []}
+              extractions={extractionPositions || []}
+              objectives={objectivePositions || []}
+            />
           </div>
         </div>
       </div>
@@ -280,7 +303,7 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
       <div className={`absolute ${bottomOffset} right-2 sm:right-3 flex flex-col items-end gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-right`}>
-        {/* Active weapon — compact */}
+        {/* Active weapon + Visual ammo counter */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">
             <span className="text-foreground font-display text-sm leading-tight">
@@ -289,7 +312,24 @@ export const HUD: React.FC<HUDProps> = ({
             <span className="text-[8px] text-muted-foreground/60 font-mono">{player.activeSlot === 1 ? 'Melee' : player.ammoType}</span>
           </div>
           {player.activeSlot !== 1 && (
-            <span className="text-xl font-display text-accent tabular-nums font-bold ml-2">{player.currentAmmo}</span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-xl font-display text-accent tabular-nums font-bold">{player.currentAmmo}</span>
+              {/* Visual magazine bar */}
+              <div className="flex gap-px">
+                {Array.from({ length: Math.min(30, player.maxAmmo) }).map((_, i) => {
+                  const filled = i < player.currentAmmo;
+                  const ratio = player.maxAmmo > 30 ? Math.ceil(player.maxAmmo / 30) : 1;
+                  const actualFilled = i * ratio < player.currentAmmo;
+                  return (
+                    <div key={i} className={`h-1.5 rounded-sm transition-all duration-75 ${
+                      actualFilled
+                        ? player.currentAmmo <= Math.ceil(player.maxAmmo * 0.2) ? 'bg-danger' : 'bg-accent'
+                        : 'bg-background/40'
+                    }`} style={{ width: Math.max(1, Math.min(3, 60 / Math.min(30, player.maxAmmo))) }} />
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
@@ -508,17 +548,45 @@ export const HUD: React.FC<HUDProps> = ({
                 );
               })()}
 
-              {/* Accuracy (approximate) */}
-              {killCount > 0 && (
+              {/* Accuracy — real calculation from shots fired/hit */}
+              {(shotsFired || 0) > 0 && (
                 <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '850ms', animationFillMode: 'backwards' }}>
                   <span>Accuracy:</span>
-                  <span className="text-foreground">{achievementStats ? `${Math.min(100, Math.round(((achievementStats.headshotKills + killCount) / Math.max(1, killCount * 3)) * 100))}%` : '—'}</span>
+                  <span className="text-foreground">{Math.round(((shotsHit || 0) / (shotsFired || 1)) * 100)}% ({shotsHit}/{shotsFired})</span>
                 </div>
               )}
 
-              {/* Damage taken / dealt */}
+              {/* Damage dealt/taken */}
+              {(damageDealt || 0) > 0 && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '870ms', animationFillMode: 'backwards' }}>
+                  <span>Damage Dealt:</span>
+                  <span className="text-accent">{damageDealt}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '890ms', animationFillMode: 'backwards' }}>
+                <span>Damage Taken:</span>
+                <span className={`${(damageTaken || 0) > 200 ? 'text-danger' : 'text-foreground'}`}>{damageTaken || 0}</span>
+              </div>
+
+              {/* K/D-style ratio */}
+              {killCount > 0 && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '910ms', animationFillMode: 'backwards' }}>
+                  <span>Efficiency:</span>
+                  <span className="text-foreground">{((damageDealt || 0) / Math.max(1, (damageTaken || 1))).toFixed(1)}:1</span>
+                </div>
+              )}
+
+              {/* Weather survived */}
+              {weather && weather.type !== 'clear' && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '920ms', animationFillMode: 'backwards' }}>
+                  <span>Weather:</span>
+                  <span className="text-foreground">{weather.type === 'blizzard' ? '🌨️ Blizzard' : weather.type === 'fog' ? '🌫️ Fog' : weather.type === 'rain' ? '🌧️ Rain' : weather.type === 'dust' ? '💨 Dust' : '❄️ Snow'}</span>
+                </div>
+              )}
+
+              {/* Cause of death */}
               {gameOver && (
-                <div className="flex justify-between text-sm font-mono text-danger/80 animate-in fade-in" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+                <div className="flex justify-between text-sm font-mono text-danger/80 animate-in fade-in" style={{ animationDelay: '940ms', animationFillMode: 'backwards' }}>
                   <span>Cause of Death:</span>
                   <span className="text-danger text-right text-[11px] max-w-[180px] truncate">{deathCause?.replace(/^[^\w]*/, '').slice(0, 40) || 'Unknown'}</span>
                 </div>
@@ -605,14 +673,49 @@ export const HUD: React.FC<HUDProps> = ({
   );
 };
 
-const MiniMap: React.FC<{ playerX: number; playerY: number; mapW: number; mapH: number }> = ({ playerX, playerY, mapW, mapH }) => {
-  const size = 64;
+const EnhancedMiniMap: React.FC<{
+  playerX: number; playerY: number; playerAngle: number;
+  mapW: number; mapH: number;
+  enemies: { x: number; y: number; type: string; state: string }[];
+  extractions: { x: number; y: number; name: string; active: boolean }[];
+  objectives: { x: number; y: number }[];
+}> = ({ playerX, playerY, playerAngle, mapW, mapH, enemies, extractions, objectives }) => {
+  const size = 80;
   const px = (playerX / mapW) * size;
   const py = (playerY / mapH) * size;
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <div className="absolute inset-0 bg-card/50 border border-border/30 rounded-sm" />
-      <div className="absolute w-1.5 h-1.5 bg-safe rounded-full" style={{ left: px - 3, top: py - 3 }} />
+      <div className="absolute inset-0 bg-card/60 border border-border/40 rounded-sm backdrop-blur-sm" />
+      {/* Extraction points */}
+      {extractions.map((ep, i) => {
+        const ex = (ep.x / mapW) * size;
+        const ey = (ep.y / mapH) * size;
+        return (
+          <div key={`e${i}`} className={`absolute w-2 h-2 rounded-sm ${ep.active ? 'bg-safe animate-pulse' : 'bg-safe/30'}`}
+            style={{ left: ex - 4, top: ey - 4 }} title={ep.name} />
+        );
+      })}
+      {/* Objectives */}
+      {objectives.map((obj, i) => {
+        const ox = (obj.x / mapW) * size;
+        const oy = (obj.y / mapH) * size;
+        return <div key={`o${i}`} className="absolute w-1.5 h-1.5 bg-warning/60 rounded-full" style={{ left: ox - 3, top: oy - 3 }} />;
+      })}
+      {/* Enemies */}
+      {enemies.map((en, i) => {
+        const enx = (en.x / mapW) * size;
+        const eny = (en.y / mapH) * size;
+        const color = en.type === 'boss' ? 'bg-danger' : en.state === 'chase' || en.state === 'attack' ? 'bg-danger/80' : 'bg-danger/40';
+        return <div key={`en${i}`} className={`absolute w-1 h-1 rounded-full ${color}`} style={{ left: enx - 2, top: eny - 2 }} />;
+      })}
+      {/* Player — with direction indicator */}
+      <div className="absolute w-2 h-2 bg-safe rounded-full border border-safe/80" style={{ left: px - 4, top: py - 4 }} />
+      <div className="absolute w-0.5 h-2 bg-safe/60 origin-bottom" style={{
+        left: px - 1,
+        top: py - 10,
+        transform: `rotate(${playerAngle * (180 / Math.PI) + 90}deg)`,
+        transformOrigin: `1px 8px`,
+      }} />
     </div>
   );
 };
