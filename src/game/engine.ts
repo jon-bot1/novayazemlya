@@ -525,8 +525,8 @@ function generateEnemyLoot(enemy: Enemy) {
 }
 
 export function createGameState(mapId: MapId = 'objekt47'): GameState {
-  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
-  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
+  const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
+  const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
   const mapEnemies = mapId === 'objekt47' ? map.enemies : map.enemies.filter(e => e.type !== 'sniper');
   const state: GameState = {
