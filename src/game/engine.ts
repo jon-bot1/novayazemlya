@@ -4105,44 +4105,46 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const cp = (enemy as any)._coverPos as Vec2 | null;
           if (cp) {
           const dToCover = dist(enemy.pos, cp);
-          if (dToCover > 15) {
-            // Move toward cover
-            const dir = normalize({ x: cp.x - enemy.pos.x, y: cp.y - enemy.pos.y });
-            enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
-            enemy.angle = Math.atan2(dir.y, dir.x);
-          } else {
-            // In cover — face player and shoot
-            enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-            // Fire from cover
-            if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
-              enemy.state = 'attack';
-            }
-          }
-          // After 30s, randomly pick new behavior
-          if ((enemy as any)._coverTimer <= 0) {
-            const roll = Math.random();
-            if (roll < 0.3) {
-              // Stay in cover — reset timer
-              (enemy as any)._coverTimer = 20 + Math.random() * 15;
-            } else if (roll < 0.55) {
-              // Rush the player
-              (enemy as any)._seekCover = false;
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverDecided = false;
-            } else if (roll < 0.75) {
-              // Disengage to patrol
-              (enemy as any)._seekCover = false;
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverDecided = false;
-              enemy.state = 'patrol';
-              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+            if (dToCover > 15) {
+              // Move toward cover
+              const dir = normalize({ x: cp.x - enemy.pos.x, y: cp.y - enemy.pos.y });
+              enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+              enemy.angle = Math.atan2(dir.y, dir.x);
             } else {
-              // Reposition to new cover spot
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverTimer = 15 + Math.random() * 10;
+              // In cover — face player and shoot
+              enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+              // Fire from cover
+              if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
+                enemy.state = 'attack';
+              }
             }
+            // After 30s, randomly pick new behavior
+            if ((enemy as any)._coverTimer <= 0) {
+              const roll = Math.random();
+              if (roll < 0.3) {
+                // Stay in cover — reset timer
+                (enemy as any)._coverTimer = 20 + Math.random() * 15;
+              } else if (roll < 0.55) {
+                // Rush the player
+                (enemy as any)._seekCover = false;
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverDecided = false;
+              } else if (roll < 0.75) {
+                // Disengage to patrol
+                (enemy as any)._seekCover = false;
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverDecided = false;
+                enemy.state = 'patrol';
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+              } else {
+                // Reposition to new cover spot
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverTimer = 15 + Math.random() * 10;
+              }
+            }
+            break;
           }
-          break;
+          // If cover was aborted (no cp), fall through to normal chase below
         }
 
         const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
