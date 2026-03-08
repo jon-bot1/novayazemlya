@@ -876,6 +876,32 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // === THROW DISTRACTION ROCK (Middle click / C key) ===
+  if (input.throwRock) {
+    input.throwRock = false;
+    // Throw rock to where mouse is pointing (world position)
+    const rockTargetX = state.camera.x + input.aimX;
+    const rockTargetY = state.camera.y + input.aimY;
+    const rockDist = dist(state.player.pos, { x: rockTargetX, y: rockTargetY });
+    const maxRockDist = 250;
+    const clampedDist = Math.min(rockDist, maxRockDist);
+    const angle = Math.atan2(rockTargetY - state.player.pos.y, rockTargetX - state.player.pos.x);
+    const landPos = {
+      x: state.player.pos.x + Math.cos(angle) * clampedDist,
+      y: state.player.pos.y + Math.sin(angle) * clampedDist,
+    };
+    // Create sound event at landing position (moderate noise — attracts enemies)
+    state.soundEvents.push({ pos: { ...landPos }, radius: 180, time: state.time });
+    // Visual tracking
+    if (!(state as any)._thrownRocks) (state as any)._thrownRocks = [];
+    (state as any)._thrownRocks.push({ pos: { ...landPos }, time: state.time });
+    // Clean old rocks
+    (state as any)._thrownRocks = (state as any)._thrownRocks.filter((r: any) => state.time - r.time < 4);
+    addMessage(state, '🪨 Rock thrown — enemies will investigate', 'info');
+    // Very quiet throw sound from player position
+    state.soundEvents.push({ pos: { ...state.player.pos }, radius: 15, time: state.time });
+  }
+
   // Peek fire — shooting while in cover (breaks hiding)
   if (state.player.inCover) {
     state.player.peeking = input.shooting;
