@@ -68,16 +68,20 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
-  // Restore found docs from localStorage on mount
+  // Restore found docs from localStorage on mount (or unlock all for test3)
   React.useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('nz_found_docs') || '[]') as string[];
-      saved.forEach(id => {
-        const doc = LORE_DOCUMENTS.find(d => d.id === id);
-        if (doc) doc.found = true;
-      });
-    } catch {}
-  }, []);
+    if (playerName.trim().toLowerCase() === 'test3') {
+      LORE_DOCUMENTS.forEach(d => { d.found = true; });
+    } else {
+      try {
+        const saved = JSON.parse(localStorage.getItem('nz_found_docs') || '[]') as string[];
+        saved.forEach(id => {
+          const doc = LORE_DOCUMENTS.find(d => d.id === id);
+          if (doc) doc.found = true;
+        });
+      } catch {}
+    }
+  }, [playerName]);
   const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
