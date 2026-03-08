@@ -8,6 +8,7 @@ import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompl
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
 import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
+import { WeaponMasteryState, EMPTY_MASTERY, MASTERY_INFO, MASTERY_RANK_NAMES, MASTERY_THRESHOLDS, getNextMasteryThreshold, getMasteryBonus, type WeaponMasteryType } from '../../game/weaponMastery';
 
 export interface StashState {
   items: Item[];
