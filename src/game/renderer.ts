@@ -2521,11 +2521,27 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           ctx.restore();
         }
 
+        // Nachalnik spin attack visual
+        if ((enemy as any)._spinAttackTimer > 0) {
+          const spinAlpha = 0.35 + Math.sin(state.time * 22) * 0.15;
+          const spinR = bossSize + 12;
+          ctx.strokeStyle = `rgba(255, 180, 80, ${spinAlpha})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, spinR, state.time * 14, state.time * 14 + Math.PI * 1.4);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(220, 80, 40, ${spinAlpha * 0.9})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, spinR - 8, -state.time * 16, -state.time * 16 + Math.PI);
+          ctx.stroke();
+        }
+
         // Boss name plate
         ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'COMMANDANT OSIPOVITJ'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
+        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'BOSS'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
         if (phase >= 1) {
           ctx.font = 'bold 8px sans-serif';
           ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
