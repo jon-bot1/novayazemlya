@@ -3177,8 +3177,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
     const proximityRange = Math.max(70, enemy.alertRange * 0.4);
-    const closeProximity = !playerIsHiding && los && distToPlayer < proximityRange;
-    const playerInRange = !playerIsHiding && (closeProximity || (distToPlayer < effectiveRange && los));
+    const forcedContactRange = 38;
+    const closeProximity = !playerIsHiding && distToPlayer < proximityRange;
+    const forcedContact = !playerIsHiding && distToPlayer < forcedContactRange;
+    const playerInRange = !playerIsHiding && (forcedContact || closeProximity || (distToPlayer < effectiveRange && los));
 
     // === AWARENESS SYSTEM — gradual detection instead of binary ===
     // Calculate visibility factor based on movement, terrain, and cover
@@ -3211,8 +3213,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Update awareness
     if (awarenessRate > 0) {
       enemy.awareness = Math.min(1, enemy.awareness + awarenessRate * dt);
-      if (closeProximity && !state.disguised) {
+      if ((closeProximity || forcedContact) && !state.disguised) {
         enemy.awareness = Math.max(enemy.awareness, 0.72);
+      }
+      if (forcedContact) {
+        enemy.awareness = Math.max(enemy.awareness, 0.95);
       }
     } else {
       // Decay awareness when player is not visible
@@ -3227,7 +3232,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const AWARE_ATTACK = 0.78;  // full detection, combat
 
     // canSeePlayer is awareness-based + guaranteed near-contact reaction
-    const canSeePlayer = enemy.awareness >= AWARE_ATTACK || (closeProximity && !state.disguised);
+    const canSeePlayer = enemy.awareness >= AWARE_ATTACK || forcedContact || (closeProximity && !state.disguised);
 
     // Check for nearby sound events (gunshots, explosions)
     let heardSound: Vec2 | null = null;
