@@ -4090,6 +4090,72 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
+  // ── WEATHER EFFECTS (high graphics only) ──
+  if (hasWeatherEffects()) {
+    const mapId = (state as any)._mapId || 'objekt47';
+    
+    // Objekt 47 — snow particles
+    if (mapId === 'objekt47') {
+      if (!(state as any)._snowParticles) {
+        const snow: { x: number; y: number; speed: number; size: number; drift: number }[] = [];
+        for (let i = 0; i < 60; i++) {
+          snow.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            speed: 0.5 + Math.random() * 1.5,
+            size: 1 + Math.random() * 2.5,
+            drift: (Math.random() - 0.5) * 0.8,
+          });
+        }
+        (state as any)._snowParticles = snow;
+      }
+      const snow = (state as any)._snowParticles as { x: number; y: number; speed: number; size: number; drift: number }[];
+      ctx.fillStyle = 'rgba(220, 225, 230, 0.6)';
+      for (const s of snow) {
+        s.y += s.speed;
+        s.x += s.drift + Math.sin(state.time * 0.5 + s.x * 0.01) * 0.3;
+        if (s.y > h) { s.y = -5; s.x = Math.random() * w; }
+        if (s.x > w) s.x = 0;
+        if (s.x < 0) s.x = w;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Light snow overlay tint
+      ctx.fillStyle = 'rgba(200, 210, 220, 0.02)';
+      ctx.fillRect(0, 0, w, h);
+    }
+    
+    // Fishing village — fog/mist
+    if (mapId === 'fishing_village') {
+      // Drifting fog banks
+      const fogTime = state.time * 0.15;
+      for (let i = 0; i < 4; i++) {
+        const fx = (Math.sin(fogTime + i * 1.7) * 0.5 + 0.5) * w;
+        const fy = (Math.cos(fogTime * 0.7 + i * 2.3) * 0.3 + 0.5) * h;
+        const fr = 150 + Math.sin(fogTime + i) * 50;
+        const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
+        fogGrad.addColorStop(0, 'rgba(180, 190, 170, 0.06)');
+        fogGrad.addColorStop(1, 'rgba(180, 190, 170, 0)');
+        ctx.fillStyle = fogGrad;
+        ctx.fillRect(fx - fr, fy - fr, fr * 2, fr * 2);
+      }
+    }
+    
+    // Hospital — flickering light overlay
+    if (mapId === 'hospital') {
+      const flicker = Math.sin(state.time * 15) * Math.sin(state.time * 23) * Math.sin(state.time * 7);
+      if (flicker > 0.7) {
+        // Brief bright flicker
+        ctx.fillStyle = 'rgba(200, 220, 255, 0.03)';
+        ctx.fillRect(0, 0, w, h);
+      } else if (flicker < -0.8) {
+        // Brief dark flicker  
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+  }
 
   // Flashbang stun effect — white screen + dizzy stars
   if (state.flashbangTimer > 0) {
