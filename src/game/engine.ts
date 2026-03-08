@@ -3037,23 +3037,63 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.speechBubbleTimer = 2.5;
       }
 
-      // Boss orders bodyguards — tells them to attack/flank
-      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.0015) {
-        const bodyguards = state.enemies.filter(e => e.state !== 'dead' && (e as any)._isBodyguard);
-        if (bodyguards.length > 0) {
-          const orders = ['ФЛАНГ СЛЕВА!', 'ОБХОДИ СПРАВА!', 'ПРИКРОЙ МЕНЯ!', 'УБЕЙ ЕГО!', 'ВПЕРЁД!'];
-          enemy.speechBubble = orders[Math.floor(Math.random() * orders.length)];
-          enemy.speechBubbleTimer = 2.5;
-          (enemy as any)._orderingArm = 1.5; // arm gesture timer
-          // Bodyguards react
-          for (const bg of bodyguards) {
-            bg.state = 'chase';
-            bg.investigateTarget = { ...state.player.pos };
-            if (!bg.speechBubble) {
-              const replies = ['ДА, КОМАНДИР!', 'ЕСТЬ!', 'ВЫПОЛНЯЮ!', 'ПОНЯЛ!'];
-              bg.speechBubble = replies[Math.floor(Math.random() * replies.length)];
-              bg.speechBubbleTimer = 2;
+      // === BOSS CALLOUTS — orders nearby enemies, triggering real behavior changes ===
+      if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.003) {
+        const nearbyAllies = state.enemies.filter(e => e !== enemy && e.state !== 'dead' && !e.friendly && e.type !== 'turret' && e.type !== 'dog' && dist(e.pos, enemy.pos) < 400);
+        if (nearbyAllies.length > 0) {
+          // Pick a random callout type — each triggers different behavior
+          const calloutRoll = Math.random();
+          if (calloutRoll < 0.25) {
+            // FLANK ORDER — send one enemy to flank
+            enemy.speechBubble = 'ФЛАНГ! ОБХОДИ!';
+            enemy.speechBubbleTimer = 2.5;
+            const flanker = nearbyAllies[Math.floor(Math.random() * nearbyAllies.length)];
+            const perpAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+            flanker.flankTarget = {
+              x: Math.max(50, Math.min(state.mapWidth - 50, state.player.pos.x + Math.cos(perpAngle) * 200)),
+              y: Math.max(50, Math.min(state.mapHeight - 50, state.player.pos.y + Math.sin(perpAngle) * 200)),
+            };
+            flanker.state = 'flank';
+            flanker.tacticalRole = 'flanker';
+            setSpeech(flanker, 'ПОНЯЛ!', 1.5);
+          } else if (calloutRoll < 0.50) {
+            // GRENADE ORDER — tell an enemy to throw grenade if they can
+            enemy.speechBubble = 'КИНЬ ГРАНАТУ!';
+            enemy.speechBubbleTimer = 2.5;
+            const thrower = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
+            if (thrower && dist(thrower.pos, state.player.pos) < 300) {
+              const gAngle = Math.atan2(state.player.pos.y - thrower.pos.y, state.player.pos.x - thrower.pos.x);
+              state.grenades.push({
+                pos: { ...thrower.pos }, vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
+                timer: 1.8, radius: 80, damage: 20, fromPlayer: false, sourceId: thrower.id, sourceType: thrower.type,
+              });
+              setSpeech(thrower, 'ГРАНАТА!', 1.5);
+              addMessage(state, `💣 Boss orders grenade throw!`, 'warning');
             }
+          } else if (calloutRoll < 0.70) {
+            // SUPPRESS ORDER — one ally lays suppressive fire
+            enemy.speechBubble = 'ПРИКРОЙ ОГНЁМ!';
+            enemy.speechBubbleTimer = 2.5;
+            const suppressor = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
+            if (suppressor) {
+              suppressor.state = 'suppress';
+              suppressor.suppressTimer = 4 + Math.random() * 3;
+              suppressor.tacticalRole = 'suppressor';
+              setSpeech(suppressor, 'ЕСТЬ!', 1.5);
+            }
+          } else {
+            // CHARGE ORDER — all nearby rush the player
+            enemy.speechBubble = 'ВСЕ ВПЕРЁД!';
+            enemy.speechBubbleTimer = 2.5;
+            for (const ally of nearbyAllies) {
+              // 80% obey, 20% ignore (randomization)
+              if (Math.random() < 0.80) {
+                ally.state = 'chase';
+                ally.investigateTarget = { ...state.player.pos };
+                if (!ally.speechBubble) setSpeech(ally, 'ВПЕРЁД!', 1.5);
+              }
+            }
+            addMessage(state, `⚠ Boss orders all-out charge!`, 'warning');
           }
         }
       }
