@@ -129,17 +129,18 @@ function LoreSection() {
         <div>🧭 <strong>Nils Stålhandske:</strong> Stage 5. Absorbed in 1957. His magnetic readings are now part of the anomaly.</div>
       </div>
 
-      <H3>Agent VARG — Player Dossier</H3>
+      <H3>Operatör 8 — Player Dossier</H3>
       <div className="border border-accent/30 rounded p-3 bg-accent/5 mb-2">
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono mb-2">
-          <Stat label="Codename" value="VARG" />
+          <Stat label="Designation" value="Operatör 8" />
           <Stat label="Nationality" value="Swedish" />
           <Stat label="Former Unit" value="MUST" />
+          <Stat label="Organization" value="NORDVAKT" />
           <Stat label="Status" value="KIA (officially)" />
-          <Stat label="Handler" value="CONTROL" />
+          <Stat label="Handler" value="STYRESMAN" />
         </div>
-        <P>Born 1955. Son of survey engineer Nils Stålhandske, who vanished inside Norrberget Mine in 1957. Joined Swedish military intelligence at 22. Recruited by NATO after deep-cover missions across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted and given a new identity.</P>
-        <P>VARG carries his father's compass — the needle permanently bent toward magnetic north since the day Nils entered the mine. It still points toward Norrberget.</P>
+        <P>Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted by NORDVAKT and given a new identity. Operates as a ghost: no country, no name, no backup.</P>
+        <P>NORDVAKT is a secret Nordic stay-behind defense organization, operating independently of NATO and the Warsaw Pact. Operatör 8 does not know the full scope of NORDVAKT's interest in Substance Zero.</P>
       </div>
 
       <H3>The Mission</H3>
