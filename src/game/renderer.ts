@@ -1169,8 +1169,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   ctx.save();
   ctx.translate(-cx, -cy);
 
-  // Outside area (dense forest beyond map)
-  ctx.fillStyle = '#1a2a14';
+  // Outside area (dense forest beyond map) — map-specific color
+  const palette = getMapPalette(state);
+  ctx.fillStyle = palette.outside;
   ctx.fillRect(-200, -200, state.mapWidth + 400, state.mapHeight + 400);
 
   // Ground tiles with terrain zones
