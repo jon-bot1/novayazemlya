@@ -3926,16 +3926,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
             (enemy as any)._stuckCounter++;
             if ((enemy as any)._stuckCounter > 8) {
-              // Try perpendicular or random direction with LOS check
-              const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-              let nx = enemy.pos.x + Math.cos(perpAngle) * 180;
-              let ny = enemy.pos.y + Math.sin(perpAngle) * 180;
-              if (!hasLineOfSight(state, enemy.pos, { x: nx, y: ny }, false)) {
-                const rndAngle = Math.random() * Math.PI * 2;
-                nx = enemy.pos.x + Math.cos(rndAngle) * 100;
-                ny = enemy.pos.y + Math.sin(rndAngle) * 100;
-              }
-              enemy.patrolTarget = { x: nx, y: ny };
+              // Force an escape step, then pick a better patrol target
+              const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
+              if (escapeStep) enemy.pos = escapeStep;
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 90, 220);
               (enemy as any)._stuckCounter = 0;
             }
           } else {
