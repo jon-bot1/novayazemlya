@@ -129,7 +129,13 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </button>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
+        <button
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'story' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
+          onClick={() => setTab('story')}
+        >
+          🌌 Story
+        </button>
         <button
           className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'briefing' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('briefing')}
@@ -149,7 +155,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           📡 Updates
         </button>
         <button
-          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'highscores' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none col-span-2 sm:col-span-1 ${tab === 'highscores' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('highscores')}
         >
           🏆 Highscores
