@@ -422,7 +422,7 @@ function WorldSection() {
         </div>
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: THE OPERATION IS A SACRIFICE</strong><br/>
-          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if STYRESMAN knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
+          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if Styrelsen knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
         </div>
       </div>
 

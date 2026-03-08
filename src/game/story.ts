@@ -218,7 +218,7 @@ PRIMARY: Reach the deep chamber. Plant demolition charges.
 SECONDARY: Recover Stålhandske's survey equipment and field notes.
 TERTIARY: Destroy Gruvrå — or seal it permanently.
 
-HANDLER NOTE: Operatör 8 — Norrberget is NORDVAKT's highest priority. The substance beneath this mountain may be the key to Nordic defense independence for the next century. Gather everything you can. STYRESMAN out.`,
+HANDLER NOTE: Operatör 8 — Norrberget is NORDVAKT's highest priority. The substance beneath this mountain may be the key to Nordic defense independence for the next century. Gather everything you can. Styrelsen out.`,
   };
   return briefings[mapId] || briefings.objekt47;
 }
