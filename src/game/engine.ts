@@ -2227,7 +2227,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.reinforcementTimer = 60 + Math.random() * 40; // slower spawning
   }
 
-  // Cap sound events — only keep recent ones (prevents unbounded growth)
+  // === AMBIENT ATMOSPHERE MESSAGES ===
+  {
+    if (!(state as any)._lastAmbientTime) (state as any)._lastAmbientTime = state.time + 15 + Math.random() * 10; // first message after 15-25s
+    if (state.time >= (state as any)._lastAmbientTime) {
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const pool = AMBIENT_MESSAGES[mapId];
+      if (pool && pool.length > 0) {
+        const msg = pool[Math.floor(Math.random() * pool.length)];
+        addMessage(state, msg, 'info');
+      }
+      (state as any)._lastAmbientTime = state.time + 25 + Math.random() * 20; // every 25-45s
+    }
+  }
+
   if (state.soundEvents.length > 20) {
     state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
   }
