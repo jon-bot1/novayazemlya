@@ -1472,6 +1472,112 @@ I am returning to Oslo. I recommend this file be sealed.`,
     hasCode: false,
     found: false,
   },
+  // ═══════════════════════════════════════════════════════════
+  // NATO DARK OPERATIONS — The West's hands are not clean
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'doc_nato_1',
+    title: 'NATO STANAG 4779 — "Project MIDNIGHT SUN" (Excerpts)',
+    author: 'Supreme Headquarters Allied Powers Europe (SHAPE)',
+    date: '22.09.1986',
+    classification: 'TOP SECRET',
+    content: `NATO — COSMIC TOP SECRET — NOFORN
+STANAG 4779 — ANNEX F (EYES ONLY: SACEUR, SACLANT, DNI)
+
+SUBJECT: Exploitation Framework for Sub-Arctic Geological Asset "MIDNIGHT SUN"
+
+1. STRATEGIC ASSESSMENT
+
+1.1 The substance designated SZ-0 (ref: Soviet classification "Substance Zero", NATO codename MIDNIGHT SUN) represents the single most significant strategic resource identified since fissile uranium.
+
+1.2 Soviet exploitation of SZ-0 is estimated at 15-20 years ahead of Allied capability. This gap is UNACCEPTABLE.
+
+1.3 The geological vein extends from Novaya Zemlya through the Barents Sea floor to the Scandinavian mountain range. Allied-accessible deposits exist within Norwegian sovereign territory (Norrberget site, Finnmark).
+
+2. RECOMMENDED ACTIONS
+
+2.1 PHASE ALPHA: Establish covert extraction facility at Norrberget under cover of "geological survey" (ref: Norwegian MoD cooperation agreement ODIN-7, signed under duress 1984).
+
+2.2 PHASE BRAVO: Deploy GLADIO-N stay-behind network to monitor and, if necessary, eliminate civilian witnesses in adjacent communities. Ref: Operational budget approved under black line item NATO/AC/46-D/2048.
+
+2.3 PHASE CHARLIE: If Soviet extraction at Novaya Zemlya cannot be disrupted through covert means, SHAPE recommends "catastrophic geological event" to collapse the eastern vein terminus. Civilian casualty estimate: 400-2,000 (acceptable under SACEUR wartime authority).
+
+3. ETHICAL FRAMEWORK
+
+3.1 None. SZ-0 supersedes all existing frameworks. The substance's potential for weapons enhancement, energy generation, and [REDACTED] places it beyond conventional moral calculus.
+
+3.2 Norwegian government has NOT been fully briefed. Minister of Defence has been provided sanitized summaries only. Full disclosure would "complicate the alliance relationship" (ref: DNI assessment 1985-447).
+
+DISTRIBUTION: 6 copies. Numbered. No photocopying. Destroy after reading.
+
+[HANDWRITTEN IN MARGIN, UNKNOWN HAND]: "We are no different from them. We just write better memos."`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_nato_2',
+    title: 'Intercepted CIA Cable — Station POLARIS to Langley',
+    author: 'Chief of Station, Tromsø (cover: Cultural Attaché)',
+    date: '14.01.1988',
+    classification: 'TOP SECRET',
+    content: `FLASH — STATION POLARIS — EYES ONLY DCI
+
+SUBJECT: MIDNIGHT SUN — Human Testing Update
+
+1. Norwegian test subjects (ref: PROGRAM FROSTBITE) continue to show cognitive enhancement following controlled SZ-0 exposure. Subjects 4 through 11 demonstrate 340% improvement in pattern recognition, 280% improvement in spatial reasoning.
+
+2. Side effects remain... significant. Subject 4 has not slept in 19 days. She claims she doesn't need to. Medical staff confirm normal vitals. She spends her waking hours writing — filling notebooks with text in a script no linguist has identified. When asked what she is writing, she says: "It's not me writing."
+
+3. Subject 7 (the fisherman from Berlevåg) was terminated after he began exhibiting physical changes. His skin developed crystalline structures along the forearm. The crystals were analyzed: pure SZ-0, growing FROM INSIDE HIS BODY. He said the mountain was "building him a new skeleton." Termination required three rounds. The crystals deflected the first two.
+
+4. We have NOT informed Oslo. Norway's participation in MIDNIGHT SUN is based on the understanding that we are conducting "atmospheric research." If they discover the human testing program, Alliance cohesion in the Northern Flank will collapse.
+
+5. Request: Additional subjects. The local Sámi community has individuals with apparent natural resistance to SZ-0 psychoactive effects. Recommend recruitment through economic incentive. If that fails, recommend compulsory participation under national security authority.
+
+6. Personal assessment: I have served the Agency for 22 years. I have done things I am not proud of. But this program makes me question whether we are the good guys. The Soviets experiment on prisoners. We experiment on fishermen who think they're getting free medical checkups. The difference is bureaucratic, not moral.
+
+REQUEST GUIDANCE.
+
+[RESPONSE FROM LANGLEY, HANDWRITTEN]: "Continue. Results justify methodology. — J.W."`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_nato_3',
+    title: 'Norwegian Intelligence Officer\'s Resignation Letter',
+    author: 'Major Kari Henriksen, E-tjenesten (Norwegian Intelligence)',
+    date: '03.04.1989',
+    classification: 'SECRET',
+    content: `PERSONAL — HAND DELIVERED — NOT FOR FILING
+
+To: Director, E-tjenesten
+From: Major Kari Henriksen, Arctic Section
+
+Sir,
+
+I hereby resign my commission, effective immediately.
+
+I will not provide a reason on the record. Off the record, since you will send someone to ask anyway, here is what I know:
+
+I was tasked with monitoring NATO activities at the Norrberget site. I was told it was a weather station. It is not a weather station. It is an extraction facility for the same substance the Soviets are mining at Novaya Zemlya.
+
+I was told our Allies were conducting atmospheric research. They are not conducting atmospheric research. They are conducting experiments on Norwegian citizens. I have documented seven cases. The subjects were recruited from isolated fishing villages — people who would not be missed. They were told they were receiving free health screenings.
+
+Three of the seven subjects are now dead. The official cause of death in each case is "cardiac arrest." The actual cause is that their internal organs were progressively replaced by crystalline growths of the extracted substance. They died, essentially, by being turned to stone from the inside.
+
+The four surviving subjects are being held at a facility I was not permitted to enter. Through contacts, I have learned that they are no longer... entirely human. They communicate with each other in a language that did not exist six months ago. Medical staff report hearing them speaking IN UNISON — the same words, at the same moment, from separate isolation rooms.
+
+Norway is supposed to be a sovereign nation. We are being used as a laboratory by an Alliance that treats us as a colony with strategic geography.
+
+I am taking my documentation to [REDACTED]. If this letter is the last thing I write, it is because you chose to silence me rather than confront what we have become.
+
+Kari Henriksen
+
+[STAMPED: FILE CLOSED — SUBJECT RELOCATED — NO FURTHER ACTION]
+[HANDWRITTEN NOTE, DIFFERENT INK]: "Henriksen was found dead in her apartment, 11.04.1989. Cause: apparent suicide. Case closed. — Dir. Paulsen"`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
