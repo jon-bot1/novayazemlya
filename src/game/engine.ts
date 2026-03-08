@@ -3961,8 +3961,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!canReach) {
               // Can't reach through wall — give up and patrol instead
               enemy.state = 'patrol';
-              const rAngle = Math.random() * Math.PI * 2;
-              enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle) * 200, y: enemy.pos.y + Math.sin(rAngle) * 200 };
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
