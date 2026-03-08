@@ -578,7 +578,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               </div>
             );
           })()}
-        </div>
+        </div>}
 
         {/* Archive Tab — Numbered document list */}
         {tab === 'intel' && (
