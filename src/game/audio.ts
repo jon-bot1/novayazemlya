@@ -704,28 +704,7 @@ export function startAmbient(mapId: string) {
     sources.push(wave, waveLfo);
     gains.push(waveGain);
     
-    // Seagull-like high tone (very subtle)
-    const gull = ctx.createOscillator();
-    gull.type = 'sine';
-    gull.frequency.setValueAtTime(1200, now);
-    const gullGain = ctx.createGain();
-    gullGain.gain.setValueAtTime(0, now);
-    gullGain.gain.linearRampToValueAtTime(0.002, now + 4);
-    const gullLfo = ctx.createOscillator();
-    gullLfo.type = 'sine';
-    gullLfo.frequency.setValueAtTime(0.3, now);
-    const gullLfoGain = ctx.createGain();
-    gullLfoGain.gain.setValueAtTime(0.002, now);
-    gullLfo.connect(gullLfoGain).connect(gullGain.gain);
-    gullLfo.start(now);
-    const gullFilter = ctx.createBiquadFilter();
-    gullFilter.type = 'bandpass';
-    gullFilter.frequency.setValueAtTime(1200, now);
-    gullFilter.Q.setValueAtTime(5, now);
-    gull.connect(gullFilter).connect(gullGain).connect(master);
-    gull.start(now);
-    sources.push(gull, gullLfo);
-    gains.push(gullGain);
+    // (seagull tone removed — too harsh high frequency)
   } else if (mapId === 'hospital') {
     // Industrial hum — electrical buzz + eerie drone
     const buzz = ctx.createOscillator();
