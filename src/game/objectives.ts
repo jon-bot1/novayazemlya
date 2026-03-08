@@ -116,7 +116,7 @@ const HOSPITAL_BONUS: ObjectiveTemplate[] = [
 // MAP → OBJECTIVE REGISTRY
 // ═══════════════════════════════════════
 const MAP_OBJECTIVES: Record<MapId, { main: ObjectiveTemplate[]; bonus: ObjectiveTemplate[] }> = {
-  novaya_zemlya: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
+  objekt47: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
   fishing_village: { main: VILLAGE_MAIN, bonus: VILLAGE_BONUS },
   hospital: { main: HOSPITAL_MAIN, bonus: HOSPITAL_BONUS },
 };
