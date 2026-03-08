@@ -1317,6 +1317,11 @@ export const GameCanvas: React.FC = () => {
             setObjectives(generateMissionObjectives(selectedMapId));
             setRerollCount(c => c + 1);
           }}
+          onMapChange={(mapId: MapId) => {
+            setSelectedMapId(mapId);
+            setObjectives(generateMissionObjectives(mapId));
+            setRerollCount(0);
+          }}
           rerollCount={rerollCount}
         />
       </div>
