@@ -8,6 +8,23 @@ import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapo
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { hasBloodStains, hasMuzzleFlash } from './graphics';
+
+// VFX helpers
+function addBloodStain(state: GameState, x: number, y: number) {
+  if (!hasBloodStains()) return;
+  const stains = (state as any)._bloodStains as { x: number; y: number; size: number; angle: number }[];
+  if (!stains) return;
+  stains.push({ x, y, size: 6 + Math.random() * 10, angle: Math.random() * Math.PI * 2 });
+  if (stains.length > 80) stains.shift(); // cap for perf
+}
+
+function addMuzzleFlash(state: GameState, x: number, y: number, fromPlayer: boolean) {
+  if (!hasMuzzleFlash()) return;
+  const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[];
+  if (!flashes) return;
+  flashes.push({ x, y, time: state.time, fromPlayer });
+}
 
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
