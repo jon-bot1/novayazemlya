@@ -1490,6 +1490,11 @@ export const GameCanvas: React.FC = () => {
             if (nameLower === 'test2') {
               st.player.pos = { x: 920, y: 620 };
             }
+            if (nameLower === 'test3') {
+              LORE_DOCUMENTS.forEach(d => { d.found = true; });
+              st.documentsRead = LORE_DOCUMENTS.map(d => d.id);
+              st.codesFound = LORE_DOCUMENTS.filter(d => d.hasCode && d.code).map(d => d.code!);
+            }
 
             lastTimeRef.current = 0;
             extractedRef.current = false;
