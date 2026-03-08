@@ -1120,8 +1120,7 @@ export const GameCanvas: React.FC = () => {
                 rubles: prev.rubles - cost,
                 upgrades: { ...prev.upgrades, [upgradeId]: currentLevel + 1 },
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
