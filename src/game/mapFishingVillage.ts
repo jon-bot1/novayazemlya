@@ -98,27 +98,33 @@ export function generateFishingVillageMap() {
   const terrainZones: TerrainZone[] = [
     // Dense forest top
     { x: 0, y: 0, w: MAP_W, h: 280, type: 'forest' },
-    // Forest sides (narrower)
-    { x: 0, y: 0, w: 160, h: 1500, type: 'forest' },
-    { x: MAP_W - 160, y: 0, w: 160, h: 1500, type: 'forest' },
+    // Forest sides — east side tighter
+    { x: 0, y: 0, w: 160, h: 1350, type: 'forest' },
+    { x: MAP_W - 100, y: 0, w: 100, h: 1350, type: 'forest' },
+    // Rocky terrain east of cabins
+    { x: 1020, y: 350, w: 280, h: 500, type: 'dirt' },
+    // Swampy/grassy area east-south
+    { x: 1020, y: 850, w: 280, h: 300, type: 'grass' },
     // Main road (vertical, center)
-    { x: 700, y: 200, w: 100, h: 1300, type: 'asphalt' },
+    { x: 620, y: 200, w: 100, h: 1150, type: 'asphalt' },
     // Side road to dock
-    { x: 500, y: 1450, w: 500, h: 70, type: 'asphalt' },
-    // Dock area (concrete pier)
-    { x: 500, y: 1520, w: 500, h: 180, type: 'concrete' },
+    { x: 420, y: 1300, w: 350, h: 70, type: 'asphalt' },
+    // Dock platform (base of pier)
+    { x: 420, y: 1370, w: 450, h: 80, type: 'concrete' },
     // Village grass
-    { x: 200, y: 280, w: 1200, h: 1200, type: 'grass' },
+    { x: 180, y: 280, w: 870, h: 1050, type: 'grass' },
     // Dirt around cabins
-    { x: 300, y: 380, w: 350, h: 700, type: 'dirt' },
-    { x: 850, y: 380, w: 350, h: 700, type: 'dirt' },
+    { x: 280, y: 380, w: 300, h: 700, type: 'dirt' },
+    { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
-    { x: 200, y: 1650, w: 1200, h: 100, type: 'dirt' },
-    // === WATER / SEA at the bottom ===
-    { x: 0, y: 1750, w: MAP_W, h: 250, type: 'water' },
-    // Water flanking the dock
-    { x: 0, y: 1520, w: 480, h: 480, type: 'water' },
-    { x: 1020, y: 1520, w: MAP_W - 1020, h: 480, type: 'water' },
+    { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
+    // === PIER / KAJ extending into the sea ===
+    { x: 590, y: 1450, w: 160, h: 430, type: 'concrete' },
+    // === WATER / SEA — big blue area ===
+    { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
+    // Water flanking the dock platform
+    { x: 0, y: 1370, w: 400, h: 630, type: 'water' },
+    { x: 890, y: 1370, w: MAP_W - 890, h: 630, type: 'water' },
   ];
 
   // ══════════════════════════════════════
