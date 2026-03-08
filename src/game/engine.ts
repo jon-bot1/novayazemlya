@@ -624,6 +624,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     (state as any)._screenShake = Math.max(0, (state as any)._screenShake - dt * 4);
   }
 
+  // Init blood stains array if needed
+  if (!(state as any)._bloodStains) (state as any)._bloodStains = [];
+  // Init muzzle flashes array if needed  
+  if (!(state as any)._muzzleFlashes) (state as any)._muzzleFlashes = [];
+  // Decay muzzle flashes
+  const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[];
+  for (let i = flashes.length - 1; i >= 0; i--) {
+    if (state.time - flashes[i].time > 0.08) flashes.splice(i, 1);
+  }
+
   // Player movement — blocked when flashbanged (stunned)
   let moveX = input.moveX;
   let moveY = input.moveY;
