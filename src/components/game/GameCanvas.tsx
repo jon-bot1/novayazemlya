@@ -17,7 +17,7 @@ import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
-import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../game/haptics';
+import { hapticShoot, hapticDamage, hapticKill } from '../../game/haptics';
 import { startAmbient, stopAmbient } from '../../game/audio';
 import { EMPTY_MASTERY, getMasteryLevel, type WeaponMasteryState, type WeaponMasteryType } from '../../game/weaponMastery';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
