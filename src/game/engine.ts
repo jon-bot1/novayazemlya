@@ -1278,7 +1278,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     input.reload = false;
     const isMelee = wpn && (wpn.weaponRange || 60) <= 10;
     if (!isMelee && state.player.currentAmmo < getMagSize(wpn)) {
-      const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
+      const ammoType = wpn.ammoType;
+      const ammoAvail = ammoType ? (state.player.ammoReserves[ammoType] || 0) : 0;
       if (ammoAvail > 0) {
         state.player.reloading = true;
         let reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
@@ -1291,7 +1292,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.player.reloadTime = reloadTime;
         addMessage(state, '🔄 RELOADING...', 'info');
       } else {
-        addMessage(state, '⚠ No reserve ammo for this weapon!', 'warning');
+        addMessage(state, state.player.currentAmmo <= 0
+          ? '⚠ Magazine empty — no reserve ammo!'
+          : '⚠ No reserve ammo for this weapon!', 'warning');
       }
     } else if (!isMelee && state.player.currentAmmo >= getMagSize(wpn)) {
       addMessage(state, '⚠ Magazine already full!', 'info');
