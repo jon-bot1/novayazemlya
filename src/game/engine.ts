@@ -446,6 +446,9 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     boss: Math.PI * 0.7,
     sniper: Math.PI * 0.15, // extremely narrow, laser-focused
     shocker: Math.PI * 0.5 - DEG15, // wide arc for melee rush
+    cultist: Math.PI * 0.4 - DEG15,
+    miner_cult: Math.PI * 0.35 - DEG15,
+    svarta_sol: Math.PI * 0.5 - DEG15, // well-trained, wide arc
   };
   let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
