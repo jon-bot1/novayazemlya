@@ -59,11 +59,13 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
   const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
+  const dailyMissions = getDailyMissions();
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
