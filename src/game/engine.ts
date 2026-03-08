@@ -2483,6 +2483,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pool = KRAVTSOV_TAUNTS[Math.min(phase, 2)];
         } else if (bossId === 'uzbek') {
           pool = UZBEK_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'nachalnik') {
+          pool = NACHALNIK_TAUNTS[Math.min(phase, 2)];
         } else {
           const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
           const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
