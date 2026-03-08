@@ -1006,7 +1006,11 @@ export const GameCanvas: React.FC = () => {
 
         // Live objective tracking
         if (hudUpdateCounter % 18 === 0) {
-          setObjectives(prev => checkObjectiveCompletion(prev, buildObjectivePayload(state)));
+          setObjectives(prev => {
+            const next = checkObjectiveCompletion(prev, buildObjectivePayload(state));
+            objectivesByMapRef.current[selectedMapId] = next;
+            return next;
+          });
         }
       }
 
