@@ -4259,11 +4259,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         break;
       }
       case 'alert': {
-        // Looking around nervously — return to patrol after ~3 seconds
+        // Looking around nervously — extended alert if triggered by investigation memory
         enemy.angle += Math.sin(state.time * 3 + enemy.pos.x) * 0.03;
-        if (!( enemy as any)._alertStart) (enemy as any)._alertStart = state.time;
-        if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
+        if (!(enemy as any)._alertStart) (enemy as any)._alertStart = state.time;
+        const alertDuration = (enemy as any)._extendedAlert ? (5 + Math.random() * 3) : (3 + Math.random() * 2);
+        if (state.time - (enemy as any)._alertStart > alertDuration) {
           (enemy as any)._alertStart = 0;
+          delete (enemy as any)._extendedAlert;
           enemy.state = 'patrol';
           enemy.patrolTarget = pickPatrolTarget(state, enemy, 120, 300);
         }
