@@ -91,7 +91,7 @@ Declared killed in action during a failed exfiltration in East Berlin — in rea
 NORDVAKT selected Operatör 8 for Operation Grindvakt based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
   },
 
-  missionBriefing: `OPERATION AURORA BOREALIS — FINAL BRIEFING
+  missionBriefing: `OPERATION GRINDVAKT — FINAL BRIEFING
 
 SITUATION:
 Soviet GRU has discovered a geological anomaly spanning the Arctic bedrock from Scandinavia to Novaya Zemlya. The substance — NATO designation "SUBSTANCE ZERO" — amplifies nuclear chain reactions by a factor of twelve. A single warhead enhanced with Substance Zero could eliminate an entire NATO carrier group.
