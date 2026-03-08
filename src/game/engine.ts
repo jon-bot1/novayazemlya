@@ -682,6 +682,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
+  // Input deadzone to prevent drift (especially touch/controller edge-cases)
+  if (Math.abs(moveX) < 0.12) moveX = 0;
+  if (Math.abs(moveY) < 0.12) moveY = 0;
+
   const moveLen = Math.sqrt(moveX ** 2 + moveY ** 2);
   
   // Movement speed based on mode
