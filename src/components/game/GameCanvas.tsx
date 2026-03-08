@@ -19,6 +19,7 @@ import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion }
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
 import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../game/haptics';
+import { startAmbient, stopAmbient } from '../../game/audio';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
