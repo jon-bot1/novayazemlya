@@ -64,6 +64,37 @@ const Spectate: React.FC = () => {
   const [pinError, setPinError] = useState(false);
   const navigate = useNavigate();
 
+  const fetchSessions = useCallback(async () => {
+    if (!authed) return;
+    const { data } = await supabase
+      .from('active_sessions')
+      .select('*')
+      .order('last_heartbeat', { ascending: false });
+    if (data) setSessions(data as ActiveSession[]);
+    setLoading(false);
+  }, [authed]);
+
+  useEffect(() => {
+    if (!authed) return;
+    fetchSessions();
+
+    const channel = supabase
+      .channel('spectate-sessions')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'active_sessions' },
+        () => fetchSessions()
+      )
+      .subscribe();
+
+    const interval = setInterval(fetchSessions, 10000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [authed, fetchSessions]);
+
   if (!authed) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
