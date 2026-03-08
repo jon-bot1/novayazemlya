@@ -628,14 +628,49 @@ export const HUD: React.FC<HUDProps> = ({
   );
 };
 
-const MiniMap: React.FC<{ playerX: number; playerY: number; mapW: number; mapH: number }> = ({ playerX, playerY, mapW, mapH }) => {
-  const size = 64;
+const EnhancedMiniMap: React.FC<{
+  playerX: number; playerY: number; playerAngle: number;
+  mapW: number; mapH: number;
+  enemies: { x: number; y: number; type: string; state: string }[];
+  extractions: { x: number; y: number; name: string; active: boolean }[];
+  objectives: { x: number; y: number }[];
+}> = ({ playerX, playerY, playerAngle, mapW, mapH, enemies, extractions, objectives }) => {
+  const size = 80;
   const px = (playerX / mapW) * size;
   const py = (playerY / mapH) * size;
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <div className="absolute inset-0 bg-card/50 border border-border/30 rounded-sm" />
-      <div className="absolute w-1.5 h-1.5 bg-safe rounded-full" style={{ left: px - 3, top: py - 3 }} />
+      <div className="absolute inset-0 bg-card/60 border border-border/40 rounded-sm backdrop-blur-sm" />
+      {/* Extraction points */}
+      {extractions.map((ep, i) => {
+        const ex = (ep.x / mapW) * size;
+        const ey = (ep.y / mapH) * size;
+        return (
+          <div key={`e${i}`} className={`absolute w-2 h-2 rounded-sm ${ep.active ? 'bg-safe animate-pulse' : 'bg-safe/30'}`}
+            style={{ left: ex - 4, top: ey - 4 }} title={ep.name} />
+        );
+      })}
+      {/* Objectives */}
+      {objectives.map((obj, i) => {
+        const ox = (obj.x / mapW) * size;
+        const oy = (obj.y / mapH) * size;
+        return <div key={`o${i}`} className="absolute w-1.5 h-1.5 bg-warning/60 rounded-full" style={{ left: ox - 3, top: oy - 3 }} />;
+      })}
+      {/* Enemies */}
+      {enemies.map((en, i) => {
+        const enx = (en.x / mapW) * size;
+        const eny = (en.y / mapH) * size;
+        const color = en.type === 'boss' ? 'bg-danger' : en.state === 'chase' || en.state === 'attack' ? 'bg-danger/80' : 'bg-danger/40';
+        return <div key={`en${i}`} className={`absolute w-1 h-1 rounded-full ${color}`} style={{ left: enx - 2, top: eny - 2 }} />;
+      })}
+      {/* Player — with direction indicator */}
+      <div className="absolute w-2 h-2 bg-safe rounded-full border border-safe/80" style={{ left: px - 4, top: py - 4 }} />
+      <div className="absolute w-0.5 h-2 bg-safe/60 origin-bottom" style={{
+        left: px - 1,
+        top: py - 10,
+        transform: `rotate(${playerAngle * (180 / Math.PI) + 90}deg)`,
+        transformOrigin: `1px 8px`,
+      }} />
     </div>
   );
 };
