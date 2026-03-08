@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createGameState, updateGame } from '../../game/engine';
 import { renderGame } from '../../game/renderer';
 import { GameState, InputState, Item } from '../../game/types';
+import { MapId } from '../../game/maps';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
 import { ActionButton } from './TouchControls';
