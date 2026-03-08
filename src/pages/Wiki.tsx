@@ -235,7 +235,7 @@ function FactionsSection() {
         <div>☭ GRU ↔ 🏔️ Mountain: <span className="text-destructive">Hostile.</span> GRU extracts by force. The mountain resists.</div>
         <div>🔬 Kravtsov ↔ 🔮 Ordo: <span className="text-destructive">Infiltrated.</span> Some Kravtsov staff are secret Ordo members.</div>
         <div>🪝 Nachalnik ↔ 🔮 Svarta Solen: <span className="text-accent">Business.</span> Nachalnik sells to anyone, including the cult.</div>
-        <div>All factions ↔ 🇸🇪 NATO: <span className="text-destructive">Hostile.</span> VARG is an enemy to everyone.</div>
+        <div>All factions ↔ 🛡️ NORDVAKT: <span className="text-destructive">Hostile.</span> Operatör 8 is an enemy to everyone.</div>
       </div>
     </>
   );
