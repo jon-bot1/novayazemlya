@@ -305,7 +305,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         {/* Map Selection */}
         <div className="border border-border rounded p-3 bg-secondary/10">
           <span className="text-xs font-display text-accent uppercase tracking-wider block mb-2">🗺️ Select Map</span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {MAPS.map(m => {
               const isTest3 = playerName.trim().toLowerCase() === 'test3';
               const locked = !isTest3 && m.unlockRequirement != null && stash.extractionCount < m.unlockRequirement;
