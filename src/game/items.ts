@@ -331,6 +331,9 @@ export const LOOT_POOLS = {
       [createGrenade(), 0.06],
       [createGasGrenade(), 0.05],
       [createTNT(), 0.10],
+      [createScope(), 0.06],
+      [createSuppressor(), 0.04],
+      [createExtMagazine(), 0.05],
     ]);
   },
   medical: (): Item[] => {
