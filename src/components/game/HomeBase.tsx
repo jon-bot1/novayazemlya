@@ -654,10 +654,12 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           })()}
           <p className="text-[10px] font-mono text-muted-foreground/50 text-center mt-1">
             {selectedMap === 'fishing_village'
-              ? 'Infiltrate the abandoned fishing village — find the speedboat and extract'
+              ? '⚓ Infiltrate the coastal smuggling hub — locate Nachalnik\'s buyer ledger and destroy the SZ-0 shipments'
               : selectedMap === 'hospital'
-              ? 'Descend into the abandoned hospital — survive the horror and extract'
-              : 'Infiltrate Objekt 47 — Extract with loot to bring it back to your stash'}
+              ? '🏥 Enter the abandoned hospital — recover Kravtsov\'s countermeasure formula before it\'s too late'
+              : selectedMap === 'mining_village'
+              ? '⛏️ Descend into Norrberget — your father disappeared here in 1957. The mountain remembers.'
+              : '☢️ Infiltrate Objekt 47 — recover the nuclear detonation codes from Osipovitj\'s deep bunker safe'}
           </p>
         </div>
       </div>
