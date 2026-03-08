@@ -1227,6 +1227,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ],
     hospital: [
       { x: 1200, y: 700, label: 'THE HOSPITAL', sub: 'Main Building', size: 22 },
+      { x: 1200, y: 1950, label: 'RECEPTION', sub: 'Main Entrance', size: 14 },
       { x: 600, y: 500, label: 'WARD WEST', sub: 'Patient Ward', size: 13 },
       { x: 600, y: 900, label: 'WARD 2', sub: 'Patient Ward', size: 12 },
       { x: 600, y: 1350, label: 'WARD 3', sub: 'Isolation', size: 11 },
@@ -1237,6 +1238,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       { x: 1200, y: 450, label: 'CORRIDOR', sub: 'North', size: 10 },
       { x: 1200, y: 1350, label: 'CORRIDOR', sub: 'South', size: 10 },
       { x: 300, y: 2100, label: 'PARKING', sub: '', size: 11 },
+      { x: 400, y: 1000, label: 'WEST ENTRANCE', sub: 'Side Door', size: 9 },
+      { x: 2000, y: 1250, label: 'FIRE ESCAPE', sub: 'East', size: 9 },
     ],
   };
   const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.novaya_zemlya;

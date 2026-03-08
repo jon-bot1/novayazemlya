@@ -88,82 +88,117 @@ export function generateHospitalMap() {
     { x: BX + 500, y: BY + 600, w: 600, h: 500, type: 'grass' },
     // Parking
     { x: 100, y: MAP_H - 400, w: 500, h: 300, type: 'asphalt' },
-    // Path to hospital
-    { x: BX + BW / 2 - 60, y: BY + BH, w: 120, h: MAP_H - BY - BH, type: 'asphalt' },
+    // Path to hospital (main approach from south)
+    { x: BX + BW / 2 - 80, y: BY + BH, w: 160, h: MAP_H - BY - BH, type: 'asphalt' },
+    // Reception/entrance area
+    { x: BX + BW / 2 - 200, y: BY + BH - 200, w: 400, h: 200, type: 'concrete' },
   ];
 
   // ═══ WALLS — Hospital building ═══
-  const walls: Wall[] = [
-    // Outer walls
-    makeWall(BX, BY, BW, T, DARK), // north
-    makeWall(BX, BY + BH - T, BW, T, DARK), // south  — door gap center
-    makeWall(BX, BY, T, BH, DARK), // west
-    makeWall(BX + BW - T, BY, T, BH, DARK), // east
+  // D = door gap width
+  const D = 50;
 
-    // South entrance gaps
-    makeWall(BX, BY + BH - T, BW / 2 - 40, T, DARK),
-    makeWall(BX + BW / 2 + 40, BY + BH - T, BW / 2 - 40, T, DARK),
+  const walls: Wall[] = [
+    // ═══ OUTER WALLS ═══
+    // North wall — door gap at center for emergency exit
+    makeWall(BX, BY, BW / 2 - 30, T, DARK),
+    makeWall(BX + BW / 2 + 30, BY, BW / 2 - 30, T, DARK),
+    // South wall — MAIN ENTRANCE (wide double-door gap center)
+    makeWall(BX, BY + BH - T, BW / 2 - 60, T, DARK),
+    makeWall(BX + BW / 2 + 60, BY + BH - T, BW / 2 - 60, T, DARK),
+    // West wall — side entrance gap at y+700
+    makeWall(BX, BY, T, 700, DARK),
+    makeWall(BX, BY + 750, T, BH - 750, DARK),
+    // East wall — fire escape gap at y+900
+    makeWall(BX + BW - T, BY, T, 900, DARK),
+    makeWall(BX + BW - T, BY + 950, T, BH - 950, DARK),
+
+    // ═══ MAIN ENTRANCE — RECEPTION & WAITING ROOM ═══
+    // Reception area: south end of building, center
+    // Reception desk (horizontal wall acting as counter)
+    makeWall(BX + BW / 2 - 120, BY + BH - 150, 240, T, TILE),
+    // Waiting room side walls (open at south to main entrance)
+    makeWall(BX + BW / 2 - 200, BY + BH - 200, T, 150, TILE),  // west side, gap at bottom
+    makeWall(BX + BW / 2 + 200, BY + BH - 200, T, 150, TILE),  // east side, gap at bottom
+    // North wall of reception (separates from corridors) — gap center for corridor access
+    makeWall(BX + BW / 2 - 200, BY + BH - 200, 150, T, TILE),
+    makeWall(BX + BW / 2 + 50, BY + BH - 200, 150, T, TILE),
 
     // ═══ GROUND FLOOR CORRIDORS ═══
-    // Main north-south corridor (center)
-    makeWall(BX + BW / 2 - 50, BY + T, T, 580, TILE),
-    makeWall(BX + BW / 2 + 50, BY + T, T, 580, TILE),
-    // Continue south of courtyard
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - T, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - T, TILE),
+    // Main north-south corridor (center) — with gaps for cross-corridors
+    makeWall(BX + BW / 2 - 50, BY + T, T, 280, TILE),
+    makeWall(BX + BW / 2 + 50, BY + T, T, 280, TILE),
+    // Continue south of courtyard to reception
+    makeWall(BX + BW / 2 - 50, BY + 1100, T, 500, TILE),
+    makeWall(BX + BW / 2 + 50, BY + 1100, T, 500, TILE),
 
-    // East-west corridor (north)
+    // East-west corridor (north, y=300-400)
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + BW / 2 + 50, BY + 300, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + T, BY + 400, BW / 2 - 50 - T, T, TILE),
     makeWall(BX + BW / 2 + 50, BY + 400, BW / 2 - 50 - T, T, TILE),
 
     // ═══ ROOMS — West Wing (wards) ═══
-    // Ward 1
-    makeWall(BX + 200, BY + T, T, 290, CONCRETE),
-    makeWall(BX + 200, BY + 400, T, 200, CONCRETE),
-    // Ward 2
-    makeWall(BX + T, BY + 600, 200, T, CONCRETE),
-    // Ward 3 (below courtyard)
-    makeWall(BX + T, BY + 1100, 490, T, CONCRETE),
-    makeWall(BX + 250, BY + 1100, T, 300, CONCRETE),
-    makeWall(BX + T, BY + 1400, 250, T, CONCRETE),
+    // Ward 1 (NW room: x=BX..BX+200, y=BY..BY+300) — door gap at bottom-right
+    makeWall(BX + 200, BY + T, T, 240, CONCRETE),
+    makeWall(BX + 200, BY + 300, T, 0, CONCRETE), // no wall below corridor
+    // Ward 2 (SW room: x=BX..BX+490, y=BY+400..BY+1100) — door at top-right corner
+    makeWall(BX + T, BY + 600, 150, T, CONCRETE),
+    makeWall(BX + 200, BY + 600, 290, T, CONCRETE), // gap at x=150..200
+    // Ward 3 (below courtyard, west: x=BX..BX+500, y=BY+1100..BY+1500)
+    makeWall(BX + T, BY + 1100, 440, T, CONCRETE),  // gap at x=450..500 for corridor
+    makeWall(BX + 250, BY + 1100, T, 250, CONCRETE),
+    makeWall(BX + 250, BY + 1400, T, 0, CONCRETE),
+    makeWall(BX + T, BY + 1400, 200, T, CONCRETE),
+    makeWall(BX + 250, BY + 1400, 240, T, CONCRETE),  // gap at x=200..250
 
     // ═══ ROOMS — East Wing (labs/offices) ═══
-    makeWall(BX + BW - 200, BY + T, T, 290, CONCRETE),
-    makeWall(BX + BW - 200, BY + 400, T, 200, CONCRETE),
-    // Lab
-    makeWall(BX + BW - 350, BY + 400, T, 200, CONCRETE),
-    makeWall(BX + BW - 350, BY + 600, 350, T, CONCRETE),
-    // Office
+    // Lab NE room (x=BX+BW-350..BX+BW, y=BY..BY+600) — door gap at left wall bottom
+    makeWall(BX + BW - 200, BY + T, T, 240, CONCRETE),
+    makeWall(BX + BW - 200, BY + 300, T, 0, CONCRETE),
+    makeWall(BX + BW - 200, BY + 400, T, 150, CONCRETE),
+    makeWall(BX + BW - 200, BY + 600, T, 0, CONCRETE),
+    // Lab south wall — door gap at left end
+    makeWall(BX + BW - 350, BY + 400, T, 150, CONCRETE),
+    makeWall(BX + BW - 350, BY + 600, 100, T, CONCRETE), // gap at x+100..x+150
+    makeWall(BX + BW - 200, BY + 600, 200, T, CONCRETE),
+    // Office (x=BX+BW-350..BX+BW, y=BY+1100..BY+1500) — door at top-left
     makeWall(BX + BW - 200, BY + 1100, T, 300, CONCRETE),
     makeWall(BX + BW - 350, BY + 1100, T, 300, CONCRETE),
-    makeWall(BX + BW - 350, BY + 1100, 350, T, CONCRETE),
+    makeWall(BX + BW - 350, BY + 1100, 100, T, CONCRETE), // gap at x+100..x+150
+    makeWall(BX + BW - 200, BY + 1100, 200, T, CONCRETE),
 
     // ═══ COURTYARD walls (open area in center) ═══
-    makeWall(BX + 500, BY + 600, 600, T, TILE),
-    makeWall(BX + 500, BY + 1100, 600, T, TILE),
-    makeWall(BX + 500, BY + 600, T, 500, TILE),
-    makeWall(BX + 1100, BY + 600, T, 500, TILE),
-    // Courtyard entrances (gaps in walls)
+    // North wall — gap west side for access
+    makeWall(BX + 550, BY + 600, 550, T, TILE),
+    // South wall — gap east side
+    makeWall(BX + 500, BY + 1100, 550, T, TILE),
+    // West wall — gap at bottom
+    makeWall(BX + 500, BY + 600, T, 400, TILE),
+    makeWall(BX + 500, BY + 1050, T, 50, TILE),
+    // East wall — gap at top
+    makeWall(BX + 1100, BY + 650, T, 450, TILE),
 
-    // ═══ BASEMENT AREA (south end) ═══
-    makeWall(BX + 100, BY + 1500, BW - 200, T, DARK),
+    // ═══ BASEMENT AREA (south end, y=BY+1500..BY+1780) ═══
+    // North wall of basement — gap at center for stairs down
+    makeWall(BX + 100, BY + 1500, BW / 2 - 150, T, DARK),
+    makeWall(BX + BW / 2 + 50, BY + 1500, BW / 2 - 150, T, DARK),
     makeWall(BX + 100, BY + 1500, T, 280, DARK),
     makeWall(BX + BW - 100, BY + 1500, T, 280, DARK),
-    // Basement rooms
-    makeWall(BX + 400, BY + 1500, T, 280, DARK),
-    makeWall(BX + 700, BY + 1500, T, 280, DARK),
-    makeWall(BX + 1000, BY + 1500, T, 280, DARK),
-    makeWall(BX + 1300, BY + 1500, T, 280, DARK),
+    // Basement room dividers — each with door gap at top
+    makeWall(BX + 400, BY + 1550, T, 230, DARK),
+    makeWall(BX + 700, BY + 1550, T, 230, DARK),
+    makeWall(BX + 1000, BY + 1550, T, 230, DARK),
+    makeWall(BX + 1300, BY + 1550, T, 230, DARK),
   ];
 
   // ═══ ZONES ═══
-  const ZONE_ENTRANCE = { x: BX + BW / 2 - 100, y: BY + BH - 100, w: 200, h: 100 };
+  const ZONE_ENTRANCE = { x: BX + BW / 2 - 190, y: BY + BH - 190, w: 380, h: 180 };
+  const ZONE_RECEPTION = { x: BX + BW / 2 - 190, y: BY + BH - 190, w: 380, h: 180 };
   const ZONE_CORRIDOR_N = { x: BX + BW / 2 - 45, y: BY + 20, w: 90, h: 280 };
   const ZONE_CORRIDOR_S = { x: BX + BW / 2 - 45, y: BY + 1110, w: 90, h: 380 };
-  const ZONE_WARD_W = { x: BX + 20, y: BY + 20, w: 180, h: 570 };
-  const ZONE_WARD_W2 = { x: BX + 20, y: BY + 610, w: 480, h: 480 };
+  const ZONE_WARD_W = { x: BX + 20, y: BY + 20, w: 180, h: 270 };
+  const ZONE_WARD_W2 = { x: BX + 20, y: BY + 410, w: 480, h: 480 };
   const ZONE_WARD_W3 = { x: BX + 20, y: BY + 1110, w: 230, h: 380 };
   const ZONE_LAB_E = { x: BX + BW - 340, y: BY + 410, w: 330, h: 180 };
   const ZONE_OFFICE_E = { x: BX + BW - 340, y: BY + 1110, w: 330, h: 280 };
@@ -387,6 +422,10 @@ export function generateHospitalMap() {
     // Sandbags near entrance
     { pos: { x: BX + BW / 2 - 80, y: BY + BH + 20 }, w: 60, h: 16, type: 'sandbags' },
     { pos: { x: BX + BW / 2 + 30, y: BY + BH + 20 }, w: 60, h: 16, type: 'sandbags' },
+    // Reception area props — chairs in waiting room
+    { pos: { x: BX + BW / 2 - 160, y: BY + BH - 100 }, w: 30, h: 60, type: 'metal_shelf' },
+    { pos: { x: BX + BW / 2 + 140, y: BY + BH - 100 }, w: 30, h: 60, type: 'metal_shelf' },
+    { pos: { x: BX + BW / 2, y: BY + BH - 80 }, w: 50, h: 20, type: 'equipment_table' },
   ];
 
   // ═══ ALARM PANELS ═══
