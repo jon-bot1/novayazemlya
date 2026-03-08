@@ -1156,8 +1156,7 @@ export const GameCanvas: React.FC = () => {
                 rubles: prev.rubles - traderItem.cost,
                 items: [...prev.items, newItem],
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
