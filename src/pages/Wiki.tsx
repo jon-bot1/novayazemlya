@@ -159,7 +159,7 @@ function LoreSection() {
           <strong className="text-foreground">█ HOSPITAL №6 "Kravtsov Institute"</strong> — Human experimentation. Dr. Kravtsov creates SZ-0 resistant soldiers. The Uzbek is Test Subject 7.
         </div>
         <div className="border-l-2 border-accent/40 pl-2">
-          <strong className="text-foreground">█ NORRBERGET MINE (Gruvsamhället)</strong> — Original discovery site. Swedish mine where Gruvrå, a SZ-0 consciousness, dwells. VARG's father disappeared here.
+          <strong className="text-foreground">█ NORRBERGET MINE (Gruvsamhället)</strong> — Original discovery site. Swedish mine where Gruvrå, a SZ-0 consciousness, dwells. NORDVAKT's highest priority target.
         </div>
       </div>
 
