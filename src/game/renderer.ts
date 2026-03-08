@@ -1,7 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier } from './graphics';
+import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier, getDarknessFactor, getTimeOfDay, getFlashlightParams, getHitMarkers, clearOldHitMarkers } from './graphics';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
