@@ -2565,6 +2565,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
     // Keep AI fully active so enemies always patrol/aggro reliably
     // (previous off-screen idle skip could make encounters feel frozen).
+
+    // Friendly timer countdown
+    if (enemy.friendly) {
+      enemy.friendlyTimer -= dt;
+      if (enemy.friendlyTimer <= 0) {
+        enemy.friendly = false;
         enemy.friendlyTimer = 0;
         enemy.state = 'chase'; // turn hostile again
         addMessage(state, `⚠ ${enemy.type.toUpperCase()} is no longer friendly!`, 'warning');
