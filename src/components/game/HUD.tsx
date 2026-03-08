@@ -394,7 +394,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-CENTER: Messages ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full px-16 sm:px-0">
+      <div className={`absolute ${bottomCenterOffset} left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full ${mobileMode ? 'px-16' : 'px-0'}`}>
         {messages.slice(-4).map((msg, i) => {
           const age = time - msg.time;
           if (age > 6) return null;
