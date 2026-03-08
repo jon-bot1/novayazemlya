@@ -3951,6 +3951,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               // Force an escape step, then pick a better patrol target
               const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
               if (escapeStep) enemy.pos = escapeStep;
+              else relocateEnemyToOpenArea(state, enemy);
               enemy.patrolTarget = pickPatrolTarget(state, enemy, 90, 220);
               (enemy as any)._stuckCounter = 0;
             }
