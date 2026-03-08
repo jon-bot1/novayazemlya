@@ -1291,6 +1291,10 @@ export const GameCanvas: React.FC = () => {
             setObjectives(generateMissionObjectives(mapId));
             setRerollCount(0);
           }}
+          onReturnToMenu={() => {
+            setGamePhase('intro');
+            setStarted(false);
+          }}
           rerollCount={rerollCount}
         />
       </div>

@@ -211,8 +211,9 @@ export function generateFishingVillageMap() {
   const ZONE_EAST_VILLAGE = { x: 730, y: 380, w: 280, h: 600 };
   const ZONE_ROAD_NORTH = { x: 600, y: 300, w: 140, h: 350 };
   const ZONE_ROAD_SOUTH = { x: 600, y: 700, w: 140, h: 500 };
-  const ZONE_DOCK = { x: 440, y: 1380, w: 420, h: 70 };
-  const ZONE_PIER = { x: 600, y: 1470, w: 140, h: 380 };
+  const ZONE_DOCK = { x: 510, y: 1390, w: 340, h: 300 };
+  const ZONE_DOCK_WEST = { x: 510, y: 1390, w: 160, h: 300 };
+  const ZONE_DOCK_EAST = { x: 690, y: 1390, w: 160, h: 300 };
   const ZONE_WAREHOUSE = { x: 330, y: 1260, w: 120, h: 80 };
   const ZONE_FOREST_NW = { x: 30, y: 30, w: 300, h: 250 };
   const ZONE_FOREST_NE = { x: MAP_W - 220, y: 30, w: 190, h: 250 };
