@@ -3020,7 +3020,35 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('[E] SEARCH', lc.pos.x, lc.pos.y + lc.size + 6);
     }
   }
-  for (const dp of state.documentPickups) {
+  // Weapon drop interaction prompts
+  for (const lc of state.lootContainers) {
+    if (lc.type !== 'weapon_drop' || lc.looted || lc.items.length === 0) continue;
+    if (dist2d(state.player.pos, lc.pos) < 60) {
+      const wpn = lc.items[0];
+      const slot = isSecondaryWeapon(wpn) ? 'secondary' : 'primary';
+      const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+
+      ctx.textAlign = 'center';
+      if (!currentInSlot) {
+        // Empty slot — simple pickup
+        ctx.fillStyle = 'rgba(100, 255, 100, 0.95)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`[E] EQUIP ${wpn.name}`, lc.pos.x, lc.pos.y + 22);
+      } else if (currentInSlot.name === wpn.name) {
+        ctx.fillStyle = 'rgba(180, 180, 180, 0.7)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText(`Already equipped`, lc.pos.x, lc.pos.y + 22);
+      } else {
+        // Swap prompt — show what you'll get and what you'll drop
+        ctx.fillStyle = 'rgba(255, 180, 50, 0.95)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`[E] SWAP → ${wpn.name}`, lc.pos.x, lc.pos.y + 22);
+        ctx.fillStyle = 'rgba(200, 160, 80, 0.7)';
+        ctx.font = '8px sans-serif';
+        ctx.fillText(`(drop ${currentInSlot.name})`, lc.pos.x, lc.pos.y + 32);
+      }
+    }
+  }
     if (!dp.collected && dist2d(state.player.pos, dp.pos) < 70) {
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
       ctx.font = 'bold 10px sans-serif';
