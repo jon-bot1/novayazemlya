@@ -1710,9 +1710,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor equipped!`, 'info');
           }
-          // Weapon pickup with slot system & confirmation
+          // Weapons drop on the ground separately — player picks up manually
           if (item.category === 'weapon' && item.damage) {
-            handleWeaponPickup(state, item, lc.pos);
+            spawnWeaponDrop(state, item, lc.pos);
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
