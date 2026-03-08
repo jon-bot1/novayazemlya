@@ -643,6 +643,19 @@ function EnemiesSection() {
       <EnemyRow name="Turret" icon="🏗️" hp="180-280" speed="0 (static)" dmg="20-28" range="110-155"
         personality="100% accuracy focus. Cannot be flanked. No emotions."
         notes="Stationary gun emplacement. High HP. Destroy from range or with grenades." />
+
+      <H3>Occult Factions</H3>
+      <P>Three secret cults operate in the shadows, each pursuing Substance Zero for different reasons.</P>
+
+      <EnemyRow name="Ordo Borealis Cultist" icon="🔮" hp="65" speed="Medium" dmg="18" range="100"
+        personality="Fanatical (10% cowardice). High aggression (90%). No cover-seeking. Charges."
+        notes="Soviet worshippers of SZ-0. Found in dark corners of Objekt 47 (2-3 per raid). Purple aura. Drops Borealis Relics and Cult Scriptures." />
+      <EnemyRow name="Stålhandske Kultist" icon="⛏️" hp="90" speed="Medium" dmg="28" range="90"
+        personality="Nearly fearless (5% cowardice). Extremely aggressive (95%). Melee-focused."
+        notes="Swedish mining cult in Gruvsamhället underground tunnels (3-4 per raid). Amber glow. Drops Black Ore Shards and Ritual Pickaxes. Speak Swedish." />
+      <EnemyRow name="Svarta Solen Operative" icon="☀️" hp="115-120" speed="High" dmg="28-30" range="170-180"
+        personality="Tactical (15% cowardice). Excellent accuracy (88-90%). Flanks and uses cover (55-60%)."
+        notes="Rare spawn (25-30% chance) on any map. Elite independent operators. Best-trained non-boss enemy. Drops valuable Rune Scanners and Hyperborean Dossiers." />
     </>
   );
 }

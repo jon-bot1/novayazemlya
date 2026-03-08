@@ -37,6 +37,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss:    { hp: 550, speed: 1.00, damage: 44, alertRange: 380, shootRange: 190, fireRate: 530 },
     turret:  { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },
     shocker: { hp: 65, speed: 1.10, damage: 42, alertRange: 200, shootRange: 36,  fireRate: 680 },
+    miner_cult: { hp: 90, speed: 0.80, damage: 28, alertRange: 180, shootRange: 90, fireRate: 1100 },
+    svarta_sol: { hp: 115, speed: 1.00, damage: 28, alertRange: 320, shootRange: 170, fireRate: 800 },
   };
   // Mining village personality: rednecks are brave & territorial, dogs are vicious
   const personality: Record<string, any> = {
@@ -48,6 +50,8 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss:    { _cowardice: 0.0, _accuracy: 0.8, _aggression: 1.0, _seekCoverChance: 0.0 },
     turret:  { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
     shocker: { _cowardice: 0.1, _accuracy: 0.5, _aggression: 0.95, _seekCoverChance: 0.0 },
+    miner_cult: { _cowardice: 0.05, _accuracy: 0.60, _aggression: 0.95, _seekCoverChance: 0.0 },
+    svarta_sol: { _cowardice: 0.15, _accuracy: 0.88, _aggression: 0.65, _seekCoverChance: 0.55 },
   };
   const s = stats[type] || stats.scav;
   const p = personality[type] || personality.scav;
@@ -379,6 +383,23 @@ export function generateMiningVillageMap() {
     stoll.tacticalRole = 'suppressor';
 
     enemies.push(ort, stoll);
+  }
+
+  // === STÅLHANDSKE-KULTEN — 3-4 miners in the underground tunnels ===
+  const minerCultZones = [ZONE_MINE_WEST_BRANCH, ZONE_MINE_EAST_BRANCH, ZONE_MINE_MAIN_TUNNEL, ZONE_MINE_EAST_TUNNEL];
+  const minerCultCount = 3 + Math.floor(Math.random() * 2); // 3-4
+  for (let i = 0; i < minerCultCount; i++) {
+    const zone = minerCultZones[i % minerCultZones.length];
+    const mc = rz(zone, 'miner_cult');
+    (mc as any)._cultFaction = 'stalhandske';
+    enemies.push(mc);
+  }
+
+  // === SVARTA SOLEN OPERATIVE — rare spawn (25% chance) near mine entrance ===
+  if (Math.random() < 0.25) {
+    const op = rz(ZONE_MINE_ENTRANCE, 'svarta_sol');
+    (op as any)._cultFaction = 'svarta_sol';
+    enemies.push(op);
   }
 
   // ══════════════════════════════════════

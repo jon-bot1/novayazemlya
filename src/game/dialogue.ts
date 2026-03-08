@@ -11,6 +11,9 @@ export const ALERT_LINES: Record<string, string[]> = {
   redneck: ['HEY! WHO\'S THERE?!', 'GET OFF MY LAND!', 'I SEE YA!', 'TRESPASSER!!'],
   shocker: ['⚡ ОБНАРУЖЕН!', 'ПОПАЛСЯ!', 'ЭЛЕКТРИЧЕСТВО НЕ ЖДЁТ!', 'ГОТОВ К РАЗРЯДУ!'],
   sniper:  ['...цель...', '...вижу...'],
+  cultist: ['НЕЧИСТЫЙ!!', 'БРАТЬЯ! ВРАГ ОРДЕНА!', 'БОРЕАЛИС ВИДИТ ТЕБЯ!', 'ЖЕРТВА ПРИШЛА САМА!', 'ВО ИМЯ ВЕЩЕСТВА!'],
+  miner_cult: ['BERGET VARNAR!', 'INKRÄKTARE I DRIFTEN!', 'STÅLHANDSKE SKA HÄMNAS!', 'DU STÖR RITUALEN!', 'MALMEN ROPAR!'],
+  svarta_sol: ['TARGET ACQUIRED.', 'HYPERBOREAN PROTOCOL.', 'RUNE BEARER — ENGAGE.', 'SOL INVICTUS.'],
 };
 
 // === LOST SIGHT ===
@@ -21,6 +24,9 @@ export const LOST_LINES: Record<string, string[]> = {
   redneck: ['Where\'d he go?!', 'LOST HIM!', 'Come out!'],
   shocker: ['ПОТЕРЯН!', 'ГДЕ ОН?!'],
   sniper:  ['...ушёл...'],
+  cultist: ['ВЕЩЕСТВО УКАЖЕТ ПУТЬ...', 'ОН СБЕЖАЛ... ВРЕМЕННО.', 'БРАТЬЯ, ИЩИТЕ!'],
+  miner_cult: ['BERGET GÖMMER HONOM...', 'HAN FÖRSVANN I TUNNELN!', 'SÖK I DRIFTERNA!'],
+  svarta_sol: ['TARGET LOST.', 'SCANNING.', 'RUNE TRACE FADING.'],
 };
 
 // === INVESTIGATE (heard sound) ===
@@ -31,6 +37,9 @@ export const INVESTIGATE_LINES: Record<string, string[]> = {
   redneck: ['What was that?', 'Hear somethin\'...', 'Somethin\' movin\'!'],
   shocker: ['Шум! Внимание!', 'Слышу!'],
   sniper:  [],
+  cultist: ['Вещество дрожит...', 'Кто нарушил покой?', 'Братья, тихо...'],
+  miner_cult: ['Hör du det?', 'Nåt rör sig...', 'I tunneln...'],
+  svarta_sol: ['Movement detected.', 'Investigating.'],
 };
 
 // === PANIC ===
@@ -40,6 +49,9 @@ export const PANIC_LINES: Record<string, string[]> = {
   heavy:   ['ЧТО?! НЕТ!!', 'АААХ!!'],
   redneck: ['OH LORD!!', 'HELP ME!!', 'NOOO!!', 'MAMA!!'],
   shocker: ['РАЗРЯД!! АААА!!', 'СИСТЕМА СБОЙ!!'],
+  cultist: ['БОРЕАЛИС НЕ СПАСЁТ?!', 'ВЕЩЕСТВО! ЗАЩИТИ!', 'НЕТ НЕТ НЕТ!'],
+  miner_cult: ['BERGET SVIKER OSS!', 'STÅLHANDSKE! HJÄLP!', 'NEJ NEJ!'],
+  svarta_sol: ['ABORT MISSION!', 'EXTRACTION NEEDED!'],
 };
 
 // === BERSERK ===
@@ -49,6 +61,9 @@ export const BERSERK_LINES: Record<string, string[]> = {
   heavy:   ['НИЧЕГО НЕ ЧУВСТВУЮ!!', 'ЯРОСТЬ!!', 'РАЗРУШУ ТЕБЯ!!'],
   redneck: ['THAT\'S IT!!', 'I\'LL KILL YA!!', 'RAAAH!!'],
   shocker: ['МАКСИМАЛЬНЫЙ РАЗРЯД!!', 'ПЕРЕГРУЗКА!!'],
+  cultist: ['ВЕЩЕСТВО ДАЁТ СИЛУ!!', 'КРОВЬ ДЛЯ БОРЕАЛИСА!!', 'Я ВИЖУ СВЕТ!!'],
+  miner_cult: ['BERGET GER MIG KRAFT!!', 'MALMEN BRINNER I MINA ÅDROR!!', 'DU DÖR HÄR NERE!!'],
+  svarta_sol: ['FULL ASSAULT.', 'NO QUARTER.', 'THULE DEMANDS BLOOD.'],
 };
 
 // === FLEEING ===
@@ -58,6 +73,9 @@ export const FLEE_LINES: Record<string, string[]> = {
   heavy:   ['ТАКТИЧЕСКОЕ ОТСТУПЛЕНИЕ...'],
   redneck: ['I\'m outta here!', 'Too much!', 'Nope!'],
   shocker: ['ПЕРЕЗАРЯДКА!'],
+  cultist: ['ОТСТУПАЮ К АЛТАРЮ!', 'ВЕЩЕСТВО НЕ ДОПУСТИТ!'],
+  miner_cult: ['TILLBAKA TILL DRIFTEN!', 'BERGET SKYDDAR MIG!'],
+  svarta_sol: ['TACTICAL WITHDRAWAL.', 'REPOSITIONING.'],
 };
 
 // === DEATH — last words ===
@@ -70,6 +88,9 @@ export const DEATH_LINES: Record<string, string[]> = {
   sniper:  ['...тум...ан...'],
   boss:    [], // Boss has special death sequence
   dog:     ['*whimper*'],
+  cultist: ['Вещество... прими меня...', 'Бореалис... вижу свет...', 'Братья...', 'Алтарь... зовёт...'],
+  miner_cult: ['Berget... tar mig hem...', 'Stålhandske... jag kommer...', 'Malmen... glödde...', 'Djupet...'],
+  svarta_sol: ['Mission... failed...', 'Sol... Invictus...', 'The runes...', 'Thule...'],
 };
 
 // === BOSS DEATH MONOLOGUE — shown in sequence ===
@@ -150,6 +171,9 @@ export const IDLE_LINES: Record<string, string[]> = {
   redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*', 'Somethin\' ain\'t right in them tunnels...', 'Dogs been howlin\' all night...', '*hums a tune*', 'Ain\'t nobody comin\' out here...', 'My granddaddy warned me about this place...'],
   shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*', 'Батареи от Вещества... не разряжаются...', '*искры*', 'Кожа горит...', 'Чувствую ток... везде...', 'Мне нравится боль.'],
   sniper:  [], // snipers are silent
+  cultist: ['*бормочет молитву*', 'Вещество гудит сегодня...', 'Братья скоро соберутся...', '*рисует символы на стене*', 'Бореалис... я слышу тебя...', 'Жертва будет принесена в полночь...', '*покачивается в трансе*', 'Сияние... скоро...'],
+  miner_cult: ['*knackar på bergväggen*', 'Stålhandske talar till mig...', 'Malmen glöder ikväll...', '*mumlar en sång*', 'Kristallerna... pulserar...', 'Vi grävde för djupt...', '*stirrar in i väggen*', 'Absorption... snart...'],
+  svarta_sol: ['*checks equipment*', '*adjusts scope*', 'Perimeter secure.', '*examines rune stone*', 'Hyperborean readings nominal.', '*silent hand signal*'],
 };
 
 // === MAP-SPECIFIC IDLE LINES — override for Swedish map ===
@@ -179,6 +203,9 @@ export const HIT_LINES: Record<string, string[]> = {
   shocker: ['ПОВРЕЖДЕНИЕ!', 'АЙ!', 'ПЕРЕГРУЗКА!', '*шипение*'],
   sniper:  ['...цк...'],
   boss:    ['ХА! ЩЕКОТНО!', 'МАЛО!', 'ЕЩЁ!', 'ЭТО ВСЁ?!', 'СИЛЬНЕЕ!'],
+  cultist: ['БОЛЬ — ЭТО ДАРЕНИЕ!', 'ВЕЩЕСТВО ЛЕЧИТ!', 'АЙ! НЕЧИСТЫЙ!', 'КРОВЬ ДЛЯ АЛТАРЯ!'],
+  miner_cult: ['AJ! BERGET GER MIG STYRKA!', 'SMÄRTA ÄR MALM!', 'DU SKADAR INTE DJUPET!'],
+  svarta_sol: ['HIT!', 'ARMOR HOLDING.', 'MINOR WOUND.', 'CONTINUING.'],
 };
 
 // === COMBAT CALLOUTS — shouted during active firefight ===
@@ -189,6 +216,9 @@ export const COMBAT_LINES: Record<string, string[]> = {
   redneck: ['YEEHAW!', 'EAT LEAD!', 'THAT\'S MY PROPERTY!', 'GIT!', 'STAY DOWN!'],
   shocker: ['РАЗРЯД ГОТОВ!', 'БЛИЖЕ... ДА... БЛИЖЕ!', 'ПОЧУВСТВУЙ ТОК!', '*маниакальный смех*'],
   sniper:  [],
+  cultist: ['ВО ИМЯ БОРЕАЛИСА!', 'ЖЕРТВОПРИНОШЕНИЕ!', 'КРОВЬ НЕЧИСТОГО!', 'ВЕЩЕСТВО ВЕДЁТ ПУЛЮ!', 'АЛТАРЬ ТРЕБУЕТ!'],
+  miner_cult: ['FÖR STÅLHANDSKE!', 'MALMEN SJUNGER!', 'DU ÄR OFFRET!', 'BERGET KROSSAR DIG!'],
+  svarta_sol: ['SUPPRESSING.', 'FLANKING.', 'TARGET ENGAGED.', 'FIRE AND MANEUVER.', 'CLOSING IN.'],
 };
 
 // === GRUVRÅ DEATH MONOLOGUE ===

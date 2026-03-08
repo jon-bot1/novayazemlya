@@ -2197,6 +2197,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         sniper: Math.PI * 0.25,
         redneck: Math.PI * 0.4 - DEG15,
         dog: Math.PI * 0.6,
+        cultist: Math.PI * 0.4 - DEG15,
+        miner_cult: Math.PI * 0.35 - DEG15,
+        svarta_sol: Math.PI * 0.5 - DEG15,
       }[enemy.type] || Math.PI * 0.45 - DEG15);
       const rearRange = isBodyguard ? 0.4 : ({
         scav: 0.15,
@@ -2206,6 +2209,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         sniper: 0.1,
         redneck: 0.2,
         dog: 0.5,
+        cultist: 0.2,
+        miner_cult: 0.15,
+        svarta_sol: 0.3,
       }[enemy.type] || 0.25);
 
       // Clip vision cone to walls (non-elevated only)
@@ -2878,6 +2884,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         heavy: { body: '#cc6a5a', outline: '#aa4a3a', eye: '#211', hat: 'ushanka', hatColor: '#9a5a4a' },
         shocker: { body: '#3a5a8a', outline: '#2a4a7a', eye: '#aaf', hat: 'helmet', hatColor: '#2244aa' },
         redneck: { body: '#8a6a4a', outline: '#6a4a2a', eye: '#331', hat: 'bandana', hatColor: '#aa5533' },
+        cultist: { body: '#2a1a2a', outline: '#1a0a1a', eye: '#ff44ff', hat: 'none', hatColor: '#000' },
+        miner_cult: { body: '#4a3a2a', outline: '#2a1a0a', eye: '#ffaa00', hat: 'ushanka', hatColor: '#3a2a1a' },
+        svarta_sol: { body: '#1a1a2a', outline: '#0a0a1a', eye: '#ff0000', hat: 'beret', hatColor: '#0a0a0a' },
       };
       let cfg = configs[enemy.type];
       // Sleeper: skin-colored body (underwear), no hat, messy hair
@@ -2975,6 +2984,42 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           ctx.quadraticCurveTo(mx, my, state.player.pos.x, state.player.pos.y);
           ctx.stroke();
         }
+      }
+      // Cultist label with occult glow
+      if (enemy.type === 'cultist') {
+        const pulse = 0.5 + Math.sin(state.time * 4) * 0.3;
+        ctx.fillStyle = `rgba(200, 80, 255, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔮 CULTIST', enemy.pos.x, enemy.pos.y - R - 10);
+        // Purple aura
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, R + 6 + Math.sin(state.time * 3) * 3, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(160, 40, 220, ${0.15 + Math.sin(state.time * 2) * 0.1})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      // Miner cult label with amber glow
+      if (enemy.type === 'miner_cult') {
+        const pulse = 0.5 + Math.sin(state.time * 3) * 0.3;
+        ctx.fillStyle = `rgba(255, 180, 40, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⛏️ KULTIST', enemy.pos.x, enemy.pos.y - R - 10);
+        // Amber aura
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, R + 5 + Math.sin(state.time * 2.5) * 2, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(200, 140, 20, ${0.15 + Math.sin(state.time * 2) * 0.08})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      // Svarta Solen label with red tactical glow
+      if (enemy.type === 'svarta_sol') {
+        const pulse = 0.6 + Math.sin(state.time * 6) * 0.3;
+        ctx.fillStyle = `rgba(255, 40, 40, ${pulse})`;
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('☀️ SVARTA SOLEN', enemy.pos.x, enemy.pos.y - R - 10);
       }
     }
 
