@@ -2,7 +2,7 @@ import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, Soun
 import { generateMap, createInitialPlayer } from './map';
 import { generateFishingVillageMap, createFishingVillagePlayer } from './mapFishingVillage';
 import { generateHospitalMap, createHospitalPlayer } from './mapHospital';
-import { generateMiningVillageMap, createMiningVillagePlayer } from './mapMiningVillage';
+import { generateMiningVillageMap, createMiningVillagePlayer, generateMineUndergroundMap, generateMiningSurfaceMap } from './mapMiningVillage';
 import { MapId } from './maps';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
@@ -670,6 +670,61 @@ function generateEnemyLoot(enemy: Enemy) {
     baseLoot.push({ id: `bandage_${enemy.id}`, name: 'Bandage', category: 'medical' as const, icon: '🩹', weight: 0.3, value: 30, healAmount: 15, medicalType: 'bandage' as const, stopsBleeding: 1, description: 'Stops bleeding, restores 15 HP' });
   }
   return baseLoot;
+}
+
+// ══════════════════════════════════════════════════════════
+// MINE ELEVATOR TRANSITION — swaps map data between surface and underground
+// ══════════════════════════════════════════════════════════
+function performMineElevatorTransition(state: GameState, direction: 'up' | 'down') {
+  const newMap = direction === 'down' ? generateMineUndergroundMap() : generateMiningSurfaceMap();
+
+  // Preserve player state (HP, inventory, ammo, etc.) — only change position
+  if (direction === 'down') {
+    state.player.pos = { x: 950, y: 50 }; // elevator exit underground
+  } else {
+    state.player.pos = { x: 950, y: 1700 }; // elevator exit surface
+  }
+
+  // Swap all map data
+  state.walls = newMap.walls;
+  state.enemies = newMap.enemies;
+  state.lootContainers = newMap.lootContainers;
+  state.documentPickups = newMap.documentPickups;
+  state.extractionPoints = newMap.extractionPoints;
+  state.alarmPanels = newMap.alarmPanels;
+  state.props = newMap.props;
+  state.lights = newMap.lights;
+  state.windows = newMap.windows;
+  state.terrainZones = newMap.terrainZones;
+  state.mapWidth = newMap.mapWidth;
+  state.mapHeight = newMap.mapHeight;
+
+  // Reset spatial caches
+  _wallGrid = null;
+  _wallCount = -1;
+  _wallGridStateRef = null;
+  _terrainGrid = null;
+  _terrainGridStateRef = null;
+
+  // Clear transient state
+  state.bullets = [];
+  state.grenades = [];
+  state.placedTNTs = [];
+  state.mortarStrikes = [];
+  state.particles = [];
+  state.soundEvents = [];
+  state.alarmActive = false;
+
+  // Camera snap to new position
+  state.camera = { x: state.player.pos.x, y: state.player.pos.y };
+
+  // Track current mine level
+  (state as any)._mineLevel = direction === 'down' ? 'underground' : 'surface';
+
+  addMessage(state, direction === 'down'
+    ? '⛏ UNDERGROUND MINE — The air is thick with dust. Gruvrå awaits in the deep.'
+    : '⛏ SURFACE — Fresh air. The village spreads out before you.',
+    'intel');
 }
 
 export function createGameState(mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState {
@@ -2610,6 +2665,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {
+      // ── ELEVATOR TRANSITION (mining village level swap) ──
+      const isElevator = (ep as any)._isElevator;
+      if (isElevator) {
+        if (state.extractionProgress === 0) {
+          const dir = (ep as any)._elevatorDirection;
+          addMessage(state, dir === 'down' ? '⛏ DESCENDING INTO THE MINE...' : '⛏ ASCENDING TO SURFACE...', 'intel');
+        }
+        inExtraction = true;
+        state.extractionProgress += dt;
+        if (state.extractionProgress >= ep.timer) {
+          // Perform level transition
+          performMineElevatorTransition(state, (ep as any)._elevatorDirection);
+          state.extractionProgress = 0;
+        }
+        continue; // skip normal extraction logic for elevator
+      }
+
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
         if (isObjekt47) {
           const missing: string[] = [];
