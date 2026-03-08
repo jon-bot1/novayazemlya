@@ -5,7 +5,6 @@ import { GameState, InputState, Item } from '../../game/types';
 import { MapId } from '../../game/maps';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
-import { ActionButton } from './TouchControls';
 import { MobileControls } from './MobileControls';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { unlockSpeech } from '../../game/voice';
@@ -27,6 +26,7 @@ const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
+  const introIsMobile = useIsMobile();
   
   const handleStart = React.useCallback(() => {
     if (anonymous) {
@@ -49,7 +49,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
   const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
-  <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-auto">
+  <div className="absolute inset-0 flex items-start sm:items-center justify-center bg-background z-50 overflow-auto py-2">
     <div className="max-w-lg w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-4 sm:p-8 border border-border bg-card rounded max-h-[98vh] overflow-y-auto">
       <div className="text-center">
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
@@ -65,7 +65,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           placeholder="Enter name..."
           value={name}
           onChange={e => setName(e.target.value)}
-          autoFocus={!anonymous}
+          autoFocus={!anonymous && !introIsMobile}
           disabled={anonymous}
         />
         <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
@@ -554,8 +554,6 @@ export const GameCanvas: React.FC = () => {
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false, throwRock: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const moveTouchRef = useRef<number | null>(null);
-  const aimTouchRef = useRef<number | null>(null);
   const updateKeysRef = useRef<() => void>(() => {});
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
@@ -1026,7 +1024,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: intro
   if (gamePhase === 'intro') {
     return (
-      <div className="relative w-screen h-screen overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
         <IntroScreen onStart={async (name) => {
           setPlayerName(name);
           // Try loading from DB first
@@ -1044,7 +1042,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: homebase
   if (gamePhase === 'homebase') {
     return (
-      <div className="relative w-screen h-screen overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
         <HomeBase
           playerName={playerName}
           stash={stash}
@@ -1238,7 +1236,7 @@ export const GameCanvas: React.FC = () => {
   const backpackItems = backpackEntries.map((entry) => entry.item);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-background touch-none">
+    <div className="relative w-screen h-[100dvh] overflow-hidden bg-background touch-none">
       <div className="relative w-full h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
@@ -1305,7 +1303,6 @@ export const GameCanvas: React.FC = () => {
           <MobileControls
             inputRef={inputRef}
             stateRef={stateRef}
-            canvasRef={canvasRef}
             onToggleInventory={() => { setShowInventory(v => !v); setShowIntel(false); }}
             onToggleIntel={() => { setShowIntel(v => !v); setShowInventory(false); }}
             movementMode={hudState.movementMode}
@@ -1321,10 +1318,10 @@ export const GameCanvas: React.FC = () => {
 
         {/* Mode toggle — top-left corner */}
         <button
-          className="absolute top-2 left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
         >
-          {isMobile ? '🖥️' : '📱'}
+          {isMobile ? 'Desktop' : 'Mobil'}
         </button>
 
         {/* Inventory Panel */}

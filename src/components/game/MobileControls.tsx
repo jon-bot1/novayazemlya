@@ -5,16 +5,15 @@ import { VirtualJoystick, ActionButton } from './TouchControls';
 interface MobileControlsProps {
   inputRef: React.MutableRefObject<InputState>;
   stateRef: React.MutableRefObject<any>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
   onToggleInventory: () => void;
   onToggleIntel: () => void;
   movementMode: 'sneak' | 'walk' | 'sprint';
 }
 
 export const MobileControls: React.FC<MobileControlsProps> = ({
-  inputRef, stateRef, canvasRef, onToggleInventory, onToggleIntel, movementMode,
+  inputRef, stateRef, onToggleInventory, onToggleIntel, movementMode,
 }) => {
-  const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>('walk');
+  const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>(movementMode);
   const aimTouchRef = useRef<number | null>(null);
 
   // Left joystick → direct movement
@@ -58,10 +57,17 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
   const modeIcons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
   const modes: Array<'sneak' | 'walk' | 'sprint'> = ['sneak', 'walk', 'sprint'];
 
+  React.useEffect(() => {
+    setCurrentMode(movementMode);
+  }, [movementMode]);
+
   return (
-    <div className="sm:hidden absolute inset-0 z-40" style={{ pointerEvents: 'none' }}>
+    <div
+      className="sm:hidden absolute inset-0 z-40 touch-none pointer-events-auto"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       {/* Left joystick — movement */}
-      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={130} />
+      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={116} />
 
       {/* Right side — tap/drag to aim & shoot */}
       <div
@@ -102,7 +108,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* Left side action buttons — utility */}
-      <div className="absolute bottom-32 left-[140px] flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className="absolute bottom-32 left-[124px] flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
         <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" />
         <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} variant="small" />
         <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} variant="small" />

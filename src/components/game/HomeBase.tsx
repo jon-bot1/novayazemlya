@@ -65,8 +65,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const xpInfo = getXpForNextLevel(stash.xp);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-auto">
-      <div className="max-w-2xl w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-3 sm:p-6 border border-border bg-card rounded max-h-[98vh] overflow-y-auto">
+    <div className="absolute inset-0 flex items-start sm:items-center justify-center bg-background z-50 overflow-auto py-2">
+      <div className="max-w-2xl w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-3 sm:p-6 border border-border bg-card rounded max-h-[100dvh] overflow-y-auto pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Header */}
         <div className="text-center border-b border-border pb-4">
           <h1 className="text-2xl font-display text-accent text-glow-green tracking-wider">🏠 SAFE HOUSE</h1>
@@ -488,7 +488,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           return (
             <button
               disabled={mapLocked}
-              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 ${
+              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 sticky bottom-0 z-10 border border-border/30 backdrop-blur-sm ${
                 mapLocked
                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                   : 'bg-primary text-primary-foreground hover:bg-primary/80'
