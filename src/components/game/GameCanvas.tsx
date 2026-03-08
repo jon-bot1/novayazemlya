@@ -1138,6 +1138,7 @@ export const GameCanvas: React.FC = () => {
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
             setSelectedMapId(mapId);
+            inputRef.current = createDefaultInputState();
             // Apply upgrades to game state
             stateRef.current = createGameState(mapId);
             const st = stateRef.current;
