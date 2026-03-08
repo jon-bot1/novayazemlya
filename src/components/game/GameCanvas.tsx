@@ -1651,6 +1651,7 @@ export const GameCanvas: React.FC = () => {
           objectives={objectives}
           activeUpgrades={stash.upgrades}
           isMobile={isMobile}
+          mapId={selectedMapId}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');

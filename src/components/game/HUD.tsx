@@ -442,7 +442,7 @@ export const HUD: React.FC<HUDProps> = ({
             {gameOver && deathCause && (
               <p className="text-sm font-mono text-danger/90 text-center border border-danger/30 bg-danger/10 rounded px-3 py-1.5 animate-in fade-in duration-1000">{deathCause}</p>
             )}
-            {extracted && !hasExtractionCode && (
+            {extracted && !hasExtractionCode && (!mapId || mapId === 'objekt47') && (
               <p className="text-sm font-mono text-warning text-center">
                 {!player.inventory.some(i => i.id === 'boss_usb') && !player.inventory.some(i => i.id === 'nuclear_codebook')
                   ? 'Missing USB drive and nuclear codes.'
@@ -452,7 +452,7 @@ export const HUD: React.FC<HUDProps> = ({
                 <br/>Mission incomplete.
               </p>
             )}
-            {extracted && hasExtractionCode && (
+            {extracted && hasExtractionCode && (!mapId || mapId === 'objekt47') && (
               <p className="text-sm font-mono text-loot text-center">💾☢ USB drive + nuclear codes delivered. Full success!</p>
             )}
             
