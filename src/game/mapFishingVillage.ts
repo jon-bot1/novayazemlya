@@ -1,9 +1,9 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone, Item } from './types';
 import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKey, createKeycard, createArmor, createValuable, createTNT, createDogFood } from './items';
 
-// Fishing Village: 1600x2000
+// Fishing Village: 1400x2000
 // Layout: Forest top, cabins along a road running north-south, dock/pier at bottom, sea at very bottom
-const MAP_W = 1600;
+const MAP_W = 1400;
 const MAP_H = 2000;
 
 let enemyId = 10000; // offset to avoid collision with main map
@@ -98,27 +98,33 @@ export function generateFishingVillageMap() {
   const terrainZones: TerrainZone[] = [
     // Dense forest top
     { x: 0, y: 0, w: MAP_W, h: 280, type: 'forest' },
-    // Forest sides (narrower)
-    { x: 0, y: 0, w: 160, h: 1500, type: 'forest' },
-    { x: MAP_W - 160, y: 0, w: 160, h: 1500, type: 'forest' },
+    // Forest sides — east side tighter
+    { x: 0, y: 0, w: 160, h: 1350, type: 'forest' },
+    { x: MAP_W - 100, y: 0, w: 100, h: 1350, type: 'forest' },
+    // Rocky terrain east of cabins
+    { x: 1020, y: 350, w: 280, h: 500, type: 'dirt' },
+    // Swampy/grassy area east-south
+    { x: 1020, y: 850, w: 280, h: 300, type: 'grass' },
     // Main road (vertical, center)
-    { x: 700, y: 200, w: 100, h: 1300, type: 'asphalt' },
+    { x: 620, y: 200, w: 100, h: 1150, type: 'asphalt' },
     // Side road to dock
-    { x: 500, y: 1450, w: 500, h: 70, type: 'asphalt' },
-    // Dock area (concrete pier)
-    { x: 500, y: 1520, w: 500, h: 180, type: 'concrete' },
+    { x: 420, y: 1300, w: 350, h: 70, type: 'asphalt' },
+    // Dock platform (base of pier)
+    { x: 420, y: 1370, w: 450, h: 80, type: 'concrete' },
     // Village grass
-    { x: 200, y: 280, w: 1200, h: 1200, type: 'grass' },
+    { x: 180, y: 280, w: 870, h: 1050, type: 'grass' },
     // Dirt around cabins
-    { x: 300, y: 380, w: 350, h: 700, type: 'dirt' },
-    { x: 850, y: 380, w: 350, h: 700, type: 'dirt' },
+    { x: 280, y: 380, w: 300, h: 700, type: 'dirt' },
+    { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
-    { x: 200, y: 1650, w: 1200, h: 100, type: 'dirt' },
-    // === WATER / SEA at the bottom ===
-    { x: 0, y: 1750, w: MAP_W, h: 250, type: 'water' },
-    // Water flanking the dock
-    { x: 0, y: 1520, w: 480, h: 480, type: 'water' },
-    { x: 1020, y: 1520, w: MAP_W - 1020, h: 480, type: 'water' },
+    { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
+    // === PIER / KAJ extending into the sea ===
+    { x: 590, y: 1450, w: 160, h: 430, type: 'concrete' },
+    // === WATER / SEA — big blue area ===
+    { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
+    // Water flanking the dock platform
+    { x: 0, y: 1370, w: 400, h: 630, type: 'water' },
+    { x: 890, y: 1370, w: MAP_W - 890, h: 630, type: 'water' },
   ];
 
   // ══════════════════════════════════════
@@ -143,68 +149,76 @@ export function generateFishingVillageMap() {
     return walls;
   };
 
-  // West cabins (doors face road = east) — close to center road
+  // West cabins (doors face road = east)
   const westCabins = [
-    { x: 350, y: 420 },
-    { x: 320, y: 620 },
-    { x: 360, y: 850 },
+    { x: 330, y: 420 },
+    { x: 300, y: 620 },
+    { x: 340, y: 850 },
   ];
-  // East cabins (doors face road = west) — close to center road
+  // East cabins (doors face road = west) — pulled closer
   const eastCabins = [
-    { x: 880, y: 400 },
-    { x: 910, y: 630 },
-    { x: 870, y: 870 },
+    { x: 780, y: 400 },
+    { x: 810, y: 630 },
+    { x: 770, y: 870 },
   ];
 
   const walls: Wall[] = [
     ...westCabins.flatMap(c => makeCabin(c.x, c.y, 'east')),
     ...eastCabins.flatMap(c => makeCabin(c.x, c.y, 'west')),
 
-    // === DOCK / PIER === (80px gap in north wall for entry)
-    makeWall(520, 1530, 180, T, STONE), // north-left
-    makeWall(780, 1530, 200, T, STONE), // north-right (gap 700..780 = 80px)
-    makeWall(520, 1690, 460, T, STONE), // south edge
-    makeWall(520, 1530, T, 160, STONE), // west edge
-    makeWall(980, 1530, T, 160, STONE), // east edge
+    // === DOCK PLATFORM === (80px gap for entry)
+    makeWall(430, 1380, 150, T, STONE), // north-left
+    makeWall(660, 1380, 210, T, STONE), // north-right (gap 580..660 = 80px)
+    makeWall(430, 1450, 150, T, STONE), // south-left
+    makeWall(760, 1450, 110, T, STONE), // south-right
+    makeWall(430, 1380, T, 70, STONE),  // west edge
+    makeWall(870, 1380, T, 70, STONE),  // east edge
+
+    // === PIER / KAJ extending into sea ===
+    makeWall(590, 1450, T, 430, STONE),  // west wall of pier
+    makeWall(750, 1450, T, 430, STONE),  // east wall of pier
+    makeWall(590, 1880, 160, T, STONE),  // south end of pier
 
     // Warehouse at dock (70px door gap on east wall)
-    makeWall(380, 1400, 150, T, WD),
-    makeWall(380, 1500, 150, T, WD),
-    makeWall(380, 1400, T, 100, WD),
-    makeWall(520, 1400, T, 15, WD),
-    makeWall(520, 1485, T, 15, WD), // gap 1415..1485 = 70px
+    makeWall(320, 1250, 150, T, WD),
+    makeWall(320, 1350, 150, T, WD),
+    makeWall(320, 1250, T, 100, WD),
+    makeWall(460, 1250, T, 15, WD),
+    makeWall(460, 1335, T, 15, WD), // gap 1265..1335 = 70px
 
     // Old fishing shack (70px door gap on east wall)
-    makeWall(250, 1280, 100, T, W),
-    makeWall(250, 1370, 100, T, W), // taller shack (90px)
-    makeWall(250, 1280, T, 90, W),
-    makeWall(340, 1280, T, 10, W),
-    makeWall(340, 1350, T, 20, W), // gap 1290..1350 = 60px (tight but OK)
+    makeWall(200, 1140, 100, T, W),
+    makeWall(200, 1230, 100, T, W),
+    makeWall(200, 1140, T, 90, W),
+    makeWall(290, 1140, T, 10, W),
+    makeWall(290, 1210, T, 20, W), // gap 1150..1210 = 60px
 
     // General store / bar (north village) — 70px door gap on east wall
-    makeWall(500, 340, 180, T, WD),
-    makeWall(500, 440, 180, T, WD),
-    makeWall(500, 340, T, 100, WD),
-    makeWall(670, 340, T, 15, WD),
-    makeWall(670, 425, T, 15, WD), // gap 355..425 = 70px
+    makeWall(460, 340, 180, T, WD),
+    makeWall(460, 440, 180, T, WD),
+    makeWall(460, 340, T, 100, WD),
+    makeWall(630, 340, T, 15, WD),
+    makeWall(630, 425, T, 15, WD), // gap 355..425 = 70px
   ];
 
   // ══════════════════════════════════════
   // ZONES
   // ══════════════════════════════════════
-  const ZONE_WEST_VILLAGE = { x: 280, y: 380, w: 350, h: 600 };
-  const ZONE_EAST_VILLAGE = { x: 830, y: 380, w: 350, h: 600 };
-  const ZONE_ROAD_NORTH = { x: 680, y: 300, w: 140, h: 350 };
-  const ZONE_ROAD_SOUTH = { x: 680, y: 700, w: 140, h: 500 };
-  const ZONE_DOCK = { x: 530, y: 1530, w: 440, h: 150 };
-  const ZONE_WAREHOUSE = { x: 390, y: 1410, w: 120, h: 80 };
+  const ZONE_WEST_VILLAGE = { x: 260, y: 380, w: 300, h: 600 };
+  const ZONE_EAST_VILLAGE = { x: 730, y: 380, w: 280, h: 600 };
+  const ZONE_ROAD_NORTH = { x: 600, y: 300, w: 140, h: 350 };
+  const ZONE_ROAD_SOUTH = { x: 600, y: 700, w: 140, h: 500 };
+  const ZONE_DOCK = { x: 440, y: 1380, w: 420, h: 70 };
+  const ZONE_PIER = { x: 600, y: 1470, w: 140, h: 380 };
+  const ZONE_WAREHOUSE = { x: 330, y: 1260, w: 120, h: 80 };
   const ZONE_FOREST_NW = { x: 30, y: 30, w: 300, h: 250 };
-  const ZONE_FOREST_NE = { x: MAP_W - 330, y: 30, w: 300, h: 250 };
-  const ZONE_FOREST_W = { x: 30, y: 350, w: 200, h: 700 };
-  const ZONE_FOREST_E = { x: MAP_W - 230, y: 350, w: 200, h: 700 };
-  const ZONE_STORE = { x: 510, y: 350, w: 150, h: 80 };
+  const ZONE_FOREST_NE = { x: MAP_W - 220, y: 30, w: 190, h: 250 };
+  const ZONE_FOREST_W = { x: 30, y: 350, w: 150, h: 700 };
+  const ZONE_FOREST_E = { x: MAP_W - 130, y: 350, w: 100, h: 700 };
+  const ZONE_STORE = { x: 470, y: 350, w: 150, h: 80 };
+  const ZONE_ROCKY_E = { x: 1050, y: 400, w: 200, h: 450 };
 
-  const PLAYER_SPAWN = { x: 750, y: 230 }; // north road entrance
+  const PLAYER_SPAWN = { x: 670, y: 230 };
   const MIN_SPAWN_DIST = 400;
 
   const rz = (zone: { x: number; y: number; w: number; h: number }, type: Enemy['type'], angle?: number) => {
@@ -303,13 +317,13 @@ export function generateFishingVillageMap() {
     ...eastCabins.map(c => makeLoot(c.x + 50, c.y + 30, pick(['desk', 'locker'] as const), pick(['common', 'desk', 'locker'] as const))),
     rLoot(ZONE_WAREHOUSE, 'crate', 'military'),
     rLoot(ZONE_WAREHOUSE, 'crate', 'military'),
-    makeLoot(430, 1450, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(380, 1300, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_DOCK, 'crate', 'valuable'),
     rLoot(ZONE_DOCK, 'barrel', 'common'),
-    rLoot(ZONE_DOCK, 'crate', 'military'),
+    rLoot(ZONE_PIER, 'crate', 'military'),
     rLoot(ZONE_STORE, 'desk', 'desk'),
     rLoot(ZONE_STORE, 'locker', 'valuable'),
-    makeLoot(550, 390, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(510, 390, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_FOREST_W, 'crate', 'common'),
     rLoot(ZONE_FOREST_E, 'crate', 'military'),
     rLoot(ZONE_ROAD_SOUTH, 'barrel', 'common'),
@@ -348,12 +362,12 @@ export function generateFishingVillageMap() {
   const props: Prop[] = [
     // Trees along road
     ...Array.from({ length: 10 }, (_, i) => ({
-      pos: { x: 680 + (Math.random() > 0.5 ? -50 : 120) + Math.random() * 20, y: 320 + i * 110 },
+      pos: { x: 600 + (Math.random() > 0.5 ? -50 : 120) + Math.random() * 20, y: 320 + i * 100 },
       w: 26 + Math.random() * 14, h: 26 + Math.random() * 14,
       type: (Math.random() > 0.4 ? 'pine_tree' : 'tree') as Prop['type'],
     })),
     // Dense forest top
-    ...Array.from({ length: 18 }, (_, i) => ({
+    ...Array.from({ length: 16 }, (_, i) => ({
       pos: { x: 60 + i * 85 + Math.random() * 30, y: 40 + Math.random() * 200 },
       w: 28 + Math.random() * 18, h: 28 + Math.random() * 18,
       type: (Math.random() > 0.3 ? 'pine_tree' : 'tree') as Prop['type'],
@@ -364,27 +378,36 @@ export function generateFishingVillageMap() {
       w: 26 + Math.random() * 16, h: 26 + Math.random() * 16,
       type: 'pine_tree' as Prop['type'],
     })),
-    // East forest
-    ...Array.from({ length: 8 }, (_, i) => ({
-      pos: { x: MAP_W - 30 - Math.random() * 120, y: 300 + i * 140 + Math.random() * 50 },
+    // East forest — tighter
+    ...Array.from({ length: 6 }, (_, i) => ({
+      pos: { x: MAP_W - 30 - Math.random() * 80, y: 300 + i * 170 + Math.random() * 50 },
       w: 26 + Math.random() * 16, h: 26 + Math.random() * 16,
       type: 'pine_tree' as Prop['type'],
     })),
+    // Rocky east terrain — boulders
+    ...Array.from({ length: 5 }, () => ({
+      pos: { x: 1060 + Math.random() * 180, y: 400 + Math.random() * 400 },
+      w: 18 + Math.random() * 14, h: 16 + Math.random() * 12,
+      type: 'sandbags' as Prop['type'], // reuse as rocks
+    })),
     // Bushes around cabins
-    ...Array.from({ length: 14 }, () => ({
-      pos: { x: 250 + Math.random() * 1000, y: 380 + Math.random() * 600 },
+    ...Array.from({ length: 12 }, () => ({
+      pos: { x: 250 + Math.random() * 800, y: 380 + Math.random() * 600 },
       w: 16 + Math.random() * 12, h: 14 + Math.random() * 10,
       type: 'bush' as Prop['type'],
     })),
-    // Dock props
-    { pos: { x: 600, y: 1570 }, w: 28, h: 28, type: 'wood_crate' },
-    { pos: { x: 650, y: 1590 }, w: 24, h: 24, type: 'wood_crate' },
-    { pos: { x: 880, y: 1560 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 920, y: 1580 }, w: 22, h: 22, type: 'barrel_stack' },
-    { pos: { x: 750, y: 1670 }, w: 40, h: 14, type: 'sandbags' },
+    // Dock platform props
+    { pos: { x: 500, y: 1400 }, w: 28, h: 28, type: 'wood_crate' },
+    { pos: { x: 550, y: 1420 }, w: 24, h: 24, type: 'wood_crate' },
+    { pos: { x: 800, y: 1400 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 840, y: 1420 }, w: 22, h: 22, type: 'barrel_stack' },
+    // Pier props
+    { pos: { x: 650, y: 1600 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 700, y: 1700 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 670, y: 1830 }, w: 40, h: 14, type: 'sandbags' },
     // Fishing shack area
-    { pos: { x: 280, y: 1300 }, w: 26, h: 26, type: 'wood_crate' },
-    { pos: { x: 310, y: 1320 }, w: 22, h: 22, type: 'barrel_stack' },
+    { pos: { x: 240, y: 1170 }, w: 26, h: 26, type: 'wood_crate' },
+    { pos: { x: 270, y: 1190 }, w: 22, h: 22, type: 'barrel_stack' },
     // Cabin yard props
     ...westCabins.map(c => ({
       pos: { x: c.x - 25, y: c.y + 20 }, w: 22, h: 22, type: 'barrel_stack' as Prop['type'],
@@ -393,34 +416,34 @@ export function generateFishingVillageMap() {
       pos: { x: c.x + cabinW + 12, y: c.y + 30 }, w: 26, h: 26, type: 'wood_crate' as Prop['type'],
     })),
     // Vehicle wreck on road
-    { pos: { x: 720, y: 950 }, w: 55, h: 28, type: 'vehicle_wreck' },
-    { pos: { x: 700, y: 600 }, w: 50, h: 25, type: 'vehicle_wreck' },
+    { pos: { x: 650, y: 900 }, w: 55, h: 28, type: 'vehicle_wreck' },
+    { pos: { x: 640, y: 550 }, w: 50, h: 25, type: 'vehicle_wreck' },
     // Sandbags around dock entrance
-    { pos: { x: 540, y: 1440 }, w: 60, h: 16, type: 'sandbags' },
-    { pos: { x: 900, y: 1440 }, w: 60, h: 16, type: 'sandbags' },
+    { pos: { x: 480, y: 1350 }, w: 60, h: 16, type: 'sandbags' },
+    { pos: { x: 800, y: 1350 }, w: 60, h: 16, type: 'sandbags' },
     // Road signs
-    { pos: { x: 730, y: 290 }, w: 12, h: 12, type: 'road_sign' },
-    { pos: { x: 760, y: 1380 }, w: 12, h: 12, type: 'road_sign' },
+    { pos: { x: 650, y: 290 }, w: 12, h: 12, type: 'road_sign' },
+    { pos: { x: 680, y: 1280 }, w: 12, h: 12, type: 'road_sign' },
     // Concrete barriers at dock
-    { pos: { x: 620, y: 1510 }, w: 50, h: 16, type: 'concrete_barrier' },
-    { pos: { x: 850, y: 1510 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 560, y: 1360 }, w: 50, h: 16, type: 'concrete_barrier' },
+    { pos: { x: 780, y: 1360 }, w: 50, h: 16, type: 'concrete_barrier' },
     // Searchlight at dock
-    { pos: { x: 750, y: 1540 }, w: 16, h: 16, type: 'searchlight' },
+    { pos: { x: 670, y: 1390 }, w: 16, h: 16, type: 'searchlight' },
   ];
 
   // ══════════════════════════════════════
   // ALARM PANELS
   // ══════════════════════════════════════
   const alarmPanels: AlarmPanel[] = [
-    { id: 'alarm_intel', pos: { x: 550, y: 390 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
-    { id: 'alarm_disable', pos: { x: 440, y: 1450 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
+    { id: 'alarm_intel', pos: { x: 510, y: 390 }, activated: false, hacked: false, hackProgress: 0, hackTime: 3 },
+    { id: 'alarm_disable', pos: { x: 400, y: 1310 }, activated: false, hacked: false, hackProgress: 0, hackTime: 4 },
   ];
 
   // ══════════════════════════════════════
   // EXTRACTION POINTS
   // ══════════════════════════════════════
   const allExfils: ExtractionPoint[] = [
-    { pos: { x: 750, y: 1680 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
+    { pos: { x: 670, y: 1850 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
     { pos: { x: 80, y: 800 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL WEST' },
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL EAST' },
   ];
@@ -437,12 +460,13 @@ export function generateFishingVillageMap() {
     ...eastCabins.map(c => ({
       pos: { x: c.x + cabinW / 2, y: c.y + cabinH / 2 }, radius: 80, color: '#ffcc66', intensity: 0.5, type: 'window' as const,
     })),
-    { pos: { x: 580, y: 390 }, radius: 100, color: '#ffdd88', intensity: 0.6, type: 'ceiling' },
-    { pos: { x: 650, y: 1580 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 870, y: 1580 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
-    { pos: { x: 750, y: 1550 }, radius: 180, color: '#ddddcc', intensity: 0.4, type: 'ceiling' },
-    { pos: { x: 440, y: 1450 }, radius: 100, color: '#ff8844', intensity: 0.4, type: 'fire' },
-    { pos: { x: 750, y: 1680 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
+    { pos: { x: 540, y: 390 }, radius: 100, color: '#ffdd88', intensity: 0.6, type: 'ceiling' },
+    { pos: { x: 550, y: 1410 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
+    { pos: { x: 800, y: 1410 }, radius: 150, color: '#eeeedd', intensity: 0.5, type: 'ceiling' },
+    { pos: { x: 670, y: 1500 }, radius: 120, color: '#ddddcc', intensity: 0.4, type: 'ceiling' },
+    { pos: { x: 670, y: 1700 }, radius: 100, color: '#ddddcc', intensity: 0.3, type: 'ceiling' },
+    { pos: { x: 400, y: 1310 }, radius: 100, color: '#ff8844', intensity: 0.4, type: 'fire' },
+    { pos: { x: 670, y: 1850 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: 80, y: 800 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, color: '#44ff66', intensity: 0.4, type: 'fire' },
   ];
@@ -453,7 +477,7 @@ export function generateFishingVillageMap() {
   const windows: WindowDef[] = [
     ...westCabins.map(c => ({ x: c.x + cabinW - T, y: c.y + 10, w: T, h: 20, direction: 'east' as const })),
     ...eastCabins.map(c => ({ x: c.x, y: c.y + 10, w: T, h: 20, direction: 'west' as const })),
-    { x: 500, y: 380, w: T, h: 30, direction: 'west' as const },
+    { x: 460, y: 380, w: T, h: 30, direction: 'west' as const },
   ];
 
   return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H };
@@ -463,7 +487,7 @@ export function createFishingVillagePlayer() {
   const weapon = WEAPON_TEMPLATES.makarov();
   const knife = WEAPON_TEMPLATES.knife();
   return {
-    pos: { x: 750, y: 230 },
+    pos: { x: 670, y: 230 },
     hp: 100,
     maxHp: 100,
     speed: 1.69,
