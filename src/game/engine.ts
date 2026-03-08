@@ -79,14 +79,34 @@ function calcHeadshotChance(state: GameState, b: Bullet, enemy: Enemy): number {
   return Math.max(0, Math.min(0.55, chance));
 }
 
-// Helper: handle weapon pickup with slot system
-function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
+// Helper: spawn a weapon as a visible drop on the ground near a position
+function spawnWeaponDrop(state: GameState, item: Item, sourcePos: Vec2) {
+  // Offset slightly from source so it's visible next to the body/crate
+  const angle = Math.random() * Math.PI * 2;
+  const offsetDist = 25 + Math.random() * 15;
+  const dropPos = {
+    x: sourcePos.x + Math.cos(angle) * offsetDist,
+    y: sourcePos.y + Math.sin(angle) * offsetDist,
+  };
+  state.lootContainers.push({
+    id: `weapon_drop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    pos: dropPos,
+    size: 18,
+    items: [item],
+    looted: false,
+    type: 'weapon_drop',
+  });
+}
+
+// Helper: pick up a weapon_drop — equip or swap
+function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer) {
+  const item = lc.items[0];
+  if (!item) return;
   const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
   const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-  const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-  if (currentInSlot && currentInSlot.name === item.name) {
-    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-  } else if (!currentInSlot) {
+
+  if (!currentInSlot) {
+    // Empty slot — just equip
     if (slot === 'primary') {
       state.player.primaryWeapon = item;
       state.player.activeSlot = 3;
@@ -96,12 +116,39 @@ function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
       state.player.activeSlot = 2;
       state.player.equippedWeapon = item;
     }
+    state.player.inventory.push(item);
     if (item.ammoType) setWeaponAmmo(state, item);
     addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
+    lc.looted = true;
+    playPickup();
+  } else if (currentInSlot.name === item.name) {
+    // Same weapon — skip
+    addMessage(state, `Already have ${item.name}`, 'info');
   } else {
-    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-    (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...sourcePos }, time: state.time };
-    addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
+    // Swap — drop old weapon, equip new one
+    const oldWpn = currentInSlot;
+    // Save current ammo to old weapon before dropping
+    if (state.player.equippedWeapon === oldWpn) {
+      (oldWpn as any)._loadedAmmo = state.player.currentAmmo;
+    }
+    // Remove old from inventory
+    const oldIdx = state.player.inventory.indexOf(oldWpn);
+    if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+    // Put new weapon in slot
+    if (slot === 'primary') {
+      state.player.primaryWeapon = item;
+      if (state.player.activeSlot === 3) state.player.equippedWeapon = item;
+    } else {
+      state.player.sidearm = item;
+      if (state.player.activeSlot === 2) state.player.equippedWeapon = item;
+    }
+    state.player.inventory.push(item);
+    if (item.ammoType) setWeaponAmmo(state, item);
+    // Replace this drop's contents with the old weapon
+    lc.items = [oldWpn];
+    lc.looted = false; // keep it on the ground with the old weapon
+    addMessage(state, `🔫 Swapped to ${item.name}! (dropped ${oldWpn.name})`, 'info');
+    playPickup();
   }
 }
 
