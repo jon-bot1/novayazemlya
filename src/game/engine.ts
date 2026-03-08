@@ -785,6 +785,24 @@ export function createGameState(mapId: MapId = 'objekt47', playerLevel: number =
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
   (state as any)._playerNoiseLevel = 0; // 0-1 noise meter for HUD
+  // Post-raid stat tracking
+  (state as any)._shotsFired = 0;
+  (state as any)._shotsHit = 0;
+  (state as any)._damageDealt = 0;
+  (state as any)._damageTaken = 0;
+  // Weather system — affects gameplay
+  const weatherRoll = Math.random();
+  const weatherMap: Record<string, { type: string; intensity: number }> = {
+    objekt47: weatherRoll < 0.3 ? { type: 'blizzard', intensity: 0.5 + Math.random() * 0.5 } : weatherRoll < 0.6 ? { type: 'snow', intensity: 0.3 + Math.random() * 0.3 } : { type: 'clear', intensity: 0 },
+    fishing_village: weatherRoll < 0.4 ? { type: 'fog', intensity: 0.4 + Math.random() * 0.4 } : weatherRoll < 0.7 ? { type: 'rain', intensity: 0.3 + Math.random() * 0.5 } : { type: 'clear', intensity: 0 },
+    hospital: weatherRoll < 0.5 ? { type: 'fog', intensity: 0.5 + Math.random() * 0.3 } : { type: 'clear', intensity: 0 },
+    mining_village: weatherRoll < 0.3 ? { type: 'dust', intensity: 0.4 + Math.random() * 0.4 } : weatherRoll < 0.6 ? { type: 'rain', intensity: 0.3 + Math.random() * 0.4 } : { type: 'clear', intensity: 0 },
+  };
+  const weather = weatherMap[mapId] || { type: 'clear', intensity: 0 };
+  (state as any)._weather = weather;
+  // Ambient events system
+  (state as any)._ambientEvents = [];
+  (state as any)._nextAmbientEventTime = 20 + Math.random() * 30;
   // Tag extraction points with difficulty multipliers
   for (const ep of state.extractionPoints) {
     // Harder exfils = longer timer = more reward
