@@ -639,6 +639,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.deathCause = '💥 Stepped on a landmine';
       addMessage(state, '💥 MINE! You stepped on a landmine!', 'damage');
       playExplosion();
+      (state as any)._screenShake = 1.0;
       spawnParticles(state, newPos.x, newPos.y, '#ff4400', 25);
       spawnParticles(state, newPos.x, newPos.y, '#ffcc44', 20);
       state.soundEvents.push({ pos: { ...newPos }, radius: 500, time: state.time });
