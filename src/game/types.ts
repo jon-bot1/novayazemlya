@@ -35,6 +35,13 @@ export interface Item {
   isBuckshot?: boolean; // fires multiple pellets in a cone
   pelletCount?: number; // number of pellets (default 5)
   coneAngle?: number; // spread cone in radians (default 0.5 ~30°)
+  // Weapon mod properties
+  modType?: 'scope' | 'suppressor' | 'ext_magazine';
+  modBulletSpeedBonus?: number;
+  modFireRateBonus?: number;
+  modMagBonus?: number;
+  modNoiseReduction?: number;
+  attachedMods?: Item[]; // mods attached to this weapon
 }
 
 export interface PendingWeapon {
