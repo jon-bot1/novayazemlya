@@ -114,10 +114,10 @@ export const KRAVTSOV_PHASES = [
   '⚠ ДОКТОР КРАВЦОВ ВВОДИТ МУТАГЕН!',
   '☠ КРАВЦОВ В БЕЗУМИИ — БЕРЕГИСЬ!',
 ];
-export const PATIENT_ZERO_PHASES = [
+export const UZBEK_PHASES = [
   '',
-  '⚠ ПАЦИЕНТ НОЛЬ ВЫРЫВАЕТСЯ ИЗ ОКОВ!',
-  '☠ ПАЦИЕНТ НОЛЬ В ЯРОСТИ — ОН НЕВЕРОЯТНО БЫСТР!',
+  '⚠ УЗБЕК ВЫРЫВАЕТСЯ ИЗ ОКОВ!',
+  '☠ УЗБЕК В ЯРОСТИ — ОН НЕВЕРОЯТНО БЫСТР!',
 ];
 
 // === IDLE CHATTER — type-specific ambient lines ===

@@ -289,8 +289,8 @@ export function generateHospitalMap() {
     }
   }
 
-  // Patient Zero has no bodyguards — but add extra shockers nearby as "failed experiments"
-  const pzIdx = enemies.findIndex(e => (e as any)._bossId === 'patient_zero');
+  // Uzbek has no bodyguards — but add extra shockers nearby as "failed experiments"
+  const pzIdx = enemies.findIndex(e => (e as any)._bossId === 'uzbek');
   if (pzIdx >= 0) {
     const pz = enemies[pzIdx];
     for (const offset of [{ x: -60, y: -30 }, { x: 60, y: -30 }, { x: 0, y: 40 }]) {
