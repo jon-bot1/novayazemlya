@@ -481,12 +481,24 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         )}
 
 
-        <button
-          className="w-full px-6 py-4 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg mt-2"
-          onClick={() => onDeploy(selectedMap)}
-        >
-          🪖 DEPLOY TO {MAPS.find(m => m.id === selectedMap)?.name?.toUpperCase() || 'MISSION'}
-        </button>
+        {(() => {
+          const selMap = MAPS.find(m => m.id === selectedMap);
+          const isTest3 = playerName.trim().toLowerCase() === 'test3';
+          const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+          return (
+            <button
+              disabled={mapLocked}
+              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 ${
+                mapLocked
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/80'
+              }`}
+              onClick={() => { if (!mapLocked) onDeploy(selectedMap); }}
+            >
+              {mapLocked ? `🔒 LOCKED — ${selMap!.unlockRequirement! - stash.extractionCount} MORE EXTRACTION${selMap!.unlockRequirement! - stash.extractionCount !== 1 ? 'S' : ''} NEEDED` : `🪖 DEPLOY TO ${selMap?.name?.toUpperCase() || 'MISSION'}`}
+            </button>
+          );
+        })()}
 
         <p className="text-[10px] font-mono text-muted-foreground/50 text-center">
           {selectedMap === 'fishing_village'
