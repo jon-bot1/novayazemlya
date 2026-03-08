@@ -3234,8 +3234,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const proximityRange = Math.max(70, enemy.alertRange * 0.4);
     const forcedContactRange = 38;
     const closeProximity = !playerIsHiding && distToPlayer < proximityRange;
-    const forcedContact = !playerIsHiding && distToPlayer < forcedContactRange;
-    const playerInRange = !playerIsHiding && (forcedContact || closeProximity || (distToPlayer < effectiveRange && los));
+    const forcedContact = distToPlayer < forcedContactRange;
+    const playerInRange = forcedContact || (!playerIsHiding && (closeProximity || (distToPlayer < effectiveRange && los)));
 
     // === AWARENESS SYSTEM — gradual detection instead of binary ===
     // Calculate visibility factor based on movement, terrain, and cover
