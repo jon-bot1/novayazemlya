@@ -950,14 +950,9 @@ export const GameCanvas: React.FC = () => {
 
       renderGame(ctx, state, cssW, cssH);
 
-      // Check for new documents
+      // Track collected documents (no popup — read them in Intel archive off-raid)
       const docKey = state.documentsRead.join(',');
-      if (docKey !== lastDocCheck && state.documentsRead.length > 0) {
-        const newDocId = state.documentsRead[state.documentsRead.length - 1];
-        const doc = LORE_DOCUMENTS.find(d => d.id === newDocId);
-        if (doc && docKey !== lastDocCheck) setReadingDoc(doc);
-        lastDocCheck = docKey;
-      }
+      lastDocCheck = docKey;
 
       hudUpdateCounter++;
       const forceUpdate = state.gameOver || state.extracted;
