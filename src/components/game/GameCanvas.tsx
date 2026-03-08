@@ -875,9 +875,8 @@ export const GameCanvas: React.FC = () => {
 
       renderGame(ctx, state, cssW, cssH);
 
-      // Track collected documents (no popup — read them in Intel archive off-raid)
-      const docKey = state.documentsRead.join(',');
-      lastDocCheck = docKey;
+
+
 
       hudUpdateCounter++;
       const forceUpdate = state.gameOver || state.extracted;
