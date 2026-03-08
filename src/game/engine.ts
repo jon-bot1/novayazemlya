@@ -13,7 +13,7 @@ import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES,
 function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
-  if (bossId === 'patient_zero') return [...PATIENT_ZERO_DEATH_MONOLOGUE];
+  if (bossId === 'uzbek') return [...UZBEK_DEATH_MONOLOGUE];
   return [...BOSS_DEATH_MONOLOGUE];
 }
 
