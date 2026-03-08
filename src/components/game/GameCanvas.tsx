@@ -1314,9 +1314,24 @@ export const GameCanvas: React.FC = () => {
         saveDailyProgress(dailyProg);
       }
 
+      // Merge weapon mastery kills from this raid
+      const raidMasteryKills = ((state as any)._weaponMasteryKills || {}) as Record<string, number>;
+
       setStash(prev => {
         const newXp = prev.xp + totalXp + dailyXp;
         const newLevel = getLevelForXp(newXp);
+        // Merge weapon mastery
+        const prevMastery = prev.weaponMastery || { ...EMPTY_MASTERY };
+        const newMastery = { ...prevMastery };
+        for (const [type, kills] of Object.entries(raidMasteryKills)) {
+          const t = type as WeaponMasteryType;
+          if (newMastery[t]) {
+            const data = { ...newMastery[t] };
+            data.kills += kills;
+            data.level = getMasteryLevel(data.kills);
+            newMastery[t] = data;
+          }
+        }
         const updated = {
           ...prev,
           items: [...prev.items, ...lootItems],
@@ -1324,6 +1339,7 @@ export const GameCanvas: React.FC = () => {
           rubles: prev.rubles + objectiveReward + dailyRubles,
           xp: newXp,
           level: newLevel,
+          weaponMastery: newMastery,
         };
         persistStash(updated, playerName);
         return updated;
