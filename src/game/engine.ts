@@ -4623,6 +4623,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist > 250) state.longShots++;
             if (killDist < 50) state.knifeDistanceKills++;
             
+            const method = isCrit ? 'Headshot' : b.weaponName || 'Bullet';
+            addKillFeed(state, enemy.type, method);
             if (!isCrit) {
               addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
