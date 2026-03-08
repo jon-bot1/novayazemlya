@@ -447,7 +447,7 @@ export function generateFishingVillageMap() {
   // EXTRACTION POINTS
   // ══════════════════════════════════════
   const allExfils: ExtractionPoint[] = [
-    { pos: { x: 670, y: 1850 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
+    { pos: { x: 680, y: 1680 }, radius: 80, timer: 5, active: false, name: 'SPEEDBOAT' },
     { pos: { x: 80, y: 800 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL WEST' },
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL EAST' },
   ];
