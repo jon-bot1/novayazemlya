@@ -4075,7 +4075,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 coverFound = { x: prop.pos.x, y: prop.pos.y };
               }
             }
-            (enemy as any)._coverPos = coverFound || { x: enemy.pos.x, y: enemy.pos.y };
+            // No valid cover nearby: abort cover mode so enemy doesn't freeze in place
+            if (!coverFound) {
+              (enemy as any)._seekCover = false;
+              (enemy as any)._coverPos = null;
+              (enemy as any)._coverTimer = 0;
+              (enemy as any)._coverDecided = false;
+            } else {
+              (enemy as any)._coverPos = coverFound;
+            }
           }
           const cp = (enemy as any)._coverPos;
           const dToCover = dist(enemy.pos, cp);
