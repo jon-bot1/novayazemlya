@@ -1,17 +1,19 @@
 import "@testing-library/jest-dom";
 
 // Mock AudioContext for tests
+const mockParam = () => new Proxy({ value: 0 }, { get: (t, p) => p === 'value' ? t.value : typeof p === 'string' ? () => {} : undefined, set: (t, p, v) => { if (p === 'value') t.value = v; return true; } });
+const mockNode = () => new Proxy({}, { get: (_, p) => p === 'connect' || p === 'disconnect' || p === 'start' || p === 'stop' ? () => {} : typeof p === 'string' && (p === 'type' || p === 'buffer') ? '' : mockParam() });
 (globalThis as any).AudioContext = class {
-  createGain() { return { gain: { value: 1, setValueAtTime: () => {}, linearRampToValueAtTime: () => {} }, connect: () => {} }; }
-  createOscillator() { return { frequency: { value: 0, setValueAtTime: () => {}, linearRampToValueAtTime: () => {} }, connect: () => {}, start: () => {}, stop: () => {}, type: '' }; }
-  createBiquadFilter() { return { frequency: { value: 0 }, Q: { value: 0 }, type: '', connect: () => {} }; }
-  createBufferSource() { return { buffer: null, connect: () => {}, start: () => {}, stop: () => {}, playbackRate: { value: 1 } }; }
-  createBuffer() { return { getChannelData: () => new Float32Array(1) }; }
-  createDynamicsCompressor() { return { threshold: { value: 0 }, knee: { value: 0 }, ratio: { value: 0 }, attack: { value: 0 }, release: { value: 0 }, connect: () => {} }; }
-  createStereoPanner() { return { pan: { value: 0 }, connect: () => {} }; }
   get destination() { return {}; }
   get currentTime() { return 0; }
   get sampleRate() { return 44100; }
+  createGain() { return mockNode(); }
+  createOscillator() { return mockNode(); }
+  createBiquadFilter() { return mockNode(); }
+  createBufferSource() { return mockNode(); }
+  createDynamicsCompressor() { return mockNode(); }
+  createStereoPanner() { return mockNode(); }
+  createBuffer() { return { getChannelData: () => new Float32Array(1024) }; }
 };
 
 Object.defineProperty(window, "matchMedia", {
