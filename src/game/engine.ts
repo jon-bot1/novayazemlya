@@ -681,13 +681,12 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
         }
       }
     }
-    // Also validate patrol target is reachable
-    if (collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 4)) {
-      const angle = Math.random() * Math.PI * 2;
-      enemy.patrolTarget = {
-        x: enemy.pos.x + Math.cos(angle) * 100,
-        y: enemy.pos.y + Math.sin(angle) * 100,
-      };
+    // Also validate patrol target is reachable and can produce immediate movement
+    if (
+      collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 10)
+      || distSq(tryMoveEnemy(state, enemy.pos, enemy.patrolTarget.x - enemy.pos.x, enemy.patrolTarget.y - enemy.pos.y, 10), enemy.pos) < 0.01
+    ) {
+      enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 180);
     }
   }
 
