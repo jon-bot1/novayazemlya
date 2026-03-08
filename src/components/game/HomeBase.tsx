@@ -68,6 +68,16 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
+  // Restore found docs from localStorage on mount
+  React.useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('nz_found_docs') || '[]') as string[];
+      saved.forEach(id => {
+        const doc = LORE_DOCUMENTS.find(d => d.id === id);
+        if (doc) doc.found = true;
+      });
+    } catch {}
+  }, []);
   const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
@@ -660,6 +670,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                   { label: '🏥 Hospital', filter: (d: LoreDocument) => d.id.startsWith('doc_h') },
                   { label: '⛏️ Norrberget Mine', filter: (d: LoreDocument) => d.id.startsWith('doc_mine') },
                   { label: '🌐 Cross-Site Intel', filter: (d: LoreDocument) => d.id.startsWith('doc_sz') },
+                  { label: '❄️ Arctic Legends', filter: (d: LoreDocument) => d.id.startsWith('doc_legend') },
+                  { label: '🌊 Russenorsk Coastal Lore', filter: (d: LoreDocument) => d.id.startsWith('doc_russenorsk') },
                 ].map(group => {
                   const groupDocs = foundDocs.filter(group.filter);
                   if (groupDocs.length === 0) return null;
