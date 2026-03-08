@@ -2941,13 +2941,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // === IDLE CHATTER — all enemy types ===
+    // === IDLE CHATTER — all enemy types (map-specific on Swedish map) ===
     if ((enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && Math.random() < 0.0008) {
-      setSpeech(enemy, pickLine(IDLE_LINES, enemy.type), 3.0);
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const idlePool = mapId === 'mining_village' && IDLE_LINES_SWEDISH[enemy.type]
+        ? IDLE_LINES_SWEDISH
+        : IDLE_LINES;
+      setSpeech(enemy, pickLine(idlePool, enemy.type), 3.0);
     }
-    // === REDNECK CHASE CHATTER ===
+    // === REDNECK CHASE CHATTER (Swedish on mining village) ===
     if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
-      const lines = ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const lines = mapId === 'mining_village'
+        ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!']
+        : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
       enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
       enemy.speechBubbleTimer = 3;
     }

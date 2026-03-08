@@ -465,13 +465,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     <div>
                       <p className="text-xs font-display text-purple-400">COMMANDANT OSIPOVITJ</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering.
+                        Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering. <span className="text-warning">The nuclear codes are in his safe.</span>
                       </p>
                       <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                         <span>💀 HP: 500</span>
                         <span>🛡️ 2 Bodyguards</span>
                         <span>📍 Underground Bunker</span>
                       </div>
+                      <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"The substance speaks to him. He says it gives orders from below."</p>
                     </div>
                   </div>
                 )}
@@ -481,13 +482,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     <div>
                       <p className="text-xs font-display text-yellow-400">НАЧАЛЬНИК (NACHALNIK)</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        A grizzled smuggler who controls the pier and the only speedboat out. Armed with a shotgun and surrounded by loyal redneck guards and their dogs. Holds the boat keys.
+                        Former Soviet naval officer turned smuggler. Controls the pier and the only speedboat out. Armed with a sharpened fish hook and a TOZ shotgun. <span className="text-warning">His ledger contains the buyer list for Substance Zero shipments.</span>
                       </p>
                       <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                         <span>💀 HP: 400</span>
                         <span>🤠 Redneck Guards</span>
                         <span>📍 The Dock</span>
                       </div>
+                      <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"The fishing boats carry more than fish. Lead-lined containers in the hold."</p>
                     </div>
                   </div>
                 )}
@@ -498,13 +500,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                       <div>
                         <p className="text-xs font-display text-green-400">DR. KRAVTSOV</p>
                         <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                          Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic.
+                          Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic. <span className="text-warning">His notes contain the SZ-0 countermeasure formula.</span>
                         </p>
                         <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                           <span>💀 HP: 400</span>
                           <span>😱 Fear Attack</span>
                           <span>📍 East Wing Lab</span>
                         </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"Science demands sacrifice. These men were already dead. I am giving them purpose."</p>
                       </div>
                     </div>
                     <div className="border-t border-border/20" />
@@ -513,12 +516,46 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                       <div>
                         <p className="text-xs font-display text-red-400">THE UZBEK</p>
                         <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                          Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human.
+                          Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human. <span className="text-warning">Putting him down would be a mercy.</span>
                         </p>
                         <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                           <span>💀 HP: 600</span>
                           <span>⚡ Extreme Speed</span>
                           <span>📍 Basement Cell B-0</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"He absorbed 14 rounds with no visible effect. Then he smiled."</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedMap === 'mining_village' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">⛏️</span>
+                      <div>
+                        <p className="text-xs font-display text-cyan-400">GRUVRÅ — THE MOUNTAIN KING</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. It has existed since before the ice age. The miners disturbed it — and it absorbed them. <span className="text-warning">Your father's compass still points toward it.</span>
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 500</span>
+                          <span>🪨 Cave-in Attack</span>
+                          <span>📍 Deep Chamber, 420m</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"It opened its eyes. They're not crystals. They're TEETH."</p>
+                      </div>
+                    </div>
+                    <div className="border-t border-border/20" />
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">🪨</span>
+                      <div>
+                        <p className="text-xs font-display text-stone-400">ORT & STOLL — Crystal Guardians</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Three-meter crystallized SZ-0 formations that guard the entrance to the deep chamber. They look like stone but they move. They have faces.
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 200/180</span>
+                          <span>🪨 ORT: Melee / STOLL: Ranged</span>
                         </div>
                       </div>
                     </div>
