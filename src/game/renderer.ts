@@ -1065,8 +1065,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   _frameTime = state.time;
   ctx.clearRect(0, 0, w, h);
 
-  const cx = state.camera.x - w / 2;
-  const cy = state.camera.y - h / 2;
+  // Screenshake
+  const shake = (state as any)._screenShake || 0;
+  const shakeX = shake > 0 ? (Math.random() - 0.5) * shake * 8 : 0;
+  const shakeY = shake > 0 ? (Math.random() - 0.5) * shake * 8 : 0;
+
+  const cx = state.camera.x - w / 2 + shakeX;
+  const cy = state.camera.y - h / 2 + shakeY;
 
   ctx.save();
   ctx.translate(-cx, -cy);
