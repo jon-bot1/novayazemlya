@@ -1587,6 +1587,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (bestIdx >= 0) state.wallsBreached++;
     addMessage(state, '🧨 TNT DETONATED! Wall section breached!', 'intel');
     playExplosion();
+    (state as any)._screenShake = 1.2;
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ff8833', 12);
     spawnParticles(state, tnt.pos.x, tnt.pos.y, '#ffcc44', 8);
     state.soundEvents.push({ pos: { ...tnt.pos }, radius: 500, time: state.time });
