@@ -18,6 +18,7 @@ export interface StashState {
   upgrades: UpgradeState;
   xp: number;
   level: number;
+  weaponMastery?: WeaponMasteryState;
 }
 
 const EMPTY_STASH: StashState = {
@@ -28,6 +29,7 @@ const EMPTY_STASH: StashState = {
   upgrades: {},
   xp: 0,
   level: 1,
+  weaponMastery: { ...EMPTY_MASTERY },
 };
 
 export function loadStash(): StashState {
