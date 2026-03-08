@@ -162,6 +162,76 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </button>
       </div>
 
+      {tab === 'story' && (
+        <>
+          <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
+            OPERATION AURORA BOREALIS — ULTRAVIOLET CLEARANCE
+          </div>
+
+          {/* Substance Zero */}
+          <div className="border border-accent/40 rounded p-3 bg-accent/5">
+            <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2">🧬 Substance Zero</h3>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
+              Beneath the Arctic bedrock — from <span className="text-accent">Norrberget</span> in Sweden across the Kola Peninsula to <span className="text-accent">Novaya Zemlya</span> — runs a geological vein of an unknown material. NATO calls it <span className="text-warning">Substance Zero</span>. The Soviets call it <span className="text-warning">Вещество Ноль</span>. The miners at Norrberget called it <span className="text-warning">"the blood of the mountain."</span>
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              When refined, it amplifies nuclear chain reactions by a <span className="text-danger">factor of twelve</span>. A warhead the size of a briefcase could level a city. The Cold War's ultimate escalation.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              But Substance Zero is not inert. It <span className="text-danger">resists extraction</span>. Workers go mad. Equipment fails. In extreme cases — the mountain <span className="text-danger">absorbs</span> them.
+            </p>
+          </div>
+
+          {/* Player Dossier */}
+          <div className="border border-primary/40 rounded p-3 bg-primary/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-primary">🐺 Codename: VARG</span>
+              <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by a secret NATO task force for one purpose: locate and destroy all Substance Zero sites.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              <span className="text-warning">Personal stake:</span> VARG's father, <span className="text-accent">Nils Stålhandske</span>, was a survey engineer who disappeared inside Norrberget Mine in 1957 while investigating the magnetic anomaly. His body was never found. His compass still points toward the mountain.
+            </p>
+          </div>
+
+          {/* The Four Sites */}
+          <div className="border border-border rounded p-3">
+            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">🗺️ The Four Sites</h3>
+            <div className="space-y-2 text-[10px] font-mono text-foreground/70">
+              <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Nuclear codes in Osipovitj's safe. <span className="text-muted-foreground">The heart of the operation.</span></p>
+              <p>█ <span className="text-accent">COASTAL VILLAGE</span> — Maritime smuggling pipeline. Nachalnik ships refined SZ-0 to foreign buyers. <span className="text-muted-foreground">The export terminal.</span></p>
+              <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation. Kravtsov creates SZ-0-resistant soldiers. <span className="text-muted-foreground">The research lab.</span></p>
+              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. Where VARG's father vanished. <span className="text-muted-foreground">The source.</span></p>
+            </div>
+          </div>
+
+          {/* The Maskirovka */}
+          <div className="border border-danger/30 rounded p-3 bg-danger/5">
+            <h3 className="text-xs font-display text-danger uppercase tracking-wider mb-2">🎭 Maskirovka</h3>
+            <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
+              Every site hides behind a cover story. Objekt 47 is a "weather station." The village is "abandoned." The hospital treats "polar syndrome." Norrberget is "geologically exhausted." All lies. Soviet GRU maintains these fictions through compromised officials, false satellite imagery, and eliminated witnesses. Three NATO reconnaissance teams have gone missing attempting to verify these sites. You are the fourth attempt.
+            </p>
+          </div>
+
+          {/* The Endgame */}
+          <div className="border border-warning/40 rounded p-3 bg-warning/5">
+            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">💥 Endgame</h3>
+            <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
+              Recover the nuclear detonation codes from Objekt 47. Plant demolition charges at the deepest point of each site. Trigger a synchronized detonation to permanently collapse the geological vein and deny Substance Zero to all parties. The substance regenerates — destroying one site alone changes nothing. <span className="text-danger">All four must fall.</span>
+            </p>
+          </div>
+
+          {/* Exposure Warning */}
+          <div className="border border-danger/50 rounded p-2 bg-danger/10">
+            <p className="text-[9px] font-mono text-danger/80 leading-relaxed text-center">
+              ⚠ WARNING: Extended Substance Zero exposure causes paranoia, hallucinations, and physical absorption into rock. If your compass starts spinning — LEAVE IMMEDIATELY. ⚠
+            </p>
+          </div>
+        </>
+      )}
+
       {tab === 'characters' && (
         <>
           <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
