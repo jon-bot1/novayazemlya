@@ -1523,7 +1523,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         let impact = { x: state.player.pos.x, y: state.player.pos.y };
         for (let wi = 0; wi < state.walls.length; wi++) {
           const w = state.walls[wi];
-          if (w.color === '#aa4444') continue;
           const cx = Math.max(w.x, Math.min(state.player.pos.x, w.x + w.w));
           const cy = Math.max(w.y, Math.min(state.player.pos.y, w.y + w.h));
           const d = dist(state.player.pos, { x: cx, y: cy });

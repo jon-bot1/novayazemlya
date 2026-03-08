@@ -1,5 +1,5 @@
 import { Wall, LootContainer, Enemy, ExtractionPoint, DocumentPickup, Prop, AlarmPanel, LightSource, WindowDef, TerrainZone, Item } from './types';
-import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKeycard, createArmor, createValuable, createDogFood } from './items';
+import { LOOT_POOLS, WEAPON_TEMPLATES, createAmmo, createExtractionCode, createGrenade, createKeycard, createArmor, createValuable, createDogFood, createTNT } from './items';
 
 // Hospital: 2400x2400
 // Layout: Large abandoned hospital building with corridors, wards, basement, and courtyard
