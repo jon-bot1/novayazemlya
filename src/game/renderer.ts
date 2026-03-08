@@ -3668,6 +3668,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.fillText('💫 STUNNED 💫', w / 2, h / 2 + 80);
   }
 
+  // FEAR EFFECT — green toxic overlay + text
+  if (state.fearTimer > 0) {
+    const alpha = Math.min(0.35, state.fearTimer * 0.15);
+    ctx.fillStyle = `rgba(30, 120, 40, ${alpha})`;
+    ctx.fillRect(0, 0, w, h);
+    // Pulsing green vignette
+    const vigAlpha = 0.2 + Math.sin(state.time * 6) * 0.1;
+    const vigGrad = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.6);
+    vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vigGrad.addColorStop(1, `rgba(20, 80, 20, ${vigAlpha})`);
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, 0, w, h);
+    // "FEAR" text
+    ctx.save();
+    ctx.fillStyle = `rgba(100, 255, 80, ${Math.min(0.9, state.fearTimer * 0.4)})`;
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('😱 СТРАХ — НЕ МОГУ СТРЕЛЯТЬ!', w / 2, h / 2 - 30);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = `rgba(200, 255, 200, ${Math.min(0.7, state.fearTimer * 0.3)})`;
+    ctx.fillText('Flee from Kravtsov!', w / 2, h / 2);
+    ctx.restore();
+  }
+
   // EMPTY MAGAZINE — big on-screen text
   if (state.emptyMagTimer > 0) {
     const alpha = Math.min(1, state.emptyMagTimer);
