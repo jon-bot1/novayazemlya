@@ -3837,7 +3837,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 sourceId: enemy.id,
                 sourceType: 'boss',
               });
-              addMessage(state, '💣 OSIPOVITJ throws grenade!', 'warning');
+              addMessage(state, `💣 ${getBossTitle(enemy)} throws grenade!`, 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
