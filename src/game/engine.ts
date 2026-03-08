@@ -1719,29 +1719,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
           }
           if (item.category === 'weapon' && item.damage) {
-            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
-            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-
-            if (currentInSlot && currentInSlot.name === item.name) {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-            } else if (!currentInSlot) {
-            if (slot === 'primary') {
-                state.player.primaryWeapon = item;
-                state.player.activeSlot = 3;
-                state.player.equippedWeapon = item;
-              } else {
-                state.player.sidearm = item;
-                state.player.activeSlot = 2;
-                state.player.equippedWeapon = item;
-              }
-              if (item.ammoType) setWeaponAmmo(state, item);
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
-            } else {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...enemy.pos }, time: state.time };
-              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
-            }
+            handleWeaponPickup(state, item, enemy.pos);
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
