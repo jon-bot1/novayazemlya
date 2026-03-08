@@ -26,6 +26,20 @@ function addMuzzleFlash(state: GameState, x: number, y: number, fromPlayer: bool
   flashes.push({ x, y, time: state.time, fromPlayer });
 }
 
+// Kill feed helper — tracks recent kills for HUD rendering
+function addKillFeed(state: GameState, enemyType: string, method: string) {
+  const feed = (state as any)._killFeed as { text: string; time: number; icon: string }[] || [];
+  const icons: Record<string, string> = {
+    boss: '💀', sniper: '🎯', heavy: '🪖', soldier: '🔫', scav: '🐀',
+    turret: '🏗️', shocker: '⚡', redneck: '🤠', dog: '🐕',
+  };
+  const icon = icons[enemyType] || '☠';
+  const typeLabel = enemyType === 'boss' ? 'BOSS' : enemyType.toUpperCase();
+  feed.push({ text: `${typeLabel} — ${method}`, time: state.time, icon });
+  if (feed.length > 15) feed.splice(0, feed.length - 15);
+  (state as any)._killFeed = feed;
+}
+
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
