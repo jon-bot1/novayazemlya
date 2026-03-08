@@ -744,10 +744,13 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch input
+  // Touch/Pointer input — use Pointer Events for universal mobile support
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Ensure pointer events are captured properly
+    canvas.style.touchAction = 'none';
 
     const screenToWorld = (clientX: number, clientY: number) => {
       const cam = stateRef.current.camera;
@@ -782,70 +785,77 @@ export const GameCanvas: React.FC = () => {
       return false;
     };
 
-    const onTouchStart = (e: TouchEvent) => {
+    // Track active pointers for multi-touch
+    const activePointers = new Map<number, 'move' | 'aim'>();
+
+    const onPointerDown = (e: PointerEvent) => {
+      // Skip mouse events — handled separately with mousedown/mouseup
+      if (e.pointerType === 'mouse') return;
       e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
       unlockSpeech();
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        const world = screenToWorld(t.clientX, t.clientY);
-        const enemy = findEnemyAtWorld(world.x, world.y);
-        if (enemy) {
-          aimTouchRef.current = t.identifier;
-          const dx = world.x - stateRef.current.player.pos.x;
-          const dy = world.y - stateRef.current.player.pos.y;
-          inputRef.current.aimX = dx;
-          inputRef.current.aimY = dy;
-          inputRef.current.shooting = true;
-        } else if (findInteractableAtWorld(world.x, world.y)) {
-          moveTouchRef.current = t.identifier;
-          inputRef.current.moveTarget = world;
-          inputRef.current.moveX = 0;
-          inputRef.current.moveY = 0;
-          inputRef.current.interact = true;
-        } else {
-          moveTouchRef.current = t.identifier;
-          inputRef.current.moveTarget = world;
-          inputRef.current.moveX = 0;
-          inputRef.current.moveY = 0;
-        }
+
+      const world = screenToWorld(e.clientX, e.clientY);
+      const enemy = findEnemyAtWorld(world.x, world.y);
+      if (enemy) {
+        activePointers.set(e.pointerId, 'aim');
+        aimTouchRef.current = e.pointerId;
+        const dx = world.x - stateRef.current.player.pos.x;
+        const dy = world.y - stateRef.current.player.pos.y;
+        inputRef.current.aimX = dx;
+        inputRef.current.aimY = dy;
+        inputRef.current.shooting = true;
+      } else if (findInteractableAtWorld(world.x, world.y)) {
+        activePointers.set(e.pointerId, 'move');
+        moveTouchRef.current = e.pointerId;
+        inputRef.current.moveTarget = world;
+        inputRef.current.moveX = 0;
+        inputRef.current.moveY = 0;
+        inputRef.current.interact = true;
+      } else {
+        activePointers.set(e.pointerId, 'move');
+        moveTouchRef.current = e.pointerId;
+        inputRef.current.moveTarget = world;
+        inputRef.current.moveX = 0;
+        inputRef.current.moveY = 0;
       }
     };
 
-    const onTouchMove = (e: TouchEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
       e.preventDefault();
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (t.identifier === moveTouchRef.current) {
-          inputRef.current.moveTarget = screenToWorld(t.clientX, t.clientY);
-        }
-        if (t.identifier === aimTouchRef.current) {
-          const world = screenToWorld(t.clientX, t.clientY);
-          inputRef.current.aimX = world.x - stateRef.current.player.pos.x;
-          inputRef.current.aimY = world.y - stateRef.current.player.pos.y;
-          inputRef.current.shooting = true;
-        }
+      const role = activePointers.get(e.pointerId);
+      if (!role) return;
+      if (role === 'move' && e.pointerId === moveTouchRef.current) {
+        inputRef.current.moveTarget = screenToWorld(e.clientX, e.clientY);
+      }
+      if (role === 'aim' && e.pointerId === aimTouchRef.current) {
+        const world = screenToWorld(e.clientX, e.clientY);
+        inputRef.current.aimX = world.x - stateRef.current.player.pos.x;
+        inputRef.current.aimY = world.y - stateRef.current.player.pos.y;
+        inputRef.current.shooting = true;
       }
     };
 
-    const onTouchEnd = (e: TouchEvent) => {
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
       e.preventDefault();
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (t.identifier === moveTouchRef.current) moveTouchRef.current = null;
-        if (t.identifier === aimTouchRef.current) { aimTouchRef.current = null; inputRef.current.shooting = false; }
-      }
+      const role = activePointers.get(e.pointerId);
+      activePointers.delete(e.pointerId);
+      if (e.pointerId === moveTouchRef.current) moveTouchRef.current = null;
+      if (e.pointerId === aimTouchRef.current) { aimTouchRef.current = null; inputRef.current.shooting = false; }
     };
 
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
-    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
-    canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
 
     return () => {
-      canvas.removeEventListener('touchstart', onTouchStart);
-      canvas.removeEventListener('touchmove', onTouchMove);
-      canvas.removeEventListener('touchend', onTouchEnd);
-      canvas.removeEventListener('touchcancel', onTouchEnd);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointercancel', onPointerUp);
     };
   }, []);
 
