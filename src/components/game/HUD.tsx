@@ -303,7 +303,7 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
       <div className={`absolute ${bottomOffset} right-2 sm:right-3 flex flex-col items-end gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-right`}>
-        {/* Active weapon — compact */}
+        {/* Active weapon + Visual ammo counter */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">
             <span className="text-foreground font-display text-sm leading-tight">
@@ -312,7 +312,24 @@ export const HUD: React.FC<HUDProps> = ({
             <span className="text-[8px] text-muted-foreground/60 font-mono">{player.activeSlot === 1 ? 'Melee' : player.ammoType}</span>
           </div>
           {player.activeSlot !== 1 && (
-            <span className="text-xl font-display text-accent tabular-nums font-bold ml-2">{player.currentAmmo}</span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-xl font-display text-accent tabular-nums font-bold">{player.currentAmmo}</span>
+              {/* Visual magazine bar */}
+              <div className="flex gap-px">
+                {Array.from({ length: Math.min(30, player.maxAmmo) }).map((_, i) => {
+                  const filled = i < player.currentAmmo;
+                  const ratio = player.maxAmmo > 30 ? Math.ceil(player.maxAmmo / 30) : 1;
+                  const actualFilled = i * ratio < player.currentAmmo;
+                  return (
+                    <div key={i} className={`h-1.5 rounded-sm transition-all duration-75 ${
+                      actualFilled
+                        ? player.currentAmmo <= Math.ceil(player.maxAmmo * 0.2) ? 'bg-danger' : 'bg-accent'
+                        : 'bg-background/40'
+                    }`} style={{ width: Math.max(1, Math.min(3, 60 / Math.min(30, player.maxAmmo))) }} />
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
