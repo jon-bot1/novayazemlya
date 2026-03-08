@@ -39,11 +39,13 @@ export const LORE_DOCUMENTS: LoreDocument[] = [
 
 Objekt 47 "Severnyj Vektor" (Объект 47 «Северный Вектор») confirmed active. Recon team has detected signs of recent activity in the bunker's underground chambers.
 
-Facility personnel evacuated in unknown direction. Laboratory equipment partially dismantled, but traces of experimental work with unknown samples have been found.
+Facility personnel evacuated in unknown direction. Laboratory equipment partially dismantled, but traces of experimental work with unknown samples have been found. Walls of Laboratory No. 3 are covered in a dark crystalline residue that was not present during previous inspections. The residue is warm to the touch. It hums at a frequency below human hearing. Two members of the recon team who touched it bare-handed have reported persistent dreams of "a door opening beneath the sea."
 
-WARNING: Upon discovery of containers marked "B-series" — DO NOT OPEN. Relay code WOLF-7 to HQ for instructions.
+WARNING: Upon discovery of containers marked "B-series" — DO NOT OPEN. DO NOT LOOK DIRECTLY AT CONTENTS. Relay code WOLF-7 to HQ for instructions.
 
 Group "Cedar" has been redeployed to reinforce the perimeter. Communications via frequency 147.300.
+
+ADDENDUM (handwritten): The aurora was green when we arrived. By morning it had turned red. I have never seen a red aurora in March. The sky looked like it was bleeding.
 
 — Zorin`,
     hasCode: true,
@@ -61,9 +63,11 @@ Group "Cedar" has been redeployed to reinforce the perimeter. Communications via
 
 Rain again. The barracks roof has been leaking for three weeks now. The company commander promised to fix it, but he has no time for us — the entire command is obsessed with the underground laboratories.
 
-Yesterday I saw people in chemical suits coming from the bunker. Standing guard near that place is terrifying. At night you hear strange sounds from the ventilation.
+Yesterday I saw people in chemical suits coming from the bunker. Their suits were covered in frost — in August. One of them had taken his mask off. His nose was bleeding black. Not red. Black.
 
-Seryozha from second platoon says he's seen creatures outside the perimeter. I think he's just been drinking too much, but... who knows.
+Standing guard near that place is terrifying. At night you hear strange sounds from the ventilation — not mechanical. It sounds like chanting. Rhythmic. In a language I don't recognize. Seryozha from second platoon says he's seen creatures outside the perimeter. I told him he was drunk. But last night I saw them too. Shapes at the treeline. They stood perfectly still, but the snow around their feet was melting in circles, as if they radiated heat. When I shone my flashlight, they were gone. But the melted circles remained.
+
+The priest in our unit refuses to enter the chapel anymore. He says his prayers come back wrong — he hears his own voice echoing from the ventilation shaft, repeating his words in reverse.
 
 If anyone finds this note — relay code DAWN-12 to Natasha. She'll understand.
 
@@ -163,7 +167,7 @@ RUN`,
     content: `INVENTORY LIST
 Storage No. 3, Objekt 47 "Severnyj Vektor"
 
-✓ Gas masks GP-7 — 240 pcs (12 decommissioned)
+✓ Gas masks GP-7 — 240 pcs (12 decommissioned — filters turned black overnight, cause unknown)
 ✓ RPK-74 — 6 pcs
 ✓ Ammunition 5.45x39 — 12,000 rds (actually ≈8,000, rest "disappeared")
 ✓ Ammunition 9x18 — 8,000 rds
@@ -173,11 +177,12 @@ Storage No. 3, Objekt 47 "Severnyj Vektor"
 ✓ Cigarettes "Prima" — 50 packs
 ✗ Container B-7 — MISSING (who took it?!)
 ✗ Documentation for project "Dawn" — MISSING
+✗ Ritual implements (box 14-C) — NOT ON MANIFEST. Found during inventory. Contains: 7 black candles, a bowl of frozen mercury (still liquid despite -30°C storage), a circle drawn in charcoal on the floor BENEATH the storage rack. Charcoal tested — not wood-based. Possibly calcite from 400m depth.
 
 NOTE: If anyone steals vodka from storage again — I'll shoot. I'm not joking.
 
 — Sidorov
-P.S. Mice ate three MREs. Or not mice. God knows what runs around here at night.`,
+P.S. Something ate three MREs. Tore through the packaging. Teeth marks in the metal tins. Not mice. Not rats. The teeth marks are HUMAN but the jaw width is approximately 20cm. I am requesting a transfer.`,
     hasCode: false,
     found: false,
   },
@@ -362,25 +367,27 @@ Known as: "Nachalnik" (The Boss)
 Last known position: Fishing Village Pier Authority
 
 BACKGROUND:
-Dragunov served 8 years in the Soviet Navy, Black Sea Fleet. Dishonorably discharged in 1980 after an incident involving the disappearance of three crew members during a storm. Investigation inconclusive.
+Dragunov served 8 years in the Soviet Navy, Black Sea Fleet. Dishonorably discharged in 1980 after an incident involving the disappearance of three crew members during a storm. Investigation inconclusive — witnesses reported Dragunov was found on deck alone, speaking to the sea in an unknown language. Blood was found on the hull below the waterline, but not human blood. Chemical analysis inconclusive.
 
-After discharge, he established control over a small fishing village on the northern coast. Within two years, he had turned the legitimate fishing operation into a smuggling network — weapons, contraband, and occasionally people.
+After discharge, he established control over a small fishing village on the northern coast. Within two years, he had turned the legitimate fishing operation into a smuggling network — weapons, contraband, and Substance Zero shipments in lead-lined containers.
 
 DISTINGUISHING FEATURES:
-- Always carries a massive industrial fish hook, repurposed as a close-combat weapon. Hook is approximately 40cm long, sharpened to a razor edge.
-- Missing left ring finger (fishing accident, 1976)
-- Tattoo of an anchor on right forearm
+- Always carries a massive industrial fish hook, repurposed as a close-combat weapon. Hook is approximately 40cm long, sharpened to a razor edge. The hook is inscribed with symbols that match no known alphabet — Dragunov claims "the sea taught him"
+- Missing left ring finger (claims fishing accident, 1976 — medical records show clean severance inconsistent with accident, consistent with ritual amputation)
+- Tattoo of an anchor on right forearm — close inspection reveals the anchor's chain forms a spiral that does not end; it continues beneath the skin in raised scarring
 - Speaks with a deep voice, rarely shouts — his men fear his quiet commands more than any officer's screams
 
 KNOWN ASSOCIATES:
-- Two personal bodyguards, former navy men
-- Pack of trained dogs used for perimeter security
+- Pack of trained dogs used for perimeter security — dogs will not enter the dock building after dark
 - Network of "redneck" smugglers from nearby settlements
 
-WARNING:
-Dragunov is extremely dangerous in close quarters. Multiple reports of him using his hook to incapacitate opponents before they can draw weapons. He is known to charge directly at armed targets — do NOT let him close the distance.
+PSYCHOLOGICAL NOTE:
+Dragunov sleeps on the pier. Not in a cabin — on the wooden dock itself, exposed to the elements. Guards report he sleeps with one hand in the water. On mornings after strong aurora displays, the water around the pier is significantly warmer than the surrounding sea. Fish gather beneath the dock in unnatural numbers during these events, floating motionless, facing the same direction.
 
-His men call him "Nachalnik" — The Boss. On the pier, his word is law.
+WARNING:
+Dragunov is extremely dangerous in close quarters. He is known to charge directly at armed targets — do NOT let him close the distance.
+
+His men call him "Nachalnik" — The Boss. On the pier, his word is law. And the sea, it seems, obeys him too.
 
 — MVD Coastal Division, File #847-V`,
     hasCode: false,
@@ -394,11 +401,13 @@ His men call him "Nachalnik" — The Boss. On the pier, his word is law.
     classification: 'OPEN',
     content: `Don't go near the pier at night.
 
-Nachalnik doesn't sleep. He sits on the dock with that hook, sharpening it on a stone. Scrape. Scrape. Scrape. You can hear it from the cabins.
+Nachalnik doesn't sleep. He sits on the dock with that hook, sharpening it on a stone. Scrape. Scrape. Scrape. You can hear it from the cabins. Sometimes the scraping changes rhythm and the sea responds — waves pulse in time with his hand. I've watched. The tide FOLLOWS his hook.
 
 Last month, Petya tried to steal a boat. They found him on the beach next morning. The hook had gone clean through his shoulder. He was alive. Nachalnik wanted him alive. So everyone could see.
 
-The speedboat is the only way out. And Nachalnik has the keys.
+But here's the strange part — Petya says Nachalnik wasn't the one who caught him. He says the WATER caught him. Says a wave rose up and wrapped around his legs like a hand. By the time he fell, Nachalnik was already standing over him. Hadn't moved from his spot on the dock. The distance was 40 meters.
+
+The speedboat is the only way out. And Nachalnik has the keys. He keeps them on a chain around his neck, next to a vial of something dark that glows faintly when the aurora is out.
 
 If you're reading this, you're already too close.
 
@@ -425,13 +434,15 @@ They told us this was a routine posting. Guard duty. Six months and home. What a
 
 [Sound of wind]
 
-Petrov disappeared last night. Just... gone. His bunk was still warm. Boot prints led to the south entrance, then stopped. Just stopped. In the middle of the snow. No tracks leading away.
+Petrov disappeared last night. Just... gone. His bunk was still warm. Boot prints led to the south entrance, then stopped. Just stopped. In the middle of the snow. No tracks leading away. But there were OTHER tracks — starting where his ended. Not boots. Bare feet. Enormous. And they led BACK toward the bunker. Toward the ventilation shaft on sublevel 3.
 
 The lieutenant says he deserted. But where would he go? There's nothing for 200 kilometers.
 
 [Voice cracks]
 
-I found his lighter by the ventilation shaft. The one his wife gave him. He'd never leave that behind.
+I found his lighter by the ventilation shaft. The one his wife gave him. He'd never leave that behind. The lighter was ice cold. Not winter cold — the metal burned my fingers with cold. And the flame... when I lit it, the flame burned blue. Not orange. Blue. Like the crystals in Lab 3.
+
+The chaplain held a prayer service for Petrov. Halfway through, every light in the barracks flickered — and the ventilation system breathed out a long, slow sigh. Not mechanical. Organic. Like an exhalation. And for one second, the barracks smelled of deep stone and ancient water.
 
 I'm keeping this tape hidden. If someone finds it... tell my family I love them. Tell them I tried.
 
