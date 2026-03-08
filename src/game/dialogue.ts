@@ -88,7 +88,7 @@ export const KRAVTSOV_DEATH_MONOLOGUE = [
   '...наука... не прощает...',
 ];
 
-export const PATIENT_ZERO_DEATH_MONOLOGUE = [
+export const UZBEK_DEATH_MONOLOGUE = [
   'ААААРРРГХ...',
   '...свобода...?',
   '...так долго... в темноте...',
