@@ -564,8 +564,13 @@ export const GameCanvas: React.FC = () => {
   const [selectedMapId, setSelectedMapId] = useState<MapId>('novaya_zemlya');
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
   const [rerollCount, setRerollCount] = useState(0);
-  const extractedRef = useRef(false); // prevent double extraction
-  const dbSyncedRef = useRef(false); // track if we loaded from DB
+  const extractedRef = useRef(false);
+  const dbSyncedRef = useRef(false);
+
+  // Mobile detection with manual override
+  const autoMobile = useIsMobile();
+  const [mobileOverride, setMobileOverride] = useState<boolean | null>(null);
+  const isMobile = mobileOverride !== null ? mobileOverride : autoMobile;
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
