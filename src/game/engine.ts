@@ -2503,7 +2503,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
 
       // ═══ KRAVTSOV FEAR ATTACK — inject terror, force player to flee ═══
-      if (bossId === 'kravtsov' && (enemy.bossPhase || 0) >= 1) {
+      if ((enemy as any)._bossId === 'kravtsov' && (enemy.bossPhase || 0) >= 1) {
         const fearCd = (enemy as any)._fearCooldown || 0;
         const fearCharging = (enemy as any)._fearCharging || 0;
         if (fearCd > 0) {
