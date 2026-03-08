@@ -1012,13 +1012,33 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   }
 
   // === WEAPON DROP PICKUP (E near weapon_drop) ===
+  // Only pick up weapons if NO container/alarm/document is closer (prevents cycling)
   if (input.interact) {
+    let nearestContainerDist = Infinity;
     for (const lc of state.lootContainers) {
-      if (lc.type !== 'weapon_drop' || lc.looted) continue;
-      if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
-        pickupWeaponDrop(state, lc);
-        input.interact = false; // consume E press
-        break;
+      if (lc.type === 'weapon_drop' || lc.looted) continue;
+      const d = dist(state.player.pos, lc.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    for (const dp of state.documentPickups) {
+      if (dp.collected) continue;
+      const d = dist(state.player.pos, dp.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    for (const ap of state.alarmPanels) {
+      if (ap.hacked) continue;
+      const d = dist(state.player.pos, ap.pos);
+      if (d < 70 && d < nearestContainerDist) nearestContainerDist = d;
+    }
+    // Only pick up weapon drop if nothing else interactive is closer
+    if (nearestContainerDist > 70) {
+      for (const lc of state.lootContainers) {
+        if (lc.type !== 'weapon_drop' || lc.looted) continue;
+        if (dist(state.player.pos, lc.pos) < 60 && hasLineOfSight(state, state.player.pos, lc.pos)) {
+          pickupWeaponDrop(state, lc);
+          input.interact = false; // consume E press
+          break;
+        }
       }
     }
   }
@@ -1864,7 +1884,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
-            addMessage(state, '💾 OSIPOVITJ\'S USB DRIVE! Get to the extraction point!', 'intel');
+            addMessage(state, '💾 BOSS USB DRIVE! Get to the extraction point!', 'intel');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
@@ -4627,7 +4647,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
             } else {
               // Hit enemy panics too!
-              if (!(enemy as any)._panicTimer && Math.random() < 0.3) {
+              // Much lower panic chance from friendly fire (was 0.3, now 0.06) to prevent chain reactions
+              if (!(enemy as any)._panicTimer && Math.random() < 0.06) {
                 (enemy as any)._panicTimer = 1.5 + Math.random() * 1.5;
                 addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS from friendly fire!`, 'warning');
               }

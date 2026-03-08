@@ -118,6 +118,8 @@ export function generateFishingVillageMap() {
     { x: 750, y: 380, w: 250, h: 700, type: 'dirt' },
     // Beach / sand near water
     { x: 0, y: 1330, w: MAP_W, h: 90, type: 'dirt' },
+    // === Dock/pier floor — concrete, NOT water ===
+    { x: 500, y: 1380, w: 370, h: 330, type: 'concrete' },
     // === WATER / SEA — big blue area ===
     { x: 0, y: 1420, w: MAP_W, h: 580, type: 'water' },
     // Water flanking the dock
@@ -243,8 +245,8 @@ export function generateFishingVillageMap() {
     rz(ZONE_DOCK, 'soldier'),
     rz(ZONE_DOCK, 'heavy'),
     rz(ZONE_WAREHOUSE, 'scav'),
-    rz(ZONE_FOREST_W, 'sniper'),
-    rz(ZONE_FOREST_E, 'soldier'),
+    rz(ZONE_FOREST_W, 'soldier'),
+    rz(ZONE_FOREST_E, 'scav'),
     rz(ZONE_FOREST_NW, 'scav'),
 
     // Redneck with dog
@@ -331,6 +333,18 @@ export function generateFishingVillageMap() {
     rLoot(ZONE_FOREST_W, 'crate', 'common'),
     rLoot(ZONE_FOREST_E, 'crate', 'military'),
     rLoot(ZONE_ROAD_SOUTH, 'barrel', 'common'),
+    // Extra ground loot scattered around the village
+    rLoot(ZONE_WEST_VILLAGE, 'barrel', 'common'),
+    rLoot(ZONE_WEST_VILLAGE, 'crate', 'common'),
+    rLoot(ZONE_EAST_VILLAGE, 'barrel', 'common'),
+    rLoot(ZONE_EAST_VILLAGE, 'crate', 'desk'),
+    rLoot(ZONE_ROAD_NORTH, 'barrel', 'common'),
+    rLoot(ZONE_FOREST_NW, 'crate', 'common'),
+    rLoot(ZONE_FOREST_NE, 'crate', 'military'),
+    rLoot(ZONE_DOCK_WEST, 'barrel', 'common'),
+    rLoot(ZONE_DOCK_EAST, 'barrel', 'common'),
+    rLoot(ZONE_ROCKY_E, 'crate', 'common'),
+    rLoot(ZONE_ROCKY_E, 'barrel', 'military'),
     {
       id: `loot_${containerId++}`,
       pos: randIn(ZONE_WAREHOUSE.x, ZONE_WAREHOUSE.y, ZONE_WAREHOUSE.w, ZONE_WAREHOUSE.h),
