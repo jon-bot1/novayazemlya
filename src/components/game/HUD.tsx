@@ -130,11 +130,12 @@ interface HUDProps {
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
   isMobile?: boolean;
+  mapId?: string;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
@@ -352,7 +353,8 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* ═══════ LEFT SIDE: Mission items + Objectives ═══════ */}
       <div className="absolute left-2 sm:left-3 top-10 sm:top-1/2 sm:-translate-y-1/2 flex flex-col gap-1 sm:gap-1.5 scale-90 sm:scale-100 origin-top-left">
-        {/* Mission items — tiny indicators */}
+        {/* Mission items — only on objekt47 */}
+        {(!mapId || mapId === 'objekt47') && (
         <div className="flex flex-col gap-0.5">
           <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
             player.inventory.some(i => i.id === 'boss_usb')
@@ -365,6 +367,7 @@ export const HUD: React.FC<HUDProps> = ({
               : 'text-muted-foreground/25'
           }`}>☢ CODES</span>
         </div>
+        )}
         {/* Exfil indicator */}
         {exfilRevealed && (
           <span className="text-[10px] font-mono text-accent bg-accent/10 border border-accent/30 rounded px-1.5 py-0.5 animate-pulse">
@@ -439,7 +442,7 @@ export const HUD: React.FC<HUDProps> = ({
             {gameOver && deathCause && (
               <p className="text-sm font-mono text-danger/90 text-center border border-danger/30 bg-danger/10 rounded px-3 py-1.5 animate-in fade-in duration-1000">{deathCause}</p>
             )}
-            {extracted && !hasExtractionCode && (
+            {extracted && !hasExtractionCode && (!mapId || mapId === 'objekt47') && (
               <p className="text-sm font-mono text-warning text-center">
                 {!player.inventory.some(i => i.id === 'boss_usb') && !player.inventory.some(i => i.id === 'nuclear_codebook')
                   ? 'Missing USB drive and nuclear codes.'
@@ -449,7 +452,7 @@ export const HUD: React.FC<HUDProps> = ({
                 <br/>Mission incomplete.
               </p>
             )}
-            {extracted && hasExtractionCode && (
+            {extracted && hasExtractionCode && (!mapId || mapId === 'objekt47') && (
               <p className="text-sm font-mono text-loot text-center">💾☢ USB drive + nuclear codes delivered. Full success!</p>
             )}
             

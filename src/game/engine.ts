@@ -3269,8 +3269,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           delete (enemy as any)._pendingState;
           setSpeech(enemy, pickLine(ALERT_LINES, enemy.type), 2.5);
         }
+      } else {
+        // Override: if player is very close, break out of reaction delay immediately
+        if (forcedContact || (closeProximity && !state.disguised)) {
+          (enemy as any)._reactionDelay = 0;
+          delete (enemy as any)._pendingState;
+          enemy.awareness = 1.0;
+          enemy.state = 'chase';
+        } else {
+          continue; // frozen during reaction delay (only if player isn't right next to us)
+        }
       }
-      continue; // frozen during reaction delay
     }
 
     if (canSeePlayer) {
@@ -3360,23 +3369,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 5 + Math.random() * 3;
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
-        // Alert all allies in group + nearby
+        // Alert all allies in group + nearby — directly set state, no reaction delay
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
-            // Add reaction delay for radio-alerted allies
-            if (ally.type !== 'boss' && ally.type !== 'turret') {
-              (ally as any)._reactionDelay = 0.3 + Math.random() * 0.7;
-              (ally as any)._reactionDelayDone = true;
-              (ally as any)._pendingState = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-            } else {
-              ally.state = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-            }
+            ally.state = 'chase';
+            ally.investigateTarget = { ...state.player.pos };
+            ally.awareness = Math.max(ally.awareness, 0.9);
             assignTacticalRole(state, ally);
             ally.radioAlert = 2;
           }
@@ -3397,15 +3399,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
-              if (ally.type !== 'boss' && ally.type !== 'turret') {
-                (ally as any)._reactionDelay = 0.2 + Math.random() * 0.8;
-                (ally as any)._reactionDelayDone = true;
-                (ally as any)._pendingState = 'chase';
-                ally.investigateTarget = { ...state.player.pos };
-              } else {
-                ally.state = 'chase';
-                ally.investigateTarget = { ...state.player.pos };
-              }
+              // Directly activate — no reaction delay (was causing infinite freeze loop)
+              ally.state = 'chase';
+              ally.investigateTarget = { ...state.player.pos };
+              ally.awareness = Math.max(ally.awareness, 0.8);
               assignTacticalRole(state, ally);
               ally.radioAlert = 1.5;
             } else if (ally.state === 'chase' || ally.state === 'flank') {
@@ -4083,8 +4080,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (!(enemy as any)._coverPos) {
             let bestCoverSq = Infinity;
             let coverFound: Vec2 | null = null;
+            const coverPropTypes = ['concrete_barrier', 'sandbags', 'vehicle_wreck', 'wood_crate', 'barrel_stack', 'metal_shelf', 'tree', 'pine_tree'];
             for (const prop of state.props) {
-              if (!prop.blocksPlayer) continue;
+              if (!coverPropTypes.includes(prop.type)) continue;
               const pdx = prop.pos.x - enemy.pos.x, pdy = prop.pos.y - enemy.pos.y;
               const dsq = pdx * pdx + pdy * pdy;
               if (dsq < 150 * 150 && dsq < bestCoverSq) {
@@ -4092,60 +4090,61 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 coverFound = { x: prop.pos.x, y: prop.pos.y };
               }
             }
-            // No valid cover nearby: abort cover mode so enemy doesn't freeze in place
+            // No valid cover nearby: abort cover mode and fall through to normal chase
             if (!coverFound) {
               (enemy as any)._seekCover = false;
               (enemy as any)._coverPos = null;
               (enemy as any)._coverTimer = 0;
               (enemy as any)._coverDecided = false;
+              // Fall through to normal chase logic below (don't break!)
             } else {
               (enemy as any)._coverPos = coverFound;
             }
           }
+          // Only process cover behavior if we still have a valid cover position
           const cp = (enemy as any)._coverPos as Vec2 | null;
-          if (!cp) {
-            // No cover point available this frame; continue with normal chase logic
+          if (cp) {
+          const dToCover = dist(enemy.pos, cp);
+            if (dToCover > 15) {
+              // Move toward cover
+              const dir = normalize({ x: cp.x - enemy.pos.x, y: cp.y - enemy.pos.y });
+              enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
+              enemy.angle = Math.atan2(dir.y, dir.x);
+            } else {
+              // In cover — face player and shoot
+              enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+              // Fire from cover
+              if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
+                enemy.state = 'attack';
+              }
+            }
+            // After 30s, randomly pick new behavior
+            if ((enemy as any)._coverTimer <= 0) {
+              const roll = Math.random();
+              if (roll < 0.3) {
+                // Stay in cover — reset timer
+                (enemy as any)._coverTimer = 20 + Math.random() * 15;
+              } else if (roll < 0.55) {
+                // Rush the player
+                (enemy as any)._seekCover = false;
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverDecided = false;
+              } else if (roll < 0.75) {
+                // Disengage to patrol
+                (enemy as any)._seekCover = false;
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverDecided = false;
+                enemy.state = 'patrol';
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+              } else {
+                // Reposition to new cover spot
+                (enemy as any)._coverPos = null;
+                (enemy as any)._coverTimer = 15 + Math.random() * 10;
+              }
+            }
             break;
           }
-          const dToCover = dist(enemy.pos, cp);
-          if (dToCover > 15) {
-            // Move toward cover
-            const dir = normalize({ x: cp.x - enemy.pos.x, y: cp.y - enemy.pos.y });
-            enemy.pos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
-            enemy.angle = Math.atan2(dir.y, dir.x);
-          } else {
-            // In cover — face player and shoot
-            enemy.angle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
-            // Fire from cover
-            if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
-              enemy.state = 'attack';
-            }
-          }
-          // After 30s, randomly pick new behavior
-          if ((enemy as any)._coverTimer <= 0) {
-            const roll = Math.random();
-            if (roll < 0.3) {
-              // Stay in cover — reset timer
-              (enemy as any)._coverTimer = 20 + Math.random() * 15;
-            } else if (roll < 0.55) {
-              // Rush the player
-              (enemy as any)._seekCover = false;
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverDecided = false;
-            } else if (roll < 0.75) {
-              // Disengage to patrol
-              (enemy as any)._seekCover = false;
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverDecided = false;
-              enemy.state = 'patrol';
-              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
-            } else {
-              // Reposition to new cover spot
-              (enemy as any)._coverPos = null;
-              (enemy as any)._coverTimer = 15 + Math.random() * 10;
-            }
-          }
-          break;
+          // If cover was aborted (no cp), fall through to normal chase below
         }
 
         const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
