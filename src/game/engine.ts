@@ -3801,6 +3801,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
     if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
 
+    // Ambush timer decay — if ambush position reached, hold and wait
+    if ((enemy as any)._ambushSet && (enemy as any)._ambushTimer > 0) {
+      (enemy as any)._ambushTimer -= dt;
+      if ((enemy as any)._ambushTimer <= 0) {
+        // Ambush expired — return to patrol
+        delete (enemy as any)._ambushSet;
+        delete (enemy as any)._ambushTimer;
+        enemy.state = 'patrol';
+        enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+      } else if (enemy.state === 'investigate' && enemy.investigateTarget && dist(enemy.pos, enemy.investigateTarget) < 30) {
+        // Reached ambush position — hold still, face toward sound origin, stay in alert
+        enemy.state = 'alert' as any;
+        enemy.awareness = Math.max(enemy.awareness, 0.5);
+      }
+    }
+
     // Decay radio alert visual
     if (enemy.radioAlert > 0) {
       enemy.radioAlert = Math.max(0, enemy.radioAlert - dt);
