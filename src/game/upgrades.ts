@@ -170,6 +170,9 @@ export const TRADER_ITEMS: TraderItem[] = [
   { id: 'buy_toz', name: 'TOZ-34 Shotgun', icon: '🔫', description: 'Devastating close range buckshot', cost: 500, category: 'weapon' },
   { id: 'buy_propaganda', name: 'Propaganda Leaflet', icon: '📢', description: 'Converts one enemy to ally for 60s', cost: 600, category: 'gear' },
   { id: 'buy_dogfood', name: 'Dog Food', icon: '🦴', description: 'Neutralizes a guard dog', cost: 100, category: 'gear' },
+  { id: 'buy_scope', name: 'Red Dot Scope', icon: '🔭', description: 'Weapon mod: +20% bullet speed', cost: 300, category: 'gear' },
+  { id: 'buy_suppressor', name: 'Suppressor', icon: '🔇', description: 'Weapon mod: -50% shot noise', cost: 450, category: 'gear' },
+  { id: 'buy_ext_mag', name: 'Extended Magazine', icon: '📎', description: 'Weapon mod: +8 mag capacity', cost: 250, category: 'gear' },
 ];
 
 // XP level thresholds — level N requires XP_LEVELS[N-1] total XP
