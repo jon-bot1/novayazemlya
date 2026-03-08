@@ -2526,13 +2526,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   const viewCy = state.camera.y - 600;
   const viewW = 1200;
   const viewH = 1200;
+  let revealedByContact = false;
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
-    // Hard contact fail-safe: enemies must instantly activate when player is right on top of them
+    // Hard contact fail-safe: direct body contact always reveals player and forces aggro
     const contactDist = dist(enemy.pos, state.player.pos);
     const playerHiddenNow = !!(state as any)._playerHiding;
-    if (!playerHiddenNow && contactDist < 42) {
+    if (contactDist < 42) {
+      if (playerHiddenNow) {
+        (state as any)._playerHiding = false;
+        state.player.peeking = false;
+        if (!revealedByContact) {
+          addMessage(state, '⚠ Revealed by enemy contact!', 'warning');
+          revealedByContact = true;
+        }
+      }
       delete (enemy as any)._reactionDelay;
       delete (enemy as any)._pendingState;
       (enemy as any)._seekCover = false;
