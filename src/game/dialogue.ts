@@ -203,6 +203,9 @@ export const HIT_LINES: Record<string, string[]> = {
   shocker: ['ПОВРЕЖДЕНИЕ!', 'АЙ!', 'ПЕРЕГРУЗКА!', '*шипение*'],
   sniper:  ['...цк...'],
   boss:    ['ХА! ЩЕКОТНО!', 'МАЛО!', 'ЕЩЁ!', 'ЭТО ВСЁ?!', 'СИЛЬНЕЕ!'],
+  cultist: ['БОЛЬ — ЭТО ДАРЕНИЕ!', 'ВЕЩЕСТВО ЛЕЧИТ!', 'АЙ! НЕЧИСТЫЙ!', 'КРОВЬ ДЛЯ АЛТАРЯ!'],
+  miner_cult: ['AJ! BERGET GER MIG STYRKA!', 'SMÄRTA ÄR MALM!', 'DU SKADAR INTE DJUPET!'],
+  svarta_sol: ['HIT!', 'ARMOR HOLDING.', 'MINOR WOUND.', 'CONTINUING.'],
 };
 
 // === COMBAT CALLOUTS — shouted during active firefight ===
