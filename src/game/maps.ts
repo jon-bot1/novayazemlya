@@ -1,5 +1,5 @@
 // Map registry — central place to define available maps
-export type MapId = 'objekt47' | 'fishing_village' | 'hospital';
+export type MapId = 'objekt47' | 'fishing_village' | 'hospital' | 'mining_village';
 
 export interface MapInfo {
   id: MapId;
