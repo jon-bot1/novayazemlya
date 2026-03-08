@@ -4090,7 +4090,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               (enemy as any)._coverPos = coverFound;
             }
           }
-          const cp = (enemy as any)._coverPos;
+          const cp = (enemy as any)._coverPos as Vec2 | null;
+          if (!cp) {
+            // No cover point available this frame; continue with normal chase logic
+            break;
+          }
           const dToCover = dist(enemy.pos, cp);
           if (dToCover > 15) {
             // Move toward cover
