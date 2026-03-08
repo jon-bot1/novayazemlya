@@ -174,9 +174,9 @@ export const HUD: React.FC<HUDProps> = ({
     <div className="absolute inset-0 pointer-events-none">
 
       {/* ═══════ TOP BAR — Timer + Minimap + Status ═══════ */}
-      <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-3 pt-2">
+      <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-2 sm:px-3 pt-1 sm:pt-2">
         {/* Top-left: Stealth/movement indicator — single compact line */}
-        <div className="flex items-center gap-2 bg-card/60 backdrop-blur-sm rounded px-2 py-1 border border-border/30">
+        <div className="flex items-center gap-1 sm:gap-2 bg-card/60 backdrop-blur-sm rounded px-1.5 sm:px-2 py-0.5 sm:py-1 border border-border/30">
           {(() => {
             const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
             const colors = { sneak: 'text-accent', walk: 'text-foreground/60', sprint: 'text-warning' };
