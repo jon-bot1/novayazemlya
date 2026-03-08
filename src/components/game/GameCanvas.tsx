@@ -1425,32 +1425,34 @@ export const GameCanvas: React.FC = () => {
           Tap to move · Tap enemy to shoot
         </div>
 
-        <div className="hidden sm:block absolute bottom-3 left-3 text-xs text-muted-foreground font-mono opacity-60">
-          WASD move | Shift sprint | Ctrl sneak | Q/Space cover | Mouse aim+shoot | E loot/swap | R reload | H heal | G grenade | 1 melee | 2 sidearm | 3 primary
+        <div className="hidden sm:block absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
+          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · Tab bag · 1-3 weapons
         </div>
-        {/* Inventory Panel — always visible, compact overlay */}
-        <div className="absolute top-[340px] right-3 z-30">
-          <InventoryPanel
-            items={backpackItems}
-            inCover={hudState.inCover}
-            maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
-            onDropItem={(idx) => {
-              const entry = backpackEntries[idx];
-              if (!entry || !stateRef.current) return;
-              const dropped = stateRef.current.player.inventory.splice(entry.originalIndex, 1);
-              if (dropped.length > 0) {
-                stateRef.current.lootContainers.push({
-                  id: `drop_${Date.now()}`,
-                  pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
-                  size: 20,
-                  items: dropped,
-                  looted: false,
-                  type: 'body',
-                });
-              }
-            }}
-          />
-        </div>
+        {/* Inventory Panel — toggled with Tab/I */}
+        {showInventory && (
+          <div className="absolute top-12 right-3 z-30">
+            <InventoryPanel
+              items={backpackItems}
+              inCover={hudState.inCover}
+              maxSlots={12 + (stateRef.current?.backpackCapacity || 0)}
+              onDropItem={(idx) => {
+                const entry = backpackEntries[idx];
+                if (!entry || !stateRef.current) return;
+                const dropped = stateRef.current.player.inventory.splice(entry.originalIndex, 1);
+                if (dropped.length > 0) {
+                  stateRef.current.lootContainers.push({
+                    id: `drop_${Date.now()}`,
+                    pos: { x: stateRef.current.player.pos.x + (Math.random() - 0.5) * 30, y: stateRef.current.player.pos.y + (Math.random() - 0.5) * 30 },
+                    size: 20,
+                    items: dropped,
+                    looted: false,
+                    type: 'body',
+                  });
+                }
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <IntelPanel
