@@ -765,7 +765,17 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
 
 export const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stateRef = useRef<GameState>(createGameState());
+  const initialState = useRef<GameState | null>(null);
+  if (!initialState.current) {
+    try {
+      initialState.current = createGameState();
+    } catch (e) {
+      console.error('Failed to create game state:', e);
+      initialState.current = createGameState('objekt47');
+    }
+  }
+  const stateRef = useRef<GameState>(initialState.current);
+  if (!stateRef.current) stateRef.current = initialState.current;
   const inputRef = useRef<InputState>(createDefaultInputState());
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
