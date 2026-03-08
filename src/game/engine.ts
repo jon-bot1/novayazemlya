@@ -2770,10 +2770,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.radioAlert = 1.5;
         playRadio();
         const radioRange = state.alarmActive ? 800 : 500;
+        const radioRangeSq = radioRange * radioRange;
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < radioRange;
+          const closeEnough = distSq(ally.pos, enemy.pos) < radioRangeSq;
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
