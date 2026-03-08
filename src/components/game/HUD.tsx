@@ -556,6 +556,7 @@ export const HUD: React.FC<HUDProps> = ({
               <button className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-2" onClick={() => window.location.reload()}>
                 📋 MAIN MENU
               </button>
+              {/* Achievements display disabled — code preserved
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
@@ -573,6 +574,7 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 ) : null;
               })()}
+              */}
             </div>
             <HighscoreList currentName={playerName} />
             <FeedbackWidget playerName={playerName} />
