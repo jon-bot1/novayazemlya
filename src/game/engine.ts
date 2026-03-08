@@ -2401,38 +2401,58 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else enemy.bossPhase = 0;
       
       if (enemy.bossPhase !== oldPhase) {
-        const phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
+        const bossId = (enemy as any)._bossId;
+        let phaseNames: string[];
+        if (bossId === 'kravtsov') phaseNames = KRAVTSOV_PHASES;
+        else if (bossId === 'patient_zero') phaseNames = PATIENT_ZERO_PHASES;
+        else phaseNames = ['', '⚠ COMMANDANT OSIPOVITJ IS ENRAGED!', '☠ OSIPOVITJ IS DESPERATE — WATCH OUT!'];
+        
         if (phaseNames[enemy.bossPhase!]) {
           addMessage(state, phaseNames[enemy.bossPhase!], 'warning');
         }
         // Phase transition speech bubbles
-        if (enemy.bossPhase === 1) {
-          enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!';
-          enemy.speechBubbleTimer = 3;
-        } else if (enemy.bossPhase === 2) {
-          enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!';
-          enemy.speechBubbleTimer = 3;
+        if (bossId === 'patient_zero') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = '*ЦЕПИ ТРЕЩАТ*'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = '*НЕЧЕЛОВЕЧЕСКИЙ ВОЙ*'; enemy.speechBubbleTimer = 3; }
+        } else if (bossId === 'kravtsov') {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = 'МУТАГЕН... АКТИВИРОВАН!'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = 'НАУКА... ТРЕБУЕТ... ЖЕРТВ!'; enemy.speechBubbleTimer = 3; }
+        } else {
+          if (enemy.bossPhase === 1) { enemy.speechBubble = 'ВЫ МЕНЯ РАЗОЗЛИЛИ!'; enemy.speechBubbleTimer = 3; }
+          else if (enemy.bossPhase === 2) { enemy.speechBubble = 'Я УБЬЮ ТЕБЯ ГОЛЫМИ РУКАМИ!'; enemy.speechBubbleTimer = 3; }
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
-          enemy.fireRate = 350;
-          enemy.speed = 1.49;
-          enemy.damage = 35;
+          if (bossId === 'patient_zero') {
+            enemy.speed = 2.20; enemy.damage = 65; enemy.fireRate = 350;
+          } else {
+            enemy.fireRate = 350; enemy.speed = 1.49; enemy.damage = 35;
+          }
         }
         if (enemy.bossPhase === 2) {
-          enemy.fireRate = 250;
-          enemy.speed = 1.89;
-          enemy.damage = 40;
+          if (bossId === 'patient_zero') {
+            enemy.speed = 2.80; enemy.damage = 80; enemy.fireRate = 300;
+          } else {
+            enemy.fireRate = 250; enemy.speed = 1.89; enemy.damage = 40;
+          }
         }
       }
 
       // Boss combat taunts — random speech bubbles
       if (!enemy.speechBubble && (enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.002) {
         const phase = enemy.bossPhase || 0;
-        const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
-        const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
-        const taunts2 = ['НЕЕЕТ!', 'ТЫ ОТВЕТИШЬ ЗА ЭТО!', 'Я ЕЩЁ СТОЮ!', 'НЕ СДАМСЯ...'];
-        const pool = phase === 2 ? taunts2 : phase === 1 ? taunts1 : taunts0;
+        const bossId = (enemy as any)._bossId;
+        let pool: string[];
+        if (bossId === 'kravtsov') {
+          pool = KRAVTSOV_TAUNTS[Math.min(phase, 2)];
+        } else if (bossId === 'patient_zero') {
+          pool = PATIENT_ZERO_TAUNTS[Math.min(phase, 2)];
+        } else {
+          const taunts0 = ['СТОЯТЬ!', 'КТО ПУСТИЛ ТЕБЯ СЮДА?!', 'ЖАЛКИЙ ЧЕРВЬ...', 'ТЫ НЕ УЙДЁШЬ ОТСЮДА!', 'ОХРАНА!'];
+          const taunts1 = ['ДАВАЙ! ПОДХОДИ!', 'Я ЛИЧНО ТЕБЯ ЗАКОПАЮ!', 'БОЛЬШЕ ОГНЯ!', 'ВСЕ СЮДА, НЕМЕДЛЕННО!'];
+          const taunts2 = ['НЕЕЕТ!', 'ТЫ ОТВЕТИШЬ ЗА ЭТО!', 'Я ЕЩЁ СТОЮ!', 'НЕ СДАМСЯ...'];
+          pool = phase === 2 ? taunts2 : phase === 1 ? taunts1 : taunts0;
+        }
         enemy.speechBubble = pool[Math.floor(Math.random() * pool.length)];
         enemy.speechBubbleTimer = 2.5;
       }
