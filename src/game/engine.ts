@@ -681,13 +681,14 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
         }
       }
     }
-    // Also validate patrol target is reachable
-    if (collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 4)) {
-      const angle = Math.random() * Math.PI * 2;
-      enemy.patrolTarget = {
-        x: enemy.pos.x + Math.cos(angle) * 100,
-        y: enemy.pos.y + Math.sin(angle) * 100,
-      };
+    // Also validate patrol target is reachable and can produce immediate movement
+    const patrolDir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
+    const patrolProbe = tryMoveEnemy(state, enemy.pos, patrolDir.x * 8, patrolDir.y * 8, 10);
+    if (
+      collidesWithWallsGrid(spawnGrid, enemy.patrolTarget.x, enemy.patrolTarget.y, 10)
+      || distSq(patrolProbe, enemy.pos) < 0.01
+    ) {
+      enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 180);
     }
   }
 
@@ -741,6 +742,65 @@ function tryMoveEnemy(state: GameState, pos: Vec2, dx: number, dy: number, r: nu
   // Don't walk into minefield
   if (isInMinefield(state, newPos.x, newPos.y)) return pos;
   return newPos;
+}
+
+function findEnemyEscapeStep(state: GameState, pos: Vec2, step: number, r: number): Vec2 | null {
+  const seed = Math.random() * Math.PI * 2;
+  const stepVariants = [step, Math.max(4, step * 0.75), Math.max(2, step * 0.5), 1.5];
+
+  for (const s of stepVariants) {
+    for (let i = 0; i < 32; i++) {
+      const a = seed + (i / 32) * Math.PI * 2;
+      const candidate = tryMoveEnemy(state, pos, Math.cos(a) * s, Math.sin(a) * s, r);
+      if (distSq(candidate, pos) > 0.01) return candidate;
+    }
+  }
+  return null;
+}
+
+function pickPatrolTarget(state: GameState, enemy: Enemy, minDistance: number = 90, maxDistance: number = 220): Vec2 {
+  const maxX = Math.max(30, state.mapWidth - 30);
+  const maxY = Math.max(30, state.mapHeight - 30);
+
+  for (let attempt = 0; attempt < 36; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    const range = minDistance + Math.random() * Math.max(10, maxDistance - minDistance);
+    const tx = Math.max(30, Math.min(maxX, enemy.pos.x + Math.cos(angle) * range));
+    const ty = Math.max(30, Math.min(maxY, enemy.pos.y + Math.sin(angle) * range));
+
+    if (collidesWithWalls(state, tx, ty, 10)) continue;
+
+    const dir = normalize({ x: tx - enemy.pos.x, y: ty - enemy.pos.y });
+    const probe = tryMoveEnemy(state, enemy.pos, dir.x * 4, dir.y * 4, 10);
+    if (distSq(probe, enemy.pos) < 0.01) continue;
+
+    return { x: tx, y: ty };
+  }
+
+  const escape = findEnemyEscapeStep(state, enemy.pos, Math.max(4, enemy.speed), 10);
+  if (escape) {
+    const tx = Math.max(30, Math.min(maxX, escape.x + (Math.random() - 0.5) * 120));
+    const ty = Math.max(30, Math.min(maxY, escape.y + (Math.random() - 0.5) * 120));
+    return { x: tx, y: ty };
+  }
+
+  return { ...enemy.pos };
+}
+
+function relocateEnemyToOpenArea(state: GameState, enemy: Enemy): boolean {
+  for (let radius = 16; radius <= 220; radius += 16) {
+    const seed = Math.random() * Math.PI * 2;
+    for (let i = 0; i < 24; i++) {
+      const a = seed + (i / 24) * Math.PI * 2;
+      const nx = Math.max(12, Math.min(state.mapWidth - 12, enemy.pos.x + Math.cos(a) * radius));
+      const ny = Math.max(12, Math.min(state.mapHeight - 12, enemy.pos.y + Math.sin(a) * radius));
+      if (!collidesWithWalls(state, nx, ny, 10) && !isInMinefield(state, nx, ny, 10)) {
+        enemy.pos = { x: nx, y: ny };
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
@@ -3845,19 +3905,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Start patrolling frequently — enemies should feel alive
         if (Math.random() < 0.012) {
           enemy.state = 'patrol';
-          // Pick a patrol target with LOS validation
-          let ptx = enemy.pos.x + (Math.random() - 0.5) * 400;
-          let pty = enemy.pos.y + (Math.random() - 0.5) * 400;
-          ptx = Math.max(30, Math.min(state.mapWidth - 30, ptx));
-          pty = Math.max(30, Math.min(state.mapHeight - 30, pty));
-          // Validate target is reachable (not behind wall)
-          if (!hasLineOfSight(state, enemy.pos, { x: ptx, y: pty }, false)) {
-            // Try a closer, random direction instead
-            const angle = Math.random() * Math.PI * 2;
-            ptx = enemy.pos.x + Math.cos(angle) * 120;
-            pty = enemy.pos.y + Math.sin(angle) * 120;
-          }
-          enemy.patrolTarget = { x: ptx, y: pty };
+          enemy.patrolTarget = pickPatrolTarget(state, enemy, 90, 220);
         }
         break;
       }
@@ -3900,16 +3948,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
             (enemy as any)._stuckCounter++;
             if ((enemy as any)._stuckCounter > 8) {
-              // Try perpendicular or random direction with LOS check
-              const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-              let nx = enemy.pos.x + Math.cos(perpAngle) * 180;
-              let ny = enemy.pos.y + Math.sin(perpAngle) * 180;
-              if (!hasLineOfSight(state, enemy.pos, { x: nx, y: ny }, false)) {
-                const rndAngle = Math.random() * Math.PI * 2;
-                nx = enemy.pos.x + Math.cos(rndAngle) * 100;
-                ny = enemy.pos.y + Math.sin(rndAngle) * 100;
-              }
-              enemy.patrolTarget = { x: nx, y: ny };
+              // Force an escape step, then pick a better patrol target
+              const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
+              if (escapeStep) enemy.pos = escapeStep;
+              else relocateEnemyToOpenArea(state, enemy);
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 90, 220);
               (enemy as any)._stuckCounter = 0;
             }
           } else {
@@ -3941,8 +3984,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!canReach) {
               // Can't reach through wall — give up and patrol instead
               enemy.state = 'patrol';
-              const rAngle = Math.random() * Math.PI * 2;
-              enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle) * 200, y: enemy.pos.y + Math.sin(rAngle) * 200 };
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
               break;
             }
             const dir = normalize({ x: enemy.investigateTarget.x - enemy.pos.x, y: enemy.investigateTarget.y - enemy.pos.y });
@@ -3951,10 +3993,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
               (enemy as any)._stuckCounter++;
               if ((enemy as any)._stuckCounter > 10) {
-                // Stuck at wall — give up investigation
+                // Stuck at wall — escape and resume patrol
+                const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(6, speed * 0.9), 10);
+                if (escapeStep) enemy.pos = escapeStep;
+                else relocateEnemyToOpenArea(state, enemy);
                 enemy.state = 'patrol';
-                const rAngle2 = Math.random() * Math.PI * 2;
-                enemy.patrolTarget = { x: enemy.pos.x + Math.cos(rAngle2) * 200, y: enemy.pos.y + Math.sin(rAngle2) * 200 };
+                enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 240);
                 (enemy as any)._stuckCounter = 0;
               }
             } else {
@@ -3975,8 +4019,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (state.time - (enemy as any)._alertStart > 3 + Math.random() * 2) {
           (enemy as any)._alertStart = 0;
           enemy.state = 'patrol';
-          const alertAngle = Math.random() * Math.PI * 2;
-          enemy.patrolTarget = { x: enemy.pos.x + Math.cos(alertAngle) * 300, y: enemy.pos.y + Math.sin(alertAngle) * 300 };
+          enemy.patrolTarget = pickPatrolTarget(state, enemy, 120, 300);
         }
         break;
       }
@@ -4063,7 +4106,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               (enemy as any)._coverPos = null;
               (enemy as any)._coverDecided = false;
               enemy.state = 'patrol';
-              enemy.patrolTarget = { x: enemy.pos.x + (Math.random() - 0.5) * 200, y: enemy.pos.y + (Math.random() - 0.5) * 200 };
+              enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
             } else {
               // Reposition to new cover spot
               (enemy as any)._coverPos = null;
