@@ -132,11 +132,21 @@ interface HUDProps {
   isMobile?: boolean;
   mapId?: string;
   noiseLevel?: number;
+  weather?: { type: string; intensity: number } | null;
+  shotsFired?: number;
+  shotsHit?: number;
+  damageDealt?: number;
+  damageTaken?: number;
+  enemyPositions?: { x: number; y: number; type: string; state: string }[];
+  extractionPositions?: { x: number; y: number; name: string; active: boolean }[];
+  objectivePositions?: { x: number; y: number }[];
+  mapWidth?: number;
+  mapHeight?: number;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
