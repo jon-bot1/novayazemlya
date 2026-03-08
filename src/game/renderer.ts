@@ -997,24 +997,86 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
   ctx.restore();
 }
 
-// Terrain colors
-const TERRAIN_COLORS: Record<TerrainZone['type'], [string, string]> = {
-  grass: ['#3a4a2e', '#3e4e32'],
-  dirt: ['#5a5040', '#5e5444'],
-  asphalt: ['#3a3a38', '#3e3e3c'],
-  concrete: ['#4e4e44', '#525248'],
-  forest: ['#2a3a1e', '#2e3e22'],
+// Terrain colors — per-map palettes for distinct atmosphere
+type MapPalette = {
+  terrain: Record<string, [string, string]>;
+  outside: string; // color beyond map bounds
+  ambientOverlay: string | null; // full-screen tint
+  grassDetailA: string;
+  grassDetailB: string;
+  dirtDetailA: string;
+  concreteDetail: string;
 };
+
+const MAP_PALETTES: Record<string, MapPalette> = {
+  novaya_zemlya: {
+    terrain: {
+      grass: ['#3a4a2e', '#3e4e32'],
+      dirt: ['#5a5040', '#5e5444'],
+      asphalt: ['#3a3a38', '#3e3e3c'],
+      concrete: ['#4e4e44', '#525248'],
+      forest: ['#2a3a1e', '#2e3e22'],
+    },
+    outside: '#1a2a14',
+    ambientOverlay: null,
+    grassDetailA: 'rgba(60,90,40,0.25)',
+    grassDetailB: 'rgba(40,80,30,0.3)',
+    dirtDetailA: 'rgba(90,70,50,0.15)',
+    concreteDetail: 'rgba(80,80,70,0.08)',
+  },
+  fishing_village: {
+    terrain: {
+      grass: ['#3e5030', '#425434'],
+      dirt: ['#6a5a40', '#6e5e44'],
+      asphalt: ['#3c3c3a', '#40403e'],
+      concrete: ['#5a5a50', '#5e5e54'],
+      forest: ['#2c3c1e', '#304024'],
+    },
+    outside: '#1c2c16',
+    ambientOverlay: 'rgba(180, 160, 100, 0.03)', // warm coastal tint
+    grassDetailA: 'rgba(70,100,50,0.22)',
+    grassDetailB: 'rgba(50,90,40,0.28)',
+    dirtDetailA: 'rgba(110,90,60,0.15)',
+    concreteDetail: 'rgba(90,90,80,0.08)',
+  },
+  hospital: {
+    terrain: {
+      grass: ['#2e3a28', '#32402c'],
+      dirt: ['#484840', '#4c4c44'],
+      asphalt: ['#2a2a2a', '#2e2e2e'],
+      concrete: ['#3a3a38', '#3e3e3c'],
+      forest: ['#222e1a', '#26321e'],
+    },
+    outside: '#121a0e',
+    ambientOverlay: 'rgba(20, 30, 40, 0.12)', // cold dark tint
+    grassDetailA: 'rgba(40,60,30,0.2)',
+    grassDetailB: 'rgba(30,50,25,0.25)',
+    dirtDetailA: 'rgba(60,55,50,0.12)',
+    concreteDetail: 'rgba(50,50,50,0.1)',
+  },
+};
+
+function getMapPalette(state: GameState): MapPalette {
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  return MAP_PALETTES[mapId] || MAP_PALETTES.novaya_zemlya;
+}
+
+// Legacy fallback
+const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.novaya_zemlya.terrain;
 
 // Cached ground canvas — rendered once, blitted each frame
 let _groundCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
 let _groundMapW = 0;
 let _groundMapH = 0;
+let _groundMapId = '';
 
 function ensureGroundCanvas(state: GameState) {
-  if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight) return;
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
   _groundMapW = state.mapWidth;
   _groundMapH = state.mapHeight;
+  _groundMapId = mapId;
+  const palette = getMapPalette(state);
   try {
     _groundCanvas = new OffscreenCanvas(_groundMapW, _groundMapH);
   } catch {
@@ -1029,13 +1091,14 @@ function ensureGroundCanvas(state: GameState) {
     for (let ty = 0; ty < _groundMapH; ty += tileSize) {
       const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
       const tileIdx = ((tx / tileSize) + (ty / tileSize)) % 2;
-      const colors = TERRAIN_COLORS[terrain];
+      const colors = palette.terrain[terrain] || palette.terrain['grass'];
       gctx.fillStyle = tileIdx === 0 ? colors[0] : colors[1];
       gctx.fillRect(tx, ty, tileSize, tileSize);
-      // Sparse grass detail
+      
       const hash = (tx * 7 + ty * 13) % 100;
-      if (hash < 8 && (terrain === 'grass' || terrain === 'forest')) {
-        gctx.strokeStyle = terrain === 'forest' ? 'rgba(40,80,30,0.3)' : 'rgba(60,90,40,0.25)';
+      // Grass & forest details
+      if (hash < 10 && (terrain === 'grass' || terrain === 'forest')) {
+        gctx.strokeStyle = terrain === 'forest' ? palette.grassDetailB : palette.grassDetailA;
         gctx.lineWidth = 1;
         const gx = tx + 10 + (hash % 20);
         const gy = ty + 15 + (hash % 15);
@@ -1043,6 +1106,36 @@ function ensureGroundCanvas(state: GameState) {
         gctx.moveTo(gx, gy + 6); gctx.lineTo(gx - 2, gy); gctx.stroke();
         gctx.beginPath();
         gctx.moveTo(gx + 3, gy + 6); gctx.lineTo(gx + 5, gy - 1); gctx.stroke();
+        // Extra grass blade for denser feel
+        if (hash < 5) {
+          gctx.beginPath();
+          gctx.moveTo(gx + 14, gy + 4); gctx.lineTo(gx + 12, gy - 2); gctx.stroke();
+        }
+      }
+      // Dirt pebble details
+      if (hash < 6 && terrain === 'dirt') {
+        gctx.fillStyle = palette.dirtDetailA;
+        const px = tx + 8 + (hash * 3) % 30;
+        const py = ty + 6 + (hash * 7) % 28;
+        gctx.beginPath(); gctx.arc(px, py, 1.5, 0, Math.PI * 2); gctx.fill();
+        gctx.beginPath(); gctx.arc(px + 12, py + 8, 1, 0, Math.PI * 2); gctx.fill();
+      }
+      // Concrete crack details
+      if (hash < 4 && terrain === 'concrete') {
+        gctx.strokeStyle = palette.concreteDetail;
+        gctx.lineWidth = 0.8;
+        const cx = tx + 5 + (hash * 5) % 30;
+        const cy = ty + 10 + (hash * 3) % 25;
+        gctx.beginPath();
+        gctx.moveTo(cx, cy);
+        gctx.lineTo(cx + 8 + hash % 10, cy + 6 + hash % 8);
+        gctx.lineTo(cx + 14 + hash % 12, cy + 3);
+        gctx.stroke();
+      }
+      // Asphalt line markings (occasional)
+      if (hash < 3 && terrain === 'asphalt') {
+        gctx.fillStyle = 'rgba(200,180,60,0.08)';
+        gctx.fillRect(tx + 20, ty, 6, tileSize);
       }
     }
   }
