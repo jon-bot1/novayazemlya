@@ -2118,6 +2118,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.exfilsVisited.add(ep.name);
     }
     if (!ep.active) continue;
+    
+    // ── CONDITIONAL EXFILS ── some extraction points have requirements
+    const exfilReqs = (ep as any)._requirements as string | undefined;
+    if (exfilReqs && !checkExfilRequirements(state, exfilReqs)) {
+      // Show requirement message when player is near
+      const d = dist(state.player.pos, ep.pos);
+      if (d < ep.radius + 30 && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
+        const reqMsg = getExfilRequirementMessage(exfilReqs);
+        addMessage(state, `🔒 ${ep.name}: ${reqMsg}`, 'warning');
+      }
+      continue; // Skip this exfil
+    }
+    
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
