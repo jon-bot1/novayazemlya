@@ -3007,7 +3007,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           (enemy as any)._bossHealGiven = 0;  // HP given so far
           enemy.speechBubble = 'СТИМУЛЯТОР...';
           enemy.speechBubbleTimer = 3;
-          addMessage(state, '💉 OSIPOVITJ IS INJECTING A STIM! (+50HP over 5s)', 'warning');
+          addMessage(state, `💉 ${getBossTitle(enemy)} IS INJECTING A STIM! (+50HP over 5s)`, 'warning');
         } else {
           (enemy as any)._healingTimer = 3.0;
           (enemy as any)._healDone = true;
