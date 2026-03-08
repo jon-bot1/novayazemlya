@@ -4083,7 +4083,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.killCount++;
             if (enemy.type === 'dog') state.dogsKilled++;
             state.grenadeKills++;
-            addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
+            addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
         }
