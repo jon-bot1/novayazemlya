@@ -218,7 +218,8 @@ export function checkObjectiveCompletion(
       case 'forest_trail': completed = stats.extractionName !== 'SPEEDBOAT' && !!stats.extractionName; break;
       // Hospital specific
       case 'kill_doctor': completed = stats.bossKilled; break;
-      case 'clear_basement': completed = stats.bossKilled && stats.killCount >= 4; break;
+      case 'kill_patient_zero': completed = stats.bossKilled && stats.killCount >= 2; break; // at least 2 boss-type kills
+      case 'clear_basement': completed = stats.killCount >= 6; break;
       case 'hack_lab': completed = stats.alarmsHacked >= 1; break;
       case 'rooftop_escape': completed = stats.extractionName === 'ROOFTOP HELICOPTER'; break;
       case 'parking_escape': completed = stats.extractionName === 'PARKING LOT'; break;
