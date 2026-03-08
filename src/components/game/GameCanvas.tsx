@@ -526,6 +526,41 @@ async function syncStashToDb(playerName: string, stash: StashState) {
   }
 }
 
+// Helper: persist stash to localStorage + DB
+function persistStash(stash: StashState, playerName: string) {
+  saveStash(stash);
+  syncStashToDb(playerName, stash);
+}
+
+// Helper: build objective completion payload from game state
+function buildObjectivePayload(state: GameState) {
+  return {
+    bossKilled: state.enemies.some(e => e.type === 'boss' && e.state === 'dead'),
+    sniperKilled: state.enemies.some(e => e.type === 'sniper' && e.state === 'dead'),
+    terminalsHacked: state.terminalsHacked,
+    documentsCollected: state.documentsCollected,
+    killCount: state.killCount,
+    headshotKills: state.headshotKills,
+    lootValue: state.player.inventory.reduce((s, i) => s + i.value, 0),
+    alarmTriggered: !!(state as any)._alarmEverTriggered,
+    bodiesLooted: state.bodiesLooted,
+    timeSeconds: state.time,
+    tntPlacedOnPlane: !!(state as any)._tntOnPlane,
+    alarmsHacked: state.terminalsHacked,
+    mosinKills: state.mosinKills,
+    wallsBreached: state.wallsBreached,
+    grenadeKills: state.grenadeKills,
+    dogsNeutralized: state.dogsNeutralized,
+    longShots: state.longShots,
+    knifeDistanceKills: state.knifeDistanceKills,
+    cachesLooted: state.cachesLooted,
+    convertKill: !!(state as any)._convertKill,
+    fuelDestroyed: !!(state as any)._fuelDestroyed,
+    ammoDestroyed: !!(state as any)._ammoDestroyed,
+    radioDisabled: !!(state as any)._radioDisabled,
+  };
+}
+
 async function loadStashFromDb(playerName: string): Promise<StashState | null> {
   if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return null;
   try {
@@ -757,17 +792,6 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc, isMobile]);
 
-  // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
-  // Mobile input is handled entirely by MobileControls component with joystick
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.style.touchAction = 'none';
-    // No canvas-level pointer events needed — MobileControls handles touch,
-    // mouse handlers above handle desktop
-    return () => {};
-  }, []);
-
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;
@@ -825,7 +849,6 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('resize', resize);
 
     let hudUpdateCounter = 0;
-    let lastDocCheck = '';
     let reinforcementsSpawned = false;
 
     const loop = (timestamp: number) => {
@@ -852,9 +875,8 @@ export const GameCanvas: React.FC = () => {
 
       renderGame(ctx, state, cssW, cssH);
 
-      // Track collected documents (no popup — read them in Intel archive off-raid)
-      const docKey = state.documentsRead.join(',');
-      lastDocCheck = docKey;
+
+
 
       hudUpdateCounter++;
       const forceUpdate = state.gameOver || state.extracted;
@@ -918,34 +940,7 @@ export const GameCanvas: React.FC = () => {
 
         // Live objective tracking
         if (hudUpdateCounter % 18 === 0) {
-          const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
-          const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
-          const lootVal = state.player.inventory.reduce((s, i) => s + i.value, 0);
-          setObjectives(prev => checkObjectiveCompletion(prev, {
-            bossKilled,
-            sniperKilled,
-            terminalsHacked: state.terminalsHacked,
-            documentsCollected: state.documentsCollected,
-            killCount: state.killCount,
-            headshotKills: state.headshotKills,
-            lootValue: lootVal,
-            alarmTriggered: !!(state as any)._alarmEverTriggered,
-            bodiesLooted: state.bodiesLooted,
-            timeSeconds: state.time,
-            tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-            alarmsHacked: state.terminalsHacked,
-            mosinKills: state.mosinKills,
-            wallsBreached: state.wallsBreached,
-            grenadeKills: state.grenadeKills,
-            dogsNeutralized: state.dogsNeutralized,
-            longShots: state.longShots,
-            knifeDistanceKills: state.knifeDistanceKills,
-            cachesLooted: state.cachesLooted,
-            convertKill: !!(state as any)._convertKill,
-            fuelDestroyed: !!(state as any)._fuelDestroyed,
-            ammoDestroyed: !!(state as any)._ammoDestroyed,
-            radioDisabled: !!(state as any)._radioDisabled,
-          }));
+          setObjectives(prev => checkObjectiveCompletion(prev, buildObjectivePayload(state)));
         }
       }
 
@@ -968,37 +963,11 @@ export const GameCanvas: React.FC = () => {
       const lootValue = lootItems.reduce((s, i) => s + i.value, 0);
 
       // Check objective completion
-      const bossKilled = state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
-      const sniperKilled = state.enemies.some(e => e.type === 'sniper' && e.state === 'dead');
-      const completedObjectives = checkObjectiveCompletion(objectives, {
-        bossKilled,
-        sniperKilled,
-        terminalsHacked: state.terminalsHacked,
-        documentsCollected: state.documentsCollected,
-        killCount: state.killCount,
-        headshotKills: state.headshotKills,
-        lootValue,
-        alarmTriggered: !!(state as any)._alarmEverTriggered,
-        bodiesLooted: state.bodiesLooted,
-        timeSeconds: state.time,
-        tntPlacedOnPlane: !!(state as any)._tntOnPlane,
-        
-        alarmsHacked: state.terminalsHacked,
-        mosinKills: state.mosinKills,
-        wallsBreached: state.wallsBreached,
-        grenadeKills: state.grenadeKills,
-        dogsNeutralized: state.dogsNeutralized,
-        longShots: state.longShots,
-        knifeDistanceKills: state.knifeDistanceKills,
-        cachesLooted: state.cachesLooted,
-        convertKill: !!(state as any)._convertKill,
-        fuelDestroyed: !!(state as any)._fuelDestroyed,
-        ammoDestroyed: !!(state as any)._ammoDestroyed,
-        radioDisabled: !!(state as any)._radioDisabled,
-      });
+      const completedObjectives = checkObjectiveCompletion(objectives, buildObjectivePayload(state));
       setObjectives(completedObjectives);
-      const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
-      const objectiveXp = completedObjectives.filter(o => o.completed).reduce((s, o) => s + Math.floor(o.reward / 2), 0);
+      const completed = completedObjectives.filter(o => o.completed);
+      const objectiveReward = completed.reduce((s, o) => s + o.reward, 0);
+      const objectiveXp = completed.reduce((s, o) => s + Math.floor(o.reward / 2), 0);
       // XP: kills (10 each), extraction bonus (50), loot value (1 per 50₽), objectives
       const killXp = state.killCount * 10;
       const extractionXp = 50;
@@ -1016,8 +985,7 @@ export const GameCanvas: React.FC = () => {
           xp: newXp,
           level: newLevel,
         };
-        saveStash(updated);
-        syncStashToDb(playerName, updated);
+        persistStash(updated, playerName);
         return updated;
       });
     }
@@ -1107,17 +1075,12 @@ export const GameCanvas: React.FC = () => {
             if (nameLower === 'test2') {
               st.player.pos = { x: 920, y: 620 };
             }
-            if (nameLower === 'test2') {
-              // Spawn indoors in HQ
-              st.player.pos = { x: 920, y: 620 };
-            }
 
             lastTimeRef.current = 0;
             extractedRef.current = false;
             setStash(prev => {
               const updated = { ...prev, raidCount: prev.raidCount + 1 };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
             setStarted(true);
@@ -1133,8 +1096,7 @@ export const GameCanvas: React.FC = () => {
                 items: prev.items.filter((_, i) => i !== idx),
                 rubles: prev.rubles + item.value,
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
@@ -1142,8 +1104,7 @@ export const GameCanvas: React.FC = () => {
             setStash(prev => {
               const total = prev.items.reduce((s, i) => s + i.value, 0);
               const updated = { ...prev, items: [], rubles: prev.rubles + total };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
@@ -1160,8 +1121,7 @@ export const GameCanvas: React.FC = () => {
                 rubles: prev.rubles - cost,
                 upgrades: { ...prev.upgrades, [upgradeId]: currentLevel + 1 },
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
@@ -1197,8 +1157,7 @@ export const GameCanvas: React.FC = () => {
                 rubles: prev.rubles - traderItem.cost,
                 items: [...prev.items, newItem],
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
@@ -1206,8 +1165,7 @@ export const GameCanvas: React.FC = () => {
             if (cost > 0) {
               setStash(prev => {
                 const updated = { ...prev, rubles: prev.rubles - cost };
-                saveStash(updated);
-                syncStashToDb(playerName, updated);
+                persistStash(updated, playerName);
                 return updated;
               });
             }
