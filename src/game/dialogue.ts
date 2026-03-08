@@ -144,12 +144,30 @@ export const UZBEK_PHASES = [
 
 // === IDLE CHATTER — type-specific ambient lines ===
 export const IDLE_LINES: Record<string, string[]> = {
-  scav:    ['*зевает*', '*бормочет*', 'Когда смена...', 'Жрать охота...', 'Холодно...', '*ковыряет нос*', 'Скука...'],
-  soldier: ['Чисто.', 'Позиция удерживается.', 'Всё тихо.', '*проверяет оружие*', 'Ожидание...'],
-  heavy:   ['*трескает суставы*', '*тяжёлое дыхание*', 'Готов.', 'Пусть придут.'],
-  redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*'],
-  shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*'],
+  scav:    ['*зевает*', '*бормочет*', 'Когда смена...', 'Жрать охота...', 'Холодно...', '*ковыряет нос*', 'Скука...', 'Тут гудит...', 'Слышишь? Из-под пола...', 'Вещество... опять вижу сны...'],
+  soldier: ['Чисто.', 'Позиция удерживается.', 'Всё тихо.', '*проверяет оружие*', 'Ожидание...', 'Командант опять ночью ходит...', 'В лаборатории свет горел всю ночь...', 'Говорят, Кедр пропал полностью...', 'Опять эти звуки снизу...'],
+  heavy:   ['*трескает суставы*', '*тяжёлое дыхание*', 'Готов.', 'Пусть придут.', 'Стена гудит... интересно...'],
+  redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*', 'Somethin\' ain\'t right in them tunnels...', 'Dogs been howlin\' all night...'],
+  shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*', 'Батареи от Вещества... не разряжаются...'],
   sniper:  [], // snipers are silent
+};
+
+// === MAP-SPECIFIC IDLE LINES — override for Swedish map ===
+export const IDLE_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['*spottar*', '*visslar*', 'Fint väder...', 'Kom hit, pojk!', '*kliar sig*', 'Nåt rör sig i gruvan...', 'Hundarna skäller igen...', 'Berget sjunger på nätterna...', 'Stålhandske försvann här, vet du det?', 'Dom borde aldrig öppnat den där driften...'],
+  soldier: ['ПОЗИЦИЯ.', 'Шведы закрыли шахту... теперь наша.', 'Камни тут тёплые... странно...', 'Компас крутится... опять...', 'Полковник Варга сказал — молчать о кристаллах...'],
+  scav:    ['Jag vill härifrån...', '*darrar*', 'Hör du berget?', 'Lamporna flimrar hela tiden...', 'Гудит... всё время гудит...'],
+  heavy:   ['Стены двигаются? Нет... показалось.', '*тяжёлое дыхание*', 'Готов.'],
+};
+
+// === MAP-SPECIFIC ALERT LINES — Swedish map ===
+export const ALERT_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['VEM FAN ÄR DET?!', 'FÖRSVINN HÄRIFRÅN!', 'JAG SER DIG!', 'INKRÄKTARE!!', 'HÄR ÄR DET PRIVAT!'],
+};
+
+// === MAP-SPECIFIC DEATH LINES — Swedish rednecks ===
+export const DEATH_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['Berget... tar mig...', 'Nej...', 'Hunden...', '*sista andetaget*'],
 };
 
 // === TAKING DAMAGE (non-lethal hit) ===
