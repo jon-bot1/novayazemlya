@@ -743,6 +743,45 @@ function tryMoveEnemy(state: GameState, pos: Vec2, dx: number, dy: number, r: nu
   return newPos;
 }
 
+function findEnemyEscapeStep(state: GameState, pos: Vec2, step: number, r: number): Vec2 | null {
+  const seed = Math.random() * Math.PI * 2;
+  for (let i = 0; i < 16; i++) {
+    const a = seed + (i / 16) * Math.PI * 2;
+    const candidate = tryMoveEnemy(state, pos, Math.cos(a) * step, Math.sin(a) * step, r);
+    if (distSq(candidate, pos) > 0.01) return candidate;
+  }
+  return null;
+}
+
+function pickPatrolTarget(state: GameState, enemy: Enemy, minDistance: number = 90, maxDistance: number = 220): Vec2 {
+  const maxX = Math.max(30, state.mapWidth - 30);
+  const maxY = Math.max(30, state.mapHeight - 30);
+
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    const range = minDistance + Math.random() * Math.max(10, maxDistance - minDistance);
+    const tx = Math.max(30, Math.min(maxX, enemy.pos.x + Math.cos(angle) * range));
+    const ty = Math.max(30, Math.min(maxY, enemy.pos.y + Math.sin(angle) * range));
+
+    if (collidesWithWalls(state, tx, ty, 10)) continue;
+
+    const dir = normalize({ x: tx - enemy.pos.x, y: ty - enemy.pos.y });
+    const probe = tryMoveEnemy(state, enemy.pos, dir.x * 8, dir.y * 8, 10);
+    if (distSq(probe, enemy.pos) < 0.01) continue;
+
+    return { x: tx, y: ty };
+  }
+
+  const escape = findEnemyEscapeStep(state, enemy.pos, Math.max(6, enemy.speed * 0.9), 10);
+  if (escape) {
+    const tx = Math.max(30, Math.min(maxX, escape.x + (Math.random() - 0.5) * 120));
+    const ty = Math.max(30, Math.min(maxY, escape.y + (Math.random() - 0.5) * 120));
+    return { x: tx, y: ty };
+  }
+
+  return { ...enemy.pos };
+}
+
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
   if (state.gameOver || state.extracted) return state;
 
