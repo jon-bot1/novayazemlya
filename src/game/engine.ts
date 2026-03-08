@@ -262,19 +262,29 @@ function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer)
 
 const BASE_INVENTORY_SLOTS = 12;
 
-// Centralized magazine size lookup
+// Centralized magazine size lookup — balanced per weapon tier
+const MAG_SIZES: Record<string, number> = {
+  'makarov': 8,
+  'nagant m1895': 7,
+  'baton': 1,
+  'combat knife': 1,
+  'ppsh': 35,
+  'kpist': 36,
+  'toz': 2,
+  'ak-74': 30,
+  'akm': 30,
+  'ak 4': 20,
+  'mosin': 5,
+  'ksp 58': 50,
+  'laser': 1,
+};
+
 function getMagSize(wpn: Item | null): number {
   if (!wpn) return 8;
   const n = (wpn.name || '').toLowerCase();
-
-  // Keep specific checks before broader rifle checks (e.g. "Makarov" contains "ak")
-  if (n.includes('makarov')) return 8;
-  if (n.includes('nagant') && !n.includes('mosin')) return 7;
-  if (n.includes('mosin')) return 5;
-  if (n.includes('toz')) return 2;
-  if (n.includes('ppsh')) return 35;
-  if (n.includes('ak-74') || n.includes('ak74') || n.includes('akm') || n.includes('ak ')) return 30;
-
+  for (const [key, mag] of Object.entries(MAG_SIZES)) {
+    if (n.includes(key)) return mag;
+  }
   return 8;
 }
 
