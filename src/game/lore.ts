@@ -24,6 +24,7 @@ export const SECRET_CODES: Record<string, string> = {
   'DAWN-12': 'Reveals hidden extraction point',
   'STORM-3': 'Identifies the traitor in Unit 9',
   'CEDAR-88': 'Coordinates to underground lab',
+  'REBIRTH-7': 'Project Rebirth — Subject 7 clearance code',
 };
 
 export const LORE_DOCUMENTS: LoreDocument[] = [
