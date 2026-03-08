@@ -303,23 +303,7 @@ export function generateFishingVillageMap() {
     })(),
   ];
 
-  // Bodyguards for boss
-  const bossIdx = enemies.findIndex(e => e.type === 'boss');
-  if (bossIdx >= 0) {
-    const boss = enemies[bossIdx];
-    const bg1 = makeEnemy(boss.pos.x - 25, boss.pos.y + 15, 'soldier');
-    const bg2 = makeEnemy(boss.pos.x + 25, boss.pos.y + 15, 'soldier');
-    for (const bg of [bg1, bg2]) {
-      (bg as any)._bodyguardOf = boss.id;
-      (bg as any)._isBodyguard = true;
-      bg.hp = 100;
-      bg.maxHp = 100;
-      bg.alertRange = 280;
-      bg.shootRange = 240;
-      bg.radioGroup = boss.radioGroup;
-    }
-    enemies.push(bg1, bg2);
-  }
+  // No bodyguards — Nachalnik fights alone
 
   // ══════════════════════════════════════
   // LOOT
