@@ -1088,6 +1088,224 @@ Disregard Commandant's annotation. Schedule psychiatric evaluation.
     hasCode: false,
     found: false,
   },
+  // ═══ ARCTIC LEGENDS — Ice, Aurora & The Old Powers ═══
+  {
+    id: 'doc_legend_1',
+    title: 'Sámi Elder Interview — "Guovssahasat"',
+    author: 'Dr. E. Lindqvist, Uppsala Ethnography Dept.',
+    date: '08.03.1952',
+    classification: 'OPEN',
+    content: `INTERVIEW TRANSCRIPT — FIELD RECORDING
+Subject: Ánde Niillas, Sámi reindeer herder, age 87
+Location: Karesuando, Swedish Lapland
+
+DR. LINDQVIST: You spoke of the lights having a will. Can you explain?
+
+ÁNDE: Guovssahasat — the fires of the dead. That is the old name. My grandmother said they are the spirits of those who died violently, playing football with a walrus skull across the sky.
+
+But that is the story for children.
+
+The real knowledge, the one we don't speak to gadjo, is this: the lights are the breath of something beneath the mountain. It breathes out through the rock, and where the breath touches the sky, it burns green.
+
+DR. LINDQVIST: The mountain... Norrberget?
+
+ÁNDE: [Long silence] We do not say that name. We call it "the place where reindeer refuse to go." Even in deepest winter, when they should cross that ridge, the herd splits and walks three days around. They know.
+
+DR. LINDQVIST: What do they know?
+
+ÁNDE: That the mountain is alive. Not alive like a bear or a tree. Alive like a thought that has been thinking for so long it became stone. And when the lights are strong — when the green fire dances low, close to the peaks — the mountain DREAMS. And its dreams leak into the world.
+
+I have seen ice move against the current. I have seen frost form in patterns that look like writing. My grandfather could read it. He said the mountain writes warnings.
+
+DR. LINDQVIST: Warnings about what?
+
+ÁNDE: About waking it up. About digging.
+
+[Recording becomes inaudible — wind interference]
+
+ÁNDE: ...the miners came in '47. Within a year, the reindeer were gone. Within two years, the lights turned colors we had never seen. Purple. Red. Like blood in the sky.
+
+And the ice began to obey.
+
+DR. LINDQVIST: Obey?
+
+ÁNDE: The mountain commands the cold. Always has. But before the digging, it was gentle — frost on the right nights, thaw at the right time. After they broke into the deep place... the cold became angry. Ice formed in summer. Rivers froze upstream. A fisherman's net was found frozen solid in July — the fish inside still alive, eyes moving, mouths opening and closing. Frozen alive but not dead.
+
+That is when we left. When the ice began to move with purpose.
+
+DR. LINDQVIST: Purpose?
+
+ÁNDE: To keep people out. Or to keep something in. I was never sure which.
+
+[END OF RECORDING]
+
+NOTE (Lindqvist, 1985): This interview was dismissed as folklore when published. After Norrberget's classified geological survey results reached NATO, it was reclassified. The reindeer avoidance pattern has been confirmed by satellite. The ice anomalies remain unexplained.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_legend_2',
+    title: 'Pomor Fishermen\'s Log — "The Ice That Listens"',
+    author: 'Captain Fyodor Belov, trawler "Nadezhda"',
+    date: '14.02.1983',
+    classification: 'OPEN',
+    content: `CAPTAIN'S LOG — TRAWLER "NADEZHDA"
+Barents Sea, 71°14'N 45°38'E
+
+February is the cruelest month on the ice sea. The polar night still grips us. We fish by lamplight, our lanterns small orange stars scattered across the black ice.
+
+Today something happened that I must record, though no one will believe me.
+
+We were hauling nets through a lead — an opening in the pack ice. The aurora was strong, great curtains of green draped across the entire sky. Beautiful. The men stopped work to watch, as they always do.
+
+Then Kolya noticed the ice.
+
+Around our fishing hole, the ice was... growing. Not the slow creep of freezing water. GROWING. Like crystal under a microscope, but visible to the naked eye. Fractal patterns racing outward from the hole, forming shapes.
+
+Yuri said they looked like hands.
+
+I said they looked like roots.
+
+Kolya — the most superstitious of us — said they looked like LETTERS. Old Church Slavonic. He claims they spelled "НЕ БЕРИ" — "DO NOT TAKE."
+
+The nets came up empty. Not merely empty — the mesh was frozen into a solid block, though the water below was its normal -1.8°C. And inside the frozen mesh, pressed flat like flowers in a book, were dozens of fish. Arctic cod. Perfectly preserved. Eyes still clear.
+
+They were arranged in a spiral pattern. Fish do not arrange themselves.
+
+We cut the nets free and left. As we drove the snowmobile back to the village, I looked behind us. The lead had sealed itself. Frozen over completely in under two minutes. The ice was perfectly smooth — like glass. And in it, I swear I saw light. Blue light. Pulsing beneath the surface.
+
+The old Pomor fishermen have a saying: "The ice sea has a memory." I always thought it was poetry.
+
+I don't think it's poetry anymore.
+
+— Capt. F. Belov`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_legend_3',
+    title: 'Classified Memo — AURORA BOREALIS & Cryokinetic Events',
+    author: 'CONTROL, Task Force AURORA',
+    date: '22.10.1985',
+    classification: 'TOP SECRET',
+    content: `CLASSIFIED MEMO — NATO TASK FORCE AURORA
+Subject: Correlation Between Aurora Intensity and Cryokinetic Phenomena
+Classification: ULTRAVIOLET
+
+SUMMARY:
+Analysis of 14 months of field data has confirmed a direct correlation between Substance Zero auroral emissions and anomalous ice behavior along the geological vein.
+
+We are now categorizing these events as "cryokinetic phenomena" — the apparent manipulation of ice and frost by an unknown force linked to Substance Zero.
+
+DOCUMENTED INCIDENTS:
+
+1. NORRBERGET MINE ENTRANCE (Mar 1985): Ice sealed the mine shaft overnight. Three meters thick. Perfectly uniform crystal structure — no air bubbles. Soviet drilling team required 48 hours to reopen. The ice reformed within 6 hours. Drilling was abandoned.
+
+2. BARENTS SEA ANOMALY (Jan 1985): Satellite imagery shows a 4km circle of perfectly smooth ice directly above the submarine geological vein. All surrounding ice shows normal drift patterns and pressure ridges. This circle is motionless. It has not moved in eleven months. Soviet icebreakers avoid it.
+
+3. OBJEKT 47 WATER SUPPLY (Nov 1984): Pipes froze simultaneously across the entire facility during a powerful aurora display. Temperature was -12°C — cold, but well within the pipes' insulation tolerance. Ice inside the pipes formed a helix pattern. Commandant Osipovitj ordered the ice preserved. He said it was "a message."
+
+4. FISHING VILLAGE HARBOR (Dec 1984): Harbor froze solid in under three minutes during Nachalnik's attempt to ship a large SZ consignment by boat. The ice trapped two vessels. It did not thaw for six weeks, despite ambient temperatures rising to -2°C. Nachalnik lost the shipment.
+
+ANALYSIS:
+Substance Zero appears to exert influence over water crystallization within a radius proportional to its concentration. The geological vein acts as a conductor. When auroral activity amplifies the signal, this influence extends to the surface.
+
+Working hypothesis: the cryokinetic events are DEFENSIVE. The substance — or the consciousness within it — is using ice as a barrier. It seals mine entrances. It traps ships. It freezes infrastructure.
+
+It is protecting itself.
+
+Or it is protecting US. From what lies deeper.
+
+RECOMMENDATION: All AURORA operatives must carry thermite charges as backup. Conventional tools cannot breach cryokinetic ice. Only extreme heat disrupts the crystalline structure — and even then, it reforms within hours.
+
+The cold is not weather. The cold is a weapon. And the mountain knows how to use it.
+
+— CONTROL`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_legend_4',
+    title: '📼 Cassette Tape — The Comet Watcher',
+    author: 'Unknown Soviet astronomer (recovered)',
+    date: '28.12.1984',
+    classification: 'SECRET',
+    content: `[TAPE RECORDING — INDOOR, SOUNDS OF EQUIPMENT HUMMING]
+
+[Click]
+
+I shouldn't be recording this. If Colonel Karpov finds out, I'll be reassigned. Or worse.
+
+I'm a junior astronomer at Objekt 47's surface observation post. My job is monitoring weather and auroral conditions. Routine work. But comet C/1984-K2 changed everything.
+
+The comet appeared in October. Bright. Persistent. It doesn't follow a standard parabolic orbit — it LINGERS. It's been visible for three months now, hovering above the polar horizon like a lantern.
+
+When I track it with the spectrometer, the emission lines are wrong. Comets are water ice, carbon dioxide, dust. This one shows spectral lines that match nothing in the catalog. Except...
+
+[Papers rustling]
+
+Except Substance Zero. The emission lines match the SZ-0 reference spectrum from Laboratory No. 3. Perfectly.
+
+The comet is made of the same material as what's in the mountain.
+
+And it's not leaving. Standard orbital mechanics say it should have passed perihelion and begun its outbound trajectory weeks ago. It hasn't. It's holding position. Stationary relative to the vein.
+
+Last night, during a strong aurora, I saw something that destroyed my ability to sleep. The auroral curtain reached UP toward the comet. Not randomly — a distinct column of light, connecting the ground glow to the comet. For eleven minutes. The spectrometer recorded a signal — structured, encoded, two-way.
+
+The mountain was talking to the comet. The comet was answering.
+
+[Long pause]
+
+I think Substance Zero is not from Earth. I think it arrived here, long ago, carried on something like this comet. Seeded into the bedrock. Waiting.
+
+And now another one has come. To check on it. Or to wake it up.
+
+[Sound of door opening]
+
+I have to go. If this tape survives — tell the world. The lights in the sky are not random. The ice is not random. The mountain is not random.
+
+Nothing here is random.
+
+[Click]`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_legend_5',
+    title: 'Norse Saga Fragment — "Ísaþing" (The Ice Assembly)',
+    author: 'Translated by Prof. K. Ólafsdóttir, Reykjavík',
+    date: 'c. 1240 AD (translated 1978)',
+    classification: 'OPEN',
+    content: `FRAGMENT — from a damaged vellum manuscript found in Trondheim Cathedral archive, 1971. Catalogued as "Fragmentum Boreale VII." Language: Old Norse with unusual loanwords.
+
+TRANSLATION:
+
+"In the time before the settling, when the Northlands were empty of men, the mountain that would be called Norrberget spoke with the sky.
+
+In winter, when the darkness was complete, the mountain would breathe fire — not the fire of hearth or forge, but cold fire, green and violet, that rose from the stone and painted the heavens.
+
+The Sámi knew this and feared it. They called the mountain Jiehtanas-várri — the Giant's Mountain — and said that inside it slept a being from before the world was made. It had no name that human tongues could speak. It was not a god. It was not a jötunn. It was OLDER.
+
+When the cold fire burned brightest, the ice would come alive. Rivers would freeze from the bottom up. Frost would grow in the shape of runes — not the runes of men, but an older alphabet that made the eyes ache to read.
+
+Travelers who crossed the mountain in deep winter spoke of ICE THAT WALKED. Pillars of frost that turned to follow their passage. Walls of ice that appeared where no wall had been, blocking paths, herding travelers away from the summit.
+
+The völva Gróa, who was wise beyond all women, climbed the mountain during the solstice. She returned seven days later. Her hair had turned white. Her eyes had turned blue — not the blue of sky, but the blue of deep glacier ice. She could not speak for three days.
+
+When she finally spoke, she said: 'The mountain remembers the time before ice. It remembers the sky it fell from. And it is lonely. That is why it calls. That is why the lights dance. It is trying to speak to the stars, because no one on this earth remembers its language.'
+
+Gróa lived ninety more years. Her eyes never changed back. She could predict the first frost of every winter to the hour. She could walk barefoot on ice and leave no footprint.
+
+The people said the mountain had given her a gift.
+
+The people were wrong. The mountain had made her a guardian."
+
+[END OF FRAGMENT]
+
+TRANSLATOR'S NOTE (Ólafsdóttir, 1978): The unusual loanwords in this text do not correspond to any known Sámi, Finnish, or Proto-Norse root. Linguistic analysis suggests they may be phonetic transcriptions of non-human sounds. The manuscript's vellum has been carbon-dated to approximately 1240 AD, but the ink contains trace minerals not found in any medieval European pigment. Analysis is ongoing.`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
