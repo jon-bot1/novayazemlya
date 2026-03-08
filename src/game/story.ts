@@ -112,7 +112,7 @@ WARNING: Extended exposure to Substance Zero causes paranoia, magnetic sensitivi
 
 HANDLER NOTE: Operatör 8 — this operation exists outside all official channels. NATO does not know we are here. Moscow does not know we are here. If you are captured, NORDVAKT will deny your existence. Complete the mission. Secure the intelligence. Trust no one — not even CONTROL.
 
-— STYRESMAN`,
+— Styrelsen`,
 
   siteIntel: {
     objekt47: {
