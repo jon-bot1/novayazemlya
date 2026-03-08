@@ -1665,33 +1665,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           // Weapon pickup with slot system & confirmation
           if (item.category === 'weapon' && item.damage) {
-            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
-            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-
-            // Skip if player already has the same weapon equipped in that slot
-            if (currentInSlot && currentInSlot.name === item.name) {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-            } else if (!currentInSlot) {
-              // Empty slot — auto-equip
-            if (slot === 'primary') {
-                state.player.primaryWeapon = item;
-                state.player.activeSlot = 3;
-                state.player.equippedWeapon = item;
-              } else {
-                state.player.sidearm = item;
-                state.player.activeSlot = 2;
-                state.player.equippedWeapon = item;
-              }
-              if (item.ammoType) setWeaponAmmo(state, item);
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
-            } else {
-              // Slot occupied — show message instead of popup, player can press E again to swap
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              // Store nearby weapon info for E-to-swap
-              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...lc.pos }, time: state.time };
-              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
-            }
+            handleWeaponPickup(state, item, lc.pos);
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
