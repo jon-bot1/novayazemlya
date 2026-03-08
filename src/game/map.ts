@@ -53,6 +53,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     redneck: { _cowardice: 0.4, _accuracy: 0.55, _aggression: 0.5, _seekCoverChance: 0.2 },
     dog:     { _cowardice: 0.3, _accuracy: 1.0, _aggression: 0.9, _seekCoverChance: 0.0 },
     cultist: { _cowardice: 0.1, _accuracy: 0.55, _aggression: 0.9, _seekCoverChance: 0.05 },
+    miner_cult: { _cowardice: 0.05, _accuracy: 0.50, _aggression: 0.95, _seekCoverChance: 0.1 },
     svarta_sol: { _cowardice: 0.15, _accuracy: 0.90, _aggression: 0.7, _seekCoverChance: 0.6 },
   };
   const s = stats[type] || stats.scav;
