@@ -1450,8 +1450,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
         if (enemy.elevated) continue; // platform enemies can't flee
         if ((enemy as any)._fleeingTNT) continue;
-        const dToTNT = dist(tnt.pos, enemy.pos);
-        if (dToTNT < 200) {
+        const dToTNTSq = distSq(tnt.pos, enemy.pos);
+        if (dToTNTSq < 40000) { // 200²
           (enemy as any)._fleeingTNT = true;
           // Find cover away from TNT
           const awayAngle = Math.atan2(enemy.pos.y - tnt.pos.y, enemy.pos.x - tnt.pos.x);
