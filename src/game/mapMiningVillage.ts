@@ -312,7 +312,7 @@ export function generateMiningVillageMap() {
       (boss as any)._caveInRadius = 120;
       (boss as any)._caveInDamage = 45;
       boss.loot = [
-        WEAPON_TEMPLATES.ak74(),
+        WEAPON_TEMPLATES.ksp58(),
         createKeycard(),
         createValuable('Gruvrås Krona', 1200, '👑'),
         createValuable('Sällsynt Malm', 600, '💎'),
