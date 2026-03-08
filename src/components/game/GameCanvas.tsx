@@ -1168,6 +1168,7 @@ export const GameCanvas: React.FC = () => {
             totalDogsOnMap: state.totalDogsOnMap,
           },
           pendingWeapon: state.pendingWeapon,
+          noiseLevel: (state as any)._playerNoiseLevel || 0,
           nearInteractable: (() => {
             const p = state.player.pos;
             // Check loot containers, gates, alarm panels, weapon drops, document pickups
