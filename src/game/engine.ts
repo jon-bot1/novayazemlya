@@ -265,14 +265,14 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
 function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   if (!deadGuard.elevated) return;
   const platformPos = { ...deadGuard.pos };
-  let bestDist = 500; // max range to rush
+  let bestDistSq = 250000; // 500²
   let bestAlly: Enemy | null = null;
   for (const ally of state.enemies) {
     if (ally === deadGuard || ally.state === 'dead' || ally.elevated) continue;
     if (ally.type === 'turret' || ally.type === 'boss') continue;
-    const d = dist(ally.pos, platformPos);
-    if (d < bestDist) {
-      bestDist = d;
+    const dSq = distSq(ally.pos, platformPos);
+    if (dSq < bestDistSq) {
+      bestDistSq = dSq;
       bestAlly = ally;
     }
   }
