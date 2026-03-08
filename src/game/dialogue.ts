@@ -73,6 +73,9 @@ export const FLEE_LINES: Record<string, string[]> = {
   heavy:   ['ТАКТИЧЕСКОЕ ОТСТУПЛЕНИЕ...'],
   redneck: ['I\'m outta here!', 'Too much!', 'Nope!'],
   shocker: ['ПЕРЕЗАРЯДКА!'],
+  cultist: ['ОТСТУПАЮ К АЛТАРЮ!', 'ВЕЩЕСТВО НЕ ДОПУСТИТ!'],
+  miner_cult: ['TILLBAKA TILL DRIFTEN!', 'BERGET SKYDDAR MIG!'],
+  svarta_sol: ['TACTICAL WITHDRAWAL.', 'REPOSITIONING.'],
 };
 
 // === DEATH — last words ===
