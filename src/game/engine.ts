@@ -724,7 +724,7 @@ function performMineElevatorTransition(state: GameState, direction: 'up' | 'down
     'intel');
 }
 
-
+export function createGameState(mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
