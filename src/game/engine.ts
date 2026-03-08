@@ -4630,12 +4630,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
             setSpeech(enemy, '💀 HEADSHOT', 2.0);
+            addHitMarker(b.pos.x, b.pos.y, state.time, true, true, b.damage * 2);
           } else {
             // Boss and bodyguard body armor: 33% damage reduction
             const armorReduction = (enemy.type === 'boss' || (enemy as any)._isBodyguard) ? 0.67 : 1.0;
-            enemy.hp -= b.damage * armorReduction;
+            const actualDmg = b.damage * armorReduction;
+            enemy.hp -= actualDmg;
             spawnParticles(state, b.pos.x, b.pos.y, '#ff4444', 5);
             playHit();
+            addHitMarker(b.pos.x, b.pos.y, state.time, false, false, actualDmg);
           }
           
           if (enemy.hp <= 0) {
