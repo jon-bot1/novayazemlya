@@ -4564,6 +4564,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.killCount++;
             state.sneakKills++;
             if (enemy.type === 'dog') state.dogsKilled++;
+            addKillFeed(state, enemy.type, 'Silent Takedown');
             addMessage(state, `🗡️ SILENT TAKEDOWN! +Stealth bonus`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ccff', 8);
             // NO sound event — completely silent kill
