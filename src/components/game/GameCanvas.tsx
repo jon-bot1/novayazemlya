@@ -1275,9 +1275,12 @@ export const GameCanvas: React.FC = () => {
       const objectiveXp = completed.reduce((s, o) => s + Math.floor(o.reward / 2), 0);
       // XP: kills (10 each), extraction bonus (50), loot value (1 per 50₽), objectives
       const killXp = state.killCount * 10;
-      const extractionXp = 50;
+      // Extraction cost — harder exfils give more XP
+      const activeExfil = state.extractionPoints.find(ep => ep.active && Math.hypot(ep.pos.x - state.player.pos.x, ep.pos.y - state.player.pos.y) < ep.radius + 50);
+      const exfilMultiplier = activeExfil ? ((activeExfil as any)._xpMultiplier || 1.0) : 1.0;
+      const extractionXp = Math.round(50 * exfilMultiplier);
       const lootXp = Math.floor(lootValue / 50);
-      const totalXp = killXp + extractionXp + lootXp + objectiveXp;
+      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier);
 
       // ── Daily mission rewards ──
       const dailyMissions = getDailyMissions();
