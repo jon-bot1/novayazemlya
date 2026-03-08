@@ -114,23 +114,24 @@ export function generateHospitalMap() {
     makeWall(BX + BW - T, BY + 900 + G, T, BH - 900 - G, DARK),
 
     // ═══ MAIN ENTRANCE — RECEPTION & WAITING ROOM ═══
-    // Reception desk (horizontal counter)
-    makeWall(BX + BW / 2 - 100, BY + BH - 140, 200, T, TILE),
-    // Waiting room side walls — shorter, leaving 80px gap to south outer wall
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, T, 120, TILE),  // west side
-    makeWall(BX + BW / 2 + 200, BY + BH - 200, T, 120, TILE),  // east side
-    // North wall of reception — 80px gap center for corridor, plus side doors
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, 160, T, TILE),  // left part
-    makeWall(BX + BW / 2 + 40, BY + BH - 200, 160, T, TILE),   // right part (80px gap)
+    // Reception desk (horizontal counter — NOT a wall blocker, just decoration)
+    // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
+    makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
+    // North wall of reception — two 80px gaps (left and center-right)
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, 120, T, TILE),  // far left
+    makeWall(BX + BW / 2 - 50, BY + BH - 250, 100, T, TILE),   // center block
+    makeWall(BX + BW / 2 + 130, BY + BH - 250, 120, T, TILE),  // far right
+    // (gaps: x -130..-50 = 80px, x +50..+130 = 80px)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
     // Main north-south corridor (center, 100px wide)
-    // North segment: from building top to cross-corridor
-    makeWall(BX + BW / 2 - 50, BY + T, T, 280, TILE),
-    makeWall(BX + BW / 2 + 50, BY + T, T, 280, TILE),
-    // South segment: from courtyard south to reception north wall
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 210, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 210, TILE),
+    // North segment: from building top down to cross-corridor top (y=BY+300)
+    makeWall(BX + BW / 2 - 50, BY + T, T, 300 - T, TILE),
+    makeWall(BX + BW / 2 + 50, BY + T, T, 300 - T, TILE),
+    // South segment: from courtyard south (y=BY+1100) to reception north wall (y=BY+BH-250)
+    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 250, TILE),
+    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 250, TILE),
 
     // East-west corridor (y=300-400) — connects to N-S corridor via open intersection
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
