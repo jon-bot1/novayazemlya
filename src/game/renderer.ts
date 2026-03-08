@@ -3274,7 +3274,31 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
-  // No lighting overlay — pure daylight, uniform everywhere
+  // Map-specific atmosphere overlay
+  {
+    const pal = getMapPalette(state);
+    if (pal.ambientOverlay) {
+      ctx.fillStyle = pal.ambientOverlay;
+      ctx.fillRect(0, 0, w, h);
+    }
+    // Hospital: subtle vignette effect for horror feel
+    if ((state as any)._mapId === 'hospital') {
+      // Edge darkening — simple rects at edges (perf-friendly vs radial gradient)
+      const vignetteA = 0.08;
+      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA})`;
+      ctx.fillRect(0, 0, w, 40);           // top
+      ctx.fillRect(0, h - 40, w, 40);      // bottom
+      ctx.fillRect(0, 0, 40, h);           // left
+      ctx.fillRect(w - 40, 0, 40, h);     // right
+      // Corners slightly darker
+      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA * 1.5})`;
+      ctx.fillRect(0, 0, 60, 60);
+      ctx.fillRect(w - 60, 0, 60, 60);
+      ctx.fillRect(0, h - 60, 60, 60);
+      ctx.fillRect(w - 60, h - 60, 60, 60);
+    }
+  }
+
 
   // Flashbang stun effect — white screen + dizzy stars
   if (state.flashbangTimer > 0) {
