@@ -2521,7 +2521,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           boss.hp = Math.min(boss.maxHp, boss.hp + heal);
           boss.speechBubble = 'ХОРОШО...';
           boss.speechBubbleTimer = 1.5;
-          addMessage(state, `🩹 Bodyguard heals Osipovitj +${heal}HP!`, 'warning');
+          addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
           spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
         }
         enemy.state = 'chase';
