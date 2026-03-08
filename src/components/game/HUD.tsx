@@ -130,6 +130,7 @@ interface HUDProps {
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
   isMobile?: boolean;
+  mapId?: string;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
