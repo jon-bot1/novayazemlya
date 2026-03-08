@@ -61,12 +61,13 @@ export const VirtualJoystick: React.FC<JoystickProps> = ({ onMove, side, label, 
   return (
     <div
       ref={containerRef}
-      className={`absolute ${side === 'left' ? 'left-4 bottom-6' : 'right-4 bottom-6'} rounded-full border-2 border-border/30 bg-card/20 backdrop-blur-sm flex items-center justify-center touch-none select-none z-50 pointer-events-auto`}
-      style={{ width: size, height: size }}
+      className={`absolute ${side === 'left' ? 'left-3' : 'right-3'} rounded-full border-2 border-border/30 bg-card/20 backdrop-blur-sm flex items-center justify-center touch-none select-none z-50 pointer-events-auto`}
+      style={{ width: size, height: size, bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       onPointerDown={handleStart}
       onPointerMove={handleMove}
       onPointerUp={handleEnd}
       onPointerCancel={handleEnd}
+      onPointerLeave={handleEnd}
       onContextMenu={(e) => e.preventDefault()}
     >
       <div
