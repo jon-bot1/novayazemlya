@@ -965,8 +965,9 @@ export const GameCanvas: React.FC = () => {
       // Check objective completion
       const completedObjectives = checkObjectiveCompletion(objectives, buildObjectivePayload(state));
       setObjectives(completedObjectives);
-      const objectiveReward = completedObjectives.filter(o => o.completed).reduce((s, o) => s + o.reward, 0);
-      const objectiveXp = completedObjectives.filter(o => o.completed).reduce((s, o) => s + Math.floor(o.reward / 2), 0);
+      const completed = completedObjectives.filter(o => o.completed);
+      const objectiveReward = completed.reduce((s, o) => s + o.reward, 0);
+      const objectiveXp = completed.reduce((s, o) => s + Math.floor(o.reward / 2), 0);
       // XP: kills (10 each), extraction bonus (50), loot value (1 per 50₽), objectives
       const killXp = state.killCount * 10;
       const extractionXp = 50;
