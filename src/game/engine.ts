@@ -4509,6 +4509,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (enemy.hp <= 0) {
             enemy.state = 'dead';
             setSpeech(enemy, pickLine(DEATH_LINES, enemy.type), 3.0);
+            addHitMarker(enemy.pos.x, enemy.pos.y, state.time, true, isCrit, b.damage);
             
             sendReinforcementToPlatform(state, enemy);
             enemy.loot = generateEnemyLoot(enemy);
