@@ -1256,9 +1256,9 @@ export default function Wiki() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border bg-card sticky top-0 z-50">
+      <div className="border-b border-border bg-card flex-shrink-0 z-50">
         <div className="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/')} className="text-xs font-display text-muted-foreground hover:text-accent transition-colors">
@@ -1270,9 +1270,9 @@ export default function Wiki() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto flex gap-0 min-h-[calc(100vh-48px)]">
+      <div className="max-w-4xl mx-auto flex gap-0 flex-1 min-h-0 w-full">
         {/* Sidebar */}
-        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 sticky top-[48px] h-[calc(100vh-48px)] overflow-y-auto">
+        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 overflow-y-auto">
           {SECTIONS.map(s => (
             <button
               key={s.id}
