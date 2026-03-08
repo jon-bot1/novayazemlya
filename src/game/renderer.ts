@@ -1205,9 +1205,9 @@ function ensureGroundCanvas(state: GameState) {
           gctx.lineTo(tx + tileSize, ty + 22 + hash % 10);
           gctx.stroke();
         }
-        // Fishing village: shell fragments, sand patches
+        // Fishing village: frost crystals, snow patches
         if (mapId === 'fishing_village' && hash < 8) {
-          gctx.fillStyle = 'rgba(140,120,90,0.1)';
+          gctx.fillStyle = 'rgba(220,230,240,0.12)';
           gctx.beginPath();
           gctx.ellipse(tx + 20 + hash % 10, ty + 25, 5 + hash % 4, 3, 0, 0, Math.PI * 2);
           gctx.fill();
