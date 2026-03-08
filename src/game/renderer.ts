@@ -1053,21 +1053,21 @@ const MAP_PALETTES: Record<string, MapPalette> = {
   },
   fishing_village: {
     terrain: {
-      grass: ['#3a4c2c', '#3e5030'],
-      dirt: ['#5e5238', '#62563c'],
-      asphalt: ['#363634', '#3a3a38'],
-      concrete: ['#525248', '#56564c'],
-      forest: ['#283820', '#2c3c24'],
-      water: ['#14324a', '#183650'],
+      grass: ['#c8cfd6', '#bec6ce'],   // snow-covered ground
+      dirt: ['#a8b0b8', '#9ea6ae'],     // frozen dirt / packed snow
+      asphalt: ['#6a7078', '#5e646c'],  // icy road
+      concrete: ['#8a9098', '#7e848c'], // frost-covered concrete
+      forest: ['#3a4a3e', '#344438'],   // dark spruce under snow
+      water: ['#1a3040', '#1e3848'],    // dark arctic water / thin ice
     },
-    outside: '#182818',
-    ambientOverlay: 'rgba(160, 140, 90, 0.04)',
-    grassDetailA: 'rgba(60,90,45,0.28)',
-    grassDetailB: 'rgba(45,80,35,0.32)',
-    dirtDetailA: 'rgba(100,80,50,0.18)',
-    concreteDetail: 'rgba(80,80,70,0.1)',
-    waterFoam: 'rgba(180,210,230,0.08)',
-    wallStain: 'rgba(50,40,25,0.1)',
+    outside: '#2a3038',                  // dark snowy treeline
+    ambientOverlay: 'rgba(180, 200, 220, 0.06)', // cold blue-grey tint
+    grassDetailA: 'rgba(200,210,220,0.2)',  // snow texture variation
+    grassDetailB: 'rgba(180,195,210,0.25)', // snow shadows
+    dirtDetailA: 'rgba(160,170,180,0.15)',  // frost crystals
+    concreteDetail: 'rgba(140,150,160,0.1)',
+    waterFoam: 'rgba(200,220,240,0.12)',    // ice foam
+    wallStain: 'rgba(60,70,80,0.08)',       // frost stains
     puddles: false,
     debrisChance: 0.04,
   },
