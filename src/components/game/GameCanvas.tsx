@@ -458,7 +458,7 @@ function setWriteToken(name: string, token: string) {
 }
 
 async function syncStashToDb(playerName: string, stash: StashState) {
-  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return;
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return;
   try {
     const name = playerName.trim().slice(0, 20);
     const token = getWriteToken(name);
@@ -494,7 +494,7 @@ async function syncStashToDb(playerName: string, stash: StashState) {
 }
 
 async function loadStashFromDb(playerName: string): Promise<StashState | null> {
-  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return null;
+  if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return null;
   try {
     const name = playerName.trim().slice(0, 20);
     const { data } = await supabase.from('player_progress').select('id,player_name,rubles,raid_count,extraction_count,stash_items,upgrades,xp,level').eq('player_name', name).maybeSingle();
@@ -821,7 +821,7 @@ export const GameCanvas: React.FC = () => {
   // Save highscore on tab close / navigate away (abandoned)
   useEffect(() => {
     if (!started || !playerName) return;
-    if (playerName.trim().toLowerCase() === 'test123') return;
+    if (playerName.trim().toLowerCase() === 'test123' || playerName.trim().toLowerCase() === 'test3') return;
     const handleUnload = () => {
       const state = stateRef.current;
       if (!state || state.gameOver || state.extracted) return;
