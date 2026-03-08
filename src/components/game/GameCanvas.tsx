@@ -822,6 +822,16 @@ export const GameCanvas: React.FC = () => {
     pendingWeapon: null as any,
     noiseLevel: 0,
     nearInteractable: false,
+    weather: null as { type: string; intensity: number } | null,
+    shotsFired: 0,
+    shotsHit: 0,
+    damageDealt: 0,
+    damageTaken: 0,
+    enemyPositions: [] as { x: number; y: number; type: string; state: string }[],
+    extractionPositions: [] as { x: number; y: number; name: string; active: boolean }[],
+    objectivePositions: [] as { x: number; y: number }[],
+    mapWidth: 2400,
+    mapHeight: 2400,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
