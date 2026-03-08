@@ -1138,6 +1138,23 @@ function ensureGroundCanvas(state: GameState) {
         gctx.fillStyle = 'rgba(200,180,60,0.08)';
         gctx.fillRect(tx + 20, ty, 6, tileSize);
       }
+      // Water wave details
+      if (terrain === 'water') {
+        gctx.strokeStyle = hash < 50 ? 'rgba(100,160,200,0.15)' : 'rgba(60,120,160,0.12)';
+        gctx.lineWidth = 0.8;
+        const wx = tx + (hash * 3) % 40;
+        const wy = ty + 10 + (hash * 7) % 25;
+        gctx.beginPath();
+        gctx.moveTo(wx, wy);
+        gctx.quadraticCurveTo(wx + 12, wy - 3, wx + 24, wy);
+        gctx.stroke();
+        if (hash < 30) {
+          gctx.beginPath();
+          gctx.moveTo(wx + 5, wy + 14);
+          gctx.quadraticCurveTo(wx + 18, wy + 11, wx + 30, wy + 14);
+          gctx.stroke();
+        }
+      }
     }
   }
 }
