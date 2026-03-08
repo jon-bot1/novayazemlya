@@ -94,7 +94,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-border">
+        <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
           {([
             { key: 'mission', label: '🎯 Mission' },
             { key: 'stash', label: '📦 Stash' },
