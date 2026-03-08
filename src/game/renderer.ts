@@ -1053,21 +1053,21 @@ const MAP_PALETTES: Record<string, MapPalette> = {
   },
   fishing_village: {
     terrain: {
-      grass: ['#3a4c2c', '#3e5030'],
-      dirt: ['#5e5238', '#62563c'],
-      asphalt: ['#363634', '#3a3a38'],
-      concrete: ['#525248', '#56564c'],
-      forest: ['#283820', '#2c3c24'],
-      water: ['#14324a', '#183650'],
+      grass: ['#c8cfd6', '#bec6ce'],   // snow-covered ground
+      dirt: ['#a8b0b8', '#9ea6ae'],     // frozen dirt / packed snow
+      asphalt: ['#6a7078', '#5e646c'],  // icy road
+      concrete: ['#8a9098', '#7e848c'], // frost-covered concrete
+      forest: ['#3a4a3e', '#344438'],   // dark spruce under snow
+      water: ['#1a3040', '#1e3848'],    // dark arctic water / thin ice
     },
-    outside: '#182818',
-    ambientOverlay: 'rgba(160, 140, 90, 0.04)',
-    grassDetailA: 'rgba(60,90,45,0.28)',
-    grassDetailB: 'rgba(45,80,35,0.32)',
-    dirtDetailA: 'rgba(100,80,50,0.18)',
-    concreteDetail: 'rgba(80,80,70,0.1)',
-    waterFoam: 'rgba(180,210,230,0.08)',
-    wallStain: 'rgba(50,40,25,0.1)',
+    outside: '#2a3038',                  // dark snowy treeline
+    ambientOverlay: 'rgba(180, 200, 220, 0.06)', // cold blue-grey tint
+    grassDetailA: 'rgba(200,210,220,0.2)',  // snow texture variation
+    grassDetailB: 'rgba(180,195,210,0.25)', // snow shadows
+    dirtDetailA: 'rgba(160,170,180,0.15)',  // frost crystals
+    concreteDetail: 'rgba(140,150,160,0.1)',
+    waterFoam: 'rgba(200,220,240,0.12)',    // ice foam
+    wallStain: 'rgba(60,70,80,0.08)',       // frost stains
     puddles: false,
     debrisChance: 0.04,
   },
@@ -1205,9 +1205,9 @@ function ensureGroundCanvas(state: GameState) {
           gctx.lineTo(tx + tileSize, ty + 22 + hash % 10);
           gctx.stroke();
         }
-        // Fishing village: shell fragments, sand patches
+        // Fishing village: frost crystals, snow patches
         if (mapId === 'fishing_village' && hash < 8) {
-          gctx.fillStyle = 'rgba(140,120,90,0.1)';
+          gctx.fillStyle = 'rgba(220,230,240,0.12)';
           gctx.beginPath();
           gctx.ellipse(tx + 20 + hash % 10, ty + 25, 5 + hash % 4, 3, 0, 0, Math.PI * 2);
           gctx.fill();
@@ -1345,8 +1345,8 @@ function ensureGroundCanvas(state: GameState) {
           gctx.fillStyle = 'rgba(140,120,60,0.1)';
           gctx.fillRect(tx + 10 + hash % 20, ty + 12 + hash2 % 20, 3, 1);
         } else if (mapId === 'fishing_village' && terrain === 'grass') {
-          // Driftwood fragments
-          gctx.strokeStyle = 'rgba(80,60,35,0.12)';
+          // Frozen twigs under snow
+          gctx.strokeStyle = 'rgba(140,150,160,0.1)';
           gctx.lineWidth = 1.5;
           gctx.beginPath();
           gctx.moveTo(tx + 10 + hash % 15, ty + 20 + hash2 % 10);
@@ -4542,17 +4542,46 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillRect(0, 0, w, h);
     }
     
-    // Fishing village — fog/mist
+    // Fishing village — heavy snowfall + icy mist
     if (mapId === 'fishing_village') {
-      // Drifting fog banks
-      const fogTime = state.time * 0.15;
-      for (let i = 0; i < 4; i++) {
-        const fx = (Math.sin(fogTime + i * 1.7) * 0.5 + 0.5) * w;
-        const fy = (Math.cos(fogTime * 0.7 + i * 2.3) * 0.3 + 0.5) * h;
-        const fr = 150 + Math.sin(fogTime + i) * 50;
+      // Snow particles — heavier than objekt47
+      if (!(state as any)._fishingSnow) {
+        const snow: { x: number; y: number; speed: number; size: number; drift: number }[] = [];
+        for (let i = 0; i < 90; i++) {
+          snow.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            speed: 0.4 + Math.random() * 1.8,
+            size: 1 + Math.random() * 3,
+            drift: (Math.random() - 0.5) * 1.2,
+          });
+        }
+        (state as any)._fishingSnow = snow;
+      }
+      const snow = (state as any)._fishingSnow as { x: number; y: number; speed: number; size: number; drift: number }[];
+      ctx.fillStyle = 'rgba(230, 235, 240, 0.7)';
+      for (const s of snow) {
+        s.y += s.speed;
+        s.x += s.drift + Math.sin(state.time * 0.4 + s.x * 0.008) * 0.5;
+        if (s.y > h) { s.y = -5; s.x = Math.random() * w; }
+        if (s.x > w) s.x = 0;
+        if (s.x < 0) s.x = w;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Cold blue overlay tint
+      ctx.fillStyle = 'rgba(180, 200, 225, 0.03)';
+      ctx.fillRect(0, 0, w, h);
+      // Drifting icy mist banks
+      const fogTime = state.time * 0.1;
+      for (let i = 0; i < 3; i++) {
+        const fx = (Math.sin(fogTime + i * 2.1) * 0.5 + 0.5) * w;
+        const fy = (Math.cos(fogTime * 0.6 + i * 1.8) * 0.3 + 0.6) * h;
+        const fr = 120 + Math.sin(fogTime + i) * 40;
         const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
-        fogGrad.addColorStop(0, 'rgba(180, 190, 170, 0.06)');
-        fogGrad.addColorStop(1, 'rgba(180, 190, 170, 0)');
+        fogGrad.addColorStop(0, 'rgba(200, 215, 230, 0.05)');
+        fogGrad.addColorStop(1, 'rgba(200, 215, 230, 0)');
         ctx.fillStyle = fogGrad;
         ctx.fillRect(fx - fr, fy - fr, fr * 2, fr * 2);
       }
