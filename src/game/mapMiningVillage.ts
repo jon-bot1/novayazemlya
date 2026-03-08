@@ -401,7 +401,7 @@ export function generateMiningVillageMap() {
     rLoot(ZONE_MINE_EAST_BRANCH, 'locker', 'locker'),
     rLoot(ZONE_BOSS_ARENA, 'crate', 'valuable'),
     rLoot(ZONE_BOSS_ARENA, 'crate', 'military'),
-    makeLoot(1000, 2400, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(1000, 2400, 'weapon_cabinet', 'weapon_cabinet_swedish'),
     {
       id: `loot_${containerId++}`,
       pos: randIn(ZONE_MINE_WEST_BRANCH.x, ZONE_MINE_WEST_BRANCH.y, ZONE_MINE_WEST_BRANCH.w, ZONE_MINE_WEST_BRANCH.h),
