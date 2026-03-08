@@ -700,8 +700,11 @@ function performMineElevatorTransition(state: GameState, direction: 'up' | 'down
   state.mapHeight = newMap.mapHeight;
 
   // Reset spatial caches
-  _cachedWallGrid = null;
-  _cachedTerrainGrid = null;
+  _wallGrid = null;
+  _wallCount = -1;
+  _wallGridStateRef = null;
+  _terrainGrid = null;
+  _terrainGridStateRef = null;
 
   // Clear transient state
   state.bullets = [];
