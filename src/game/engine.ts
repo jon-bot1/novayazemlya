@@ -8,6 +8,23 @@ import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapo
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { hasBloodStains, hasMuzzleFlash } from './graphics';
+
+// VFX helpers
+function addBloodStain(state: GameState, x: number, y: number) {
+  if (!hasBloodStains()) return;
+  const stains = (state as any)._bloodStains as { x: number; y: number; size: number; angle: number }[];
+  if (!stains) return;
+  stains.push({ x, y, size: 6 + Math.random() * 10, angle: Math.random() * Math.PI * 2 });
+  if (stains.length > 80) stains.shift(); // cap for perf
+}
+
+function addMuzzleFlash(state: GameState, x: number, y: number, fromPlayer: boolean) {
+  if (!hasMuzzleFlash()) return;
+  const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[];
+  if (!flashes) return;
+  flashes.push({ x, y, time: state.time, fromPlayer });
+}
 
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
@@ -622,6 +639,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   // Decay screenshake
   if ((state as any)._screenShake > 0) {
     (state as any)._screenShake = Math.max(0, (state as any)._screenShake - dt * 4);
+  }
+
+  // Init blood stains array if needed
+  if (!(state as any)._bloodStains) (state as any)._bloodStains = [];
+  // Init muzzle flashes array if needed  
+  if (!(state as any)._muzzleFlashes) (state as any)._muzzleFlashes = [];
+  // Decay muzzle flashes
+  const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[];
+  for (let i = flashes.length - 1; i >= 0; i--) {
+    if (state.time - flashes[i].time > 0.08) flashes.splice(i, 1);
   }
 
   // Player movement — blocked when flashbanged (stunned)
@@ -1427,6 +1454,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     (state as any)._recoilBloom = Math.min(0.35, (state as any)._recoilBloom + bloomRate);
     
     const muzzleAngle = state.player.angle;
+    addMuzzleFlash(state, state.player.pos.x + Math.cos(muzzleAngle) * 25, state.player.pos.y + Math.sin(muzzleAngle) * 25, true);
     spawnParticles(state, state.player.pos.x + Math.cos(muzzleAngle) * 20, state.player.pos.y + Math.sin(muzzleAngle) * 20, '#ffaa44', 3);
     
     // Reduce durability (sidearms and melee skip)
@@ -3385,6 +3413,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             sourceId: enemy.id, sourceType: enemy.type,
           });
           enemy.lastShot = state.time;
+          addMuzzleFlash(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, false);
           spawnParticles(state, enemy.pos.x + Math.cos(angle) * 16, enemy.pos.y + Math.sin(angle) * 16, '#ff6644', 2);
           state.soundEvents.push({ pos: { ...enemy.pos }, radius: 200, time: state.time });
           playGunshot('rifle');

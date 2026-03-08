@@ -1,6 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
+import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters } from './graphics';
 
 const R = 28;
 const WALL_HEIGHT = 18;
@@ -1854,6 +1855,42 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
+  // ── BLOOD STAINS — persistent ground decals ──
+  if (hasBloodStains()) {
+    const stains = (state as any)._bloodStains as { x: number; y: number; size: number; angle: number }[] | undefined;
+    if (stains && stains.length > 0) {
+      for (const s of stains) {
+        if (!isOnScreen(s.x, s.y, cx, cy, w, h, 20)) continue;
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        ctx.fillStyle = 'rgba(100, 15, 15, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s.size, s.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Splatter dots
+        ctx.fillStyle = 'rgba(80, 10, 10, 0.25)';
+        for (let i = 0; i < 3; i++) {
+          const ox = (Math.sin(s.angle * 3 + i * 2.1) * s.size * 0.8);
+          const oy = (Math.cos(s.angle * 5 + i * 1.7) * s.size * 0.5);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 1.5 + Math.abs(Math.sin(s.angle + i)) * 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+    // Auto-generate blood stains for newly dead enemies
+    for (const enemy of state.enemies) {
+      if (enemy.state !== 'dead') continue;
+      if ((enemy as any)._bloodStainAdded) continue;
+      (enemy as any)._bloodStainAdded = true;
+      if (!stains) continue;
+      stains.push({ x: enemy.pos.x, y: enemy.pos.y, size: enemy.type === 'boss' ? 16 : 8 + Math.random() * 6, angle: Math.random() * Math.PI * 2 });
+      if (stains.length > 80) stains.shift();
+    }
+  }
+
   // ── DEAD ENEMIES — viewport culled, looted enemies skipped entirely ──
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
@@ -3380,27 +3417,62 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
     ctx.fill();
   }
-  // Bullet trails — batched
+  // Bullet trails — batched (longer trails on high graphics)
   {
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(255, 220, 80, 0.4)';
+    const trailLen = hasTracerLines() ? 6 : 3;
+    ctx.lineWidth = hasTracerLines() ? 2 : 1.5;
+    ctx.strokeStyle = hasTracerLines() ? 'rgba(255, 220, 80, 0.55)' : 'rgba(255, 220, 80, 0.4)';
     ctx.beginPath();
     for (const b of state.bullets) {
       if (!b.fromPlayer) continue;
       if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
       ctx.moveTo(b.pos.x, b.pos.y);
-      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+      ctx.lineTo(b.pos.x - b.vel.x * trailLen, b.pos.y - b.vel.y * trailLen);
     }
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(255, 100, 60, 0.3)';
+    ctx.lineWidth = hasTracerLines() ? 1.5 : 1.5;
+    ctx.strokeStyle = hasTracerLines() ? 'rgba(255, 100, 60, 0.45)' : 'rgba(255, 100, 60, 0.3)';
     ctx.beginPath();
     for (const b of state.bullets) {
       if (b.fromPlayer) continue;
       if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
       ctx.moveTo(b.pos.x, b.pos.y);
-      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+      ctx.lineTo(b.pos.x - b.vel.x * trailLen, b.pos.y - b.vel.y * trailLen);
     }
     ctx.stroke();
+  }
+
+  // ── MUZZLE FLASHES ──
+  if (hasMuzzleFlash()) {
+    const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[] | undefined;
+    if (flashes) {
+      for (const f of flashes) {
+        if (!isOnScreen(f.x, f.y, cx, cy, w, h, 20)) continue;
+        const age = state.time - f.time;
+        const alpha = Math.max(0, 1 - age / 0.08);
+        const size = f.fromPlayer ? 12 : 8;
+        // Bright core
+        ctx.fillStyle = `rgba(255, 240, 150, ${alpha * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        // Outer glow
+        ctx.fillStyle = `rgba(255, 180, 50, ${alpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, size, 0, Math.PI * 2);
+        ctx.fill();
+        // Radial spikes
+        ctx.strokeStyle = `rgba(255, 220, 100, ${alpha * 0.6})`;
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI * 2 * i / 4) + age * 40;
+          ctx.beginPath();
+          ctx.moveTo(f.x, f.y);
+          ctx.lineTo(f.x + Math.cos(a) * size * 1.2, f.y + Math.sin(a) * size * 1.2);
+          ctx.stroke();
+        }
+      }
+    }
   }
 
   // ── LASER DESIGNATOR BEAM ──
@@ -4020,6 +4092,72 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
+  // ── WEATHER EFFECTS (high graphics only) ──
+  if (hasWeatherEffects()) {
+    const mapId = (state as any)._mapId || 'objekt47';
+    
+    // Objekt 47 — snow particles
+    if (mapId === 'objekt47') {
+      if (!(state as any)._snowParticles) {
+        const snow: { x: number; y: number; speed: number; size: number; drift: number }[] = [];
+        for (let i = 0; i < 60; i++) {
+          snow.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            speed: 0.5 + Math.random() * 1.5,
+            size: 1 + Math.random() * 2.5,
+            drift: (Math.random() - 0.5) * 0.8,
+          });
+        }
+        (state as any)._snowParticles = snow;
+      }
+      const snow = (state as any)._snowParticles as { x: number; y: number; speed: number; size: number; drift: number }[];
+      ctx.fillStyle = 'rgba(220, 225, 230, 0.6)';
+      for (const s of snow) {
+        s.y += s.speed;
+        s.x += s.drift + Math.sin(state.time * 0.5 + s.x * 0.01) * 0.3;
+        if (s.y > h) { s.y = -5; s.x = Math.random() * w; }
+        if (s.x > w) s.x = 0;
+        if (s.x < 0) s.x = w;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Light snow overlay tint
+      ctx.fillStyle = 'rgba(200, 210, 220, 0.02)';
+      ctx.fillRect(0, 0, w, h);
+    }
+    
+    // Fishing village — fog/mist
+    if (mapId === 'fishing_village') {
+      // Drifting fog banks
+      const fogTime = state.time * 0.15;
+      for (let i = 0; i < 4; i++) {
+        const fx = (Math.sin(fogTime + i * 1.7) * 0.5 + 0.5) * w;
+        const fy = (Math.cos(fogTime * 0.7 + i * 2.3) * 0.3 + 0.5) * h;
+        const fr = 150 + Math.sin(fogTime + i) * 50;
+        const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
+        fogGrad.addColorStop(0, 'rgba(180, 190, 170, 0.06)');
+        fogGrad.addColorStop(1, 'rgba(180, 190, 170, 0)');
+        ctx.fillStyle = fogGrad;
+        ctx.fillRect(fx - fr, fy - fr, fr * 2, fr * 2);
+      }
+    }
+    
+    // Hospital — flickering light overlay
+    if (mapId === 'hospital') {
+      const flicker = Math.sin(state.time * 15) * Math.sin(state.time * 23) * Math.sin(state.time * 7);
+      if (flicker > 0.7) {
+        // Brief bright flicker
+        ctx.fillStyle = 'rgba(200, 220, 255, 0.03)';
+        ctx.fillRect(0, 0, w, h);
+      } else if (flicker < -0.8) {
+        // Brief dark flicker  
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+  }
 
   // Flashbang stun effect — white screen + dizzy stars
   if (state.flashbangTimer > 0) {
