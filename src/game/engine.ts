@@ -3930,8 +3930,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
-          // Boss retreats if too close, then repositions
-          if (distToPlayer < enemy.shootRange * 0.5) {
+          // === NACHALNIK FISH HOOK ATTACK — devastating close-range melee ===
+          if ((enemy as any)._hookAttack && distToPlayer < ((enemy as any)._hookRange || 55)) {
+            const hookCd = (enemy as any)._hookCooldown || 0;
+            if (hookCd <= 0) {
+              const hookDmg = (enemy as any)._hookDamage || 60;
+              const phase = enemy.bossPhase || 0;
+              const finalDmg = Math.round(hookDmg * (1 + phase * 0.3)); // stronger in later phases
+              state.player.hp -= Math.max(0, finalDmg - state.player.armor * 0.3);
+              state.player.bleedRate = Math.max(state.player.bleedRate, 3); // hook causes heavy bleeding
+              (enemy as any)._hookCooldown = 2.0 - phase * 0.3; // faster in later phases
+              addMessage(state, `🪝 ${getBossTitle(enemy)} HOOKS you for ${finalDmg} damage!`, 'damage');
+              enemy.speechBubble = phase >= 2 ? 'ПОПАЛСЯ НА КРЮК!!' : phase >= 1 ? 'КРЮК НАЙДЁТ ТЕБЯ!' : 'НА КРЮК!';
+              enemy.speechBubbleTimer = 2.0;
+              (state as any)._screenShake = 0.5;
+              spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cc2222', 8);
+              playHit();
+            }
+          }
+          // Nachalnik charges toward player instead of retreating when close
+          if ((enemy as any)._hookAttack && distToPlayer < enemy.shootRange * 0.6) {
+            const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+            enemy.pos = tryMoveEnemy(state, enemy.pos, chargeDir.x * speed * 1.8, chargeDir.y * speed * 1.8, 12);
+          } else if (distToPlayer < enemy.shootRange * 0.5) {
             const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
             enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.5, retreatDir.y * speed * 1.5, 12);
           } else if (distToPlayer > enemy.shootRange * 0.8) {
@@ -3939,6 +3960,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const strafeAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + Math.PI * 0.5 * (Math.sin(state.time * 0.5) > 0 ? 1 : -1);
             enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(strafeAngle) * speed * 0.8, Math.sin(strafeAngle) * speed * 0.8, 12);
           }
+          // Update hook cooldown
+          if ((enemy as any)._hookCooldown > 0) (enemy as any)._hookCooldown -= dt;
         }
         // Boss: spawn reinforcements in phase 1+
         if (enemy.type === 'boss' && (enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {
