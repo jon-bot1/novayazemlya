@@ -849,7 +849,6 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('resize', resize);
 
     let hudUpdateCounter = 0;
-    let lastDocCheck = '';
     let reinforcementsSpawned = false;
 
     const loop = (timestamp: number) => {
