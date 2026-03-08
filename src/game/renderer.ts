@@ -1195,6 +1195,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Ground tiles with terrain zones
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
+  // Map identification
+  const mapId = (state as any)._mapId || 'novaya_zemlya';
+
   // ── HOSPITAL DEPARTMENT FLOOR OVERLAYS & WALL SIGNS ──
   if (mapId === 'hospital') {
     const BX = 400, BY = 300, BW = 1600, BH = 1800;
