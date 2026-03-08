@@ -812,6 +812,163 @@ I don't believe he deserted. I believe the mountain took him. And I believe Holm
     hasCode: false,
     found: false,
   },
+
+  // ═══════════════════════════════════════════════
+  // CROSS-MAP LORE — SUBSTANCE ZERO & AURORA BOREALIS
+  // ═══════════════════════════════════════════════
+  {
+    id: 'doc_sz_1',
+    title: 'NATO Intelligence Brief — SUBSTANCE ZERO',
+    author: 'CONTROL, Task Force AURORA',
+    date: '02.01.1985',
+    classification: 'TOP SECRET',
+    content: `NATO INTELLIGENCE BRIEF — ULTRAVIOLET CLEARANCE
+
+SUBJECT: SUBSTANCE ZERO (SZ-0)
+
+SUMMARY:
+A pre-Cambrian material has been identified in the Arctic bedrock spanning from northern Scandinavia to the Novaya Zemlya archipelago. The geological vein runs at depths between 380-500 meters, following the ancient Caledonian fault line.
+
+Soviet GRU discovered the material during underground nuclear testing on Novaya Zemlya in 1954. They designated it "Вещество Ноль" (Substance Zero). Swedish miners at Norrberget independently encountered it in 1947 but sealed the deposits in 1964 after multiple incidents.
+
+STRATEGIC VALUE:
+When refined, SZ-0 amplifies nuclear fission chain reactions by a factor of 12. A single enhanced warhead could produce yields equivalent to 600 kilotons. This would render NATO's entire nuclear deterrence doctrine obsolete.
+
+Soviet assets along the vein:
+1. OBJEKT 47 — Primary extraction & refinery (Novaya Zemlya)
+2. COASTAL VILLAGE — Maritime export pipeline (Arctic coast)
+3. HOSPITAL №6 — Human resistance research (near Objekt 47)
+4. NORRBERGET MINE — Source site, recently reopened (Sweden)
+
+NOTE: The material exhibits properties inconsistent with any known substance. It absorbs sound. It generates magnetic fields. Workers exposed to it report auditory hallucinations. In at least three confirmed cases, exposed individuals have been physically ABSORBED into the rock.
+
+This is not a mineral. This is something else.
+
+— CONTROL`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_sz_2',
+    title: 'GRU Internal Memo — The Norrberget Connection',
+    author: 'Colonel Varga, Northern Military District',
+    date: '15.03.1958',
+    classification: 'TOP SECRET',
+    content: `TO: General Directorate, GRU Moscow
+FROM: Colonel Varga, Northern Military District
+RE: Swedish geological anomaly — URGENT
+
+Comrades,
+
+Our source in the Swedish Geological Survey (codename BJÖRK) has confirmed what we suspected: the magnetic anomaly discovered at Norrberget Mine in 1947 is the SAME geological vein we identified beneath Novaya Zemlya during the 1954 tests.
+
+The vein spans the entire Arctic bedrock. It is not a deposit — it is a NETWORK. Like roots beneath a forest. And it is all connected.
+
+The Swedes sealed their mine in 1964 after a series of incidents — worker disappearances, equipment failures, a survey engineer named Stålhandske who vanished without trace in 1957. They blamed "ore depletion." They lied.
+
+I recommend immediate action:
+1. Infiltrate Norrberget under cover of "geological cooperation"
+2. Reopen the sealed levels below 400m
+3. Establish direct extraction pipeline to Objekt 47
+
+The Swedish government must not learn the true nature of what lies beneath their territory. If NATO discovers the vein extends to Scandinavia, they will destroy the sites themselves.
+
+Speed is essential. The substance is not patient. It... responds to attention.
+
+— Varga
+
+P.S. The confiscated Stålhandske tape is in my safe. What he recorded before his disappearance is... disturbing. His magnetometer readings confirm the vein is alive. I use that word deliberately.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_sz_3',
+    title: 'VARG\'s Personal Journal (encrypted)',
+    author: 'VARG',
+    date: '28.12.1984',
+    classification: 'TOP SECRET',
+    content: `PERSONAL — NOT FOR OPERATIONAL FILE
+
+Day one of Aurora Borealis. CONTROL handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
+
+Father disappeared when I was two years old. Mother never recovered. She kept his compass on the kitchen table — the needle bent, always pointing north-northeast. Toward Norrberget. She said it broke the day he went into the mine. I think she was right, but not in the way she meant. The compass didn't break. It found what it was looking for.
+
+CONTROL says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it's the same thing my father found at Norrberget. The same thing that took him.
+
+Four sites. Four raids. CONTROL says destroy them all. Collapse the vein.
+
+I'll do it. But not just for NATO. Not just for the mission.
+
+I'm going into that mine, CONTROL. I'm going to find out what happened to Nils Stålhandske. And if the mountain took him — I'm going to take him back.
+
+Or I'm going to burn it all down trying.
+
+— VARG`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_sz_4',
+    title: '📼 Cassette Tape — Nils Stålhandske (recovered)',
+    author: 'Nils Stålhandske, Survey Engineer',
+    date: '17.06.1957',
+    classification: 'TOP SECRET',
+    content: `[CASSETTE TAPE — Recovered from Norrberget Mine, 1985. Tape degraded. Partial transcript.]
+
+*Static, footsteps on gravel*
+
+This is Nils Stålhandske, follow-up survey, Norrberget. June 17th, 1957. I'm continuing Björn's work — my colleague who disappeared here two years ago. The Survey Office wants answers. So do I.
+
+*Sound of elevator descending*
+
+I've reached the 400m level. Magnetometer is reading off-scale, same as Björn reported. But I've brought a new instrument — a gravimeter. And the readings are... wrong. The gravitational field here is 0.3% higher than surface. That shouldn't be possible. There's something very dense beneath us.
+
+*Footsteps, echoing in tunnel*
+
+I've found Björn's equipment case. It's right where the report said — at the Drift 7 seal. But...
+
+*Long pause*
+
+The concrete seal has a crack in it. A new crack. It wasn't in the photos from '55. And there's... condensation on the concrete. Like it's breathing.
+
+I can hear something. Not with my ears. In my BONES. A low frequency, sub-20 hertz. Infrasound. It's making my chest vibrate.
+
+I'm going to place the gravimeter against the seal and take a deep reading.
+
+*Sound of equipment being positioned*
+
+The reading is... God. The mass behind this seal is equivalent to... that can't be right. Recalibrating.
+
+*Silence for ten seconds*
+
+Same reading. There's something behind this wall with the density of IRON. Hundreds of tonnes. And it's...
+
+*Sharp crack — stone splitting*
+
+...the seal is opening. I didn't touch it. The concrete is SPLITTING from the inside.
+
+Light. There's light coming through. Blue light.
+
+And something is... looking at me. Through the crack. I can feel it.
+
+Father's compass — it's spinning. Faster and faster. The needle is—
+
+*Compass shatters — tinkling glass*
+
+I have to go in. I know I shouldn't. But I have to go in. It WANTS me to see.
+
+It knows my name.
+
+*Footsteps, slow, deliberate*
+
+*Sound of stone grinding*
+
+*Silence*
+
+*TAPE ENDS*`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {

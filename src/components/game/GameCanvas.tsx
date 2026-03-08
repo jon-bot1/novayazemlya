@@ -87,7 +87,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
     return () => window.removeEventListener('keydown', handler);
   }, [handleStart]);
 
-  const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
+  const [tab, setTab] = React.useState<'briefing' | 'story' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
   <div className="absolute inset-0 flex items-start justify-center bg-background z-50 overflow-auto py-2">
@@ -129,7 +129,13 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </button>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
+        <button
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'story' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
+          onClick={() => setTab('story')}
+        >
+          🌌 Story
+        </button>
         <button
           className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'briefing' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('briefing')}
@@ -149,12 +155,82 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           📡 Updates
         </button>
         <button
-          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'highscores' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none col-span-2 sm:col-span-1 ${tab === 'highscores' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('highscores')}
         >
           🏆 Highscores
         </button>
       </div>
+
+      {tab === 'story' && (
+        <>
+          <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
+            OPERATION AURORA BOREALIS — ULTRAVIOLET CLEARANCE
+          </div>
+
+          {/* Substance Zero */}
+          <div className="border border-accent/40 rounded p-3 bg-accent/5">
+            <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2">🧬 Substance Zero</h3>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
+              Beneath the Arctic bedrock — from <span className="text-accent">Norrberget</span> in Sweden across the Kola Peninsula to <span className="text-accent">Novaya Zemlya</span> — runs a geological vein of an unknown material. NATO calls it <span className="text-warning">Substance Zero</span>. The Soviets call it <span className="text-warning">Вещество Ноль</span>. The miners at Norrberget called it <span className="text-warning">"the blood of the mountain."</span>
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              When refined, it amplifies nuclear chain reactions by a <span className="text-danger">factor of twelve</span>. A warhead the size of a briefcase could level a city. The Cold War's ultimate escalation.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              But Substance Zero is not inert. It <span className="text-danger">resists extraction</span>. Workers go mad. Equipment fails. In extreme cases — the mountain <span className="text-danger">absorbs</span> them.
+            </p>
+          </div>
+
+          {/* Player Dossier */}
+          <div className="border border-primary/40 rounded p-3 bg-primary/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-primary">🐺 Codename: VARG</span>
+              <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by a secret NATO task force for one purpose: locate and destroy all Substance Zero sites.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
+              <span className="text-warning">Personal stake:</span> VARG's father, <span className="text-accent">Nils Stålhandske</span>, was a survey engineer who disappeared inside Norrberget Mine in 1957 while investigating the magnetic anomaly. His body was never found. His compass still points toward the mountain.
+            </p>
+          </div>
+
+          {/* The Four Sites */}
+          <div className="border border-border rounded p-3">
+            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">🗺️ The Four Sites</h3>
+            <div className="space-y-2 text-[10px] font-mono text-foreground/70">
+              <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Nuclear codes in Osipovitj's safe. <span className="text-muted-foreground">The heart of the operation.</span></p>
+              <p>█ <span className="text-accent">COASTAL VILLAGE</span> — Maritime smuggling pipeline. Nachalnik ships refined SZ-0 to foreign buyers. <span className="text-muted-foreground">The export terminal.</span></p>
+              <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation. Kravtsov creates SZ-0-resistant soldiers. <span className="text-muted-foreground">The research lab.</span></p>
+              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. Where VARG's father vanished. <span className="text-muted-foreground">The source.</span></p>
+            </div>
+          </div>
+
+          {/* The Maskirovka */}
+          <div className="border border-danger/30 rounded p-3 bg-danger/5">
+            <h3 className="text-xs font-display text-danger uppercase tracking-wider mb-2">🎭 Maskirovka</h3>
+            <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
+              Every site hides behind a cover story. Objekt 47 is a "weather station." The village is "abandoned." The hospital treats "polar syndrome." Norrberget is "geologically exhausted." All lies. Soviet GRU maintains these fictions through compromised officials, false satellite imagery, and eliminated witnesses. Three NATO reconnaissance teams have gone missing attempting to verify these sites. You are the fourth attempt.
+            </p>
+          </div>
+
+          {/* The Endgame */}
+          <div className="border border-warning/40 rounded p-3 bg-warning/5">
+            <h3 className="text-xs font-display text-warning uppercase tracking-wider mb-2">💥 Endgame</h3>
+            <p className="text-[10px] font-mono text-foreground/70 leading-relaxed">
+              Recover the nuclear detonation codes from Objekt 47. Plant demolition charges at the deepest point of each site. Trigger a synchronized detonation to permanently collapse the geological vein and deny Substance Zero to all parties. The substance regenerates — destroying one site alone changes nothing. <span className="text-danger">All four must fall.</span>
+            </p>
+          </div>
+
+          {/* Exposure Warning */}
+          <div className="border border-danger/50 rounded p-2 bg-danger/10">
+            <p className="text-[9px] font-mono text-danger/80 leading-relaxed text-center">
+              ⚠ WARNING: Extended Substance Zero exposure causes paranoia, hallucinations, and physical absorption into rock. If your compass starts spinning — LEAVE IMMEDIATELY. ⚠
+            </p>
+          </div>
+        </>
+      )}
 
       {tab === 'characters' && (
         <>
@@ -162,7 +238,46 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             PERSONNEL DOSSIER — All Operational Zones
           </div>
 
-          {/* Boss */}
+          {/* Gruvrå */}
+          <div className="border border-accent/40 rounded p-3 bg-accent/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-accent">⛏️ Gruvrå</span>
+              <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">BOSS — MINE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. 
+              It has existed in the mountain since before the ice age — the miners disturbed it, and it absorbed them. 
+              Survey engineer Nils Stålhandske — VARG's father — was taken by it in 1957. The mountain keeps what it takes.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-danger">500</span>
+              <span className="text-muted-foreground">Location</span><span className="text-foreground">Deep chamber, 420m underground</span>
+              <span className="text-muted-foreground">Damage</span><span className="text-danger">40</span>
+              <span className="text-muted-foreground">Special</span><span className="text-warning">Cave-in attack, 3 phases, Swedish speech</span>
+              <span className="text-muted-foreground">Guards</span><span className="text-accent">ORT (west) & STOLL (east) — crystal formations</span>
+              <span className="text-muted-foreground">Drops</span><span className="text-loot">👑 Gruvrås Krona, 💎 Rare Ore</span>
+            </div>
+          </div>
+
+          {/* Ort & Stoll */}
+          <div className="border border-accent/30 rounded p-3 bg-accent/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-display text-accent">🪨 ORT & STOLL</span>
+              <span className="text-[10px] font-mono text-accent px-1.5 py-0.5 border border-accent/30 rounded">BODYGUARDS — MINE</span>
+            </div>
+            <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
+              Crystallized Substance Zero formations, three meters tall, guarding the entrance to Gruvrå's chamber. 
+              They look like stone but they move — slowly, patiently. They have faces. 
+              Miner Dahl saw them in 1958. They weren't there in September. By March, they were.
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
+              <span className="text-muted-foreground">HP</span><span className="text-warning">200 / 180</span>
+              <span className="text-muted-foreground">Roles</span><span className="text-foreground">ORT — aggressive melee / STOLL — ranged suppressor</span>
+              <span className="text-muted-foreground">Alert</span><span className="text-foreground">280-300px</span>
+            </div>
+          </div>
+
+          {/* Commandant */}
           <div className="border border-danger/40 rounded p-3 bg-danger/5">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm font-display text-danger">💀 Commandant Osipovitj</span>
@@ -354,10 +469,11 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'briefing' && (
         <>
           <div>
-            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Operation Aurora Borealis</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
-              You operate from a <span className="text-accent">Safe House</span> between raids. 
-              Choose from <span className="text-accent">3 operational zones</span> — each with unique threats, bosses, and extraction points.
+              You are <span className="text-accent">VARG</span> — a ghost operative on a mission to destroy the Soviet Substance Zero program.
+              Operate from your <span className="text-accent">Safe House</span> between raids. 
+              Each operational zone holds intel, threats, and a piece of the puzzle.
               Randomized <span className="text-warning">objectives</span> give you main targets and bonus tasks that pay rubles.
             </p>
           </div>
@@ -369,22 +485,29 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <div className="flex gap-2 items-start">
                 <span className="text-base">☢️</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">Objekt 47 "Severnyj Vektor"</p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet military base. Open terrain, bunkers, and minefields. Boss: <span className="text-danger">Commandant Osipovitj</span> with two bodyguards in the underground bunker.</p>
+                  <p className="text-[11px] font-display text-foreground">Objekt 47 "Severnyj Vektor" — <span className="text-[9px] text-muted-foreground font-mono">EXTRACTION & REFINERY</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Soviet military base processing raw Substance Zero into weapons-grade material. <span className="text-danger">Commandant Osipovitj</span> guards the nuclear codes. Minefields, watchtowers, bunkers.</p>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
                 <span className="text-base">🐟</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">The Fishing Village <span className="text-[9px] text-warning font-mono">(3 extractions to unlock)</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Coastal smuggler village with docks, shacks, and a lighthouse. Boss: <span className="text-warning">Nachalnik</span> — shotgun-armed smuggler surrounded by redneck guards and dogs.</p>
+                  <p className="text-[11px] font-display text-foreground">Coastal Village "Rybnaya" <span className="text-[9px] text-warning font-mono">(3 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">SMUGGLING PIPELINE</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Maritime export terminal for refined SZ-0. <span className="text-warning">Nachalnik</span> ships the substance to foreign buyers via fishing boats. Redneck guards, dogs, trapped approaches.</p>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
                 <span className="text-base">🏥</span>
                 <div>
-                  <p className="text-[11px] font-display text-foreground">The Hospital <span className="text-[9px] text-warning font-mono">(6 extractions to unlock)</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet hospital with narrow corridors and a dark basement. Two bosses: <span className="text-accent">Dr. Kravtsov</span> (fear attack) and <span className="text-danger">The Uzbek</span> (extreme speed) in the basement.</p>
+                  <p className="text-[11px] font-display text-foreground">Hospital №6 <span className="text-[9px] text-warning font-mono">(6 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">EXPERIMENTATION</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Disguised research facility. <span className="text-accent">Dr. Kravtsov</span> creates SZ-0-resistant soldiers. <span className="text-danger">The Uzbek</span> (Test Subject 7) is his most horrific result. Countermeasure formula critical for final operation.</p>
+                </div>
+              </div>
+              <div className="flex gap-2 items-start">
+                <span className="text-base">⛏️</span>
+                <div>
+                  <p className="text-[11px] font-display text-foreground">Norrberget Mine <span className="text-[9px] text-warning font-mono">(10 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">THE SOURCE</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Where VARG's father disappeared. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
                 </div>
               </div>
             </div>
