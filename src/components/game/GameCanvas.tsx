@@ -812,6 +812,21 @@ export const GameCanvas: React.FC = () => {
       }
     };
 
+    const resetMovementInput = () => {
+      keys.clear();
+      inputRef.current.moveX = 0;
+      inputRef.current.moveY = 0;
+      inputRef.current.moveTarget = null;
+      inputRef.current.shooting = false;
+      inputRef.current.shootPressed = false;
+      inputRef.current.movementMode = 'walk';
+    };
+
+    const onWindowBlur = () => resetMovementInput();
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') resetMovementInput();
+    };
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('mousedown', onMouseDown);
@@ -819,6 +834,8 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('contextmenu', onContextMenu);
     window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('blur', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       updateKeysRef.current = () => {};
@@ -829,6 +846,8 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('blur', onWindowBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [showInventory, showIntel, readingDoc, isMobile]);
 
