@@ -22,6 +22,7 @@ import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../gam
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
+import { getGraphicsQuality, setGraphicsQuality, type GraphicsQuality } from '../../game/graphics';
 
 const TIME_LIMIT = 300; // 5 minutes
 const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
