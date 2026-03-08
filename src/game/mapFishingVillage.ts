@@ -238,17 +238,14 @@ export function generateFishingVillageMap() {
   // ══════════════════════════════════════
   const enemies: Enemy[] = [
     rz(ZONE_WEST_VILLAGE, 'scav'),
-    rz(ZONE_WEST_VILLAGE, 'scav'),
     rz(ZONE_EAST_VILLAGE, 'scav'),
     rz(ZONE_EAST_VILLAGE, 'soldier'),
-    rz(ZONE_ROAD_SOUTH, 'soldier'),
     rz(ZONE_DOCK, 'soldier'),
     rz(ZONE_DOCK, 'heavy'),
     rz(ZONE_WAREHOUSE, 'scav'),
     rz(ZONE_FOREST_W, 'sniper'),
     rz(ZONE_FOREST_E, 'soldier'),
     rz(ZONE_FOREST_NW, 'scav'),
-    rz(ZONE_STORE, 'scav'),
 
     // Redneck with dog
     ...(() => {

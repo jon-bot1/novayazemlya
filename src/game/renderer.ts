@@ -2521,11 +2521,27 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
           ctx.restore();
         }
 
+        // Nachalnik spin attack visual
+        if ((enemy as any)._spinAttackTimer > 0) {
+          const spinAlpha = 0.35 + Math.sin(state.time * 22) * 0.15;
+          const spinR = bossSize + 12;
+          ctx.strokeStyle = `rgba(255, 180, 80, ${spinAlpha})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, spinR, state.time * 14, state.time * 14 + Math.PI * 1.4);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(220, 80, 40, ${spinAlpha * 0.9})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, spinR - 8, -state.time * 16, -state.time * 16 + Math.PI);
+          ctx.stroke();
+        }
+
         // Boss name plate
         ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'COMMANDANT OSIPOVITJ'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
+        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'BOSS'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
         if (phase >= 1) {
           ctx.font = 'bold 8px sans-serif';
           ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
@@ -3085,6 +3101,37 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.font = 'bold 8px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(g.timer.toFixed(1), g.pos.x, g.pos.y + bob - 12);
+  }
+
+  // ── NACHALNIK NET CAST ──
+  const netCast = (state as any)._netCast;
+  if (netCast) {
+    const t = 1 - Math.max(0, netCast.timer) / Math.max(0.01, netCast.maxTimer || 1);
+    const nx = netCast.from.x + (netCast.to.x - netCast.from.x) * t;
+    const ny = netCast.from.y + (netCast.to.y - netCast.from.y) * t;
+    const nr = 16 + Math.sin(state.time * 18) * 2;
+
+    ctx.strokeStyle = 'rgba(210, 200, 170, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(netCast.from.x, netCast.from.y);
+    ctx.lineTo(nx, ny);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(210, 200, 170, 0.25)';
+    ctx.beginPath();
+    ctx.arc(nx, ny, nr, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(210, 200, 170, 0.95)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI * 2 * i) / 6 + state.time * 5;
+      ctx.beginPath();
+      ctx.moveTo(nx, ny);
+      ctx.lineTo(nx + Math.cos(a) * nr, ny + Math.sin(a) * nr);
+      ctx.stroke();
+    }
   }
 
   // ── PARTICLES — batched by color for fewer draw calls ──
