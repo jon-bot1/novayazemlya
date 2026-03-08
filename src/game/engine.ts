@@ -79,6 +79,32 @@ function calcHeadshotChance(state: GameState, b: Bullet, enemy: Enemy): number {
   return Math.max(0, Math.min(0.55, chance));
 }
 
+// Helper: handle weapon pickup with slot system
+function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
+  const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
+  const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+  const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
+  if (currentInSlot && currentInSlot.name === item.name) {
+    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+  } else if (!currentInSlot) {
+    if (slot === 'primary') {
+      state.player.primaryWeapon = item;
+      state.player.activeSlot = 3;
+      state.player.equippedWeapon = item;
+    } else {
+      state.player.sidearm = item;
+      state.player.activeSlot = 2;
+      state.player.equippedWeapon = item;
+    }
+    if (item.ammoType) setWeaponAmmo(state, item);
+    addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
+  } else {
+    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+    (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...sourcePos }, time: state.time };
+    addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
+  }
+}
+
 const BASE_INVENTORY_SLOTS = 12;
 
 // Centralized magazine size lookup
