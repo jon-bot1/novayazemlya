@@ -536,7 +536,7 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
     propagandaTimer: 0,
     dogsNeutralized: 0,
     dogsKilled: 0,
-    totalDogsOnMap: map.enemies.filter(e => e.type === 'dog').length,
+    totalDogsOnMap: mapEnemies.filter(e => e.type === 'dog').length,
     emptyMagTimer: 0,
     disguised: false,
     disguiseTimer: 0,
