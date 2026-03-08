@@ -1824,7 +1824,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillText('† УЗБЕК †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
 
       } else {
-        // Default Osipovitj corpse
+        // Default boss corpse
         ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
         ctx.beginPath();
         ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
