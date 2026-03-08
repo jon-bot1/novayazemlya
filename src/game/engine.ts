@@ -2529,14 +2529,42 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
+    // Hard contact fail-safe: enemies must instantly activate when player is right on top of them
+    const contactDist = dist(enemy.pos, state.player.pos);
+    const playerHiddenNow = !!(state as any)._playerHiding;
+    if (!playerHiddenNow && contactDist < 42) {
+      delete (enemy as any)._reactionDelay;
+      delete (enemy as any)._pendingState;
+      (enemy as any)._seekCover = false;
+      (enemy as any)._coverPos = null;
+      enemy.awareness = Math.max(enemy.awareness, 0.98);
+      if (enemy.type !== 'turret' && enemy.state !== 'attack' && enemy.state !== 'suppress') {
+        enemy.state = 'chase';
+      }
+      enemy.investigateTarget = { ...state.player.pos };
+    }
+
+    // Anti-stall fail-safe: if enemy hasn't moved for a while, force a local escape step
+    const lastPos = (enemy as any)._lastPos as Vec2 | undefined;
+    if (lastPos) {
+      const movedSq = distSq(enemy.pos, lastPos);
+      if (movedSq < 0.04) (enemy as any)._stuckTime = ((enemy as any)._stuckTime || 0) + dt;
+      else (enemy as any)._stuckTime = 0;
+    }
+    (enemy as any)._lastPos = { ...enemy.pos };
+    if ((enemy as any)._stuckTime > 1.2 && enemy.type !== 'turret' && enemy.state !== 'dead') {
+      const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(8, enemy.speed * 1.5), 10);
+      if (escapeStep) enemy.pos = escapeStep;
+      else relocateEnemyToOpenArea(state, enemy);
+      if (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'investigate') {
+        enemy.patrolTarget = pickPatrolTarget(state, enemy, 100, 260);
+        enemy.state = 'patrol';
+      }
+      (enemy as any)._stuckTime = 0;
+    }
+
     // Keep AI fully active so enemies always patrol/aggro reliably
     // (previous off-screen idle skip could make encounters feel frozen).
-
-    // Friendly timer countdown
-    if (enemy.friendly) {
-      enemy.friendlyTimer -= dt;
-      if (enemy.friendlyTimer <= 0) {
-        enemy.friendly = false;
         enemy.friendlyTimer = 0;
         enemy.state = 'chase'; // turn hostile again
         addMessage(state, `⚠ ${enemy.type.toUpperCase()} is no longer friendly!`, 'warning');

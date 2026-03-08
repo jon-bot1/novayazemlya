@@ -46,24 +46,6 @@ describe('Enemy activation regression', () => {
         updateGame(state, idleInput, 1 / 60, 1200, 800);
       }
 
-      if (type === 'heavy') {
-        const currentHeavy = state.enemies.find(e => e.id === enemy.id);
-        // Debug snapshot for heavy non-activation regression
-        console.log('heavy debug', {
-          sameRef: currentHeavy === enemy,
-          currentState: currentHeavy?.state,
-          currentAwareness: currentHeavy?.awareness,
-          state: enemy.state,
-          awareness: enemy.awareness,
-          hp: enemy.hp,
-          playerHp: state.player.hp,
-          dist: Math.hypot(state.player.pos.x - enemy.pos.x, state.player.pos.y - enemy.pos.y),
-          playerHiding: !!(state as any)._playerHiding,
-          disguised: state.disguised,
-          gameOver: state.gameOver,
-        });
-      }
-
       expect(enemy.awareness, `${type} awareness too low`).toBeGreaterThanOrEqual(0.75);
       expect(['chase', 'attack', 'flank', 'suppress']).toContain(enemy.state);
     }
