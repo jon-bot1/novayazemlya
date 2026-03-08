@@ -13,7 +13,7 @@ interface LootPopupProps {
 
 export const LootPopup: React.FC<LootPopupProps> = ({ notifications }) => {
   return (
-    <div className="absolute bottom-36 right-3 flex flex-col-reverse gap-2 pointer-events-none z-10 max-w-[260px]">
+    <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col gap-1.5 pointer-events-none z-10 max-w-[280px]">
       {notifications.map((n) => (
         <LootPopupItem key={n.id} notification={n} />
       ))}
