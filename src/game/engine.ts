@@ -1363,7 +1363,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
     
     // Sound event — gunshots alert enemies (VERY loud — stealth penalty)
-    const gunshotRadius = isMelee ? 50 : 500;
+    let gunshotRadius = isMelee ? 50 : 500;
+    // Suppressor + Silent Step reduce noise
+    const noiseReduction = ((state as any)._noiseReduction || 0) + ((state as any)._suppressorEquipped ? 0.50 : 0);
+    if (noiseReduction > 0) gunshotRadius *= (1 - Math.min(0.80, noiseReduction));
     state.soundEvents.push({ pos: { ...state.player.pos }, radius: gunshotRadius, time: state.time });
     playGunshot('pistol');
     
