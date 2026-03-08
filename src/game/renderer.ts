@@ -2385,7 +2385,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         }
 
       } else {
-        // ═══ DEFAULT BOSS (Osipovitj) — original rendering ═══
+        // ═══ DEFAULT BOSS rendering ═══
         // Menacing aura
         const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
         const auraR = bossSize + 20 + Math.sin(state.time * 3) * 8;
