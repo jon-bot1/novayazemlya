@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type WikiSection = 'controls' | 'weapons' | 'enemies' | 'maps' | 'mechanics' | 'items' | 'recoil' | 'upgrades' | 'stealth' | 'bosses';
+type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'enemies' | 'maps' | 'mechanics' | 'items' | 'recoil' | 'upgrades' | 'stealth' | 'bosses';
 
 const SECTIONS: { id: WikiSection; label: string; icon: string }[] = [
+  { id: 'lore', label: 'Story & Lore', icon: '📜' },
+  { id: 'factions', label: 'Factions', icon: '⚔️' },
+  { id: 'occult', label: 'The Occult', icon: '🔮' },
+  { id: 'world', label: 'World & Theories', icon: '🌍' },
   { id: 'controls', label: 'Controls', icon: '🎮' },
   { id: 'weapons', label: 'Weapons', icon: '🔫' },
   { id: 'recoil', label: 'Recoil & Spread', icon: '🎯' },
