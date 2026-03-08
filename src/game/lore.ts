@@ -523,6 +523,171 @@ If you're here to destroy this place — do it. Burn it all.
     hasCode: false,
     found: false,
   },
+
+  // ═══════════════════════════════════════════════
+  // MINING VILLAGE — GRUVRÅ LORE
+  // ═══════════════════════════════════════════════
+  {
+    id: 'doc_mine_1',
+    title: 'Geologisk Rapport — Norrberget',
+    author: 'Dr. Erik Lindqvist, Bergsstatens Utredningskommitté',
+    date: '03.09.1947',
+    classification: 'SECRET',
+    content: `RAPPORT — Geologisk undersökning av Norrberget
+
+Provborrningar i sektion 7-12 avslöjar en anomali. Malmådern är rik — järn, koppar, spår av sällsynta jordartsmetaller — men kärnan i berget uppvisar en struktur vi inte kan förklara.
+
+Stenmaterialet i den djupaste kärnan (420m) är inte granit. Det är inte gnejs. Det liknar inget i vårt register. Materialet absorberar ljud. Borrkronan saktade ner av sig själv, som om berget vägrade.
+
+Bergmästare Holmström insisterar på att vi fortsätter. Malmvärdet motiverar investeringen. Men jag noterar att tre av borroperatörerna har rapporterat huvudvärk och sömnproblem sedan vi nådde 380m.
+
+Rekommendation: Fortsätt med försiktighet. Installera seismiska sensorer i sektion 10.
+
+BILAGA: Kärna 7-12C uppvisar kristallformationer som inte överensstämmer med känd mineralogi. Prov skickat till Uppsala.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_2',
+    title: '📼 Kassettband — Gruvarbetare Svensson',
+    author: 'Karl-Erik Svensson, Bergsprängare',
+    date: '15.11.1952',
+    classification: 'OPEN',
+    content: `[KASSETTBAND — Inspelat i manskapsboden, skift 3]
+
+*Skrapande ljud, en tändare*
+
+...det var på nattskiftet. Ort fyra, den djupaste. Vi hade sprängt en ny salva och väntat på ventilationen. Pettersson gick in först.
+
+Han stannade. Sa ingenting. Bara stod där med lampan riktad neråt.
+
+Jag gick fram och tittade. Under stenmassorna... det var inte berg. Det var något annat. Mörkt, nästan svart, men det... pulserade. Svagt, som ett hjärta.
+
+Pettersson sa "det andas". Jag sa att han var galen. Men jag hörde det också. Inte med öronen — i bröstet. Som basfrekvensen från en enorm maskin under oss.
+
+Vi täckte över det och rapporterade till Holmström. Han sa åt oss att inte prata om det. Nästa dag var hålrummet fyllt med betong.
+
+Men ibland, på nattskiftet, kan man fortfarande höra det. Berget andas.
+
+*Band slut*`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_3',
+    title: 'Incidentrapport №14 — Ras i Ort 7',
+    author: 'Bergmästare G. Holmström',
+    date: '22.03.1958',
+    classification: 'SECRET',
+    content: `INCIDENTRAPPORT — Norrbergets Gruva AB
+
+Kl 02:14 den 22 mars inträffade ett ras i Ort 7, 390m-nivån. Tre arbetare instängda. Räddningsinsats påbörjad.
+
+Kl 04:30: Kontakt med instängda via borrhål. Alla tre vid liv. Rapporterar "inte ensamma". Tolkas som chockreaktion.
+
+Kl 06:15: Borr når hålrum. Arbetare Nilsson och Bergström evakuerade. Arbetare Dahl vägrar komma ut. Säger att "det vill inte att vi går". Dahl bärs ut med tvång.
+
+Kl 08:00: Dahl inlagd på sjukhus. Talar osammanhängande om "kungen i berget" och "de som vaktar portarna — Ort och Stoll". Läkare diagnosticerar akut stressreaktion.
+
+NOTERING: Dahl avskedades den 1 april. Hans journal är hemligstämplad. Rasets orsak förblir oförklarad — seismograf visar INGEN geologisk aktivitet vid tillfället. Berget rörde sig utan orsak.
+
+ÅTGÄRD: Ort 7 stängd permanent. Betongtätning av nedgång.`,
+    hasCode: true,
+    code: 'BERG-44',
+    codeHint: 'Coordinates mentioned in Holmströms sealed addendum',
+    found: false,
+  },
+  {
+    id: 'doc_mine_4',
+    title: 'Brev till Bergmästare Holmström (aldrig skickat)',
+    author: 'Arne Dahl, f.d. gruvarbetare',
+    date: '05.07.1961',
+    classification: 'OPEN',
+    content: `Holmström,
+
+Du vet vad som finns där nere. Du har alltid vetat.
+
+Det var inget ras. BERGET STÄNGDE PORTEN. Det stängde oss inne för att vi var nära. Vi var nära HONOM.
+
+Gruvrån. Han som fanns i berget innan gruvan. Innan samhället. Innan Sverige. Han ÄR berget. Varje tunnel vi borrar är ett sår i hans kropp. Varje salva en smärta.
+
+Han har vakter. Jag såg dem i mörkret — Ort och Stoll. De ser ut som sten men de rör sig. Långsamt, tålmodigt. De vaktar ingången till kammaren.
+
+Tre år har gått och jag hör honom fortfarande. I drömmar. I tystnaden. Han viskar: "Sluta gräva."
+
+Vi slutade inte. Och nu är gruvan en del av honom. Hissschaktet är hans strupe. Tunnlarna är hans ådror. Malmen är hans blod.
+
+Stäng gruvan, Holmström. Stäng den innan det är för sent.
+
+— Dahl
+
+P.S. Krossa inte de svarta kristallerna. Det är hans ögon.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_5',
+    title: '📝 Klotter på gruvvägg (ristat med borrstål)',
+    author: 'Okänd',
+    date: '???',
+    classification: 'OPEN',
+    content: `ORT VAKTAR VÄST
+STOLL VAKTAR ÖST
+GRUVRÅN SOVER I MITTEN
+
+KORSA INTE LINJEN VID 420m
+
+DE SVARTA STENARNA SER DIG
+
+Tre saker du behöver veta:
+1. Hissen fungerar men den går DJUPARE än kartan visar
+2. TNT skadar honom — men gör honom arg
+3. Om lampan flimrar — SPRING
+
+Han var här före oss.
+Han kommer vara här efter oss.
+
+BERGET MINNS.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_mine_cassette',
+    title: '📼 Kassettband — Sista inspelningen',
+    author: 'Bergmästare Holmström',
+    date: '31.12.1963',
+    classification: 'TOP SECRET',
+    content: `[KASSETTBAND — Funnet i manskapsboden, oöppnat sedan 1963]
+
+*Brus, vindljud, avlägset maskinbuller*
+
+Det här är Gustav Holmström, bergmästare vid Norrbergets Gruva. Nyårsafton 1963. Alla har gått hem. Jag är ensam.
+
+*Paus*
+
+Jag har fattat beslutet. Gruvan stängs den 15 januari. Officiellt: malmådern uttömd. I verkligheten...
+
+*Djup suck*
+
+Dahl hade rätt. Om allt. Vi borrade för djupt. Nådde något vi inte borde ha nått. Inte malm — inte sten — utan en varelse. Eller... ett medvetande. Inbäddat i berget sedan innan isen smälte.
+
+Arbetarna kallar den Gruvrå. Jag kallade dem vidskepliga. Men förra veckan... förra veckan rörde sig väggen i Ort 7. Inte ras — RÖRDE SIG. Som andning.
+
+Och vakterna — Ort och Stoll. Två formationer av svart kristall, tre meter höga, vid ingången till det djupaste hålrummet. Geologerna säger att de är naturliga. Men de har... ansikten. Och de stod inte där i september.
+
+Jag fyller igen de djupaste ortarna med betong. Spränger hissschaktet under 400m. Förseglar allt med —
+
+*Skarpt ljud — sten som spricker*
+*Tystnad i fem sekunder*
+
+...herregud. Ljuset... det flimrar.
+
+Ort stå —
+
+*BAND SLUT*`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {

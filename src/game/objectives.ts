@@ -116,22 +116,26 @@ const HOSPITAL_BONUS: ObjectiveTemplate[] = [
 // MINING VILLAGE — Swedish mining community objectives
 // ═══════════════════════════════════════
 const MINE_MAIN: ObjectiveTemplate[] = [
-  { id: 'kill_gruvra', name: 'Slay the Gruvrå', icon: '⛏️', description: 'Defeat Gruvrå, the spirit of the mine, in the underground boss arena', reward: 650, isMain: true },
-  { id: 'clear_mine', name: 'Purge the Tunnels', icon: '🔦', description: 'Eliminate all enemies in the underground mine', reward: 550, isMain: true },
-  { id: 'hack_mine_terminal', name: 'Mining Records', icon: '💻', description: 'Hack the underground terminal to retrieve geological data', reward: 500, isMain: true },
-  { id: 'collect_all_docs', name: 'Recover Expedition Logs', icon: '📚', description: 'Collect all documents scattered in the mining village', reward: 450, isMain: true },
-  { id: 'wipe_garrison', name: 'Clear the Surface', icon: '☠️', description: 'Eliminate at least 10 hostiles on the surface', reward: 500, isMain: true },
+  { id: 'kill_gruvra', name: 'Slay the Gruvrå', icon: '⛏️', description: 'Descend into the deep chamber and destroy Gruvrå, the spirit of the mountain', reward: 650, isMain: true },
+  { id: 'sabotage_supports', name: 'Sabotage the Mine', icon: '💣', description: 'Place TNT on 2 structural supports in the underground tunnels to collapse key passages', reward: 600, isMain: true },
+  { id: 'clear_mine', name: 'Purge the Depths', icon: '🔦', description: 'Eliminate all enemies in the underground mine, including Ort and Stoll', reward: 550, isMain: true },
+  { id: 'hack_mine_terminal', name: 'Geological Records', icon: '💻', description: 'Hack the underground terminal — retrieve Holmströms sealed geological data', reward: 500, isMain: true },
+  { id: 'collect_all_docs', name: 'Recover Expedition Logs', icon: '📚', description: 'Collect all documents about the Gruvrå phenomenon', reward: 450, isMain: true },
+  { id: 'destroy_crystals', name: 'Blind the Mountain', icon: '🔮', description: 'Destroy 3 black crystal formations (Gruvrås eyes) with explosives', reward: 550, isMain: true },
+  { id: 'wipe_garrison', name: 'Clear the Surface', icon: '☠️', description: 'Eliminate at least 10 hostiles in the mining village', reward: 500, isMain: true },
 ];
 
 const MINE_BONUS: ObjectiveTemplate[] = [
-  { id: 'ghost_extract', name: 'Mine Specter', icon: '👻', description: 'Extract without triggering alarms or killing anyone', reward: 600, isMain: false },
-  { id: 'speedrun', name: 'Blast Shift', icon: '⏱', description: 'Extract within 120 seconds', reward: 400, isMain: false },
-  { id: 'loot_value', name: 'Ore Hoarder', icon: '💰', description: 'Extract with at least 700₽ worth of loot', reward: 300, isMain: false },
-  { id: 'headshots', name: 'Precision Drilling', icon: '🎯', description: 'Get 5 headshot kills', reward: 300, isMain: false },
+  { id: 'ghost_extract', name: 'Mountain Ghost', icon: '👻', description: 'Extract without triggering alarms — the mountain must not know you were here', reward: 600, isMain: false },
+  { id: 'speedrun', name: 'Emergency Evacuation', icon: '⏱', description: 'Extract within 120 seconds — before the tunnels collapse', reward: 400, isMain: false },
+  { id: 'loot_value', name: 'Ore Plunderer', icon: '💰', description: 'Extract with at least 700₽ worth of rare minerals and loot', reward: 300, isMain: false },
+  { id: 'headshots', name: 'Precision Drilling', icon: '🎯', description: 'Get 5 headshot kills in the confined tunnels', reward: 300, isMain: false },
   { id: 'no_alarm', name: 'Silent Shift', icon: '🤫', description: 'Extract without triggering alarms', reward: 300, isMain: false },
-  { id: 'loot_caches', name: 'Supply Raid', icon: '📦', description: 'Loot 8 containers', reward: 200, isMain: false },
-  { id: 'hack_alarm', name: 'System Override', icon: '🔓', description: 'Hack 2 terminals', reward: 250, isMain: false },
-  { id: 'knife_kills', name: 'Pickaxe Justice', icon: '🗡️', description: 'Kill 3 enemies with the combat knife', reward: 300, isMain: false },
+  { id: 'loot_caches', name: 'Supply Raid', icon: '📦', description: 'Loot 8 containers across both levels', reward: 200, isMain: false },
+  { id: 'hack_alarm', name: 'Grid Override', icon: '🔓', description: 'Hack 2 terminals to disable mine security', reward: 250, isMain: false },
+  { id: 'knife_kills', name: 'Pickaxe Justice', icon: '🗡️', description: 'Kill 3 enemies with the combat knife in the dark', reward: 300, isMain: false },
+  { id: 'no_elevator', name: 'Shaft Diver', icon: '🕳️', description: 'Reach the boss arena without using the mine elevator (find the ventilation shaft)', reward: 500, isMain: false },
+  { id: 'sabotage_fast', name: 'Demolition Expert', icon: '💥', description: 'Complete any sabotage objective within 60 seconds of entering the mine', reward: 400, isMain: false },
 ];
 
 // ═══════════════════════════════════════
