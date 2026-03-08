@@ -752,7 +752,7 @@ export const GameCanvas: React.FC = () => {
       inputRef.current.shooting = false; inputRef.current.shootPressed = false;
     };
     const onMouseMove = (e: MouseEvent) => {
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
