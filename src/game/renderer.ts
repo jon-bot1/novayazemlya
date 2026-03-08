@@ -4072,6 +4072,120 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   ctx.restore(); // camera
 
+  // ── COMPASS HUD — top-center directional bar ──
+  {
+    const compassW = 220;
+    const compassH = 20;
+    const cx = w / 2;
+    const cy = 28;
+    const playerAngle = state.player.angle;
+    
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    const cr = 4;
+    ctx.moveTo(cx - compassW / 2 + cr, cy - compassH / 2);
+    ctx.lineTo(cx + compassW / 2 - cr, cy - compassH / 2);
+    ctx.quadraticCurveTo(cx + compassW / 2, cy - compassH / 2, cx + compassW / 2, cy - compassH / 2 + cr);
+    ctx.lineTo(cx + compassW / 2, cy + compassH / 2 - cr);
+    ctx.quadraticCurveTo(cx + compassW / 2, cy + compassH / 2, cx + compassW / 2 - cr, cy + compassH / 2);
+    ctx.lineTo(cx - compassW / 2 + cr, cy + compassH / 2);
+    ctx.quadraticCurveTo(cx - compassW / 2, cy + compassH / 2, cx - compassW / 2, cy + compassH / 2 - cr);
+    ctx.lineTo(cx - compassW / 2, cy - compassH / 2 + cr);
+    ctx.quadraticCurveTo(cx - compassW / 2, cy - compassH / 2, cx - compassW / 2 + cr, cy - compassH / 2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Center tick
+    ctx.strokeStyle = 'rgba(180, 255, 140, 0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - compassH / 2);
+    ctx.lineTo(cx, cy - compassH / 2 + 5);
+    ctx.stroke();
+    
+    // Cardinal/intercardinal directions
+    const directions: [number, string, boolean][] = [
+      [0, 'E', true], [Math.PI / 4, 'SE', false], [Math.PI / 2, 'S', true],
+      [3 * Math.PI / 4, 'SW', false], [Math.PI, 'W', true], [-3 * Math.PI / 4, 'NW', false],
+      [-Math.PI / 2, 'N', true], [-Math.PI / 4, 'NE', false],
+    ];
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cx - compassW / 2, cy - compassH / 2, compassW, compassH);
+    ctx.clip();
+    
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    for (const [dirAngle, label, isCardinal] of directions) {
+      // Relative angle to player facing direction
+      let diff = dirAngle - playerAngle;
+      // Normalize to [-PI, PI]
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      
+      const screenX = cx + (diff / Math.PI) * compassW;
+      
+      if (screenX > cx - compassW / 2 - 10 && screenX < cx + compassW / 2 + 10) {
+        // Tick mark
+        ctx.strokeStyle = isCardinal ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = isCardinal ? 1 : 0.5;
+        ctx.beginPath();
+        ctx.moveTo(screenX, cy + compassH / 2);
+        ctx.lineTo(screenX, cy + compassH / 2 - (isCardinal ? 5 : 3));
+        ctx.stroke();
+        
+        // Label
+        ctx.fillStyle = label === 'N' ? 'rgba(255, 80, 80, 0.95)' : isCardinal ? 'rgba(255, 255, 255, 0.8)' : 'rgba(200, 200, 200, 0.4)';
+        ctx.fillText(label, screenX, cy - 1);
+      }
+    }
+    
+    // Degree markers every 15°
+    for (let deg = 0; deg < 360; deg += 15) {
+      const rad = (deg - 90) * Math.PI / 180; // 0° = North
+      let diff = rad - playerAngle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      const screenX = cx + (diff / Math.PI) * compassW;
+      if (screenX > cx - compassW / 2 && screenX < cx + compassW / 2) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(screenX, cy + compassH / 2);
+        ctx.lineTo(screenX, cy + compassH / 2 - 2);
+        ctx.stroke();
+      }
+    }
+    
+    ctx.restore();
+  }
+
+  // ── KILL FEED — top-right corner ──
+  {
+    const killFeed: { text: string; time: number; icon: string }[] = (state as any)._killFeed || [];
+    const feedX = w - 10;
+    let feedY = 50;
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 10px monospace';
+    for (let i = killFeed.length - 1; i >= Math.max(0, killFeed.length - 5); i--) {
+      const kf = killFeed[i];
+      const age = state.time - kf.time;
+      if (age > 8) continue;
+      const alpha = age > 6 ? (8 - age) / 2 : Math.min(1, age * 3);
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.4})`;
+      const tw = ctx.measureText(kf.text).width + 24;
+      ctx.fillRect(feedX - tw - 4, feedY - 8, tw + 8, 16);
+      ctx.fillStyle = `rgba(220, 255, 200, ${alpha})`;
+      ctx.fillText(`${kf.icon} ${kf.text}`, feedX, feedY + 3);
+      feedY += 18;
+    }
+    ctx.textAlign = 'left';
+  }
+
   // Map-specific atmosphere overlay
   {
     const pal = getMapPalette(state);

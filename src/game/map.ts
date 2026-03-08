@@ -874,6 +874,10 @@ export function generateMap() {
   ];
   // Only one random exfil is open
   allExfils[Math.floor(Math.random() * allExfils.length)].active = true;
+  // Conditional exfil — always marked active but requires boss kill
+  const conditionalExfil: ExtractionPoint = { pos: { x: HX + 850, y: HY + 600 }, radius: 60, timer: 3, active: true, name: 'BUNKER ELEVATOR' };
+  (conditionalExfil as any)._requirements = 'boss_dead';
+  allExfils.push(conditionalExfil);
   const extractionPoints = allExfils;
 
   // ══════════════════════════════════════

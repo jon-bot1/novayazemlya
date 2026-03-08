@@ -19,6 +19,7 @@ import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion }
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
 import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../game/haptics';
+import { startAmbient, stopAmbient } from '../../game/audio';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
@@ -452,6 +453,18 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-accent uppercase tracking-wider mb-2">📡 Updates</h2>
             <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="text-xs font-mono">
+              <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.19 — 2026-03-08</div>
+                <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
+                  <li>• 🧭 <span className="text-accent">Compass HUD</span> — directional compass bar at top of screen showing N/S/E/W</li>
+                  <li>• ☠️ <span className="text-accent">Kill Feed</span> — recent kills shown in top-right with method and enemy type</li>
+                  <li>• 🎵 <span className="text-accent">Ambient Sounds</span> — wind (Objekt 47), ocean waves (Fishing Village), industrial hum (Hospital)</li>
+                  <li>• 📼 <span className="text-accent">Cassette Tapes & Notes</span> — new lore: audio logs, handwritten notes, blood-stained warnings</li>
+                  <li>• 📊 <span className="text-accent">Enhanced After Action Report</span> — stealth rating, long shots, accuracy, walls breached</li>
+                  <li>• 🚁 <span className="text-accent">Conditional Exfils</span> — bonus extraction points with requirements (boss kill, keycard, no alarm)</li>
+                  <li>• 🔭 <span className="text-accent">Render Distance</span> — toggle between FAR, MED, NEAR for performance tuning</li>
+                </ul>
+              </div>
               <div className="text-xs font-mono">
               <div className="text-accent font-display text-[11px] uppercase tracking-wider mb-1">v0.18 — 2026-03-08</div>
                 <ul className="text-[11px] text-foreground/80 space-y-0.5 ml-2">
@@ -1040,9 +1053,12 @@ export const GameCanvas: React.FC = () => {
     };
 
     rafRef.current = requestAnimationFrame(loop);
+    // Start ambient sound for this map
+    startAmbient(selectedMapId);
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
+      stopAmbient();
     };
   }, [started]);
 

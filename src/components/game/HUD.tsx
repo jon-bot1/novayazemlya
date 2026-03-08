@@ -459,17 +459,42 @@ export const HUD: React.FC<HUDProps> = ({
                 { label: 'Time', value: `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`, delay: '100ms' },
                 { label: 'Eliminated', value: `${killCount}`, delay: '200ms' },
                 { label: 'Headshots', value: `${achievementStats?.headshotKills || 0}`, delay: '300ms' },
-                { label: 'Distance', value: `${achievementStats?.distanceTravelled || 0}m`, delay: '400ms' },
+                { label: 'Long Shots', value: `${achievementStats?.longShots || 0}`, delay: '350ms' },
+                { label: 'Stealth Kills', value: `${achievementStats?.sneakKills || 0}`, delay: '400ms' },
+                { label: 'Distance', value: `${achievementStats?.distanceTravelled || 0}m`, delay: '450ms' },
                 { label: 'Bodies Looted', value: `${achievementStats?.bodiesLooted || 0}`, delay: '500ms' },
-                { label: 'Caches Opened', value: `${achievementStats?.cachesLooted || 0}`, delay: '600ms' },
+                { label: 'Caches Opened', value: `${achievementStats?.cachesLooted || 0}`, delay: '550ms' },
+                { label: 'Walls Breached', value: `${achievementStats?.wallsBreached || 0}`, delay: '600ms' },
+                { label: 'Terminals Hacked', value: `${achievementStats?.terminalsHacked || 0}`, delay: '650ms' },
                 { label: 'Loot Value', value: `${player.inventory.reduce((s, i) => s + i.value, 0)}₽`, delay: '700ms' },
-                { label: 'Documents', value: `${documentsFound}/${totalDocuments}`, delay: '800ms' },
+                { label: 'Documents', value: `${documentsFound}/${totalDocuments}`, delay: '750ms' },
               ].map((stat, i) => (
                 <div key={stat.label} className="flex justify-between text-sm font-mono text-muted-foreground animate-in slide-in-from-left-2 fade-in" style={{ animationDelay: stat.delay, animationFillMode: 'backwards' }}>
                   <span>{stat.label}:</span>
                   <span className="text-foreground">{stat.value}</span>
                 </div>
               ))}
+
+              {/* Stealth Rating */}
+              {achievementStats && (() => {
+                const stealthRatio = killCount > 0 ? (achievementStats.sneakKills / killCount) : 0;
+                const rating = stealthRatio > 0.7 ? 'GHOST' : stealthRatio > 0.4 ? 'SHADOW' : stealthRatio > 0.1 ? 'OPERATIVE' : 'LOUD';
+                const ratingColor = stealthRatio > 0.7 ? 'text-accent' : stealthRatio > 0.4 ? 'text-loot' : stealthRatio > 0.1 ? 'text-foreground' : 'text-danger';
+                return (
+                  <div className="flex justify-between text-sm font-mono animate-in fade-in" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+                    <span className="text-muted-foreground">Stealth Rating:</span>
+                    <span className={`font-display ${ratingColor}`}>{rating}</span>
+                  </div>
+                );
+              })()}
+
+              {/* Accuracy (approximate) */}
+              {killCount > 0 && (
+                <div className="flex justify-between text-sm font-mono text-muted-foreground animate-in fade-in" style={{ animationDelay: '850ms', animationFillMode: 'backwards' }}>
+                  <span>Accuracy:</span>
+                  <span className="text-foreground">{achievementStats ? `${Math.min(100, Math.round(((achievementStats.headshotKills + killCount) / Math.max(1, killCount * 3)) * 100))}%` : '—'}</span>
+                </div>
+              )}
 
               {/* Damage taken / dealt */}
               {gameOver && (

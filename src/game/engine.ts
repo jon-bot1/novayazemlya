@@ -26,6 +26,20 @@ function addMuzzleFlash(state: GameState, x: number, y: number, fromPlayer: bool
   flashes.push({ x, y, time: state.time, fromPlayer });
 }
 
+// Kill feed helper — tracks recent kills for HUD rendering
+function addKillFeed(state: GameState, enemyType: string, method: string) {
+  const feed = (state as any)._killFeed as { text: string; time: number; icon: string }[] || [];
+  const icons: Record<string, string> = {
+    boss: '💀', sniper: '🎯', heavy: '🪖', soldier: '🔫', scav: '🐀',
+    turret: '🏗️', shocker: '⚡', redneck: '🤠', dog: '🐕',
+  };
+  const icon = icons[enemyType] || '☠';
+  const typeLabel = enemyType === 'boss' ? 'BOSS' : enemyType.toUpperCase();
+  feed.push({ text: `${typeLabel} — ${method}`, time: state.time, icon });
+  if (feed.length > 15) feed.splice(0, feed.length - 15);
+  (state as any)._killFeed = feed;
+}
+
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
@@ -99,6 +113,26 @@ function getTerrainGrid(state: GameState): TerrainGrid {
 
 function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+// ── CONDITIONAL EXFIL HELPERS ──
+function checkExfilRequirements(state: GameState, req: string): boolean {
+  switch (req) {
+    case 'keycard': return (state.player.keycardCount || 0) > 0;
+    case 'boss_dead': return state.enemies.some(e => e.type === 'boss' && e.state === 'dead');
+    case 'no_alarm': return !state.alarmActive;
+    case 'breach': return state.wallsBreached > 0;
+    default: return true;
+  }
+}
+function getExfilRequirementMessage(req: string): string {
+  switch (req) {
+    case 'keycard': return 'Requires keycard 💳';
+    case 'boss_dead': return 'Kill the boss first';
+    case 'no_alarm': return 'Only available if alarm is OFF';
+    case 'breach': return 'Breach a wall first 🧨';
+    default: return 'Requirements not met';
+  }
 }
 
 // Fast squared distance — avoid sqrt when only comparing
@@ -567,6 +601,9 @@ export function createGameState(mapId: MapId = 'objekt47'): GameState {
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;
+  (state as any)._killFeed = [];
+  (state as any)._bloodStains = [];
+  (state as any)._muzzleFlashes = [];
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
@@ -960,6 +997,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.killCount++;
         state.sneakKills++;
         if (target.type === 'dog') state.dogsKilled++;
+        addKillFeed(state, target.type, 'Chokehold');
         addMessage(state, `🤫 CHOKEHOLD KILL — completely silent!`, 'kill');
         spawnParticles(state, target.pos.x, target.pos.y, '#8844cc', 10);
         state.chokeholdTarget = null;
@@ -1818,6 +1856,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.killCount++;
           if (enemy.type === 'dog') state.dogsKilled++;
           state.grenadeKills++;
+          addKillFeed(state, enemy.type, 'Mortar');
           addMessage(state, `💀 ${enemy.type.toUpperCase()} eliminated by mortar!`, 'kill');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
         }
@@ -2099,6 +2138,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.exfilsVisited.add(ep.name);
     }
     if (!ep.active) continue;
+    
+    // ── CONDITIONAL EXFILS ── some extraction points have requirements
+    const exfilReqs = (ep as any)._requirements as string | undefined;
+    if (exfilReqs && !checkExfilRequirements(state, exfilReqs)) {
+      // Show requirement message when player is near
+      const d = dist(state.player.pos, ep.pos);
+      if (d < ep.radius + 30 && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
+        const reqMsg = getExfilRequirementMessage(exfilReqs);
+        addMessage(state, `🔒 ${ep.name}: ${reqMsg}`, 'warning');
+      }
+      continue; // Skip this exfil
+    }
+    
     const d = dist(state.player.pos, ep.pos);
     if (d < ep.radius) {
       if (!fullSuccess && Math.floor(state.time * 2) !== Math.floor((state.time - dt) * 2)) {
@@ -4358,6 +4410,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.killCount++;
             if (enemy.type === 'dog') state.dogsKilled++;
             state.grenadeKills++;
+            addKillFeed(state, enemy.type, 'Grenade');
             addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           }
@@ -4544,6 +4597,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             state.killCount++;
             state.sneakKills++;
             if (enemy.type === 'dog') state.dogsKilled++;
+            addKillFeed(state, enemy.type, 'Silent Takedown');
             addMessage(state, `🗡️ SILENT TAKEDOWN! +Stealth bonus`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ccff', 8);
             // NO sound event — completely silent kill
@@ -4602,6 +4656,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist > 250) state.longShots++;
             if (killDist < 50) state.knifeDistanceKills++;
             
+            const method = isCrit ? 'Headshot' : b.weaponName || 'Bullet';
+            addKillFeed(state, enemy.type, method);
             if (!isCrit) {
               addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
@@ -4693,6 +4749,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               enemy.loot = generateEnemyLoot(enemy);
               state.killCount++;
               if (enemy.type === 'dog') state.dogsKilled++;
+              addKillFeed(state, enemy.type, 'Friendly Fire');
               addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
             } else {

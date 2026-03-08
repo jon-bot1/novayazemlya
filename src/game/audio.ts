@@ -628,3 +628,157 @@ export function playFootstep(mode: 'sneak' | 'walk' | 'sprint') {
   src.start(t);
   src.stop(t + 0.05);
 }
+
+// ═══════ AMBIENT SOUND SYSTEM ═══════
+// Looping ambient drones per map — low-volume atmospheric background
+
+let _ambientActive = false;
+let _ambientMapId: string | null = null;
+let _ambientNodes: { sources: OscillatorNode[]; gains: GainNode[] } | null = null;
+
+export function startAmbient(mapId: string) {
+  if (_ambientActive && _ambientMapId === mapId) return;
+  stopAmbient();
+  
+  const ctx = getCtx();
+  const master = getMaster(ctx);
+  const now = ctx.currentTime;
+  const sources: OscillatorNode[] = [];
+  const gains: GainNode[] = [];
+  
+  if (mapId === 'objekt47') {
+    // Arctic wind — filtered noise + low drone
+    const windOsc = ctx.createOscillator();
+    windOsc.type = 'sawtooth';
+    windOsc.frequency.setValueAtTime(45, now);
+    const windGain = ctx.createGain();
+    windGain.gain.setValueAtTime(0, now);
+    windGain.gain.linearRampToValueAtTime(0.012, now + 2);
+    const windFilter = ctx.createBiquadFilter();
+    windFilter.type = 'lowpass';
+    windFilter.frequency.setValueAtTime(120, now);
+    // Slow LFO modulates filter for wind gusts
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(0.15, now);
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.setValueAtTime(40, now);
+    lfo.connect(lfoGain).connect(windFilter.frequency);
+    lfo.start(now);
+    
+    windOsc.connect(windFilter).connect(windGain).connect(master);
+    windOsc.start(now);
+    sources.push(windOsc, lfo);
+    gains.push(windGain);
+    
+    // Sub-bass hum
+    const hum = ctx.createOscillator();
+    hum.type = 'sine';
+    hum.frequency.setValueAtTime(35, now);
+    const humGain = ctx.createGain();
+    humGain.gain.setValueAtTime(0, now);
+    humGain.gain.linearRampToValueAtTime(0.008, now + 3);
+    hum.connect(humGain).connect(master);
+    hum.start(now);
+    sources.push(hum);
+    gains.push(humGain);
+  } else if (mapId === 'fishing_village') {
+    // Ocean waves — low rumble + rhythmic sweep
+    const wave = ctx.createOscillator();
+    wave.type = 'sine';
+    wave.frequency.setValueAtTime(55, now);
+    const waveGain = ctx.createGain();
+    waveGain.gain.setValueAtTime(0, now);
+    waveGain.gain.linearRampToValueAtTime(0.010, now + 2);
+    // Modulate volume for wave rhythm
+    const waveLfo = ctx.createOscillator();
+    waveLfo.type = 'sine';
+    waveLfo.frequency.setValueAtTime(0.08, now); // ~5s wave cycle
+    const waveLfoGain = ctx.createGain();
+    waveLfoGain.gain.setValueAtTime(0.006, now);
+    waveLfo.connect(waveLfoGain).connect(waveGain.gain);
+    waveLfo.start(now);
+    
+    wave.connect(waveGain).connect(master);
+    wave.start(now);
+    sources.push(wave, waveLfo);
+    gains.push(waveGain);
+    
+    // Seagull-like high tone (very subtle)
+    const gull = ctx.createOscillator();
+    gull.type = 'sine';
+    gull.frequency.setValueAtTime(1200, now);
+    const gullGain = ctx.createGain();
+    gullGain.gain.setValueAtTime(0, now);
+    gullGain.gain.linearRampToValueAtTime(0.002, now + 4);
+    const gullLfo = ctx.createOscillator();
+    gullLfo.type = 'sine';
+    gullLfo.frequency.setValueAtTime(0.3, now);
+    const gullLfoGain = ctx.createGain();
+    gullLfoGain.gain.setValueAtTime(0.002, now);
+    gullLfo.connect(gullLfoGain).connect(gullGain.gain);
+    gullLfo.start(now);
+    const gullFilter = ctx.createBiquadFilter();
+    gullFilter.type = 'bandpass';
+    gullFilter.frequency.setValueAtTime(1200, now);
+    gullFilter.Q.setValueAtTime(5, now);
+    gull.connect(gullFilter).connect(gullGain).connect(master);
+    gull.start(now);
+    sources.push(gull, gullLfo);
+    gains.push(gullGain);
+  } else if (mapId === 'hospital') {
+    // Industrial hum — electrical buzz + eerie drone
+    const buzz = ctx.createOscillator();
+    buzz.type = 'sawtooth';
+    buzz.frequency.setValueAtTime(60, now); // 60Hz mains hum
+    const buzzGain = ctx.createGain();
+    buzzGain.gain.setValueAtTime(0, now);
+    buzzGain.gain.linearRampToValueAtTime(0.006, now + 3);
+    const buzzFilter = ctx.createBiquadFilter();
+    buzzFilter.type = 'lowpass';
+    buzzFilter.frequency.setValueAtTime(180, now);
+    buzz.connect(buzzFilter).connect(buzzGain).connect(master);
+    buzz.start(now);
+    sources.push(buzz);
+    gains.push(buzzGain);
+    
+    // Eerie drone — detuned sine
+    const drone = ctx.createOscillator();
+    drone.type = 'sine';
+    drone.frequency.setValueAtTime(82, now);
+    const drone2 = ctx.createOscillator();
+    drone2.type = 'sine';
+    drone2.frequency.setValueAtTime(83.5, now); // slight detune for unease
+    const droneGain = ctx.createGain();
+    droneGain.gain.setValueAtTime(0, now);
+    droneGain.gain.linearRampToValueAtTime(0.005, now + 4);
+    drone.connect(droneGain).connect(master);
+    drone2.connect(droneGain);
+    drone.start(now);
+    drone2.start(now);
+    sources.push(drone, drone2);
+    gains.push(droneGain);
+  }
+  
+  _ambientNodes = { sources, gains };
+  _ambientActive = true;
+  _ambientMapId = mapId;
+}
+
+export function stopAmbient() {
+  if (!_ambientNodes) return;
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+  for (const g of _ambientNodes.gains) {
+    try { g.gain.linearRampToValueAtTime(0, now + 0.5); } catch { /* */ }
+  }
+  const nodes = _ambientNodes;
+  setTimeout(() => {
+    for (const s of nodes.sources) {
+      try { s.stop(); } catch { /* */ }
+    }
+  }, 600);
+  _ambientNodes = null;
+  _ambientActive = false;
+  _ambientMapId = null;
+}
