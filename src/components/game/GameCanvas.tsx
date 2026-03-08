@@ -450,23 +450,43 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
   );
 };
 // Sync stash to database
+function getWriteToken(name: string): string | null {
+  try { return localStorage.getItem(`progress_token_${name}`); } catch { return null; }
+}
+function setWriteToken(name: string, token: string) {
+  try { localStorage.setItem(`progress_token_${name}`, token); } catch {}
+}
+
 async function syncStashToDb(playerName: string, stash: StashState) {
   if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return;
   try {
     const name = playerName.trim().slice(0, 20);
-    const { data } = await supabase.from('player_progress').select('id').eq('player_name', name).maybeSingle();
-    if (data) {
-      await supabase.from('player_progress').update({
-        rubles: stash.rubles,
-        raid_count: stash.raidCount,
-        extraction_count: stash.extractionCount,
-        stash_items: stash.items as any,
-        upgrades: stash.upgrades as any,
-        xp: stash.xp,
-        level: stash.level,
-      }).eq('player_name', name);
-    } else {
-      await supabase.from('player_progress').insert({
+    const token = getWriteToken(name);
+    const { data: existing } = await supabase.from('player_progress').select('id').eq('player_name', name).maybeSingle();
+    if (existing && token) {
+      // Use REST API directly to pass custom header for write_token verification
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/player_progress?player_name=eq.${encodeURIComponent(name)}`;
+      await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'x-write-token': token,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          rubles: stash.rubles,
+          raid_count: stash.raidCount,
+          extraction_count: stash.extractionCount,
+          stash_items: stash.items,
+          upgrades: stash.upgrades,
+          xp: stash.xp,
+          level: stash.level,
+        }),
+      });
+    } else if (!existing) {
+      const { data: inserted } = await supabase.from('player_progress').insert({
         player_name: name,
         rubles: stash.rubles,
         raid_count: stash.raidCount,
@@ -475,7 +495,10 @@ async function syncStashToDb(playerName: string, stash: StashState) {
         upgrades: stash.upgrades as any,
         xp: stash.xp,
         level: stash.level,
-      });
+      }).select('write_token').single();
+      if (inserted?.write_token) {
+        setWriteToken(name, inserted.write_token);
+      }
     }
   } catch (e) {
     console.error('Failed to sync stash to DB:', e);
@@ -486,7 +509,7 @@ async function loadStashFromDb(playerName: string): Promise<StashState | null> {
   if (!playerName || playerName === '__anonymous__' || playerName.trim().toLowerCase() === 'test123') return null;
   try {
     const name = playerName.trim().slice(0, 20);
-    const { data } = await supabase.from('player_progress').select('*').eq('player_name', name).maybeSingle();
+    const { data } = await supabase.from('player_progress').select('id,player_name,rubles,raid_count,extraction_count,stash_items,upgrades,xp,level').eq('player_name', name).maybeSingle();
     if (data) {
       return {
         items: (data.stash_items as any) || [],
