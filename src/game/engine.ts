@@ -3792,6 +3792,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Fall through to attack/chase state handling (aim only, no walking)
     }
 
+    // Debug: track which branch enemies reach
+    if (!(state as any)._debugEnemyBranch) (state as any)._debugEnemyBranch = {};
+    (state as any)._debugEnemyBranch[enemy.id] = `switch:${enemy.state}`;
+
     switch (enemy.state as string) {
       case 'idle': {
         // Bodyguards follow their boss instead of idling
