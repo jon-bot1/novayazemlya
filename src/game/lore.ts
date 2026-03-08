@@ -39,11 +39,13 @@ export const LORE_DOCUMENTS: LoreDocument[] = [
 
 Objekt 47 "Severnyj Vektor" (Объект 47 «Северный Вектор») confirmed active. Recon team has detected signs of recent activity in the bunker's underground chambers.
 
-Facility personnel evacuated in unknown direction. Laboratory equipment partially dismantled, but traces of experimental work with unknown samples have been found.
+Facility personnel evacuated in unknown direction. Laboratory equipment partially dismantled, but traces of experimental work with unknown samples have been found. Walls of Laboratory No. 3 are covered in a dark crystalline residue that was not present during previous inspections. The residue is warm to the touch. It hums at a frequency below human hearing. Two members of the recon team who touched it bare-handed have reported persistent dreams of "a door opening beneath the sea."
 
-WARNING: Upon discovery of containers marked "B-series" — DO NOT OPEN. Relay code WOLF-7 to HQ for instructions.
+WARNING: Upon discovery of containers marked "B-series" — DO NOT OPEN. DO NOT LOOK DIRECTLY AT CONTENTS. Relay code WOLF-7 to HQ for instructions.
 
 Group "Cedar" has been redeployed to reinforce the perimeter. Communications via frequency 147.300.
+
+ADDENDUM (handwritten): The aurora was green when we arrived. By morning it had turned red. I have never seen a red aurora in March. The sky looked like it was bleeding.
 
 — Zorin`,
     hasCode: true,
