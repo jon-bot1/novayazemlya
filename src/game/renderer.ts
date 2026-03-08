@@ -3417,25 +3417,27 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
     ctx.fill();
   }
-  // Bullet trails — batched
+  // Bullet trails — batched (longer trails on high graphics)
   {
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(255, 220, 80, 0.4)';
+    const trailLen = hasTracerLines() ? 6 : 3;
+    ctx.lineWidth = hasTracerLines() ? 2 : 1.5;
+    ctx.strokeStyle = hasTracerLines() ? 'rgba(255, 220, 80, 0.55)' : 'rgba(255, 220, 80, 0.4)';
     ctx.beginPath();
     for (const b of state.bullets) {
       if (!b.fromPlayer) continue;
       if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
       ctx.moveTo(b.pos.x, b.pos.y);
-      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+      ctx.lineTo(b.pos.x - b.vel.x * trailLen, b.pos.y - b.vel.y * trailLen);
     }
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(255, 100, 60, 0.3)';
+    ctx.lineWidth = hasTracerLines() ? 1.5 : 1.5;
+    ctx.strokeStyle = hasTracerLines() ? 'rgba(255, 100, 60, 0.45)' : 'rgba(255, 100, 60, 0.3)';
     ctx.beginPath();
     for (const b of state.bullets) {
       if (b.fromPlayer) continue;
       if (!isOnScreen(b.pos.x, b.pos.y, cx, cy, w, h, 10)) continue;
       ctx.moveTo(b.pos.x, b.pos.y);
-      ctx.lineTo(b.pos.x - b.vel.x * 3, b.pos.y - b.vel.y * 3);
+      ctx.lineTo(b.pos.x - b.vel.x * trailLen, b.pos.y - b.vel.y * trailLen);
     }
     ctx.stroke();
   }
