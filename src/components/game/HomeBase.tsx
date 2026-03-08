@@ -8,6 +8,7 @@ import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompl
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
 import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
+import { WeaponMasteryState, EMPTY_MASTERY, MASTERY_INFO, MASTERY_RANK_NAMES, MASTERY_THRESHOLDS, getNextMasteryThreshold, getMasteryBonus, type WeaponMasteryType } from '../../game/weaponMastery';
 
 export interface StashState {
   items: Item[];
@@ -17,6 +18,7 @@ export interface StashState {
   upgrades: UpgradeState;
   xp: number;
   level: number;
+  weaponMastery?: WeaponMasteryState;
 }
 
 const EMPTY_STASH: StashState = {
@@ -27,6 +29,7 @@ const EMPTY_STASH: StashState = {
   upgrades: {},
   xp: 0,
   level: 1,
+  weaponMastery: { ...EMPTY_MASTERY },
 };
 
 export function loadStash(): StashState {
@@ -61,7 +64,7 @@ interface HomeBaseProps {
 }
 
 export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount }) => {
-  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft'>('mission');
+  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft' | 'mastery'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
@@ -126,6 +129,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             { key: 'craft', label: '🔨 Craft' },
             { key: 'trader', label: '⬆ Upgrades' },
             { key: 'shop', label: '🏪 Shop' },
+            { key: 'mastery', label: '⚔️ Mastery' },
             { key: 'intel', label: `📄 Intel${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
           ] as const).map(t => (
             <button
@@ -686,6 +690,60 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
+        {/* Mastery Tab */}
+        {tab === 'mastery' && (() => {
+          const mastery = stash.weaponMastery || { ...EMPTY_MASTERY };
+          const types: WeaponMasteryType[] = ['rifle', 'pistol', 'sniper', 'shotgun', 'knife', 'grenade'];
+          return (
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-display text-accent uppercase tracking-wider">⚔️ Weapon Mastery</span>
+              <p className="text-[10px] font-mono text-muted-foreground">Kill enemies with different weapon types to gain mastery. Each level grants passive bonuses.</p>
+              {types.map(type => {
+                const data = mastery[type] || { kills: 0, level: 0 };
+                const info = MASTERY_INFO[type];
+                const bonus = getMasteryBonus(data.level);
+                const next = getNextMasteryThreshold(data.kills);
+                const progress = next ? data.kills / next : 1;
+                const rankName = MASTERY_RANK_NAMES[data.level] || 'Untrained';
+                return (
+                  <div key={type} className="p-3 rounded border border-border/50 bg-secondary/20">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{info.icon}</span>
+                        <span className="text-xs font-display text-foreground">{info.name}</span>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          data.level >= 4 ? 'bg-warning/20 text-warning border border-warning/30' :
+                          data.level >= 2 ? 'bg-accent/20 text-accent border border-accent/30' :
+                          'bg-secondary/40 text-muted-foreground border border-border/30'
+                        }`}>
+                          {rankName}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground">Lv.{data.level}/5</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground mb-1">
+                      <span>{data.kills} kills</span>
+                      <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent transition-all duration-500"
+                          style={{ width: `${Math.min(100, progress * 100)}%` }}
+                        />
+                      </div>
+                      <span>{next ? `${next}` : 'MAX'}</span>
+                    </div>
+                    {data.level > 0 && (
+                      <div className="text-[9px] font-mono text-accent/80 flex gap-3">
+                        {bonus.reloadReduction > 0 && <span>-{(bonus.reloadReduction * 100).toFixed(0)}% reload</span>}
+                        {bonus.damageBonus > 0 && <span>+{(bonus.damageBonus * 100).toFixed(0)}% damage</span>}
+                        {bonus.accuracyBonus > 0 && <span>+{(bonus.accuracyBonus * 100).toFixed(0)}% accuracy</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
       </div>
       </div>

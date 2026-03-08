@@ -8,7 +8,7 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine, AMBIENT_MESSAGES, IDLE_LINES_SWEDISH, ALERT_LINES_SWEDISH, DEATH_LINES_SWEDISH, COMBAT_LINES } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine, AMBIENT_MESSAGES, IDLE_LINES_SWEDISH, ALERT_LINES_SWEDISH, DEATH_LINES_SWEDISH, COMBAT_LINES, RELOAD_LINES, FLANKING_LINES, SUPPRESSING_LINES, ALLY_DOWN_LINES } from './dialogue';
 import { hasBloodStains, hasMuzzleFlash, addHitMarker, getNightEnemyBuffs } from './graphics';
 
 // VFX helpers
@@ -100,6 +100,61 @@ function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
   if (!text || enemy.speechBubble) return;
   enemy.speechBubble = text;
   enemy.speechBubbleTimer = duration;
+}
+
+// === DYNAMIC PATROL ROUTES ON ALLY DEATH ===
+// When an enemy dies, nearby allies react: investigate death location, become more alert
+function notifyAllyDeath(state: GameState, deadEnemy: Enemy, killMethod: string) {
+  const deathPos = { ...deadEnemy.pos };
+  for (const ally of state.enemies) {
+    if (ally === deadEnemy || ally.state === 'dead' || ally.friendly) continue;
+    if (ally.type === 'turret' || ally.type === 'sniper') continue;
+    
+    const d = dist(ally.pos, deathPos);
+    const sameGroup = ally.radioGroup === deadEnemy.radioGroup;
+    const inRange = d < 400 || (sameGroup && d < 600);
+    if (!inRange) continue;
+    
+    // 60% investigate death site, 25% boost alertness and continue, 15% ignore
+    const reaction = Math.random();
+    if (reaction < 0.60) {
+      // Investigate where ally died
+      ally.investigateTarget = { x: deathPos.x + (Math.random() - 0.5) * 40, y: deathPos.y + (Math.random() - 0.5) * 40 };
+      if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'alert') {
+        ally.state = 'investigate';
+      }
+      ally.awareness = Math.max(ally.awareness, 0.6);
+      setSpeech(ally, pickLine(ALLY_DOWN_LINES, ally.type), 2.5);
+    } else if (reaction < 0.85) {
+      // Heightened alertness — stay in current state but boost detection
+      ally.awareness = Math.max(ally.awareness, 0.45);
+      ally.awarenessDecay = Math.max(0.03, ally.awarenessDecay * 0.6);
+      ally.alertRange = Math.min(500, ally.alertRange * 1.25);
+      if (!ally.speechBubble) setSpeech(ally, pickLine(ALLY_DOWN_LINES, ally.type), 2.0);
+    }
+    // 15% ignore — no reaction (fog of war, didn't notice)
+  }
+}
+
+// === WEAPON MASTERY TRACKING ===
+// Tracks kills per weapon type on the game state for extraction
+function trackWeaponMasteryKill(state: GameState, weaponName: string | undefined, killMethod: string) {
+  if (!(state as any)._weaponMasteryKills) (state as any)._weaponMasteryKills = {};
+  const kills = (state as any)._weaponMasteryKills as Record<string, number>;
+  
+  // Determine mastery type
+  let type = 'rifle';
+  if (killMethod === 'Grenade' || killMethod === 'Mortar' || killMethod === 'TNT') type = 'grenade';
+  else if (killMethod === 'Silent Takedown' || killMethod === 'Chokehold' || killMethod === 'Knife') type = 'knife';
+  else if (weaponName) {
+    const lower = weaponName.toLowerCase();
+    if (lower.includes('makarov') || lower.includes('pm') || lower.includes('pistol')) type = 'pistol';
+    else if (lower.includes('mosin') || lower.includes('svd') || lower.includes('sniper')) type = 'sniper';
+    else if (lower.includes('toz') || lower.includes('shotgun') || lower.includes('12gauge')) type = 'shotgun';
+    else if (lower.includes('knife') || lower.includes('kniv')) type = 'knife';
+  }
+  
+  kills[type] = (kills[type] || 0) + 1;
 }
 
 // Cached spatial/terrain grids — rebuild on map/state switch or geometry changes
@@ -1245,6 +1300,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         addKillFeed(state, target.type, 'Chokehold');
         addMessage(state, `🤫 CHOKEHOLD KILL — completely silent!`, 'kill');
         spawnParticles(state, target.pos.x, target.pos.y, '#8844cc', 10);
+        notifyAllyDeath(state, target, 'Chokehold');
+        trackWeaponMasteryKill(state, undefined, 'Chokehold');
         state.chokeholdTarget = null;
         state.chokeholdProgress = 0;
       }
@@ -2169,6 +2226,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           addKillFeed(state, enemy.type, 'Mortar');
           addMessage(state, `💀 ${enemy.type.toUpperCase()} eliminated by mortar!`, 'kill');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, 'Mortar');
+            trackWeaponMasteryKill(state, undefined, 'Mortar');
         }
       }
     }
@@ -3563,6 +3622,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       // Apply tactical behavior based on role
       if (enemy.tacticalRole === 'flanker' && enemy.type !== 'turret' && enemy.type !== 'boss') {
         enemy.state = 'flank';
+        // Announce flanking (30% chance, if no speech bubble)
+        if (!enemy.speechBubble && Math.random() < 0.30) {
+          setSpeech(enemy, pickLine(FLANKING_LINES, enemy.type), 2.0);
+        }
         // Calculate flank target — move perpendicular to player direction
         if (!enemy.flankTarget || dist(enemy.pos, enemy.flankTarget) < 30 || state.time - enemy.lastTacticalSwitch > 4) {
           const toPlayer = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -3578,6 +3641,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else if (enemy.tacticalRole === 'suppressor' && enemy.type !== 'turret') {
         enemy.state = 'suppress';
         enemy.suppressTimer = 3; // keep suppressing for 3 seconds
+        // Announce suppression (35% chance)
+        if (!enemy.speechBubble && Math.random() < 0.35) {
+          setSpeech(enemy, pickLine(SUPPRESSING_LINES, enemy.type), 2.0);
+        }
       } else if (distToPlayer < enemy.shootRange && !isBehind) {
         enemy.state = 'attack';
       } else {
@@ -3900,6 +3967,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Decay timers
     if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
     if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
+
+    // === TACTICAL COMBAT SPEECH — periodic callouts during combat ===
+    if (!enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && !enemy.friendly) {
+      if (!(enemy as any)._combatCalloutTimer) (enemy as any)._combatCalloutTimer = 3 + Math.random() * 5;
+      (enemy as any)._combatCalloutTimer -= dt;
+      if ((enemy as any)._combatCalloutTimer <= 0) {
+        (enemy as any)._combatCalloutTimer = 4 + Math.random() * 8; // 4-12s between callouts
+        // Pick callout based on current state
+        if (enemy.state === 'suppress') {
+          setSpeech(enemy, pickLine(SUPPRESSING_LINES, enemy.type), 1.8);
+        } else if (enemy.state === 'flank') {
+          if (Math.random() < 0.4) setSpeech(enemy, pickLine(FLANKING_LINES, enemy.type), 1.8);
+        } else if ((enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.15) {
+          setSpeech(enemy, pickLine(COMBAT_LINES, enemy.type), 1.8);
+        }
+      }
+    }
 
     // Ambush timer decay — if ambush position reached, hold and wait
     if ((enemy as any)._ambushSet && (enemy as any)._ambushTimer > 0) {
@@ -5015,6 +5099,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addKillFeed(state, enemy.type, 'Grenade');
             addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()} (grenade)`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, 'Grenade');
+            trackWeaponMasteryKill(state, undefined, 'Grenade');
           }
         }
 
@@ -5124,6 +5210,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist > 250) state.longShots++;
             if (killDist < 50) state.knifeDistanceKills++;
             if (!isCrit) addMessage(state, `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+            notifyAllyDeath(state, enemy, isCrit ? 'Headshot' : (b.weaponName || 'Bullet'));
+            trackWeaponMasteryKill(state, b.weaponName, isCrit ? 'Headshot' : 'Bullet');
           } else {
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
@@ -5206,7 +5294,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addKillFeed(state, enemy.type, 'Silent Takedown');
             addMessage(state, `🗡️ SILENT TAKEDOWN! +Stealth bonus`, 'kill');
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#44ccff', 8);
-            // NO sound event — completely silent kill
+            notifyAllyDeath(state, enemy, 'Silent Takedown');
+            trackWeaponMasteryKill(state, undefined, 'Silent Takedown');
             return false;
           }
 
@@ -5272,6 +5361,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
+            notifyAllyDeath(state, enemy, method);
+            trackWeaponMasteryKill(state, b.weaponName, method);
           } else {
             // Hit reaction speech bubble (15% chance)
             if (!enemy.speechBubble && Math.random() < 0.15) {
@@ -5376,6 +5467,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addKillFeed(state, enemy.type, 'Friendly Fire');
               addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
+              notifyAllyDeath(state, enemy, 'Friendly Fire');
             } else {
               // Hit enemy panics too!
               // Much lower panic chance from friendly fire (was 0.3, now 0.06) to prevent chain reactions

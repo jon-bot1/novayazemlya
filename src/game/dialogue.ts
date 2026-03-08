@@ -78,6 +78,51 @@ export const FLEE_LINES: Record<string, string[]> = {
   svarta_sol: ['TACTICAL WITHDRAWAL.', 'REPOSITIONING.'],
 };
 
+// === TACTICAL CALLOUTS — combat communication ===
+export const RELOAD_LINES: Record<string, string[]> = {
+  scav:    ['ПЕРЕЗАРЯДКА!', 'ПОДОЖДИ!'],
+  soldier: ['ПЕРЕЗАРЯЖАЮСЬ!', 'ПРИКРОЙ — МАГАЗИН!', 'МЕНЯЮ!'],
+  heavy:   ['ПЕРЕЗАРЯЖАЮ...', 'ЛЕНТА КОНЧИЛАСЬ.'],
+  redneck: ['RELOADIN\'!', 'COVER ME!'],
+  shocker: ['ПЕРЕЗАРЯДКА БАТАРЕИ!'],
+  cultist: ['РИТУАЛ ОБНОВЛЕНИЯ!', 'ПЕРЕЗАРЯДКА!'],
+  miner_cult: ['LADDAR OM!', 'TÄCK MIG!'],
+  svarta_sol: ['RELOADING.', 'MAG CHANGE.'],
+};
+
+export const FLANKING_LINES: Record<string, string[]> = {
+  scav:    ['ЗАХОЖУ СБОКУ!', 'ОБХОЖУ!'],
+  soldier: ['ФЛАНГ! ОБХОЖУ!', 'ИДУ В ОБХОД!', 'СПРАВА ЗАХОЖУ!'],
+  heavy:   ['ОБХОЖУ.', 'ЗАЙДУ СБОКУ.'],
+  redneck: ['GOIN\' AROUND!', 'FLANKIN\'!'],
+  shocker: ['ОБХОЖУ С ФЛАНГА!'],
+  cultist: ['ДОРОГА ТЕНИ!', 'ОБХОЖУ!'],
+  miner_cult: ['FLANKERAR!', 'GÅR RUNT!'],
+  svarta_sol: ['FLANKING.', 'REPOSITIONING LEFT.'],
+};
+
+export const SUPPRESSING_LINES: Record<string, string[]> = {
+  scav:    ['ПАЛЮ!', 'СТРЕЛЯЮ!'],
+  soldier: ['ОГОНЬ НА ПОДАВЛЕНИЕ!', 'ПРИКРЫВАЮ!', 'ДАВЛЮ ОГНЁМ!'],
+  heavy:   ['ОГОНЬ!', 'НЕПРЕРЫВНЫЙ ОГОНЬ!'],
+  redneck: ['KEEPIN\' HIM DOWN!', 'STAY DOWN!'],
+  shocker: ['ПОДАВЛЕНИЕ!'],
+  cultist: ['СВЕТ БОРЕАЛИСА!', 'ОГНЕННЫЙ РИТУАЛ!'],
+  miner_cult: ['ELDGIVNING!', 'UNDERTRYCKER!'],
+  svarta_sol: ['SUPPRESSIVE FIRE.', 'COVERING.'],
+};
+
+export const ALLY_DOWN_LINES: Record<string, string[]> = {
+  scav:    ['МУЖИК УПАЛ!', 'НАШИХ УБИЛИ!', 'ТВОЮ МАТЬ!'],
+  soldier: ['ПОТЕРИ! БОЕЦ УБИТ!', 'ДВУХСОТЫЙ!', 'ЧЕЛОВЕК ВНИЗ!', 'ОГОНЬ! ОТОМСТИМ!'],
+  heavy:   ['ПОТЕРИ.', 'ОН УБИЛ НАШЕГО.', 'МЕСТЬ.'],
+  redneck: ['THEY GOT BILLY!', 'MAN DOWN!', 'HE\'S DEAD!'],
+  shocker: ['ОБЪЕКТ УНИЧТОЖЕН!', 'ПОТЕРЯ ЮНИТА!'],
+  cultist: ['БРАТ ПАЛ!', 'ЖЕРТВА ПРИНЯТА!', 'ОТОМСТИМ ЗА БРАТА!'],
+  miner_cult: ['KAMRAT NERE!', 'HAN DÖDADE EN AV OSS!', 'HÄMND!'],
+  svarta_sol: ['MAN DOWN.', 'CASUALTY.', 'AVENGE.'],
+};
+
 // === DEATH — last words ===
 export const DEATH_LINES: Record<string, string[]> = {
   scav:    ['Ургх...', 'Мама...', 'Нет...', 'За что...', '...'],
