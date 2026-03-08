@@ -356,6 +356,53 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
+        {/* Crafting Tab */}
+        {tab === 'craft' && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🔨</span>
+              <div>
+                <span className="text-xs font-display text-foreground">Crafting Station</span>
+                <p className="text-[10px] font-mono text-muted-foreground italic">Combine stash items into more valuable goods</p>
+              </div>
+            </div>
+            <div className="grid gap-2 max-h-[400px] overflow-y-auto">
+              {RECIPES.map(recipe => {
+                const available = canCraft(recipe, stash.items);
+                return (
+                  <div
+                    key={recipe.id}
+                    className={`flex items-center gap-3 p-3 rounded border transition-colors ${
+                      available ? 'border-accent/40 bg-accent/5 hover:bg-accent/10 cursor-pointer' : 'border-border/30 bg-secondary/10 opacity-50'
+                    }`}
+                    onClick={() => available && onCraft(recipe.id)}
+                  >
+                    <span className="text-2xl">{recipe.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-display text-foreground">{recipe.name}</span>
+                      <p className="text-[10px] font-mono text-muted-foreground">{recipe.description}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {recipe.ingredients.map((ing, i) => {
+                          const have = stash.items.filter(it => it.name === ing.name).length;
+                          return (
+                            <span key={i} className={`text-[9px] font-mono px-1 py-0.5 rounded border ${have >= ing.count ? 'border-accent/40 text-accent' : 'border-danger/30 text-danger/60'}`}>
+                              {ing.name} {have}/{ing.count}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-mono text-warning">{recipe.resultValue}₽</span>
+                      <p className="text-[8px] font-mono text-accent">{recipe.resultName}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Map Selection */}
         <div className="border border-border rounded p-3 bg-secondary/10">
           <span className="text-xs font-display text-accent uppercase tracking-wider block mb-2">🗺️ Select Map</span>
