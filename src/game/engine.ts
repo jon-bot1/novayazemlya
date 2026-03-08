@@ -5199,6 +5199,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const isCrit = Math.random() < critChance;
           if (isCrit) {
             enemy.hp = 0;
+            if (b.fromPlayer) { (state as any)._shotsHit = ((state as any)._shotsHit || 0) + 1; (state as any)._damageDealt = ((state as any)._damageDealt || 0) + b.damage * 2; }
             spawnParticles(state, b.pos.x, b.pos.y, '#ffff00', 10);
             playHit();
             addMessage(state, '💀 HEADSHOT!', 'kill');
