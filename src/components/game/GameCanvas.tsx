@@ -1066,6 +1066,43 @@ export const GameCanvas: React.FC = () => {
             // Match-grade barrel — critical hit bonus
             const matchBarrelLvl = getUpgradeLevel(ups, 'match_barrel');
             if (matchBarrelLvl > 0) (st as any)._critChanceBonus = matchBarrelLvl * 0.05;
+            // ── NEW SKILL TREE UPGRADES ──
+            // Quick Hands — faster reload
+            const quickReloadLvl = getUpgradeLevel(ups, 'quick_reload');
+            if (quickReloadLvl > 0) (st as any)._reloadSpeedBonus = quickReloadLvl * 0.15;
+            // Silent Step — reduced noise
+            const silentStepLvl = getUpgradeLevel(ups, 'silent_step');
+            if (silentStepLvl > 0) (st as any)._noiseReduction = silentStepLvl * 0.10;
+            // Iron Constitution — more HP
+            const ironBodyLvl = getUpgradeLevel(ups, 'iron_body');
+            if (ironBodyLvl > 0) { st.player.maxHp += ironBodyLvl * 15; st.player.hp = st.player.maxHp; }
+            // Pack Mule — extra backpack space
+            st.backpackCapacity += getUpgradeLevel(ups, 'big_backpack') * 6;
+            // Endurance — more stamina
+            const enduranceLvl = getUpgradeLevel(ups, 'endurance');
+            if (enduranceLvl > 0) {
+              st.player.maxStamina *= (1 + enduranceLvl * 0.20);
+              st.player.stamina = st.player.maxStamina;
+            }
+            // ── Apply weapon mods from stash items ──
+            // Auto-attach mods to equipped weapons
+            for (const item of stash.items) {
+              if (item.category === 'weapon_mod' && st.player.primaryWeapon) {
+                const wpn = st.player.primaryWeapon;
+                if (!wpn.attachedMods) wpn.attachedMods = [];
+                if (item.modType === 'scope' && !wpn.attachedMods.some(m => m.modType === 'scope')) {
+                  wpn.bulletSpeed = (wpn.bulletSpeed || 8) * (1 + (item.modBulletSpeedBonus || 0));
+                  wpn.attachedMods.push(item);
+                } else if (item.modType === 'suppressor' && !wpn.attachedMods.some(m => m.modType === 'suppressor')) {
+                  (st as any)._suppressorEquipped = true;
+                  wpn.attachedMods.push(item);
+                } else if (item.modType === 'ext_magazine' && !wpn.attachedMods.some(m => m.modType === 'ext_magazine')) {
+                  st.player.maxAmmo += (item.modMagBonus || 8);
+                  st.player.currentAmmo = st.player.maxAmmo;
+                  wpn.attachedMods.push(item);
+                }
+              }
+            }
 
             // ── Test player overrides ──
             const nameLower = playerName.trim().toLowerCase();
