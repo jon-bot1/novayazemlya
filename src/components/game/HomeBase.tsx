@@ -5,6 +5,9 @@ import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion, DailyMission } from '../../game/dailyMissions';
+import { RECIPES, canCraft, craft } from '../../game/crafting';
+import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
+import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
 
 export interface StashState {
   items: Item[];
