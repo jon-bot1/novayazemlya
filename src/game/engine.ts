@@ -3874,7 +3874,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             (enemy as any)._seekCover = true;
             (enemy as any)._coverTimer = 30; // max 30s in cover
           }
-          }
         }
 
         // Cover-seeking behavior: find nearby prop/wall and hold position
