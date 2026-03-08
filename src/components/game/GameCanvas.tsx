@@ -116,7 +116,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'characters' && (
         <>
           <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
-            PERSONNEL DOSSIER — Objekt 47 "Severnyj Vektor"
+            PERSONNEL DOSSIER — All Operational Zones
           </div>
 
           {/* Boss */}
