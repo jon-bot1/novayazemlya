@@ -4399,6 +4399,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
+
           // === NACHALNIK SPECIALS: one-use net, spin hook, close hook strike ===
           if ((enemy as any)._hookAttack) {
             const phase = enemy.bossPhase || 0;
@@ -4484,27 +4485,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
             if ((enemy as any)._hookCooldown > 0) (enemy as any)._hookCooldown -= dt;
           }
-        // Boss: spawn reinforcements in phase 1+
-        if (enemy.type === 'boss' && (enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {
-          enemy.bossSpawnTimer = 12 + Math.random() * 8;
-          const spawnAngle = Math.random() * Math.PI * 2;
-          const spawnDist = 80 + Math.random() * 60;
-          const sx = enemy.pos.x + Math.cos(spawnAngle) * spawnDist;
-          const sy = enemy.pos.y + Math.sin(spawnAngle) * spawnDist;
-          const minion: Enemy = {
-            id: `enemy_minion_${Date.now()}`,
-            pos: { x: sx, y: sy },
-            hp: 30, maxHp: 30, speed: 1.6, damage: 10,
-            alertRange: 200, shootRange: 150, fireRate: 1000,
-            state: 'chase', patrolTarget: { x: sx, y: sy },
-            lastShot: 0, angle: Math.random() * Math.PI * 2,
-            type: 'scav', eyeBlink: 3, loot: [], looted: false,
-            lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
-            tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
-          };
-          state.enemies.push(minion);
-          addMessage(state, `📻 ${getBossTitle(enemy)} calls reinforcements!`, 'warning');
-          spawnParticles(state, sx, sy, '#ff8844', 8);
+
+          // Boss: spawn reinforcements in phase 1+
+          if ((enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {
+            enemy.bossSpawnTimer = 12 + Math.random() * 8;
+            const spawnAngle = Math.random() * Math.PI * 2;
+            const spawnDist = 80 + Math.random() * 60;
+            const sx = enemy.pos.x + Math.cos(spawnAngle) * spawnDist;
+            const sy = enemy.pos.y + Math.sin(spawnAngle) * spawnDist;
+            const minion: Enemy = {
+              id: `enemy_minion_${Date.now()}`,
+              pos: { x: sx, y: sy },
+              hp: 30, maxHp: 30, speed: 1.6, damage: 10,
+              alertRange: 200, shootRange: 150, fireRate: 1000,
+              state: 'chase', patrolTarget: { x: sx, y: sy },
+              lastShot: 0, angle: Math.random() * Math.PI * 2,
+              type: 'scav', eyeBlink: 3, loot: [], looted: false,
+              lastRadioCall: 0, radioGroup: enemy.radioGroup, radioAlert: 0,
+              tacticalRole: 'assault', suppressTimer: 0, callForHelpTimer: 0, lastTacticalSwitch: 0, stunTimer: 0, awareness: 1, awarenessDecay: 0.15, elevated: false, friendly: false, friendlyTimer: 0,
+            };
+            state.enemies.push(minion);
+            addMessage(state, `📻 ${getBossTitle(enemy)} calls reinforcements!`, 'warning');
+            spawnParticles(state, sx, sy, '#ff8844', 8);
+          }
         }
         break;
       }
