@@ -5442,6 +5442,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               addKillFeed(state, enemy.type, 'Friendly Fire');
               addMessage(state, `💀 ${enemy.type.toUpperCase()} killed by friendly fire!`, 'kill');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 8);
+              notifyAllyDeath(state, enemy, 'Friendly Fire');
             } else {
               // Hit enemy panics too!
               // Much lower panic chance from friendly fire (was 0.3, now 0.06) to prevent chain reactions
