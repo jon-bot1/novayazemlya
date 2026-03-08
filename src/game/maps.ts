@@ -29,7 +29,7 @@ export const MAPS: MapInfo[] = [
   {
     id: 'hospital',
     name: 'The Hospital',
-    description: 'Abandoned Soviet hospital. Narrow corridors, dark rooms, horror atmosphere.',
+    description: 'Soviet hospital. Narrow corridors, dark rooms, horror atmosphere.',
     icon: '🏥',
     size: '2400×2400',
     unlockRequirement: 6,
