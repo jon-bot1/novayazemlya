@@ -59,6 +59,7 @@ export type Database = {
           stash_items: Json
           updated_at: string
           upgrades: Json
+          write_token: string | null
           xp: number
         }
         Insert: {
@@ -72,6 +73,7 @@ export type Database = {
           stash_items?: Json
           updated_at?: string
           upgrades?: Json
+          write_token?: string | null
           xp?: number
         }
         Update: {
@@ -85,6 +87,7 @@ export type Database = {
           stash_items?: Json
           updated_at?: string
           upgrades?: Json
+          write_token?: string | null
           xp?: number
         }
         Relationships: []
