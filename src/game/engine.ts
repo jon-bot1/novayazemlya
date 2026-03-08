@@ -7,7 +7,23 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, PATIENT_ZERO_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, PATIENT_ZERO_TAUNTS, KRAVTSOV_PHASES, PATIENT_ZERO_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+
+// Helper: get boss-specific death monologue
+function getBossDeathMonologue(enemy: Enemy): string[] {
+  const bossId = (enemy as any)._bossId;
+  if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
+  if (bossId === 'patient_zero') return [...PATIENT_ZERO_DEATH_MONOLOGUE];
+  return [...BOSS_DEATH_MONOLOGUE];
+}
+
+// Helper: get boss display name for kill messages
+function getBossTitle(enemy: Enemy): string {
+  const bossId = (enemy as any)._bossId;
+  if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
+  if (bossId === 'patient_zero') return 'ПАЦИЕНТ НОЛЬ';
+  return 'COMMANDANT OSIPOVITJ';
+}
 
 // Helper: set speech bubble if enemy doesn't already have one
 function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
