@@ -244,7 +244,7 @@ export function generateHospitalMap() {
       return boss;
     })(),
 
-    // ═══ BOSS 2 — Пациент Ноль (Patient Zero) ═══
+    // ═══ BOSS 2 — Узбек (The Uzbek) ═══
     // Locked in the basement — fast, melee-focused, horrifying
     (() => {
       const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
