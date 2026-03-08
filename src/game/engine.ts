@@ -102,6 +102,61 @@ function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
   enemy.speechBubbleTimer = duration;
 }
 
+// === DYNAMIC PATROL ROUTES ON ALLY DEATH ===
+// When an enemy dies, nearby allies react: investigate death location, become more alert
+function notifyAllyDeath(state: GameState, deadEnemy: Enemy, killMethod: string) {
+  const deathPos = { ...deadEnemy.pos };
+  for (const ally of state.enemies) {
+    if (ally === deadEnemy || ally.state === 'dead' || ally.friendly) continue;
+    if (ally.type === 'turret' || ally.type === 'sniper') continue;
+    
+    const d = dist(ally.pos, deathPos);
+    const sameGroup = ally.radioGroup === deadEnemy.radioGroup;
+    const inRange = d < 400 || (sameGroup && d < 600);
+    if (!inRange) continue;
+    
+    // 60% investigate death site, 25% boost alertness and continue, 15% ignore
+    const reaction = Math.random();
+    if (reaction < 0.60) {
+      // Investigate where ally died
+      ally.investigateTarget = { x: deathPos.x + (Math.random() - 0.5) * 40, y: deathPos.y + (Math.random() - 0.5) * 40 };
+      if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'alert') {
+        ally.state = 'investigate';
+      }
+      ally.awareness = Math.max(ally.awareness, 0.6);
+      setSpeech(ally, pickLine(ALLY_DOWN_LINES, ally.type), 2.5);
+    } else if (reaction < 0.85) {
+      // Heightened alertness — stay in current state but boost detection
+      ally.awareness = Math.max(ally.awareness, 0.45);
+      ally.awarenessDecay = Math.max(0.03, ally.awarenessDecay * 0.6);
+      ally.alertRange = Math.min(500, ally.alertRange * 1.25);
+      if (!ally.speechBubble) setSpeech(ally, pickLine(ALLY_DOWN_LINES, ally.type), 2.0);
+    }
+    // 15% ignore — no reaction (fog of war, didn't notice)
+  }
+}
+
+// === WEAPON MASTERY TRACKING ===
+// Tracks kills per weapon type on the game state for extraction
+function trackWeaponMasteryKill(state: GameState, weaponName: string | undefined, killMethod: string) {
+  if (!(state as any)._weaponMasteryKills) (state as any)._weaponMasteryKills = {};
+  const kills = (state as any)._weaponMasteryKills as Record<string, number>;
+  
+  // Determine mastery type
+  let type = 'rifle';
+  if (killMethod === 'Grenade' || killMethod === 'Mortar' || killMethod === 'TNT') type = 'grenade';
+  else if (killMethod === 'Silent Takedown' || killMethod === 'Chokehold' || killMethod === 'Knife') type = 'knife';
+  else if (weaponName) {
+    const lower = weaponName.toLowerCase();
+    if (lower.includes('makarov') || lower.includes('pm') || lower.includes('pistol')) type = 'pistol';
+    else if (lower.includes('mosin') || lower.includes('svd') || lower.includes('sniper')) type = 'sniper';
+    else if (lower.includes('toz') || lower.includes('shotgun') || lower.includes('12gauge')) type = 'shotgun';
+    else if (lower.includes('knife') || lower.includes('kniv')) type = 'knife';
+  }
+  
+  kills[type] = (kills[type] || 0) + 1;
+}
+
 // Cached spatial/terrain grids — rebuild on map/state switch or geometry changes
 let _wallGrid: SpatialGrid | null = null;
 let _wallCount = -1;
