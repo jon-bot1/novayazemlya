@@ -93,15 +93,14 @@ interface ActionButtonProps {
 export const ActionButton: React.FC<ActionButtonProps> = ({ label, onPress, onRelease, variant = 'action', className = '' }) => {
   return (
     <button
-      className={`touch-none select-none rounded-full font-display text-xs uppercase tracking-wider
+      className={`touch-none select-none rounded-full font-display text-xs uppercase tracking-wider z-40
         ${variant === 'fire'
           ? 'w-16 h-16 bg-destructive/40 border-2 border-destructive text-destructive-foreground active:bg-destructive/70'
           : 'w-14 h-14 bg-primary/30 border border-primary/60 text-primary-foreground active:bg-primary/60'
         } ${className}`}
-      onTouchStart={(e) => { e.preventDefault(); onPress(); }}
-      onTouchEnd={(e) => { e.preventDefault(); onRelease?.(); }}
-      onMouseDown={onPress}
-      onMouseUp={onRelease}
+      onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); onPress(); }}
+      onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); onRelease?.(); }}
+      onContextMenu={(e) => e.preventDefault()}
     >
       {label}
     </button>
