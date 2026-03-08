@@ -1448,6 +1448,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (wpn as any)._maxDurability = 120;
     }
     
+    // Durability ratio for spread/fire rate
+    const durRatio = (wpn && !isSidearm && (wpn as any)._maxDurability) 
+      ? (wpn as any)._durability / (wpn as any)._maxDurability 
+      : 1;
     // === COMPREHENSIVE SPREAD SYSTEM ===
     // Base spread per weapon class (tighter = more accurate)
     const wpnName = (wpn?.name || '').toLowerCase();
