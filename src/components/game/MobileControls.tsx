@@ -122,7 +122,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       {/* Left side action buttons — utility */}
       <div className={`absolute flex flex-col gap-2 items-center pointer-events-auto ${isLandscape ? 'bottom-16 left-[108px]' : 'bottom-32 left-[124px]'}`} style={{ zIndex: 50 }}>
         <ActionButton label="🔄" onPress={() => { inputRef.current.reload = true; }} variant="small" />
-        <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" />
+        <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" active={nearInteractable} className={nearInteractable ? 'animate-pulse ring-2 ring-accent' : ''} />
         <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} variant="small" />
         <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} variant="small" />
         <ActionButton label="🎭" onPress={() => { inputRef.current.useSpecial = true; }} variant="small" />
