@@ -137,7 +137,7 @@ function LoreSection() {
           <Stat label="Former Unit" value="MUST" />
           <Stat label="Organization" value="NORDVAKT" />
           <Stat label="Status" value="KIA (officially)" />
-          <Stat label="Handler" value="STYRESMAN" />
+          <Stat label="Handler" value="Styrelsen" />
         </div>
         <P>Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted by NORDVAKT and given a new identity. Operates as a ghost: no country, no name, no backup.</P>
         <P>NORDVAKT is a secret Nordic stay-behind defense organization, operating independently of NATO and the Warsaw Pact. Operatör 8 does not know the full scope of NORDVAKT's interest in Substance Zero.</P>
