@@ -1440,7 +1440,10 @@ export const GameCanvas: React.FC = () => {
             setStarted(false);
             setGamePhase('homebase');
             // Reroll objectives for next raid
-            setObjectives(generateMissionObjectives(selectedMapId));
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            rerollsByMapRef.current[selectedMapId] = 0;
+            setObjectives(nextObjectives);
             setRerollCount(0);
           }}
         />
