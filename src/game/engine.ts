@@ -1132,9 +1132,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   {
     const baseNoise: Record<MovementMode, number> = { sneak: 0.05, walk: 0.25, sprint: 0.75 };
     let noise = baseNoise[effectiveMode] || 0.25;
-    noise *= terrainMult;
-    const silentBonus = (state as any)._noiseReduction || 0;
-    if (silentBonus > 0) noise *= (1 - silentBonus);
+    // Recalculate terrain multiplier for noise meter
+    const tgNoise = getTerrainGrid(state);
+    const terrainNoise = getTerrainFast(tgNoise, state.player.pos.x, state.player.pos.y);
+    let noiseTMult = 1.0;
+    if (terrainNoise === 'concrete' || terrainNoise === 'asphalt') noiseTMult = 1.4;
+    else if (terrainNoise === 'dirt') noiseTMult = 0.8;
+    else if (terrainNoise === 'forest') noiseTMult = 0.6;
+    noise *= noiseTMult;
+    const silentBonusN = (state as any)._noiseReduction || 0;
+    if (silentBonusN > 0) noise *= (1 - silentBonusN);
     if ((state as any)._playerHiding) noise = 0;
     else if (state.player.inCover && !state.player.peeking) noise *= 0.5;
     // Gunfire spike — recent shots massively increase noise
