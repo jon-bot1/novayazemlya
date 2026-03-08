@@ -52,13 +52,14 @@ interface HomeBaseProps {
   onSellItem: (index: number) => void;
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
-  onBuyTraderItem: (itemId: string) => void;
+  onBuyTraderItem: (itemId: string, adjustedCost: number) => void;
   onRerollObjectives: (cost: number) => void;
   onMapChange: (mapId: MapId) => void;
+  onCraft: (recipeId: string) => void;
   rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, rerollCount }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
