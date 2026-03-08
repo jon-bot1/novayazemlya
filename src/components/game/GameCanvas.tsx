@@ -6,7 +6,6 @@ import { MapId } from '../../game/maps';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
 import { MobileControls } from './MobileControls';
-import { MobileControls } from './MobileControls';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { unlockSpeech } from '../../game/voice';
 import { HUD } from './HUD';
