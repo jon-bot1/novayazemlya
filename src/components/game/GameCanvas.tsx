@@ -1152,6 +1152,9 @@ export const GameCanvas: React.FC = () => {
                 case 'buy_ak74': newItem = WEAPON_TEMPLATES.ak74(); break;
                 case 'buy_mosin': newItem = WEAPON_TEMPLATES.mosin(); break;
                 case 'buy_toz': newItem = WEAPON_TEMPLATES.toz(); break;
+                case 'buy_scope': newItem = createScope(); break;
+                case 'buy_suppressor': newItem = createSuppressor(); break;
+                case 'buy_ext_mag': newItem = createExtMagazine(); break;
                 default: return prev;
               }
               const updated = {
