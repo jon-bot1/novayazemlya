@@ -47,10 +47,66 @@ function timeSince(isoString: string): string {
   return `${Math.floor(diff / 3600)}h ago`;
 }
 
+const SPECTATE_KEY = 'novaya_spectate_auth';
+const SPECTATE_HASH = '5a3c1f'; // simple hash check
+
+function simpleHash(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(16).slice(0, 6);
+}
+
 const Spectate: React.FC = () => {
   const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SPECTATE_KEY) === '1');
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState(false);
   const navigate = useNavigate();
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-xs w-full p-6 border border-border rounded bg-card/80">
+          <h1 className="text-lg font-display text-accent tracking-wider mb-4 text-center">🔒 SPECTATOR ACCESS</h1>
+          <input
+            type="password"
+            maxLength={30}
+            className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Enter password..."
+            value={pin}
+            onChange={e => { setPin(e.target.value); setPinError(false); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && pin) {
+                if (simpleHash(pin) === SPECTATE_HASH) {
+                  sessionStorage.setItem(SPECTATE_KEY, '1');
+                  setAuthed(true);
+                } else {
+                  setPinError(true);
+                }
+              }
+            }}
+            autoFocus
+          />
+          {pinError && <p className="text-xs font-mono text-destructive mt-2">Access denied</p>}
+          <button
+            className="mt-3 w-full px-3 py-2 bg-primary text-primary-foreground text-xs font-mono uppercase tracking-wider rounded hover:bg-primary/80 transition-colors"
+            onClick={() => {
+              if (simpleHash(pin) === SPECTATE_HASH) {
+                sessionStorage.setItem(SPECTATE_KEY, '1');
+                setAuthed(true);
+              } else {
+                setPinError(true);
+              }
+            }}
+          >
+            Enter
+          </button>
+          <button className="mt-2 w-full text-xs font-mono text-muted-foreground hover:text-foreground" onClick={() => navigate('/')}>← Back</button>
+        </div>
+      </div>
+    );
+  }
 
   const fetchSessions = async () => {
     const { data } = await supabase
