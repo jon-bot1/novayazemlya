@@ -1303,7 +1303,6 @@ export const GameCanvas: React.FC = () => {
           <MobileControls
             inputRef={inputRef}
             stateRef={stateRef}
-            canvasRef={canvasRef}
             onToggleInventory={() => { setShowInventory(v => !v); setShowIntel(false); }}
             onToggleIntel={() => { setShowIntel(v => !v); setShowInventory(false); }}
             movementMode={hudState.movementMode}
