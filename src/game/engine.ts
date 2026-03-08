@@ -4642,6 +4642,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           
           if (enemy.hp <= 0) {
+            addHitMarker(enemy.pos.x, enemy.pos.y, state.time, true, isCrit, b.damage);
             enemy.state = 'dead';
             if (enemy.type === 'boss') {
               (enemy as any)._deathMonologue = getBossDeathMonologue(enemy);
