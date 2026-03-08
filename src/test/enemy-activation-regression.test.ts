@@ -26,10 +26,10 @@ const idleInput: InputState = {
 
 describe('Enemy activation regression', () => {
   it('scav/heavy/boss should aggro at direct contact range on fishing_village', () => {
-    const state = createGameState('fishing_village');
     const targets = ['scav', 'heavy', 'boss'] as const;
 
     for (const type of targets) {
+      const state = createGameState('fishing_village');
       const enemy = state.enemies.find(e => e.type === type);
       expect(enemy, `missing ${type} on fishing_village`).toBeTruthy();
       if (!enemy) continue;
