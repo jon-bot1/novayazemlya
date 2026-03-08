@@ -1557,7 +1557,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.save();
 
     if (enemy.type === 'boss') {
-      // === BOSS CORPSE — dramatic sprawled body with blood pool ===
+      // === BOSS CORPSE ===
+      const bossId = (enemy as any)._bossId || 'osipovitj';
       const bossSize = R + 8;
       const hasSpeech = enemy.speechBubble && enemy.speechBubbleTimer && enemy.speechBubbleTimer > 0;
       
@@ -1565,85 +1566,211 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const deathAge = Math.min(10, state.time - ((enemy as any)._deathTime || state.time));
       if (!(enemy as any)._deathTime) (enemy as any)._deathTime = state.time;
       const poolR = 15 + Math.min(35, deathAge * 5);
-      ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
-      ctx.beginPath();
-      ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
-      ctx.fill();
+      
+      if (bossId === 'kravtsov') {
+        // Kravtsov corpse — green-tinted blood pool (mutagen)
+        ctx.fillStyle = 'rgba(40, 100, 40, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Normal blood on top
+        ctx.fillStyle = 'rgba(120, 20, 20, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x + 3, enemy.pos.y, poolR * 0.6, poolR * 0.4, -0.1, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Sprawled body (top-down)
-      ctx.save();
-      ctx.translate(enemy.pos.x, enemy.pos.y);
-      ctx.rotate(enemy.angle + 0.3); // slightly angled
-      
-      // Torso
-      ctx.fillStyle = '#3a3a4a';
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      
-      // Head (tilted)
-      ctx.fillStyle = '#c4956a';
-      ctx.beginPath();
-      ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#222';
-      ctx.stroke();
-      
-      // Ushanka fallen slightly off
-      ctx.fillStyle = '#3a2828';
-      ctx.beginPath();
-      ctx.arc(bossSize * 0.55, bossSize * 0.1, bossSize * 0.17, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#cc3333';
-      ctx.font = '6px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('★', bossSize * 0.55, bossSize * 0.13);
-      
-      // Arms splayed
-      ctx.strokeStyle = '#c4956a';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
-      ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
-      ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
-      ctx.stroke();
-      
-      // Dropped weapon
-      ctx.fillStyle = '#444';
-      ctx.save();
-      ctx.translate(-bossSize * 0.5, -bossSize * 0.6);
-      ctx.rotate(0.8);
-      ctx.fillRect(0, -1.5, 22, 3);
-      ctx.restore();
-      
-      // Legs
-      ctx.strokeStyle = '#3a3a4a';
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.35, -bossSize * 0.1);
-      ctx.lineTo(-bossSize * 0.7, -bossSize * 0.3);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-bossSize * 0.35, bossSize * 0.1);
-      ctx.lineTo(-bossSize * 0.7, bossSize * 0.2);
-      ctx.stroke();
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.3);
+        // Lab coat body
+        ctx.fillStyle = '#b0b0a8';
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Head
+        ctx.fillStyle = '#c4956a';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#666';
+        ctx.stroke();
+        // Broken glasses
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.45, bossSize * 0.1, 3, 0, Math.PI * 1.5);
+        ctx.stroke();
+        // Dropped syringe
+        ctx.fillStyle = '#aaa';
+        ctx.save();
+        ctx.translate(bossSize * 0.2, -bossSize * 0.5);
+        ctx.rotate(1.2);
+        ctx.fillRect(0, -1, 14, 2);
+        ctx.fillStyle = 'rgba(80,200,120,0.6)';
+        ctx.fillRect(2, -0.5, 6, 1);
+        ctx.restore();
+        // Arms
+        ctx.strokeStyle = '#c4956a';
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
+        ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
+        ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
+        ctx.stroke();
+        ctx.restore();
 
-      ctx.restore();
+        // Nameplate
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(50, 180, 80, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† DR. KRAVTSOV †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
 
-      // Boss death nameplate
-      const fadeAlpha = hasSpeech ? 1.0 : 0.6;
-      ctx.globalAlpha = fadeAlpha;
-      ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
-      ctx.font = 'bold 9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+      } else if (bossId === 'uzbek') {
+        // Uzbek corpse — dark blood, chains scattered
+        ctx.fillStyle = 'rgba(80, 10, 10, 0.5)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR * 1.1, poolR * 0.7, 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.2);
+        // Emaciated body
+        ctx.fillStyle = '#5a4a3a';
+        ctx.strokeStyle = '#3a2a1a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.6, bossSize * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Head
+        ctx.fillStyle = '#8a7050';
+        ctx.beginPath();
+        ctx.ellipse(bossSize * 0.45, bossSize * 0.1, bossSize * 0.2, bossSize * 0.17, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#3a2a1a';
+        ctx.stroke();
+        // Closed eyes (peaceful at last)
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.5, bossSize * 0.05);
+        ctx.lineTo(bossSize * 0.56, bossSize * 0.05);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.5, bossSize * 0.15);
+        ctx.lineTo(bossSize * 0.56, bossSize * 0.15);
+        ctx.stroke();
+        // Thin arms with broken chains
+        ctx.strokeStyle = '#8a7050';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, -bossSize * 0.25);
+        ctx.lineTo(-bossSize * 0.4, -bossSize * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, bossSize * 0.25);
+        ctx.lineTo(bossSize * 0.3, bossSize * 0.55);
+        ctx.stroke();
+        // Chain fragments on ground
+        ctx.strokeStyle = '#777';
+        ctx.lineWidth = 1.5;
+        for (let c = 0; c < 4; c++) {
+          const cx = -bossSize * 0.2 + c * bossSize * 0.2;
+          const cy = bossSize * 0.3 + Math.sin(c * 1.5) * 5;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + 5, cy + 3);
+          ctx.lineTo(cx + 3, cy + 6);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Nameplate
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(200, 50, 30, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† УЗБЕК †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+
+      } else {
+        // Default Osipovitj corpse
+        ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle + 0.3);
+        ctx.fillStyle = '#3a3a4a';
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bossSize * 0.55, bossSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#c4956a';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.4, bossSize * 0.15, bossSize * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#222';
+        ctx.stroke();
+        ctx.fillStyle = '#3a2828';
+        ctx.beginPath();
+        ctx.arc(bossSize * 0.55, bossSize * 0.1, bossSize * 0.17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#cc3333';
+        ctx.font = '6px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', bossSize * 0.55, bossSize * 0.13);
+        ctx.strokeStyle = '#c4956a';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.1, -bossSize * 0.3);
+        ctx.lineTo(-bossSize * 0.5, -bossSize * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
+        ctx.lineTo(bossSize * 0.4, bossSize * 0.6);
+        ctx.stroke();
+        ctx.fillStyle = '#444';
+        ctx.save();
+        ctx.translate(-bossSize * 0.5, -bossSize * 0.6);
+        ctx.rotate(0.8);
+        ctx.fillRect(0, -1.5, 22, 3);
+        ctx.restore();
+        ctx.strokeStyle = '#3a3a4a';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.35, -bossSize * 0.1);
+        ctx.lineTo(-bossSize * 0.7, -bossSize * 0.3);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-bossSize * 0.35, bossSize * 0.1);
+        ctx.lineTo(-bossSize * 0.7, bossSize * 0.2);
+        ctx.stroke();
+        ctx.restore();
+
+        const fadeAlpha = hasSpeech ? 1.0 : 0.6;
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+      }
 
       if (!enemy.looted) {
         const bob = Math.sin(state.time * 2) * 2;
@@ -1861,130 +1988,46 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       // Draw the gun on top
       drawMountedGun(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemy.state !== 'patrol');
     } else if (enemy.type === 'boss') {
-      // Boss: Commandant Osipovitj — larger, glowing, unique appearance
+      const bossId = (enemy as any)._bossId || 'osipovitj';
       const bossSize = R + 8;
       const phase = enemy.bossPhase || 0;
       const isProne = (enemy as any)._proneTimer > 0;
+      const isMoving = enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank';
+      const stompBob = isMoving ? Math.sin(state.time * 8) * 2.5 : 0;
+      const stompLean = isMoving ? Math.sin(state.time * 4) * 0.06 : 0;
 
-      // Menacing aura
-      const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
-      const auraR = bossSize + 20 + Math.sin(state.time * 3) * 8;
-      ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y, auraR, 0, Math.PI * 2);
-      ctx.fillStyle = auraColors[phase];
-      ctx.fill();
-
-      // Second pulsing ring
-      if (phase >= 1) {
-        const ring2 = bossSize + 30 + Math.sin(state.time * 5) * 5;
+      if (bossId === 'kravtsov') {
+        // ═══ DR. KRAVTSOV — lab coat, syringe, green toxic glow ═══
+        const greenGlow = 'rgba(40, 200, 80, ' + (0.12 + phase * 0.06 + Math.sin(state.time * 3) * 0.04) + ')';
+        const auraR = bossSize + 18 + Math.sin(state.time * 2.5) * 6;
         ctx.beginPath();
-        ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
-        ctx.strokeStyle = phase === 2 ? 'rgba(255, 30, 30, 0.3)' : 'rgba(255, 120, 40, 0.2)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-
-      // Draw the boss character — dark uniform, ushanka with red star, glowing eyes
-      const bodyColor = phase === 2 ? '#8a2a2a' : phase === 1 ? '#6a3a2a' : '#4a4a5a';
-      const outlineColor = phase === 2 ? '#cc3333' : phase === 1 ? '#aa5533' : '#2a2a3a';
-      const eyeColor = phase >= 1 ? '#ff4422' : '#ffaa00';
-
-      if (isProne || (enemy as any)._proneGoDownTimer > 0) {
-        // PRONE VISUAL — proper top-down lying body
-        const goingDown = (enemy as any)._proneGoDownTimer > 0;
-        const gettingUp = !goingDown && (enemy as any)._proneTimer < 1.0 && (enemy as any)._proneTimer > 0;
-        // Transition: scale from standing to prone
-        const transProgress = goingDown 
-          ? 1 - ((enemy as any)._proneGoDownTimer / 0.2) // 0→1 as going down
-          : gettingUp ? (enemy as any)._proneTimer : 1; // 1→0 as getting up
-        const flattenY = 0.25 + (1 - transProgress) * 0.75; // 1.0 standing → 0.25 prone
-        const stretchX = 1.0 + transProgress * 0.8; // 1.0 → 1.8
-
-        ctx.save();
-        ctx.translate(enemy.pos.x, enemy.pos.y);
-        ctx.rotate(enemy.angle);
-        ctx.scale(stretchX, flattenY);
-        
-        // Draw elongated body shape (top-down lying figure)
-        // Torso
-        ctx.fillStyle = bodyColor;
-        ctx.strokeStyle = outlineColor;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, bossSize * 0.6, bossSize * 0.35, 0, 0, Math.PI * 2);
+        ctx.arc(enemy.pos.x, enemy.pos.y, auraR, 0, Math.PI * 2);
+        ctx.fillStyle = greenGlow;
         ctx.fill();
-        ctx.stroke();
-        
-        // Head (at front)
-        const headR = bossSize * 0.25;
-        ctx.fillStyle = '#d4a574'; // skin
-        ctx.beginPath();
-        ctx.arc(bossSize * 0.45, 0, headR, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = outlineColor;
-        ctx.stroke();
-        
-        // Ushanka on head
-        ctx.fillStyle = '#3a2828';
-        ctx.beginPath();
-        ctx.arc(bossSize * 0.5, 0, headR * 0.9, 0, Math.PI * 2);
-        ctx.fill();
-        // Red star on ushanka
-        ctx.fillStyle = '#cc3333';
-        ctx.font = `${Math.max(6, headR * 0.6)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillText('★', bossSize * 0.5, headR * 0.25);
-        
-        // Arms splayed out
-        ctx.strokeStyle = '#d4a574';
-        ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
-        // Left arm
-        ctx.beginPath();
-        ctx.moveTo(bossSize * 0.1, -bossSize * 0.3);
-        ctx.lineTo(bossSize * 0.3, -bossSize * 0.55);
-        ctx.stroke();
-        // Right arm (holding gun forward)
-        ctx.beginPath();
-        ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
-        ctx.lineTo(bossSize * 0.45, bossSize * 0.35);
-        ctx.stroke();
-        // Gun in right hand
-        ctx.fillStyle = '#333';
-        ctx.fillRect(bossSize * 0.4, bossSize * 0.3, bossSize * 0.3, 3);
-        
-        // Legs (behind body)
-        ctx.strokeStyle = bodyColor;
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(-bossSize * 0.3, -bossSize * 0.15);
-        ctx.lineTo(-bossSize * 0.65, -bossSize * 0.25);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-bossSize * 0.3, bossSize * 0.15);
-        ctx.lineTo(-bossSize * 0.65, bossSize * 0.25);
-        ctx.stroke();
-        // Boots
-        ctx.fillStyle = '#222';
-        ctx.beginPath();
-        ctx.arc(-bossSize * 0.65, -bossSize * 0.25, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(-bossSize * 0.65, bossSize * 0.25, 3, 0, Math.PI * 2);
-        ctx.fill();
+        if (phase >= 1) {
+          const ring2 = bossSize + 28 + Math.sin(state.time * 4) * 5;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
+          ctx.strokeStyle = phase === 2 ? 'rgba(0, 255, 60, 0.35)' : 'rgba(40, 200, 80, 0.2)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        // Dripping toxic particles
+        if (phase >= 1) {
+          for (let p = 0; p < 3; p++) {
+            const px = enemy.pos.x + Math.sin(state.time * 3 + p * 2.1) * (bossSize + 10);
+            const py = enemy.pos.y + Math.cos(state.time * 2.5 + p * 1.7) * (bossSize + 10);
+            const pr = 2 + Math.sin(state.time * 5 + p) * 1;
+            ctx.fillStyle = 'rgba(80, 255, 120, 0.4)';
+            ctx.beginPath();
+            ctx.arc(px, py, pr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
 
-        ctx.restore();
-        
-        // Prone indicator
-        ctx.fillStyle = 'rgba(255, 200, 50, 0.7)';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('⬇ PRONE', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 10);
-      } else {
-        // Boss stomping walk animation — subtle body bob when moving
-        const isMoving = enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank';
-        const stompBob = isMoving ? Math.sin(state.time * 8) * 2.5 : 0;
-        const stompLean = isMoving ? Math.sin(state.time * 4) * 0.06 : 0;
+        const bodyColor = phase === 2 ? '#4a6a4a' : phase === 1 ? '#8a9a8a' : '#d8d8d0';
+        const outlineColor = phase === 2 ? '#2a5a2a' : phase === 1 ? '#5a7a5a' : '#888';
+        const eyeColor = phase >= 1 ? '#33ff66' : '#55cc55';
 
         ctx.save();
         ctx.translate(enemy.pos.x, enemy.pos.y + stompBob);
@@ -1992,55 +2035,353 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         drawCuteCharacter(
           ctx, 0, 0, enemy.angle,
           bodyColor, outlineColor, eyeColor, isBlinking,
-          'ushanka', '#3a2828', true, bossSize
+          'none', '#fff', true, bossSize, isMoving
         );
-        ctx.restore();
-      }
-
-      // Glowing eyes effect — simple flat circle
-      const glowAlpha = 0.3 + Math.sin(state.time * 4) * 0.2;
-      ctx.fillStyle = `rgba(255, ${phase >= 1 ? '60' : '170'}, ${phase >= 1 ? '20' : '40'}, ${glowAlpha * 0.5})`;
-      ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y - bossSize * 0.3, bossSize * 0.4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Boss ordering arm — extended pointing arm when giving orders
-      if ((enemy as any)._orderingArm > 0) {
+        // Lab coat overlay — white flaps
         ctx.save();
-        ctx.translate(enemy.pos.x, enemy.pos.y);
         ctx.rotate(enemy.angle);
-        const armWave = Math.sin(state.time * 12) * 0.15;
-        // Extended right arm pointing forward
-        ctx.strokeStyle = bodyColor;
-        ctx.lineWidth = 5;
-        ctx.lineCap = 'round';
+        // Coat tails
+        ctx.fillStyle = phase === 2 ? 'rgba(180,200,180,0.7)' : 'rgba(240,240,235,0.8)';
         ctx.beginPath();
-        ctx.moveTo(bossSize * 0.3, -bossSize * 0.2);
-        ctx.lineTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
-        ctx.stroke();
-        // Fist
-        ctx.fillStyle = '#d4a574';
-        ctx.beginPath();
-        ctx.arc(bossSize * 1.2, -bossSize * 0.5 + armWave * 10, 3, 0, Math.PI * 2);
+        ctx.moveTo(-bossSize * 0.25, -bossSize * 0.35);
+        ctx.lineTo(-bossSize * 0.6, -bossSize * 0.5);
+        ctx.lineTo(-bossSize * 0.6, bossSize * 0.5);
+        ctx.lineTo(-bossSize * 0.25, bossSize * 0.35);
         ctx.fill();
-        // Pointing indicator
-        ctx.strokeStyle = 'rgba(255, 200, 50, 0.6)';
+        // Syringe in hand
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.5, bossSize * 0.1);
+        ctx.lineTo(bossSize * 0.9, bossSize * 0.05);
+        ctx.stroke();
+        // Syringe needle
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(bossSize * 0.9, bossSize * 0.05);
+        ctx.lineTo(bossSize * 1.1, bossSize * 0.02);
+        ctx.stroke();
+        // Green liquid in syringe
+        ctx.fillStyle = phase >= 1 ? 'rgba(0,255,80,0.8)' : 'rgba(80,200,120,0.6)';
+        ctx.fillRect(bossSize * 0.55, bossSize * 0.03, bossSize * 0.3, 4);
+        // Glasses
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1;
+        const glassX = bossSize * 0.35;
+        ctx.beginPath();
+        ctx.arc(glassX, -3, 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(glassX, 3, 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(glassX, 0);
+        ctx.lineTo(glassX - 3, 0);
+        ctx.stroke();
+        ctx.restore();
+        ctx.restore();
+
+        // Nameplate
+        ctx.fillStyle = phase === 2 ? 'rgba(50, 255, 80, 0.9)' : phase === 1 ? 'rgba(80, 200, 100, 0.9)' : 'rgba(150, 220, 170, 0.8)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🧪 DR. KRAVTSOV 🧪', enemy.pos.x, enemy.pos.y + bossSize + 20);
+        if (phase >= 1) {
+          ctx.font = 'bold 8px sans-serif';
+          ctx.fillText(phase === 2 ? '☠ БЕЗУМИЕ' : '⚠ МУТАГЕН', enemy.pos.x, enemy.pos.y + bossSize + 30);
+        }
+
+      } else if (bossId === 'uzbek') {
+        // ═══ UZBEK — emaciated, hunched, chains, red hellish glow ═══
+        const redGlow = 'rgba(200, 30, 20, ' + (0.10 + phase * 0.08 + Math.sin(state.time * 4) * 0.05) + ')';
+        const auraR = bossSize + 16 + Math.sin(state.time * 4) * 10;
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, auraR, 0, Math.PI * 2);
+        ctx.fillStyle = redGlow;
+        ctx.fill();
+        if (phase >= 1) {
+          // Flickering secondary aura
+          const ring2 = bossSize + 30 + Math.sin(state.time * 7) * 8;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
+          ctx.strokeStyle = phase === 2 ? 'rgba(255, 0, 0, 0.4)' : 'rgba(200, 50, 30, 0.25)';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        const bodyColor = phase === 2 ? '#5a1a1a' : phase === 1 ? '#6a3a2a' : '#7a6a5a';
+        const outlineColor = phase === 2 ? '#aa0000' : phase === 1 ? '#883322' : '#4a3a2a';
+        const eyeColorUz = phase >= 1 ? '#ff2200' : '#ff6633';
+        const skinColor = '#9a8060'; // weathered, dark skin
+
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y + stompBob);
+        ctx.rotate(stompLean);
+
+        // Draw emaciated body — elongated, thin
+        ctx.save();
+        ctx.rotate(enemy.angle);
+        const torsoW = bossSize * 0.5; // narrower than normal
+        const torsoH = bossSize * 0.65; // taller
+        // Torso — gaunt
+        ctx.fillStyle = bodyColor;
+        ctx.strokeStyle = outlineColor;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
-        ctx.lineTo(bossSize * 2.5, -bossSize * 0.8);
+        ctx.ellipse(0, 0, torsoH, torsoW, 0, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
-        ctx.restore();
-      }
+        // Ribs showing through (phase 1+)
+        if (phase >= 1) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+          ctx.lineWidth = 1;
+          for (let r = -2; r <= 2; r++) {
+            ctx.beginPath();
+            ctx.moveTo(-torsoH * 0.3, r * torsoW * 0.18);
+            ctx.lineTo(torsoH * 0.2, r * torsoW * 0.15);
+            ctx.stroke();
+          }
+        }
+        // Head — gaunt, angular
+        const headR = bossSize * 0.28;
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.ellipse(torsoH * 0.7, 0, headR, headR * 0.85, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = outlineColor;
+        ctx.stroke();
+        // Sunken eyes — glowing
+        ctx.fillStyle = eyeColorUz;
+        ctx.beginPath();
+        ctx.arc(torsoH * 0.8, -headR * 0.3, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(torsoH * 0.8, headR * 0.3, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Eye sockets (dark circles)
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(torsoH * 0.8, -headR * 0.3, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(torsoH * 0.8, headR * 0.3, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        // Mouth — grimace
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(torsoH * 0.9, 0, 3, 0.3, Math.PI - 0.3);
+        ctx.stroke();
 
-      // Boss name plate
-      ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('★ COMMANDANT OSIPOVITJ ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
-      if (phase >= 1) {
-        ctx.font = 'bold 8px sans-serif';
-        ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
+        // Long thin arms with chains
+        ctx.strokeStyle = skinColor;
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        // Left arm
+        ctx.beginPath();
+        ctx.moveTo(0, -torsoW * 0.8);
+        ctx.lineTo(torsoH * 0.3, -torsoW * 1.3);
+        ctx.stroke();
+        // Right arm
+        ctx.beginPath();
+        ctx.moveTo(0, torsoW * 0.8);
+        ctx.lineTo(torsoH * 0.3, torsoW * 1.3);
+        ctx.stroke();
+        // Chain fragments dangling from wrists
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        for (let c = 0; c < 3; c++) {
+          const cx1 = torsoH * 0.3;
+          const cy1 = -torsoW * 1.3 - c * 3;
+          ctx.beginPath();
+          ctx.moveTo(cx1, cy1);
+          ctx.lineTo(cx1 - 2 + Math.sin(state.time * 3 + c) * 2, cy1 - 4);
+          ctx.stroke();
+        }
+        for (let c = 0; c < 3; c++) {
+          const cx1 = torsoH * 0.3;
+          const cy1 = torsoW * 1.3 + c * 3;
+          ctx.beginPath();
+          ctx.moveTo(cx1, cy1);
+          ctx.lineTo(cx1 - 2 + Math.sin(state.time * 3 + c + 1) * 2, cy1 + 4);
+          ctx.stroke();
+        }
+
+        // Thin legs
+        ctx.strokeStyle = bodyColor;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-torsoH * 0.5, -torsoW * 0.3);
+        ctx.lineTo(-torsoH * 0.9, -torsoW * 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-torsoH * 0.5, torsoW * 0.3);
+        ctx.lineTo(-torsoH * 0.9, torsoW * 0.5);
+        ctx.stroke();
+
+        ctx.restore();
+        ctx.restore();
+
+        // Nameplate
+        ctx.fillStyle = phase === 2 ? 'rgba(255, 30, 30, 0.95)' : phase === 1 ? 'rgba(255, 100, 50, 0.9)' : 'rgba(200, 120, 100, 0.8)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🩸 УЗБЕК 🩸', enemy.pos.x, enemy.pos.y + bossSize + 20);
+        if (phase >= 1) {
+          ctx.font = 'bold 8px sans-serif';
+          ctx.fillText(phase === 2 ? '☠ ЯРОСТЬ' : '⚠ ЦЕПИ ТРЕЩАТ', enemy.pos.x, enemy.pos.y + bossSize + 30);
+        }
+
+      } else {
+        // ═══ DEFAULT BOSS (Osipovitj) — original rendering ═══
+        // Menacing aura
+        const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
+        const auraR = bossSize + 20 + Math.sin(state.time * 3) * 8;
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y, auraR, 0, Math.PI * 2);
+        ctx.fillStyle = auraColors[phase];
+        ctx.fill();
+        if (phase >= 1) {
+          const ring2 = bossSize + 30 + Math.sin(state.time * 5) * 5;
+          ctx.beginPath();
+          ctx.arc(enemy.pos.x, enemy.pos.y, ring2, 0, Math.PI * 2);
+          ctx.strokeStyle = phase === 2 ? 'rgba(255, 30, 30, 0.3)' : 'rgba(255, 120, 40, 0.2)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const bodyColor = phase === 2 ? '#8a2a2a' : phase === 1 ? '#6a3a2a' : '#4a4a5a';
+        const outlineColor = phase === 2 ? '#cc3333' : phase === 1 ? '#aa5533' : '#2a2a3a';
+        const eyeColor = phase >= 1 ? '#ff4422' : '#ffaa00';
+
+        if (isProne || (enemy as any)._proneGoDownTimer > 0) {
+          const goingDown = (enemy as any)._proneGoDownTimer > 0;
+          const gettingUp = !goingDown && (enemy as any)._proneTimer < 1.0 && (enemy as any)._proneTimer > 0;
+          const transProgress = goingDown 
+            ? 1 - ((enemy as any)._proneGoDownTimer / 0.2)
+            : gettingUp ? (enemy as any)._proneTimer : 1;
+          const flattenY = 0.25 + (1 - transProgress) * 0.75;
+          const stretchX = 1.0 + transProgress * 0.8;
+
+          ctx.save();
+          ctx.translate(enemy.pos.x, enemy.pos.y);
+          ctx.rotate(enemy.angle);
+          ctx.scale(stretchX, flattenY);
+          ctx.fillStyle = bodyColor;
+          ctx.strokeStyle = outlineColor;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, bossSize * 0.6, bossSize * 0.35, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          const headR = bossSize * 0.25;
+          ctx.fillStyle = '#d4a574';
+          ctx.beginPath();
+          ctx.arc(bossSize * 0.45, 0, headR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = outlineColor;
+          ctx.stroke();
+          ctx.fillStyle = '#3a2828';
+          ctx.beginPath();
+          ctx.arc(bossSize * 0.5, 0, headR * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#cc3333';
+          ctx.font = `${Math.max(6, headR * 0.6)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('★', bossSize * 0.5, headR * 0.25);
+          ctx.strokeStyle = '#d4a574';
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(bossSize * 0.1, -bossSize * 0.3);
+          ctx.lineTo(bossSize * 0.3, -bossSize * 0.55);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(bossSize * 0.1, bossSize * 0.3);
+          ctx.lineTo(bossSize * 0.45, bossSize * 0.35);
+          ctx.stroke();
+          ctx.fillStyle = '#333';
+          ctx.fillRect(bossSize * 0.4, bossSize * 0.3, bossSize * 0.3, 3);
+          ctx.strokeStyle = bodyColor;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(-bossSize * 0.3, -bossSize * 0.15);
+          ctx.lineTo(-bossSize * 0.65, -bossSize * 0.25);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-bossSize * 0.3, bossSize * 0.15);
+          ctx.lineTo(-bossSize * 0.65, bossSize * 0.25);
+          ctx.stroke();
+          ctx.fillStyle = '#222';
+          ctx.beginPath();
+          ctx.arc(-bossSize * 0.65, -bossSize * 0.25, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(-bossSize * 0.65, bossSize * 0.25, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          ctx.fillStyle = 'rgba(255, 200, 50, 0.7)';
+          ctx.font = 'bold 8px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('⬇ PRONE', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 10);
+        } else {
+          ctx.save();
+          ctx.translate(enemy.pos.x, enemy.pos.y + stompBob);
+          ctx.rotate(stompLean);
+          drawCuteCharacter(
+            ctx, 0, 0, enemy.angle,
+            bodyColor, outlineColor, eyeColor, isBlinking,
+            'ushanka', '#3a2828', true, bossSize
+          );
+          ctx.restore();
+        }
+
+        // Glowing eyes effect
+        const glowAlpha = 0.3 + Math.sin(state.time * 4) * 0.2;
+        ctx.fillStyle = `rgba(255, ${phase >= 1 ? '60' : '170'}, ${phase >= 1 ? '20' : '40'}, ${glowAlpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(enemy.pos.x, enemy.pos.y - bossSize * 0.3, bossSize * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Boss ordering arm
+        if ((enemy as any)._orderingArm > 0) {
+          ctx.save();
+          ctx.translate(enemy.pos.x, enemy.pos.y);
+          ctx.rotate(enemy.angle);
+          const armWave = Math.sin(state.time * 12) * 0.15;
+          ctx.strokeStyle = bodyColor;
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(bossSize * 0.3, -bossSize * 0.2);
+          ctx.lineTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
+          ctx.stroke();
+          ctx.fillStyle = '#d4a574';
+          ctx.beginPath();
+          ctx.arc(bossSize * 1.2, -bossSize * 0.5 + armWave * 10, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 200, 50, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(bossSize * 1.2, -bossSize * 0.5 + armWave * 10);
+          ctx.lineTo(bossSize * 2.5, -bossSize * 0.8);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Boss name plate
+        ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★ COMMANDANT OSIPOVITJ ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+        if (phase >= 1) {
+          ctx.font = 'bold 8px sans-serif';
+          ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);
+        }
       }
     } else if (enemy.type === 'sniper') {
       // Sniper — camouflaged, prone, with scope glint
