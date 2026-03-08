@@ -73,7 +73,7 @@
 // ══════════════════════════════════════════════════════════════
 
 export const STORY_ARC = {
-  title: 'OPERATION AURORA BOREALIS',
+  title: 'OPERATION GRINDVAKT',
   subtitle: 'NORDVAKT CLASSIFIED — EYES ONLY — CLEARANCE ULTRAVIOLET',
 
   playerDossier: {
