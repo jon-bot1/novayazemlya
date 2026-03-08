@@ -305,19 +305,24 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
-        {/* Shop Tab (consumables) */}
+        {/* Shop Tab (consumables) — with dynamic prices & reputation discount */}
         {tab === 'shop' && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🏪</span>
               <div>
                 <span className="text-xs font-display text-foreground">Delyets' Shop</span>
-                <p className="text-[10px] font-mono text-muted-foreground italic">"Items go to your stash. Equip before deploying."</p>
+                <p className="text-[10px] font-mono text-muted-foreground italic">
+                  {repTier.discount > 0 ? `${repTier.icon} ${repTier.name} — ${repTier.discount}% discount applied` : '"Items go to your stash. Equip before deploying."'}
+                </p>
               </div>
             </div>
             <div className="grid gap-1.5 max-h-[400px] overflow-y-auto">
               {TRADER_ITEMS.map(item => {
-                const affordable = stash.rubles >= item.cost;
+                const adjustedCost = getAdjustedPrice(item.cost, item.id, stash.extractionCount);
+                const affordable = stash.rubles >= adjustedCost;
+                const cheaper = adjustedCost < item.cost;
+                const expensive = adjustedCost > item.cost;
                 return (
                   <div
                     key={item.id}
@@ -326,16 +331,20 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                         ? 'border-warning/40 bg-warning/5 hover:bg-warning/10 cursor-pointer'
                         : 'border-border/30 bg-secondary/10 opacity-50'
                     }`}
-                    onClick={() => affordable && onBuyTraderItem(item.id)}
+                    onClick={() => affordable && onBuyTraderItem(item.id, adjustedCost)}
                   >
                     <span className="text-xl">{item.icon}</span>
                     <div className="flex-1 min-w-0">
                       <span className="text-xs font-display text-foreground">{item.name}</span>
                       <p className="text-[10px] font-mono text-muted-foreground">{item.description}</p>
                     </div>
-                    <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
-                      {item.cost}₽
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
+                        {adjustedCost}₽
+                      </span>
+                      {cheaper && <span className="text-[8px] font-mono text-accent">▼ SALE</span>}
+                      {expensive && <span className="text-[8px] font-mono text-danger/60">▲</span>}
+                    </div>
                   </div>
                 );
               })}
