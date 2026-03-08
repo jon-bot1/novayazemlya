@@ -4516,6 +4516,30 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'chase';
           break;
         }
+        // === FRIENDLY FIRE AWARENESS ===
+        // Check if an ally is in the line of fire before shooting (90% chance to check, 10% panic fire)
+        let allyBlocking = false;
+        if (enemy.type !== 'turret' && enemy.type !== 'boss' && Math.random() > 0.10) {
+          const fireAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+          for (const ally of state.enemies) {
+            if (ally === enemy || ally.state === 'dead' || ally.friendly !== enemy.friendly) continue;
+            const dToAlly = dist(enemy.pos, ally.pos);
+            if (dToAlly > distToPlayer || dToAlly < 20) continue; // ally behind player or too close to self
+            const allyAngle = Math.atan2(ally.pos.y - enemy.pos.y, ally.pos.x - enemy.pos.x);
+            let angleDiffFF = Math.abs(fireAngle - allyAngle);
+            if (angleDiffFF > Math.PI) angleDiffFF = Math.PI * 2 - angleDiffFF;
+            if (angleDiffFF < 0.15 && dToAlly < distToPlayer * 0.9) { // ally within ~8.5° cone and closer
+              allyBlocking = true;
+              break;
+            }
+          }
+        }
+        if (allyBlocking) {
+          // Reposition instead of shooting — move perpendicular to firing line
+          const perpAngle = enemy.angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+          enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(perpAngle) * speed * 0.8, Math.sin(perpAngle) * speed * 0.8, 10);
+          break; // skip shooting this frame
+        }
         if (state.time - enemy.lastShot > enemy.fireRate / 1000 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los && distToPlayer <= enemy.shootRange) {
           if (enemy.type === 'shocker') {
             // Electric shock — melee range, no bullet, direct damage
