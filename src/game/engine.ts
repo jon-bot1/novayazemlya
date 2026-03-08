@@ -3863,18 +3863,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           enemy.state = 'idle';
         } else {
           const dir = normalize({ x: enemy.patrolTarget.x - enemy.pos.x, y: enemy.patrolTarget.y - enemy.pos.y });
-          const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.4, dir.y * speed * 0.4, 10);
-          // Wall-stuck detection: if barely moved, pick new direction
+          const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed * 0.65, dir.y * speed * 0.65, 10);
+          // Wall-stuck detection: if barely moved, pick new direction quickly
           if (dist(newPos, enemy.pos) < 0.1) {
             if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
             (enemy as any)._stuckCounter++;
-            if ((enemy as any)._stuckCounter > 30) {
-              // Try perpendicular directions
+            if ((enemy as any)._stuckCounter > 8) {
+              // Try perpendicular or random direction with LOS check
               const perpAngle = Math.atan2(dir.y, dir.x) + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-              enemy.patrolTarget = {
-                x: enemy.pos.x + Math.cos(perpAngle) * 150,
-                y: enemy.pos.y + Math.sin(perpAngle) * 150,
-              };
+              let nx = enemy.pos.x + Math.cos(perpAngle) * 180;
+              let ny = enemy.pos.y + Math.sin(perpAngle) * 180;
+              if (!hasLineOfSight(state, enemy.pos, { x: nx, y: ny }, false)) {
+                const rndAngle = Math.random() * Math.PI * 2;
+                nx = enemy.pos.x + Math.cos(rndAngle) * 100;
+                ny = enemy.pos.y + Math.sin(rndAngle) * 100;
+              }
+              enemy.patrolTarget = { x: nx, y: ny };
               (enemy as any)._stuckCounter = 0;
             }
           } else {
