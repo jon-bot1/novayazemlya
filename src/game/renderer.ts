@@ -1,6 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
+import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters } from './graphics';
 
 const R = 28;
 const WALL_HEIGHT = 18;
