@@ -1855,6 +1855,42 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
+  // ── BLOOD STAINS — persistent ground decals ──
+  if (hasBloodStains()) {
+    const stains = (state as any)._bloodStains as { x: number; y: number; size: number; angle: number }[] | undefined;
+    if (stains && stains.length > 0) {
+      for (const s of stains) {
+        if (!isOnScreen(s.x, s.y, cx, cy, w, h, 20)) continue;
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        ctx.fillStyle = 'rgba(100, 15, 15, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s.size, s.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Splatter dots
+        ctx.fillStyle = 'rgba(80, 10, 10, 0.25)';
+        for (let i = 0; i < 3; i++) {
+          const ox = (Math.sin(s.angle * 3 + i * 2.1) * s.size * 0.8);
+          const oy = (Math.cos(s.angle * 5 + i * 1.7) * s.size * 0.5);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 1.5 + Math.abs(Math.sin(s.angle + i)) * 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+    // Auto-generate blood stains for newly dead enemies
+    for (const enemy of state.enemies) {
+      if (enemy.state !== 'dead') continue;
+      if ((enemy as any)._bloodStainAdded) continue;
+      (enemy as any)._bloodStainAdded = true;
+      if (!stains) continue;
+      stains.push({ x: enemy.pos.x, y: enemy.pos.y, size: enemy.type === 'boss' ? 16 : 8 + Math.random() * 6, angle: Math.random() * Math.PI * 2 });
+      if (stains.length > 80) stains.shift();
+    }
+  }
+
   // ── DEAD ENEMIES — viewport culled, looted enemies skipped entirely ──
   for (const enemy of state.enemies) {
     if (enemy.state !== 'dead') continue;
