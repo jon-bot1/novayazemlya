@@ -87,7 +87,13 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             <span>Raids: {stash.raidCount}</span>
             <span>Extracted: {stash.extractionCount}</span>
             <span className="text-accent">Lv.{level}</span>
+            <span title={repTier.description}>{repTier.icon} {repTier.name}</span>
           </div>
+          {nextRep && (
+            <div className="text-[9px] font-mono text-muted-foreground/60 mt-1">
+              Next rank: {nextRep.icon} {nextRep.name} — {nextRep.minRep - stash.extractionCount} more extractions ({nextRep.discount}% discount)
+            </div>
+          )}
           {/* XP Bar */}
           <div className="mt-2 mx-auto max-w-xs">
             <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground">
