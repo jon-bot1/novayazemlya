@@ -68,7 +68,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Left joystick — movement */}
-      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={130} />
+      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={116} />
 
       {/* Right side — tap/drag to aim & shoot */}
       <div
