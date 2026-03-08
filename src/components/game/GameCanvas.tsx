@@ -116,7 +116,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'characters' && (
         <>
           <div className="text-[10px] font-mono text-muted-foreground italic mb-1">
-            PERSONNEL DOSSIER — Objekt 47 "Severnyj Vektor"
+            PERSONNEL DOSSIER — All Operational Zones
           </div>
 
           {/* Boss */}
@@ -314,17 +314,48 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Mission Briefing</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
               You operate from a <span className="text-accent">Safe House</span> between raids. 
-              Each mission, you deploy to <span className="text-accent">Objekt 47 "Severnyj Vektor"</span> with 
-              randomized <span className="text-warning">objectives</span> — main targets and bonus tasks that pay rubles.
+              Choose from <span className="text-accent">3 operational zones</span> — each with unique threats, bosses, and extraction points.
+              Randomized <span className="text-warning">objectives</span> give you main targets and bonus tasks that pay rubles.
             </p>
-            <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
+          </div>
+
+          {/* Map overviews */}
+          <div className="border border-border rounded p-3 bg-secondary/5">
+            <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2">🗺️ Operational Zones</h3>
+            <div className="space-y-2">
+              <div className="flex gap-2 items-start">
+                <span className="text-base">☢️</span>
+                <div>
+                  <p className="text-[11px] font-display text-foreground">Objekt 47 "Severnyj Vektor"</p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet military base. Open terrain, bunkers, and minefields. Boss: <span className="text-danger">Commandant Osipovitj</span> with two bodyguards in the underground bunker.</p>
+                </div>
+              </div>
+              <div className="flex gap-2 items-start">
+                <span className="text-base">🐟</span>
+                <div>
+                  <p className="text-[11px] font-display text-foreground">The Fishing Village <span className="text-[9px] text-warning font-mono">(3 extractions to unlock)</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Coastal smuggler village with docks, shacks, and a lighthouse. Boss: <span className="text-warning">Dock Master</span> — shotgun-armed smuggler surrounded by redneck guards and dogs.</p>
+                </div>
+              </div>
+              <div className="flex gap-2 items-start">
+                <span className="text-base">🏥</span>
+                <div>
+                  <p className="text-[11px] font-display text-foreground">The Hospital <span className="text-[9px] text-warning font-mono">(6 extractions to unlock)</span></p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Abandoned Soviet hospital with narrow corridors and a dark basement. Two bosses: <span className="text-accent">Dr. Kravtsov</span> (fear attack) and <span className="text-danger">The Uzbek</span> (extreme speed) in the basement.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-mono text-foreground/80 leading-relaxed">
               <span className="text-danger">Eliminate targets</span>, <span className="text-loot">recover intel</span>, 
               <span className="text-warning">sabotage assets</span>, or <span className="text-accent">discover hidden passages</span>. 
               Extract alive to bring loot back to your stash. Sell loot for rubles, buy <span className="text-warning">upgrades</span> from Delyets.
             </p>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed mt-2">
               Your gear persists between raids. Die and you lose everything you carried.
-              You have <span className="text-warning">5 minutes</span> per raid before reinforcements overrun the base.
+              You have <span className="text-warning">5 minutes</span> per raid before reinforcements overrun the area.
             </p>
           </div>
 
@@ -363,7 +394,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <li>• 🥷 <span className="text-accent">Disguise [X]</span> — take a uniform from a dead soldier, enemies ignore you for 45s</li>
               <li>• 🥷 Officers can still detect you through disguise — keep distance!</li>
               <li>• <span className="text-warning">Gunfire alerts nearby enemies</span> — they will investigate & call for backup</li>
-              <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound — instant death!</li>
+              <li>• <span className="text-danger">⚠ MINEFIELD</span> in the southwest compound (Objekt 47) — instant death!</li>
               <li>• 🧨 <span className="text-warning">TNT charges</span> breach any wall — press <span className="text-accent">T near a wall</span> (5s fuse)</li>
               <li>• Officers carry <span className="text-loot">keycards</span> to open the main gate & valuable loot</li>
               <li>• Enemies heal with bandages when damaged — interrupt them!</li>
