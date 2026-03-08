@@ -24,6 +24,9 @@ export const LOST_LINES: Record<string, string[]> = {
   redneck: ['Where\'d he go?!', 'LOST HIM!', 'Come out!'],
   shocker: ['ПОТЕРЯН!', 'ГДЕ ОН?!'],
   sniper:  ['...ушёл...'],
+  cultist: ['ВЕЩЕСТВО УКАЖЕТ ПУТЬ...', 'ОН СБЕЖАЛ... ВРЕМЕННО.', 'БРАТЬЯ, ИЩИТЕ!'],
+  miner_cult: ['BERGET GÖMMER HONOM...', 'HAN FÖRSVANN I TUNNELN!', 'SÖK I DRIFTERNA!'],
+  svarta_sol: ['TARGET LOST.', 'SCANNING.', 'RUNE TRACE FADING.'],
 };
 
 // === INVESTIGATE (heard sound) ===
