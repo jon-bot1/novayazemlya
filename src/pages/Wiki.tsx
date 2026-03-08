@@ -96,9 +96,9 @@ const EnemyRow = ({ name, icon, hp, speed, dmg, range, personality, notes }: {
 function LoreSection() {
   return (
     <>
-      <H2>📜 Operation Aurora Borealis</H2>
+      <H2>📜 Operation Grindvakt</H2>
       <div className="border border-accent/30 rounded p-3 bg-accent/5 mb-3">
-        <div className="text-[9px] font-mono text-accent uppercase tracking-wider mb-1">NATO CLASSIFIED — CLEARANCE ULTRAVIOLET</div>
+        <div className="text-[9px] font-mono text-accent uppercase tracking-wider mb-1">NORDVAKT CLASSIFIED — CLEARANCE ULTRAVIOLET</div>
         <P>Beneath the Arctic bedrock — from Norrberget in Sweden across the Kola Peninsula to Novaya Zemlya — runs a geological vein of an unknown material. NATO calls it "Substance Zero." The Soviets call it "Вещество Ноль." The miners at Norrberget called it "the blood of the mountain."</P>
         <P>It predates human civilization. It predates the ice age. When concentrated, it amplifies nuclear chain reactions by a factor of twelve. A warhead the size of a briefcase could level a city.</P>
       </div>
@@ -453,7 +453,7 @@ function WorldSection() {
         <div><span className="text-accent">1980:</span> Nachalnik establishes the smuggling pipeline.</div>
         <div><span className="text-accent">1983:</span> Hospital №6 begins human experimentation. Project REBIRTH launched.</div>
         <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. Operatör 8 "killed" in East Berlin. Recruited by NORDVAKT.</div>
-        <div><span className="text-accent">1985:</span> NORDVAKT activates Operation Aurora Borealis. Operatör 8 deployed.</div>
+        <div><span className="text-accent">1985:</span> NORDVAKT activates Operation Grindvakt. Operatör 8 deployed.</div>
       </div>
     </>
   );

@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// OPERATION AURORA BOREALIS — The Overarching Story
+// OPERATION GRINDVAKT — The Overarching Story
 // ══════════════════════════════════════════════════════════════
 //
 // THE SUBSTANCE:
@@ -73,7 +73,7 @@
 // ══════════════════════════════════════════════════════════════
 
 export const STORY_ARC = {
-  title: 'OPERATION AURORA BOREALIS',
+  title: 'OPERATION GRINDVAKT',
   subtitle: 'NORDVAKT CLASSIFIED — EYES ONLY — CLEARANCE ULTRAVIOLET',
 
   playerDossier: {
@@ -91,7 +91,7 @@ Declared killed in action during a failed exfiltration in East Berlin — in rea
 NORDVAKT selected Operatör 8 for Operation Grindvakt based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
   },
 
-  missionBriefing: `OPERATION AURORA BOREALIS — FINAL BRIEFING
+  missionBriefing: `OPERATION GRINDVAKT — FINAL BRIEFING
 
 SITUATION:
 Soviet GRU has discovered a geological anomaly spanning the Arctic bedrock from Scandinavia to Novaya Zemlya. The substance — NATO designation "SUBSTANCE ZERO" — amplifies nuclear chain reactions by a factor of twelve. A single warhead enhanced with Substance Zero could eliminate an entire NATO carrier group.
@@ -192,7 +192,7 @@ PRIMARY: Destroy the Substance Zero shipping containers at the dock.
 SECONDARY: Recover the buyer list from Nachalnik's ledger.
 TERTIARY: Eliminate Nachalnik and dismantle the pipeline.
 
-HANDLER NOTE: The buyer list is critical. We need to know who else has Substance Zero. If it's already reached foreign powers, Aurora Borealis becomes a much bigger operation.`,
+HANDLER NOTE: The buyer list is critical. We need to know who else has Substance Zero. If it's already reached foreign powers, Grindvakt becomes a much bigger operation.`,
 
     hospital: `SITE BRIEFING — HOSPITAL №6
 
