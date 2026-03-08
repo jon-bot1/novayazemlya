@@ -3155,21 +3155,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // Vision cone — NARROW for stealth gameplay (roguelike)
-    const DEG15 = Math.PI * (15 / 180);
+    // Vision cone — still stealth-friendly, but less "blind" at close range
     const isBodyguard = !!(enemy as any)._isBodyguard;
     const visionConfig = isBodyguard
-      ? { frontArc: Math.PI * 0.5, rearRange: 0.2 }
+      ? { frontArc: Math.PI * 0.55, rearRange: 0.28 }
       : {
-          scav:    { frontArc: Math.PI * 0.25, rearRange: 0.08 },
-          soldier: { frontArc: Math.PI * 0.30, rearRange: 0.12 },
-          heavy:   { frontArc: Math.PI * 0.40, rearRange: 0.20 },
-          turret:  { frontArc: Math.PI * 0.40, rearRange: 0.0 },
-          sniper:  { frontArc: Math.PI * 0.12, rearRange: 0.03 },
-          shocker: { frontArc: Math.PI * 0.35, rearRange: 0.15 },
-          redneck: { frontArc: Math.PI * 0.30, rearRange: 0.10 },
-          dog:     { frontArc: Math.PI * 0.50, rearRange: 0.40 },
-        }[enemy.type] || { frontArc: Math.PI * 0.30, rearRange: 0.12 };
+          scav:    { frontArc: Math.PI * 0.34, rearRange: 0.18 },
+          soldier: { frontArc: Math.PI * 0.38, rearRange: 0.24 },
+          heavy:   { frontArc: Math.PI * 0.46, rearRange: 0.30 },
+          turret:  { frontArc: Math.PI * 0.48, rearRange: 0.08 },
+          sniper:  { frontArc: Math.PI * 0.20, rearRange: 0.10 },
+          shocker: { frontArc: Math.PI * 0.42, rearRange: 0.24 },
+          redneck: { frontArc: Math.PI * 0.38, rearRange: 0.20 },
+          dog:     { frontArc: Math.PI * 0.55, rearRange: 0.45 },
+        }[enemy.type] || { frontArc: Math.PI * 0.36, rearRange: 0.20 };
 
     const toPlayerAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
     let angleDiff = Math.abs(toPlayerAngle - enemy.angle);
@@ -3177,8 +3176,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const isBehind = angleDiff > visionConfig.frontArc;
 
     const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
-    // playerIsHiding already declared above
-    const playerInRange = !playerIsHiding && distToPlayer < effectiveRange && los;
+    const proximityRange = Math.max(70, enemy.alertRange * 0.4);
+    const closeProximity = !playerIsHiding && los && distToPlayer < proximityRange;
+    const playerInRange = !playerIsHiding && (closeProximity || (distToPlayer < effectiveRange && los));
 
     // === AWARENESS SYSTEM — gradual detection instead of binary ===
     // Calculate visibility factor based on movement, terrain, and cover
@@ -3200,17 +3200,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else if (distToPlayer < 60) visibilityFactor *= 0.2; // very close = slight suspicion
       else visibilityFactor *= 0.02; // practically invisible
     }
-    // Behind enemy = much harder to detect
-    if (isBehind) visibilityFactor *= 0.15;
+    // Behind enemy = harder, but no longer near-impossible
+    if (isBehind) visibilityFactor *= 0.35;
     // Distance falloff — closer = faster detection
-    const distanceFactor = Math.max(0, 1 - (distToPlayer / effectiveRange));
-    
+    const distanceFactor = Math.max(0, 1 - (distToPlayer / Math.max(1, effectiveRange)));
+
     // Awareness buildup rate (per second)
-    const awarenessRate = playerInRange ? distanceFactor * visibilityFactor * 1.8 : 0;
-    
+    const awarenessRate = playerInRange ? distanceFactor * visibilityFactor * 2.4 : 0;
+
     // Update awareness
     if (awarenessRate > 0) {
       enemy.awareness = Math.min(1, enemy.awareness + awarenessRate * dt);
+      if (closeProximity && !state.disguised) {
+        enemy.awareness = Math.max(enemy.awareness, 0.72);
+      }
     } else {
       // Decay awareness when player is not visible
       const baseDecay = enemy.state === 'chase' || enemy.state === 'attack' ? 0.05 : enemy.awarenessDecay;
@@ -3219,12 +3222,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     // Awareness thresholds for state transitions
-    const AWARE_ALERT = 0.3;   // enemy becomes suspicious
-    const AWARE_CHASE = 0.65;  // enemy starts investigating
-    const AWARE_ATTACK = 0.9;  // full detection, combat
-    
-    // canSeePlayer is now awareness-based
-    const canSeePlayer = enemy.awareness >= AWARE_ATTACK;
+    const AWARE_ALERT = 0.22;   // enemy becomes suspicious
+    const AWARE_CHASE = 0.5;    // enemy starts investigating
+    const AWARE_ATTACK = 0.78;  // full detection, combat
+
+    // canSeePlayer is awareness-based + guaranteed near-contact reaction
+    const canSeePlayer = enemy.awareness >= AWARE_ATTACK || (closeProximity && !state.disguised);
 
     // Check for nearby sound events (gunshots, explosions)
     let heardSound: Vec2 | null = null;
@@ -3239,7 +3242,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // State transitions with voice shouts + tactical role assignment
     const prevState = enemy.state;
 
-    // === REACTION DELAY — random 0-1s freeze on first state change ===
+    // === REACTION DELAY — short human-like delay on first state change ===
     if ((enemy as any)._reactionDelay > 0) {
       (enemy as any)._reactionDelay -= dt;
       if ((enemy as any)._reactionDelay <= 0) {
@@ -3256,10 +3259,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (canSeePlayer) {
       // Assign tactical roles to engaged enemies
       if (prevState !== 'chase' && prevState !== 'attack' && prevState !== 'flank' && prevState !== 'suppress') {
-        // Add random reaction delay (0-1s) for non-boss, non-turret enemies
+        // Add short random reaction delay for non-boss, non-turret enemies
         if (!(enemy as any)._reactionDelayDone && enemy.type !== 'boss' && enemy.type !== 'turret') {
-          const delay = Math.random() * 1.0;
-          if (delay > 0.05) {
+          const delay = Math.random() * 0.35;
+          if (delay > 0.04) {
             (enemy as any)._reactionDelay = delay;
             (enemy as any)._reactionDelayDone = true;
             continue;
