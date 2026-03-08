@@ -63,9 +63,11 @@ ADDENDUM (handwritten): The aurora was green when we arrived. By morning it had 
 
 Rain again. The barracks roof has been leaking for three weeks now. The company commander promised to fix it, but he has no time for us — the entire command is obsessed with the underground laboratories.
 
-Yesterday I saw people in chemical suits coming from the bunker. Standing guard near that place is terrifying. At night you hear strange sounds from the ventilation.
+Yesterday I saw people in chemical suits coming from the bunker. Their suits were covered in frost — in August. One of them had taken his mask off. His nose was bleeding black. Not red. Black.
 
-Seryozha from second platoon says he's seen creatures outside the perimeter. I think he's just been drinking too much, but... who knows.
+Standing guard near that place is terrifying. At night you hear strange sounds from the ventilation — not mechanical. It sounds like chanting. Rhythmic. In a language I don't recognize. Seryozha from second platoon says he's seen creatures outside the perimeter. I told him he was drunk. But last night I saw them too. Shapes at the treeline. They stood perfectly still, but the snow around their feet was melting in circles, as if they radiated heat. When I shone my flashlight, they were gone. But the melted circles remained.
+
+The priest in our unit refuses to enter the chapel anymore. He says his prayers come back wrong — he hears his own voice echoing from the ventilation shaft, repeating his words in reverse.
 
 If anyone finds this note — relay code DAWN-12 to Natasha. She'll understand.
 
