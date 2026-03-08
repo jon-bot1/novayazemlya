@@ -22,7 +22,7 @@ import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../gam
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
-import { getGraphicsQuality, setGraphicsQuality, type GraphicsQuality } from '../../game/graphics';
+import { getGraphicsQuality, setGraphicsQuality, getRenderDistance, setRenderDistance, type GraphicsQuality, type RenderDistance } from '../../game/graphics';
 
 const TIME_LIMIT = 300; // 5 minutes
 const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
@@ -634,6 +634,7 @@ export const GameCanvas: React.FC = () => {
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
   const [gfxQuality, setGfxQuality] = useState<GraphicsQuality>(getGraphicsQuality);
+  const [renderDist, setRenderDist] = useState<RenderDistance>(getRenderDistance);
   const objectivesByMapRef = useRef<Record<MapId, MissionObjective[]>>(createInitialObjectivesByMap());
   const rerollsByMapRef = useRef<Record<MapId, number>>(createInitialRerollsByMap());
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => objectivesByMapRef.current.objekt47);
@@ -1538,6 +1539,18 @@ export const GameCanvas: React.FC = () => {
             }}
           >
             GFX: {gfxQuality === 'high' ? '🔥' : '⚡'}
+          </button>
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => {
+              const order: RenderDistance[] = ['far', 'normal', 'near'];
+              const idx = order.indexOf(renderDist);
+              const next = order[(idx + 1) % order.length];
+              setRenderDistance(next);
+              setRenderDist(next);
+            }}
+          >
+            🔭 {renderDist === 'far' ? 'FAR' : renderDist === 'normal' ? 'MED' : 'NEAR'}
           </button>
         </div>
 

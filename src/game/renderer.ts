@@ -1,7 +1,10 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters } from './graphics';
+import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier } from './graphics';
+
+// Render distance factor — applied to isOnScreen margins
+let _rdm = 1.0;
 
 const R = 28;
 const WALL_HEIGHT = 18;
@@ -30,9 +33,10 @@ function getRendererTerrainGrid(state: GameState): TerrainGrid {
   return _rendererTerrainGrid;
 }
 
-// Viewport check — is position within visible area (with margin)
+// Viewport check — is position within visible area (with margin scaled by render distance)
 function isOnScreen(x: number, y: number, cx: number, cy: number, w: number, h: number, margin: number = 100): boolean {
-  return x > cx - margin && x < cx + w + margin && y > cy - margin && y < cy + h + margin;
+  const m = margin * _rdm;
+  return x > cx - m && x < cx + w + m && y > cy - m && y < cy + h + m;
 }
 
 // Simple LOS check for renderer using spatial grid — larger step for speed
@@ -1361,6 +1365,7 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
   _frameTime = state.time;
+  _rdm = getRenderDistMultiplier();
   ctx.clearRect(0, 0, w, h);
 
   // Screenshake
