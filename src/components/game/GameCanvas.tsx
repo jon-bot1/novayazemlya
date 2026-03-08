@@ -1103,8 +1103,7 @@ export const GameCanvas: React.FC = () => {
             setStash(prev => {
               const total = prev.items.reduce((s, i) => s + i.value, 0);
               const updated = { ...prev, items: [], rubles: prev.rubles + total };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
