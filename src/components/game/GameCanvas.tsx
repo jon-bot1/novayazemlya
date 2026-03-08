@@ -1696,6 +1696,16 @@ export const GameCanvas: React.FC = () => {
           isMobile={isMobile}
           mapId={selectedMapId}
           noiseLevel={hudState.noiseLevel}
+          weather={hudState.weather}
+          shotsFired={hudState.shotsFired}
+          shotsHit={hudState.shotsHit}
+          damageDealt={hudState.damageDealt}
+          damageTaken={hudState.damageTaken}
+          enemyPositions={hudState.enemyPositions}
+          extractionPositions={hudState.extractionPositions}
+          objectivePositions={hudState.objectivePositions}
+          mapWidth={hudState.mapWidth}
+          mapHeight={hudState.mapHeight}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
