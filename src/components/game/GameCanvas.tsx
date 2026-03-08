@@ -576,6 +576,7 @@ export const GameCanvas: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
+  const [selectedMapId, setSelectedMapId] = useState<MapId>('novaya_zemlya');
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
   const [rerollCount, setRerollCount] = useState(0);
   const extractedRef = useRef(false); // prevent double extraction
@@ -1152,6 +1153,7 @@ export const GameCanvas: React.FC = () => {
           stash={stash}
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
+            setSelectedMapId(mapId);
             // Apply upgrades to game state
             stateRef.current = createGameState(mapId);
             const st = stateRef.current;
@@ -1312,8 +1314,13 @@ export const GameCanvas: React.FC = () => {
                 return updated;
               });
             }
-            setObjectives(generateMissionObjectives());
+            setObjectives(generateMissionObjectives(selectedMapId));
             setRerollCount(c => c + 1);
+          }}
+          onMapChange={(mapId: MapId) => {
+            setSelectedMapId(mapId);
+            setObjectives(generateMissionObjectives(mapId));
+            setRerollCount(0);
           }}
           rerollCount={rerollCount}
         />
@@ -1389,7 +1396,7 @@ export const GameCanvas: React.FC = () => {
             setStarted(false);
             setGamePhase('homebase');
             // Reroll objectives for next raid
-            setObjectives(generateMissionObjectives());
+            setObjectives(generateMissionObjectives(selectedMapId));
             setRerollCount(0);
           }}
         />

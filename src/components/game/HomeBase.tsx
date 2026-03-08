@@ -49,10 +49,11 @@ interface HomeBaseProps {
   onBuyUpgrade: (upgradeId: string) => void;
   onBuyTraderItem: (itemId: string) => void;
   onRerollObjectives: (cost: number) => void;
+  onMapChange: (mapId: MapId) => void;
   rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, rerollCount }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
@@ -309,7 +310,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     ? 'border-accent bg-accent/10 text-foreground'
                     : 'border-border/50 bg-secondary/20 text-muted-foreground hover:border-foreground/30'
                 }`}
-                onClick={() => setSelectedMap(m.id)}
+                onClick={() => { setSelectedMap(m.id); onMapChange(m.id); }}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{m.icon}</span>
