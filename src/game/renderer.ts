@@ -1063,7 +1063,7 @@ function getMapPalette(state: GameState): MapPalette {
 }
 
 // Legacy fallback
-const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.novaya_zemlya.terrain;
+const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.objekt47.terrain;
 
 // Cached ground canvas — rendered once, blitted each frame
 let _groundCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
