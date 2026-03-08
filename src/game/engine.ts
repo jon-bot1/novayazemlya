@@ -4087,7 +4087,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               state.deathCause = `⚡ Electrocuted by Shocker`;
             }
           } else {
-            const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
+            // Accuracy trait affects spread: high accuracy = tight spread, low = wild
+            const acc = (enemy as any)._accuracy ?? 0.7;
+            const baseSpread = enemy.type === 'sniper' ? 0.03 : enemy.type === 'turret' ? 0.1 : 0.25 - acc * 0.2; // 0.7 acc → 0.11, 0.5 acc → 0.15, 0.95 → 0.06
+            const spread = (Math.random() - 0.5) * baseSpread;
             const angle = enemy.angle + spread;
             const bSpeed = enemy.type === 'sniper' ? 15 : enemy.type === 'turret' ? 12 : 9;
             state.bullets.push({
