@@ -118,10 +118,10 @@ export function generateHospitalMap() {
     // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
     makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
     makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
-    // North wall of reception — center opening aligned with corridor (100px)
-    makeWall(BX + BW / 2 - 250, BY + BH - 250, 200, T, TILE),  // left block
-    makeWall(BX + BW / 2 + 50, BY + BH - 250, 200, T, TILE),   // right block
-    // (gap x=BX+BW/2-50 .. BX+BW/2+50)
+    // North wall of reception — wide center opening aligned with corridor (160px)
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, 170, T, TILE),  // left block
+    makeWall(BX + BW / 2 + 80, BY + BH - 250, 170, T, TILE),   // right block
+    // (gap x=BX+BW/2-80 .. BX+BW/2+80)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
     // Main north-south corridor (center, 100px wide)
