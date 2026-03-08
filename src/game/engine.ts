@@ -507,8 +507,33 @@ function generateEnemyLoot(enemy: Enemy) {
     // Kravtsov, Uzbek, Nachalnik keep their pre-assigned loot from map generators
     return baseLoot;
   }
-  const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
+  const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : enemy.type === 'svarta_sol' ? 'military' : 'common';
   const baseLoot = [...existingLoot, ...LOOT_POOLS[poolType]()];
+
+  // === OCCULT FACTION LOOT ===
+  if (enemy.type === 'cultist') {
+    baseLoot.push(
+      { id: `cult_relic_${enemy.id}`, name: 'Borealis Relic', category: 'valuable' as const, icon: '🔮', weight: 0.5, value: 350, description: 'A strange crystal idol pulsing with inner light — Ordo Borealis artifact' },
+    );
+    if (Math.random() < 0.3) baseLoot.push(
+      { id: `cult_text_${enemy.id}`, name: 'Cult Scripture', category: 'valuable' as const, icon: '📜', weight: 0.2, value: 200, description: 'Handwritten prayers to Substance Zero — Ordo Borealis document' },
+    );
+  } else if (enemy.type === 'miner_cult') {
+    baseLoot.push(
+      { id: `ore_shard_${enemy.id}`, name: 'Black Ore Shard', category: 'valuable' as const, icon: '💎', weight: 0.8, value: 400, description: 'A fragment of the anomalous black ore — warm to the touch' },
+    );
+    if (Math.random() < 0.25) baseLoot.push(
+      { id: `cult_pick_${enemy.id}`, name: 'Ritual Pickaxe', category: 'valuable' as const, icon: '⛏️', weight: 1.5, value: 500, description: 'Ancient pickaxe with runic inscriptions — Stålhandske cult tool' },
+    );
+  } else if (enemy.type === 'svarta_sol') {
+    baseLoot.push(
+      { id: `rune_device_${enemy.id}`, name: 'Rune Scanner', category: 'valuable' as const, icon: '📡', weight: 0.4, value: 800, description: 'Advanced runic frequency scanner — Svarta Solen tech' },
+    );
+    if (Math.random() < 0.4) baseLoot.push(WEAPON_TEMPLATES.ak74());
+    if (Math.random() < 0.2) baseLoot.push(
+      { id: `hyper_docs_${enemy.id}`, name: 'Hyperborean Dossier', category: 'valuable' as const, icon: '📁', weight: 0.3, value: 1200, description: 'Classified Svarta Solen research on Hyperborean technology — extremely rare' },
+    );
+  }
 
   // === WEAPON DROPS — enemies actually carry weapons (rates reduced 15%) ===
   if (enemy.type === 'heavy') {
