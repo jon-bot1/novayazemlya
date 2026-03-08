@@ -114,6 +114,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           {([
             { key: 'mission', label: '🎯 Mission' },
             { key: 'stash', label: '📦 Stash' },
+            { key: 'craft', label: '🔨 Craft' },
             { key: 'trader', label: '⬆ Upgrades' },
             { key: 'shop', label: '🏪 Shop' },
             { key: 'intel', label: `📄 Intel${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
