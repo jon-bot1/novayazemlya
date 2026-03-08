@@ -129,12 +129,16 @@ interface HUDProps {
   onReturnToBase?: () => void;
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
+  isMobile?: boolean;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp
 }) => {
+  const mobileMode = !!isMobileProp;
+  const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
+  const bottomCenterOffset = mobileMode ? 'bottom-28' : 'bottom-24';
   const scoreSubmittedRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -220,7 +224,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-LEFT: HP + Stamina + Medical ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-12 left-2 sm:left-3 flex flex-col gap-1 scale-[0.8] sm:scale-100 origin-bottom-left">
+      <div className={`absolute ${bottomOffset} left-2 sm:left-3 flex flex-col gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-left`}>
         {/* HP bar */}
         <div className="flex items-center gap-1.5">
           <div className="w-32 h-3 bg-background/60 rounded-sm overflow-hidden border border-border/30">
@@ -257,7 +261,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-12 right-2 sm:right-3 flex flex-col items-end gap-1 scale-[0.8] sm:scale-100 origin-bottom-right">
+      <div className={`absolute ${bottomOffset} right-2 sm:right-3 flex flex-col items-end gap-1 ${mobileMode ? 'scale-[0.8]' : 'scale-100'} origin-bottom-right`}>
         {/* Active weapon — compact */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">
@@ -390,7 +394,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-CENTER: Messages ═══════ */}
-      <div className="absolute bottom-36 sm:bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full px-16 sm:px-0">
+      <div className={`absolute ${bottomCenterOffset} left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full ${mobileMode ? 'px-16' : 'px-0'}`}>
         {messages.slice(-4).map((msg, i) => {
           const age = time - msg.time;
           if (age > 6) return null;

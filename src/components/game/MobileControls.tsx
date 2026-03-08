@@ -61,13 +61,21 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
     setCurrentMode(movementMode);
   }, [movementMode]);
 
+  // Detect landscape: short height relative to width
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  React.useEffect(() => {
+    const onResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   return (
     <div
-      className="sm:hidden absolute inset-0 z-40 touch-none pointer-events-auto"
+      className="absolute inset-0 z-40 touch-none pointer-events-auto"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Left joystick — movement */}
-      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={116} />
+      <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={isLandscape ? 100 : 116} />
 
       {/* Right side — tap/drag to aim & shoot */}
       <div
@@ -101,14 +109,14 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       />
 
       {/* Right side action buttons — combat */}
-      <div className="absolute bottom-32 right-4 flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className={`absolute right-4 flex flex-col gap-2 items-center pointer-events-auto ${isLandscape ? 'bottom-16' : 'bottom-32'}`} style={{ zIndex: 50 }}>
         <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; }} variant="small" />
         <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; }} variant="small" />
         <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; }} variant="small" />
       </div>
 
       {/* Left side action buttons — utility */}
-      <div className="absolute bottom-32 left-[124px] flex flex-col gap-2 items-center pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className={`absolute flex flex-col gap-2 items-center pointer-events-auto ${isLandscape ? 'bottom-16 left-[108px]' : 'bottom-32 left-[124px]'}`} style={{ zIndex: 50 }}>
         <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; }} variant="small" />
         <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; }} variant="small" />
         <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; }} variant="small" />
@@ -121,11 +129,11 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* Bottom center — movement mode selector */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto" style={{ zIndex: 50 }}>
+      <div className={`absolute left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto ${isLandscape ? 'bottom-1' : 'bottom-2'}`} style={{ zIndex: 50 }}>
         {modes.map(mode => (
           <button
             key={mode}
-            className={`px-3 py-2 rounded text-sm font-mono border transition-colors touch-none select-none
+            className={`px-2.5 py-1.5 rounded text-sm font-mono border transition-colors touch-none select-none
               ${currentMode === mode
                 ? 'bg-primary/60 border-primary text-primary-foreground'
                 : 'bg-card/40 border-border/30 text-muted-foreground/60'
@@ -141,7 +149,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
           </button>
         ))}
         <button
-          className="px-3 py-2 rounded text-sm font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
+          className="px-2.5 py-1.5 rounded text-sm font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
           onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.cycleThrowable = true; }}
         >
           🔄
@@ -149,7 +157,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* Helper text */}
-      <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] text-muted-foreground/20 pointer-events-none pb-1">
+      <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] text-muted-foreground/20 pointer-events-none pb-0.5">
         Left stick: move · Right side: aim & shoot
       </div>
     </div>
