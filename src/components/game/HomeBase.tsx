@@ -874,7 +874,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               : selectedMap === 'hospital'
               ? '🏥 Enter the abandoned hospital — recover Kravtsov\'s countermeasure formula before it\'s too late'
               : selectedMap === 'mining_village'
-              ? '⛏️ Descend into Norrberget — your father disappeared here in 1957. The mountain remembers.'
+              ? '⛏️ Descend into Norrberget — NORDVAKT\'s highest priority. Secure Substance Zero intelligence.'
               : '☢️ Infiltrate Objekt 47 — recover the nuclear detonation codes from Osipovitj\'s deep bunker safe'}
           </p>
         </div>

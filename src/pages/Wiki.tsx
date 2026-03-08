@@ -129,17 +129,18 @@ function LoreSection() {
         <div>🧭 <strong>Nils Stålhandske:</strong> Stage 5. Absorbed in 1957. His magnetic readings are now part of the anomaly.</div>
       </div>
 
-      <H3>Agent VARG — Player Dossier</H3>
+      <H3>Operatör 8 — Player Dossier</H3>
       <div className="border border-accent/30 rounded p-3 bg-accent/5 mb-2">
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono mb-2">
-          <Stat label="Codename" value="VARG" />
+          <Stat label="Designation" value="Operatör 8" />
           <Stat label="Nationality" value="Swedish" />
           <Stat label="Former Unit" value="MUST" />
+          <Stat label="Organization" value="NORDVAKT" />
           <Stat label="Status" value="KIA (officially)" />
-          <Stat label="Handler" value="CONTROL" />
+          <Stat label="Handler" value="STYRESMAN" />
         </div>
-        <P>Born 1955. Son of survey engineer Nils Stålhandske, who vanished inside Norrberget Mine in 1957. Joined Swedish military intelligence at 22. Recruited by NATO after deep-cover missions across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted and given a new identity.</P>
-        <P>VARG carries his father's compass — the needle permanently bent toward magnetic north since the day Nils entered the mine. It still points toward Norrberget.</P>
+        <P>Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted by NORDVAKT and given a new identity. Operates as a ghost: no country, no name, no backup.</P>
+        <P>NORDVAKT is a secret Nordic stay-behind defense organization, operating independently of NATO and the Warsaw Pact. Operatör 8 does not know the full scope of NORDVAKT's interest in Substance Zero.</P>
       </div>
 
       <H3>The Mission</H3>
@@ -158,7 +159,7 @@ function LoreSection() {
           <strong className="text-foreground">█ HOSPITAL №6 "Kravtsov Institute"</strong> — Human experimentation. Dr. Kravtsov creates SZ-0 resistant soldiers. The Uzbek is Test Subject 7.
         </div>
         <div className="border-l-2 border-accent/40 pl-2">
-          <strong className="text-foreground">█ NORRBERGET MINE (Gruvsamhället)</strong> — Original discovery site. Swedish mine where Gruvrå, a SZ-0 consciousness, dwells. VARG's father disappeared here.
+          <strong className="text-foreground">█ NORRBERGET MINE (Gruvsamhället)</strong> — Original discovery site. Swedish mine where Gruvrå, a SZ-0 consciousness, dwells. NORDVAKT's highest priority target.
         </div>
       </div>
 
@@ -219,11 +220,11 @@ function FactionsSection() {
       </div>
 
       <div className="border border-border rounded p-3 mb-3 bg-card/50">
-        <div className="text-sm font-display text-foreground mb-1">🇸🇪 NATO TASK FORCE AURORA — The Player's Side</div>
-        <P>A secret NATO task force assembled to deny Substance Zero to all parties. VARG is their only field operative. CONTROL handles communications. The task force has no official existence — if VARG is captured, NATO disavows.</P>
+        <div className="text-sm font-display text-foreground mb-1">🛡️ NORDVAKT — Nordic Stay-Behind Defense Organization</div>
+        <P>A secret Nordic defense organization established during the early Cold War by the Scandinavian intelligence services. Operates independently of NATO and the Warsaw Pact. Operatör 8 is their field operative for Aurora Borealis. STYRESMAN is the operations chief.</P>
         <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
-          <div><span className="text-accent">Units:</span> Agent VARG (player), CONTROL (handler)</div>
-          <div><span className="text-accent">Agenda:</span> Recover nuclear codes. Collapse the geological vein. Deny SZ-0 to everyone.</div>
+          <div><span className="text-accent">Units:</span> Operatör 8 (player), STYRESMAN (handler)</div>
+          <div><span className="text-accent">Agenda:</span> Secure SZ-0 intelligence. Establish Nordic defense independence. Deny the substance to NATO and Moscow alike.</div>
         </div>
       </div>
 
@@ -234,7 +235,7 @@ function FactionsSection() {
         <div>☭ GRU ↔ 🏔️ Mountain: <span className="text-destructive">Hostile.</span> GRU extracts by force. The mountain resists.</div>
         <div>🔬 Kravtsov ↔ 🔮 Ordo: <span className="text-destructive">Infiltrated.</span> Some Kravtsov staff are secret Ordo members.</div>
         <div>🪝 Nachalnik ↔ 🔮 Svarta Solen: <span className="text-accent">Business.</span> Nachalnik sells to anyone, including the cult.</div>
-        <div>All factions ↔ 🇸🇪 NATO: <span className="text-destructive">Hostile.</span> VARG is an enemy to everyone.</div>
+        <div>All factions ↔ 🛡️ NORDVAKT: <span className="text-destructive">Hostile.</span> Operatör 8 is an enemy to everyone.</div>
       </div>
     </>
   );
@@ -320,7 +321,7 @@ function OccultSection() {
         <div className="text-[10px] font-mono text-foreground/70 space-y-1">
           <div>⛏️ <strong>Holmström</strong> — Former mine director. Sealed the deep levels in 1964, but secretly a cult founder. Still alive at 78. Somewhere in the village.</div>
           <div>⛏️ <strong>"Bergsmannen"</strong> — A miner absorbed in 1961 whose voice is still heard in Tunnel 7. The cult's spiritual guide.</div>
-          <div>⛏️ <strong>Nils Stålhandske</strong> — VARG's father. The original absorbed. His compass readings are now part of Gruvrå's magnetic field.</div>
+          <div>⛏️ <strong>Nils Stålhandske</strong> — Survey engineer. The first known absorbed. His compass readings are now part of Gruvrå's magnetic field.</div>
         </div>
       </div>
 
@@ -404,8 +405,8 @@ function WorldSection() {
       
       <div className="space-y-2 mb-3">
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
-          <strong className="text-destructive">THEORY: VARG IS ALREADY EXPOSED</strong><br/>
-          The compass VARG carries has pointed toward Norrberget since 1957. His father's compass. Magnetic anomaly — or has VARG been Stage 1 since childhood? The mountain may have been calling him his entire life.
+          <strong className="text-destructive">THEORY: NORDVAKT'S TRUE AGENDA</strong><br/>
+          STYRESMAN's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
         </div>
         <div className="border-l-2 border-accent/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-accent">THEORY: CONTROL IS AGENT FALKE</strong><br/>
@@ -421,7 +422,7 @@ function WorldSection() {
         </div>
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: THE OPERATION IS A SACRIFICE</strong><br/>
-          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if CONTROL knows the demolition team won't survive? What if VARG was chosen because he's expendable — a ghost who's already "dead"?
+          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if STYRESMAN knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
         </div>
       </div>
 
@@ -451,8 +452,8 @@ function WorldSection() {
         <div><span className="text-accent">1978:</span> First Ordo Borealis cell forms among Objekt 47 researchers.</div>
         <div><span className="text-accent">1980:</span> Nachalnik establishes the smuggling pipeline.</div>
         <div><span className="text-accent">1983:</span> Hospital №6 begins human experimentation. Project REBIRTH launched.</div>
-        <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. VARG "killed" in East Berlin.</div>
-        <div><span className="text-accent">1985:</span> NATO Task Force AURORA activated. Operation Aurora Borealis begins.</div>
+        <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. Operatör 8 "killed" in East Berlin. Recruited by NORDVAKT.</div>
+        <div><span className="text-accent">1985:</span> NORDVAKT activates Operation Aurora Borealis. Operatör 8 deployed.</div>
       </div>
     </>
   );

@@ -199,14 +199,14 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           {/* Player Dossier */}
           <div className="border border-primary/40 rounded p-3 bg-primary/5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-display text-primary">🐺 Codename: VARG</span>
+              <span className="text-sm font-display text-primary">🛡️ Designation: OPERATÖR 8</span>
               <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
-              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by a secret NATO task force for one purpose: locate and destroy all Substance Zero sites.
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization. Answers to STYRESMAN.
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
-              <span className="text-warning">Personal stake:</span> VARG's father, <span className="text-accent">Nils Stålhandske</span>, was a survey engineer who disappeared inside Norrberget Mine in 1957 while investigating the magnetic anomaly. His body was never found. His compass still points toward the mountain.
+              <span className="text-warning">Mission:</span> Secure Substance Zero intelligence for NORDVAKT. Deny SZ-0 to NATO, Moscow, and all other parties. Trust no one.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Nuclear codes in Osipovitj's safe. <span className="text-muted-foreground">The heart of the operation.</span></p>
               <p>█ <span className="text-accent">COASTAL VILLAGE</span> — Maritime smuggling pipeline. Nachalnik ships refined SZ-0 to foreign buyers. <span className="text-muted-foreground">The export terminal.</span></p>
               <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation. Kravtsov creates SZ-0-resistant soldiers. <span className="text-muted-foreground">The research lab.</span></p>
-              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. Where VARG's father vanished. <span className="text-muted-foreground">The source.</span></p>
+              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. NORDVAKT's highest priority. <span className="text-muted-foreground">The source.</span></p>
             </div>
           </div>
 
@@ -261,7 +261,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mb-2">
               Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. 
               It has existed in the mountain since before the ice age — the miners disturbed it, and it absorbed them. 
-              Survey engineer Nils Stålhandske — VARG's father — was taken by it in 1957. The mountain keeps what it takes.
+              Survey engineer Nils Stålhandske was taken by it in 1957. The mountain keeps what it takes.
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] font-mono">
               <span className="text-muted-foreground">HP</span><span className="text-danger">500</span>
@@ -485,7 +485,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           <div>
             <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Operation Aurora Borealis</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
-              You are <span className="text-accent">VARG</span> — a ghost operative on a mission to destroy the Soviet Substance Zero program.
+              You are <span className="text-accent">Operatör 8</span> — a NORDVAKT ghost operative on a mission to secure intelligence on the Soviet Substance Zero program.
               Operate from your <span className="text-accent">Safe House</span> between raids. 
               Each operational zone holds intel, threats, and a piece of the puzzle.
               Randomized <span className="text-warning">objectives</span> give you main targets and bonus tasks that pay rubles.
@@ -521,7 +521,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                 <span className="text-base">⛏️</span>
                 <div>
                   <p className="text-[11px] font-display text-foreground">Norrberget Mine <span className="text-[9px] text-warning font-mono">(10 extractions)</span> — <span className="text-[9px] text-muted-foreground font-mono">THE SOURCE</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Where VARG's father disappeared. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
+                  <p className="text-[10px] font-mono text-muted-foreground">NORDVAKT's highest priority. Two levels — surface village and underground mine. <span className="text-accent">Gruvrå</span> — the consciousness in the mountain — lurks below with crystalline guardians Ort & Stoll.</p>
                 </div>
               </div>
             </div>
