@@ -488,7 +488,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           return (
             <button
               disabled={mapLocked}
-              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 ${
+              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 sticky bottom-0 z-10 border border-border/30 backdrop-blur-sm ${
                 mapLocked
                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                   : 'bg-primary text-primary-foreground hover:bg-primary/80'
