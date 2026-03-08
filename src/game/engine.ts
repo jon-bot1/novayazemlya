@@ -2035,6 +2035,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         if (nearestHostile) {
           enemy.angle = Math.atan2(nearestHostile.pos.y - enemy.pos.y, nearestHostile.pos.x - enemy.pos.x);
+          const nearestDist = Math.sqrt(nearestDistSq);
           if (nearestDist > 100) {
             // Move towards target
             const mv = normalize({ x: nearestHostile.pos.x - enemy.pos.x, y: nearestHostile.pos.y - enemy.pos.y });
