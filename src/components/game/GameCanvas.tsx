@@ -1079,8 +1079,7 @@ export const GameCanvas: React.FC = () => {
             extractedRef.current = false;
             setStash(prev => {
               const updated = { ...prev, raidCount: prev.raidCount + 1 };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
             setStarted(true);
