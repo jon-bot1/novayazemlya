@@ -465,13 +465,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     <div>
                       <p className="text-xs font-display text-purple-400">COMMANDANT OSIPOVITJ</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering.
+                        Former Spetsnaz commander exposed to B-series compounds. Unnatural strength, glowing eyes, and two elite bodyguards (ZAPAD & VOSTOK) who never leave his side. Patrols the deep bunker armed and muttering. <span className="text-warning">The nuclear codes are in his safe.</span>
                       </p>
                       <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                         <span>💀 HP: 500</span>
                         <span>🛡️ 2 Bodyguards</span>
                         <span>📍 Underground Bunker</span>
                       </div>
+                      <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"The substance speaks to him. He says it gives orders from below."</p>
                     </div>
                   </div>
                 )}
@@ -481,13 +482,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     <div>
                       <p className="text-xs font-display text-yellow-400">НАЧАЛЬНИК (NACHALNIK)</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                        A grizzled smuggler who controls the pier and the only speedboat out. Armed with a shotgun and surrounded by loyal redneck guards and their dogs. Holds the boat keys.
+                        Former Soviet naval officer turned smuggler. Controls the pier and the only speedboat out. Armed with a sharpened fish hook and a TOZ shotgun. <span className="text-warning">His ledger contains the buyer list for Substance Zero shipments.</span>
                       </p>
                       <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                         <span>💀 HP: 400</span>
                         <span>🤠 Redneck Guards</span>
                         <span>📍 The Dock</span>
                       </div>
+                      <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"The fishing boats carry more than fish. Lead-lined containers in the hold."</p>
                     </div>
                   </div>
                 )}
@@ -498,13 +500,14 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                       <div>
                         <p className="text-xs font-display text-green-400">DR. KRAVTSOV</p>
                         <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                          Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic.
+                          Mad scientist conducting human experiments with compound B-7. Wears a lab coat and wields a syringe filled with mutagen. Can inject terror — forcing you to flee in panic. <span className="text-warning">His notes contain the SZ-0 countermeasure formula.</span>
                         </p>
                         <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                           <span>💀 HP: 400</span>
                           <span>😱 Fear Attack</span>
                           <span>📍 East Wing Lab</span>
                         </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"Science demands sacrifice. These men were already dead. I am giving them purpose."</p>
                       </div>
                     </div>
                     <div className="border-t border-border/20" />
@@ -513,12 +516,46 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                       <div>
                         <p className="text-xs font-display text-red-400">THE UZBEK</p>
                         <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
-                          Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human.
+                          Subject 7 — a former wrestler mutated beyond recognition by B-7 injections. Incredibly fast and strong. Chained in the basement for over a year. No longer human. <span className="text-warning">Putting him down would be a mercy.</span>
                         </p>
                         <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
                           <span>💀 HP: 600</span>
                           <span>⚡ Extreme Speed</span>
                           <span>📍 Basement Cell B-0</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"He absorbed 14 rounds with no visible effect. Then he smiled."</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedMap === 'mining_village' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">⛏️</span>
+                      <div>
+                        <p className="text-xs font-display text-cyan-400">GRUVRÅ — THE MOUNTAIN KING</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Not a man. Not a spirit. Gruvrå is what happens when Substance Zero accumulates enough mass to develop consciousness. It has existed since before the ice age. The miners disturbed it — and it absorbed them. <span className="text-warning">Your father's compass still points toward it.</span>
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 500</span>
+                          <span>🪨 Cave-in Attack</span>
+                          <span>📍 Deep Chamber, 420m</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-accent/60 mt-1 italic">"It opened its eyes. They're not crystals. They're TEETH."</p>
+                      </div>
+                    </div>
+                    <div className="border-t border-border/20" />
+                    <div className="flex gap-3 items-start">
+                      <span className="text-2xl">🪨</span>
+                      <div>
+                        <p className="text-xs font-display text-stone-400">ORT & STOLL — Crystal Guardians</p>
+                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
+                          Three-meter crystallized SZ-0 formations that guard the entrance to the deep chamber. They look like stone but they move. They have faces.
+                        </p>
+                        <div className="flex gap-3 mt-1.5 text-[8px] font-mono text-muted-foreground/70">
+                          <span>💀 HP: 200/180</span>
+                          <span>🪨 ORT: Melee / STOLL: Ranged</span>
                         </div>
                       </div>
                     </div>
@@ -529,9 +566,39 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           })()}
         </div>
 
-        {/* Intel Tab — Document Archive */}
+        {/* Intel Tab — Document Archive with Story Context */}
         {tab === 'intel' && (
-          <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
+          <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
+            {/* Story Progress Header */}
+            <div className="border border-accent/30 rounded p-3 bg-accent/5">
+              <h3 className="text-[10px] font-display text-accent uppercase tracking-wider mb-1">📡 OPERATION AURORA BOREALIS — Intelligence Summary</h3>
+              <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Documents:</span>
+                  <span className="text-foreground">{foundDocs.length}/{LORE_DOCUMENTS.length}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Codes Found:</span>
+                  <span className="text-accent">{foundDocs.filter(d => d.hasCode && d.code).length}/{LORE_DOCUMENTS.filter(d => d.hasCode).length}</span>
+                </div>
+              </div>
+              {foundDocs.length < 5 && (
+                <p className="text-[8px] font-mono text-muted-foreground/60 mt-2 italic">
+                  "Every document recovered brings us closer to understanding the Substance Zero network. Search desks, bodies, and archives during raids." — CONTROL
+                </p>
+              )}
+              {foundDocs.length >= 5 && foundDocs.length < 15 && (
+                <p className="text-[8px] font-mono text-warning/60 mt-2 italic">
+                  "The pieces are coming together. The four sites are connected — one geological vein, one conspiracy. Keep digging." — CONTROL
+                </p>
+              )}
+              {foundDocs.length >= 15 && (
+                <p className="text-[8px] font-mono text-accent/80 mt-2 italic">
+                  "VARG — you now know more about Substance Zero than anyone alive. Use this knowledge. Complete the mission. Collapse the vein." — CONTROL
+                </p>
+              )}
+            </div>
+
             {readingDoc ? (
               <div className="flex flex-col gap-2">
                 <button
@@ -566,26 +633,55 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                 </div>
               </div>
             ) : foundDocs.length === 0 ? (
-              <p className="text-xs font-mono text-muted-foreground text-center py-8">
-                No documents collected yet. Find them during raids.
-              </p>
+              <div className="text-center py-4">
+                <p className="text-xs font-mono text-muted-foreground mb-3">
+                  No documents collected yet. Find them during raids.
+                </p>
+                <div className="border border-border/30 rounded p-3 bg-background/30 text-left">
+                  <p className="text-[9px] font-display text-warning uppercase tracking-wider mb-1">🔍 Where to look</p>
+                  <ul className="text-[9px] font-mono text-muted-foreground/70 space-y-0.5">
+                    <li>• Desks and archives in office buildings</li>
+                    <li>• Bodies of officers and commanders</li>
+                    <li>• Walls and surfaces — look for carvings and graffiti</li>
+                    <li>• Equipment cases left behind by researchers</li>
+                  </ul>
+                </div>
+              </div>
             ) : (
-              foundDocs.map(doc => (
-                <button
-                  key={doc.id}
-                  className="flex items-center gap-3 p-3 border border-border rounded hover:border-accent/50 hover:bg-accent/5 transition-colors text-left"
-                  onClick={() => setReadingDoc(doc)}
-                >
-                  <span className="text-lg">
-                    {doc.classification === 'TOP SECRET' ? '🔴' : doc.classification === 'SECRET' ? '🟡' : '⚪'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-display text-foreground truncate">{doc.title}</p>
-                    <p className="text-[9px] font-mono text-muted-foreground">{doc.author} — {doc.date}</p>
-                  </div>
-                  {doc.hasCode && <span className="text-[9px] font-mono text-accent">☢</span>}
-                </button>
-              ))
+              <>
+                {/* Group documents by location */}
+                {[
+                  { label: '☢️ Objekt 47', filter: (d: LoreDocument) => ['doc_1','doc_2','doc_3','doc_4','doc_5','doc_6','doc_7','tape_1','tape_2','note_1','note_2'].includes(d.id) },
+                  { label: '⚓ Fishing Village', filter: (d: LoreDocument) => d.id.startsWith('doc_v') },
+                  { label: '🏥 Hospital', filter: (d: LoreDocument) => d.id.startsWith('doc_h') },
+                  { label: '⛏️ Norrberget Mine', filter: (d: LoreDocument) => d.id.startsWith('doc_mine') },
+                  { label: '🌐 Cross-Site Intel', filter: (d: LoreDocument) => d.id.startsWith('doc_sz') },
+                ].map(group => {
+                  const groupDocs = foundDocs.filter(group.filter);
+                  if (groupDocs.length === 0) return null;
+                  return (
+                    <div key={group.label}>
+                      <p className="text-[9px] font-display text-muted-foreground uppercase tracking-wider mb-1 mt-1">{group.label}</p>
+                      {groupDocs.map(doc => (
+                        <button
+                          key={doc.id}
+                          className="flex items-center gap-3 p-2.5 border border-border rounded hover:border-accent/50 hover:bg-accent/5 transition-colors text-left w-full mb-1"
+                          onClick={() => setReadingDoc(doc)}
+                        >
+                          <span className="text-base">
+                            {doc.classification === 'TOP SECRET' ? '🔴' : doc.classification === 'SECRET' ? '🟡' : '⚪'}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-display text-foreground truncate">{doc.title}</p>
+                            <p className="text-[8px] font-mono text-muted-foreground">{doc.author} — {doc.date}</p>
+                          </div>
+                          {doc.hasCode && <span className="text-[9px] font-mono text-accent">☢</span>}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         )}
@@ -617,10 +713,12 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           })()}
           <p className="text-[10px] font-mono text-muted-foreground/50 text-center mt-1">
             {selectedMap === 'fishing_village'
-              ? 'Infiltrate the abandoned fishing village — find the speedboat and extract'
+              ? '⚓ Infiltrate the coastal smuggling hub — locate Nachalnik\'s buyer ledger and destroy the SZ-0 shipments'
               : selectedMap === 'hospital'
-              ? 'Descend into the abandoned hospital — survive the horror and extract'
-              : 'Infiltrate Objekt 47 — Extract with loot to bring it back to your stash'}
+              ? '🏥 Enter the abandoned hospital — recover Kravtsov\'s countermeasure formula before it\'s too late'
+              : selectedMap === 'mining_village'
+              ? '⛏️ Descend into Norrberget — your father disappeared here in 1957. The mountain remembers.'
+              : '☢️ Infiltrate Objekt 47 — recover the nuclear detonation codes from Osipovitj\'s deep bunker safe'}
           </p>
         </div>
       </div>

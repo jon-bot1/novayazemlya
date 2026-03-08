@@ -144,12 +144,30 @@ export const UZBEK_PHASES = [
 
 // === IDLE CHATTER — type-specific ambient lines ===
 export const IDLE_LINES: Record<string, string[]> = {
-  scav:    ['*зевает*', '*бормочет*', 'Когда смена...', 'Жрать охота...', 'Холодно...', '*ковыряет нос*', 'Скука...'],
-  soldier: ['Чисто.', 'Позиция удерживается.', 'Всё тихо.', '*проверяет оружие*', 'Ожидание...'],
-  heavy:   ['*трескает суставы*', '*тяжёлое дыхание*', 'Готов.', 'Пусть придут.'],
-  redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*'],
-  shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*'],
+  scav:    ['*зевает*', '*бормочет*', 'Когда смена...', 'Жрать охота...', 'Холодно...', '*ковыряет нос*', 'Скука...', 'Тут гудит...', 'Слышишь? Из-под пола...', 'Вещество... опять вижу сны...'],
+  soldier: ['Чисто.', 'Позиция удерживается.', 'Всё тихо.', '*проверяет оружие*', 'Ожидание...', 'Командант опять ночью ходит...', 'В лаборатории свет горел всю ночь...', 'Говорят, Кедр пропал полностью...', 'Опять эти звуки снизу...'],
+  heavy:   ['*трескает суставы*', '*тяжёлое дыхание*', 'Готов.', 'Пусть придут.', 'Стена гудит... интересно...'],
+  redneck: ['*spits*', '*whistles*', 'Nice day...', 'C\'mere boy!', '*scratches*', 'Somethin\' ain\'t right in them tunnels...', 'Dogs been howlin\' all night...'],
+  shocker: ['*жужжание*', '*щелчок*', 'Заряд: 100%', '*гудит*', 'Батареи от Вещества... не разряжаются...'],
   sniper:  [], // snipers are silent
+};
+
+// === MAP-SPECIFIC IDLE LINES — override for Swedish map ===
+export const IDLE_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['*spottar*', '*visslar*', 'Fint väder...', 'Kom hit, pojk!', '*kliar sig*', 'Nåt rör sig i gruvan...', 'Hundarna skäller igen...', 'Berget sjunger på nätterna...', 'Stålhandske försvann här, vet du det?', 'Dom borde aldrig öppnat den där driften...'],
+  soldier: ['ПОЗИЦИЯ.', 'Шведы закрыли шахту... теперь наша.', 'Камни тут тёплые... странно...', 'Компас крутится... опять...', 'Полковник Варга сказал — молчать о кристаллах...'],
+  scav:    ['Jag vill härifrån...', '*darrar*', 'Hör du berget?', 'Lamporna flimrar hela tiden...', 'Гудит... всё время гудит...'],
+  heavy:   ['Стены двигаются? Нет... показалось.', '*тяжёлое дыхание*', 'Готов.'],
+};
+
+// === MAP-SPECIFIC ALERT LINES — Swedish map ===
+export const ALERT_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['VEM FAN ÄR DET?!', 'FÖRSVINN HÄRIFRÅN!', 'JAG SER DIG!', 'INKRÄKTARE!!', 'HÄR ÄR DET PRIVAT!'],
+};
+
+// === MAP-SPECIFIC DEATH LINES — Swedish rednecks ===
+export const DEATH_LINES_SWEDISH: Record<string, string[]> = {
+  redneck: ['Berget... tar mig...', 'Nej...', 'Hunden...', '*sista andetaget*'],
 };
 
 // === TAKING DAMAGE (non-lethal hit) ===
@@ -191,3 +209,59 @@ export function pickLine(pool: Record<string, string[]>, type: string): string |
   if (!lines || lines.length === 0) return null;
   return lines[Math.floor(Math.random() * lines.length)];
 }
+
+// ═══════════════════════════════════════════════════
+// AMBIENT ATMOSPHERE — periodic messages per map
+// ═══════════════════════════════════════════════════
+export const AMBIENT_MESSAGES: Record<string, string[]> = {
+  objekt47: [
+    '🌬️ The Arctic wind howls through the compound...',
+    '📻 Static crackles from an abandoned radio nearby...',
+    '💡 A fluorescent light flickers in the corridor ahead...',
+    '🧲 Your compass needle trembles — magnetic interference from below...',
+    '👁️ You feel watched. The ventilation shafts seem to breathe...',
+    '📡 A distant antenna dish rotates slowly, searching...',
+    '🔊 From deep underground — a low, rhythmic hum. Like a heartbeat.',
+    '❄️ Frost crystals form on the bunker walls. It\'s not that cold...',
+    '🐾 Boot prints in the frozen mud lead to the southern perimeter... and stop.',
+    '💀 Dog tags hang from a wire. Tarnished. The names are worn away.',
+  ],
+  fishing_village: [
+    '🌊 Waves crash against the pier. The sound masks everything...',
+    '🐟 The stench of dead fish hangs in the salt air...',
+    '⛵ A fishing boat rocks against its moorings. The hull is stained dark...',
+    '🔔 A rusted bell clangs in the wind. No one answers.',
+    '🏚️ Through a cabin window — a table set for dinner. Covered in dust.',
+    '🐕 Somewhere in the forest, a dog howls. Then silence.',
+    '🌙 The northern lights flicker above — green and cold.',
+    '🪝 Scratch marks on the dock planks. Deep. Like a hook dragged across.',
+    '📦 Lead-lined containers stacked behind the warehouse. The labels say "FISH."',
+    '🌊 The tide is coming in. The beach mines will be hidden soon...',
+  ],
+  hospital: [
+    '🏥 A door swings shut somewhere. The echo lingers...',
+    '💉 Broken syringes crunch underfoot. The glass is stained green...',
+    '🔦 Your flashlight catches something on the wall — nail marks. Deep.',
+    '📋 A patient chart on the floor: "Subject 7 — DO NOT RELEASE."',
+    '🩸 The floor is sticky. Not water.',
+    '😰 A sound from the basement — like chains dragging across concrete.',
+    '💊 Pills scattered across the hallway. Someone left in a hurry.',
+    '🧪 The east wing lab glows faintly green. Even with the power off.',
+    '👤 For a moment, you see a figure in the window. When you look again — empty.',
+    '📢 The PA system clicks on briefly: static, then a whisper, then silence.',
+    '🌡️ The temperature drops as you move deeper. Your breath fogs.',
+  ],
+  mining_village: [
+    '⛏️ The mine entrance yawns open. A draft of warm air rises from below...',
+    '🧲 Your compass spins freely. The magnetic anomaly is stronger here...',
+    '🪨 A rumble from deep underground. Not an earthquake. Something else.',
+    '🕯️ The mine lamps flicker in sequence — west to east. Like breathing.',
+    '🔊 Infrasound. You can\'t hear it, but your chest vibrates. 18 Hz.',
+    '🌑 The black crystals in the tunnel walls seem to pulse faintly...',
+    '👤 Carved into the rock: "STÅLHANDSKE VAR HÄR 1955"',
+    '🏚️ An abandoned cabin. Inside — a compass with a bent needle pointing down.',
+    '⚠️ The concrete seal on Drift 7 is warm to the touch. 30°C.',
+    '💎 The black ore glints in your flashlight. For a moment, it looked like an eye.',
+    '🌬️ From 420 meters below — a sound like stone grinding. The mountain speaks.',
+  ],
+};

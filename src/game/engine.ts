@@ -8,7 +8,7 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine, AMBIENT_MESSAGES, IDLE_LINES_SWEDISH, ALERT_LINES_SWEDISH, DEATH_LINES_SWEDISH } from './dialogue';
 import { hasBloodStains, hasMuzzleFlash, addHitMarker, getNightEnemyBuffs } from './graphics';
 
 // VFX helpers
@@ -2227,7 +2227,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.reinforcementTimer = 60 + Math.random() * 40; // slower spawning
   }
 
-  // Cap sound events — only keep recent ones (prevents unbounded growth)
+  // === AMBIENT ATMOSPHERE MESSAGES ===
+  {
+    if (!(state as any)._lastAmbientTime) (state as any)._lastAmbientTime = state.time + 15 + Math.random() * 10; // first message after 15-25s
+    if (state.time >= (state as any)._lastAmbientTime) {
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const pool = AMBIENT_MESSAGES[mapId];
+      if (pool && pool.length > 0) {
+        const msg = pool[Math.floor(Math.random() * pool.length)];
+        addMessage(state, msg, 'info');
+      }
+      (state as any)._lastAmbientTime = state.time + 25 + Math.random() * 20; // every 25-45s
+    }
+  }
+
   if (state.soundEvents.length > 20) {
     state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
   }
@@ -2928,13 +2941,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
-    // === IDLE CHATTER — all enemy types ===
+    // === IDLE CHATTER — all enemy types (map-specific on Swedish map) ===
     if ((enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && Math.random() < 0.0008) {
-      setSpeech(enemy, pickLine(IDLE_LINES, enemy.type), 3.0);
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const idlePool = mapId === 'mining_village' && IDLE_LINES_SWEDISH[enemy.type]
+        ? IDLE_LINES_SWEDISH
+        : IDLE_LINES;
+      setSpeech(enemy, pickLine(idlePool, enemy.type), 3.0);
     }
-    // === REDNECK CHASE CHATTER ===
+    // === REDNECK CHASE CHATTER (Swedish on mining village) ===
     if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
-      const lines = ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
+      const mapId = (state as any)._mapId as string || 'objekt47';
+      const lines = mapId === 'mining_village'
+        ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!']
+        : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
       enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
       enemy.speechBubbleTimer = 3;
     }
