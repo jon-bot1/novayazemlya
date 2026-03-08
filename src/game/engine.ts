@@ -420,7 +420,7 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
   // Heavies prefer suppression, soldiers prefer flanking
   if (enemy.type === 'heavy') {
     enemy.tacticalRole = suppressors < 2 ? 'suppressor' : 'assault';
-  } else if (enemy.type === 'soldier') {
+  } else if (enemy.type === 'soldier' || enemy.type === 'svarta_sol') {
     if (flankers < 2) enemy.tacticalRole = 'flanker';
     else if (suppressors < 1) enemy.tacticalRole = 'suppressor';
     else enemy.tacticalRole = 'assault';
