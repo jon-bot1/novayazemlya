@@ -220,7 +220,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-LEFT: HP + Stamina + Medical ═══════ */}
-      <div className="absolute bottom-28 sm:bottom-12 left-2 sm:left-3 flex flex-col gap-1 scale-90 sm:scale-100 origin-bottom-left">
+      <div className="absolute bottom-36 sm:bottom-12 left-2 sm:left-3 flex flex-col gap-1 scale-[0.8] sm:scale-100 origin-bottom-left">
         {/* HP bar */}
         <div className="flex items-center gap-1.5">
           <div className="w-32 h-3 bg-background/60 rounded-sm overflow-hidden border border-border/30">
@@ -257,7 +257,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
-      <div className="absolute bottom-28 sm:bottom-12 right-2 sm:right-3 flex flex-col items-end gap-1 scale-90 sm:scale-100 origin-bottom-right">
+      <div className="absolute bottom-36 sm:bottom-12 right-2 sm:right-3 flex flex-col items-end gap-1 scale-[0.8] sm:scale-100 origin-bottom-right">
         {/* Active weapon — compact */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">

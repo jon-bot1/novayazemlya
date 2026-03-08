@@ -6,6 +6,8 @@ import { MapId } from '../../game/maps';
 import { LORE_DOCUMENTS } from '../../game/lore';
 import { LoreDocument } from '../../game/lore';
 import { ActionButton } from './TouchControls';
+import { MobileControls } from './MobileControls';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { unlockSpeech } from '../../game/voice';
 import { HUD } from './HUD';
 import { HighscoreList } from './HighscoreList';
@@ -47,8 +49,8 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
   const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
-  <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
-    <div className="max-w-lg w-full mx-4 flex flex-col gap-4 p-8 border border-border bg-card rounded max-h-[95vh] overflow-y-auto">
+  <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-auto">
+    <div className="max-w-lg w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-4 sm:p-8 border border-border bg-card rounded max-h-[98vh] overflow-y-auto">
       <div className="text-center">
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
         <p className="text-xs font-mono text-muted-foreground mt-2">CLASSIFIED — EYES ONLY</p>
@@ -86,7 +88,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </button>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-border">
+      <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
         <button
           className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'briefing' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
           onClick={() => setTab('briefing')}
@@ -562,8 +564,13 @@ export const GameCanvas: React.FC = () => {
   const [selectedMapId, setSelectedMapId] = useState<MapId>('novaya_zemlya');
   const [objectives, setObjectives] = useState<MissionObjective[]>(() => generateMissionObjectives());
   const [rerollCount, setRerollCount] = useState(0);
-  const extractedRef = useRef(false); // prevent double extraction
-  const dbSyncedRef = useRef(false); // track if we loaded from DB
+  const extractedRef = useRef(false);
+  const dbSyncedRef = useRef(false);
+
+  // Mobile detection with manual override
+  const autoMobile = useIsMobile();
+  const [mobileOverride, setMobileOverride] = useState<boolean | null>(null);
+  const isMobile = mobileOverride !== null ? mobileOverride : autoMobile;
 
   const [hudState, setHudState] = useState({
     player: stateRef.current.player,
@@ -750,119 +757,15 @@ export const GameCanvas: React.FC = () => {
     };
   }, [showInventory, showIntel, readingDoc]);
 
-  // Touch/Pointer input — use Pointer Events for universal mobile support
+  // Touch/Pointer input — ONLY for desktop (non-mobile) fallback
+  // Mobile input is handled entirely by MobileControls component with joystick
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    // Ensure pointer events are captured properly
     canvas.style.touchAction = 'none';
-
-    const screenToWorld = (clientX: number, clientY: number) => {
-      const cam = stateRef.current.camera;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      return { x: cam.x + (clientX - w / 2), y: cam.y + (clientY - h / 2) };
-    };
-
-    const findEnemyAtWorld = (wx: number, wy: number) => {
-      const hitRadius = 30;
-      for (const enemy of stateRef.current.enemies) {
-        if (enemy.state === 'dead') continue;
-        const dx = enemy.pos.x - wx;
-        const dy = enemy.pos.y - wy;
-        if (Math.sqrt(dx * dx + dy * dy) < hitRadius) return enemy;
-      }
-      return null;
-    };
-
-    const findInteractableAtWorld = (wx: number, wy: number) => {
-      const radius = 40;
-      const st = stateRef.current;
-      for (const lc of st.lootContainers) {
-        if (!lc.looted && Math.sqrt((lc.pos.x - wx) ** 2 + (lc.pos.y - wy) ** 2) < radius) return true;
-      }
-      for (const dp of st.documentPickups) {
-        if (!dp.collected && Math.sqrt((dp.pos.x - wx) ** 2 + (dp.pos.y - wy) ** 2) < radius) return true;
-      }
-      for (const enemy of st.enemies) {
-        if (enemy.state === 'dead' && !enemy.looted && Math.sqrt((enemy.pos.x - wx) ** 2 + (enemy.pos.y - wy) ** 2) < radius) return true;
-      }
-      return false;
-    };
-
-    // Track active pointers for multi-touch
-    const activePointers = new Map<number, 'move' | 'aim'>();
-
-    const onPointerDown = (e: PointerEvent) => {
-      // Skip mouse events — handled separately with mousedown/mouseup
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      canvas.setPointerCapture(e.pointerId);
-      unlockSpeech();
-
-      const world = screenToWorld(e.clientX, e.clientY);
-      const enemy = findEnemyAtWorld(world.x, world.y);
-      if (enemy) {
-        activePointers.set(e.pointerId, 'aim');
-        aimTouchRef.current = e.pointerId;
-        const dx = world.x - stateRef.current.player.pos.x;
-        const dy = world.y - stateRef.current.player.pos.y;
-        inputRef.current.aimX = dx;
-        inputRef.current.aimY = dy;
-        inputRef.current.shooting = true;
-      } else if (findInteractableAtWorld(world.x, world.y)) {
-        activePointers.set(e.pointerId, 'move');
-        moveTouchRef.current = e.pointerId;
-        inputRef.current.moveTarget = world;
-        inputRef.current.moveX = 0;
-        inputRef.current.moveY = 0;
-        inputRef.current.interact = true;
-      } else {
-        activePointers.set(e.pointerId, 'move');
-        moveTouchRef.current = e.pointerId;
-        inputRef.current.moveTarget = world;
-        inputRef.current.moveX = 0;
-        inputRef.current.moveY = 0;
-      }
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      const role = activePointers.get(e.pointerId);
-      if (!role) return;
-      if (role === 'move' && e.pointerId === moveTouchRef.current) {
-        inputRef.current.moveTarget = screenToWorld(e.clientX, e.clientY);
-      }
-      if (role === 'aim' && e.pointerId === aimTouchRef.current) {
-        const world = screenToWorld(e.clientX, e.clientY);
-        inputRef.current.aimX = world.x - stateRef.current.player.pos.x;
-        inputRef.current.aimY = world.y - stateRef.current.player.pos.y;
-        inputRef.current.shooting = true;
-      }
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      e.preventDefault();
-      const role = activePointers.get(e.pointerId);
-      activePointers.delete(e.pointerId);
-      if (e.pointerId === moveTouchRef.current) moveTouchRef.current = null;
-      if (e.pointerId === aimTouchRef.current) { aimTouchRef.current = null; inputRef.current.shooting = false; }
-    };
-
-    canvas.addEventListener('pointerdown', onPointerDown);
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerup', onPointerUp);
-    canvas.addEventListener('pointercancel', onPointerUp);
-
-    return () => {
-      canvas.removeEventListener('pointerdown', onPointerDown);
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerup', onPointerUp);
-      canvas.removeEventListener('pointercancel', onPointerUp);
-    };
+    // No canvas-level pointer events needed — MobileControls handles touch,
+    // mouse handlers above handle desktop
+    return () => {};
   }, []);
 
   // Save highscore on tab close / navigate away (abandoned)
@@ -1397,66 +1300,36 @@ export const GameCanvas: React.FC = () => {
 
         <LootPopup notifications={lootNotifications} />
 
-        {/* Weapon swap now uses E-press — no popup needed */}
+        {/* Mobile controls — joystick + action buttons */}
+        {isMobile && (
+          <MobileControls
+            inputRef={inputRef}
+            stateRef={stateRef}
+            canvasRef={canvasRef}
+            onToggleInventory={() => { setShowInventory(v => !v); setShowIntel(false); }}
+            onToggleIntel={() => { setShowIntel(v => !v); setShowInventory(false); }}
+            movementMode={hudState.movementMode}
+          />
+        )}
 
-        {/* Mobile action buttons — thumb-optimized layout */}
-        <div className="sm:hidden">
-          {/* Right thumb cluster — combat actions */}
-          <div className="absolute bottom-20 right-3 flex flex-col gap-2 items-center pointer-events-auto">
-            <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; inputRef.current.shooting = false; }} variant="action" />
+        {/* Desktop hints */}
+        {!isMobile && (
+          <div className="absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
+            WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
           </div>
+        )}
 
-          {/* Left thumb cluster — utility actions */}
-          <div className="absolute bottom-20 left-3 flex flex-col gap-2 items-center pointer-events-auto">
-            <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; inputRef.current.shooting = false; }} />
-            <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} variant="action" />
-          </div>
+        {/* Mode toggle — top-left corner */}
+        <button
+          className="absolute top-2 left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
+        >
+          {isMobile ? '🖥️' : '📱'}
+        </button>
 
-          {/* Top-right quick buttons */}
-          <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3 pointer-events-auto" variant="action" />
-          <ActionButton label="🎒" onPress={() => { setShowInventory(v => !v); setShowIntel(false); }} className="absolute top-14 right-[4.5rem] pointer-events-auto" variant="action" />
-
-          {/* Bottom-center: movement mode + grenade cycle */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto z-40">
-            {(['sneak', 'walk', 'sprint'] as const).map(mode => {
-              const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
-              const isActive = inputRef.current.movementMode === mode;
-              return (
-                <button
-                  key={mode}
-                  className={`px-3 py-2 rounded text-xs font-mono border transition-colors touch-none select-none
-                    ${isActive
-                      ? 'bg-primary/60 border-primary text-primary-foreground'
-                      : 'bg-secondary/30 border-border/40 text-muted-foreground'
-                    }`}
-                  onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.movementMode = mode; }}
-                >
-                  {icons[mode]}
-                </button>
-              );
-            })}
-            <button
-              className="px-3 py-2 rounded text-xs font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
-              onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.cycleThrowable = true; }}
-            >
-              🔄
-            </button>
-          </div>
-        </div>
-
-        <div className="sm:hidden absolute bottom-0 left-2 right-2 text-center text-[8px] text-muted-foreground/30 pointer-events-none pb-safe">
-          Tap to move · Tap enemy to shoot
-        </div>
-
-        <div className="hidden sm:block absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
-          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
-        </div>
-        {/* Inventory Panel — toggled with Tab/I */}
+        {/* Inventory Panel */}
         {showInventory && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-30">
+          <div className={`absolute z-30 ${isMobile ? 'top-10 left-1/2 -translate-x-1/2' : 'top-12 right-3'}`}>
             <InventoryPanel
               items={backpackItems}
               inCover={hudState.inCover}
