@@ -1712,12 +1712,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.looted = true;
         state.bodiesLooted++;
         for (const item of enemy.loot) {
+          // Weapons drop on the ground separately
+          if (item.category === 'weapon' && item.damage) {
+            spawnWeaponDrop(state, item, enemy.pos);
+            continue;
+          }
           if (!tryPickupItem(state, item)) continue;
           if (item.id === 'extraction_code') {
             state.hasExtractionCode = true;
             addMessage(state, '🔑 EXTRACTION CODE FOUND! Head to the extraction point!', 'intel');
           }
-          // Ammo & TNT handled by tryPickupItem
           if (item.category === 'backpack' && state.backpackCapacity === 0) {
             state.backpackCapacity = 10;
             addMessage(state, '🎒 Backpack equipped!', 'intel');
@@ -1725,9 +1729,6 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (item.category === 'armor' && item.damage) {
             state.player.armor += item.damage;
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
-          }
-          if (item.category === 'weapon' && item.damage) {
-            spawnWeaponDrop(state, item, enemy.pos);
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
