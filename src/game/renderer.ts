@@ -1824,7 +1824,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillText('† УЗБЕК †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
 
       } else {
-        // Default Osipovitj corpse
+        // Default boss corpse
         ctx.fillStyle = 'rgba(120, 20, 20, 0.4)';
         ctx.beginPath();
         ctx.ellipse(enemy.pos.x, enemy.pos.y + 2, poolR, poolR * 0.6, 0.2, 0, Math.PI * 2);
@@ -1888,7 +1888,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillStyle = 'rgba(200, 50, 50, 0.9)';
         ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('† OSIPOVITJ †', enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
+        ctx.fillText(`† ${(enemy as any)._bossTitle || 'OSIPOVITJ'} †`, enemy.pos.x, enemy.pos.y + bossSize * 0.5 + 16);
       }
 
       if (!enemy.looted) {
@@ -2385,7 +2385,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         }
 
       } else {
-        // ═══ DEFAULT BOSS (Osipovitj) — original rendering ═══
+        // ═══ DEFAULT BOSS rendering ═══
         // Menacing aura
         const auraColors = ['rgba(180, 60, 200, 0.12)', 'rgba(255, 80, 40, 0.18)', 'rgba(255, 30, 30, 0.25)'];
         const auraR = bossSize + 20 + Math.sin(state.time * 3) * 8;
@@ -2525,7 +2525,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('★ COMMANDANT OSIPOVITJ ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'COMMANDANT OSIPOVITJ'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
         if (phase >= 1) {
           ctx.font = 'bold 8px sans-serif';
           ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);

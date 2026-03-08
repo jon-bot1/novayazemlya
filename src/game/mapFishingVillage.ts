@@ -259,14 +259,14 @@ export function generateFishingVillageMap() {
       return [redneck, dog];
     })(),
 
-    // Boss — Dock Master — random spawn in dock/warehouse area
+    // Boss — Nachalnik — random spawn in dock/warehouse area
     (() => {
       const bossZones = [ZONE_DOCK, ZONE_WAREHOUSE, ZONE_ROAD_SOUTH];
       const bz = bossZones[Math.floor(Math.random() * bossZones.length)];
       const bp = randIn(bz.x, bz.y, bz.w, bz.h);
       const boss = makeEnemy(bp.x, bp.y, 'boss');
-      (boss as any)._bossId = 'dock_master';
-      (boss as any)._bossTitle = 'DOCK MASTER';
+      (boss as any)._bossId = 'nachalnik';
+      (boss as any)._bossTitle = 'НАЧАЛЬНИК';
       boss.loot = [
         WEAPON_TEMPLATES.ak74(),
         createKeycard(),

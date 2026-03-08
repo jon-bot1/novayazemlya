@@ -22,7 +22,7 @@ function getBossTitle(enemy: Enemy): string {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
   if (bossId === 'uzbek') return 'УЗБЕК';
-  if (bossId === 'dock_master') return 'DOCK MASTER';
+  if (bossId === 'nachalnik') return 'НАЧАЛЬНИК';
   return 'COMMANDANT OSIPOVITJ';
 }
 
@@ -405,7 +405,7 @@ function generateEnemyLoot(enemy: Enemy) {
         { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
       );
     }
-    // Kravtsov, Uzbek, Dock Master keep their pre-assigned loot from map generators
+    // Kravtsov, Uzbek, Nachalnik keep their pre-assigned loot from map generators
     return baseLoot;
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';

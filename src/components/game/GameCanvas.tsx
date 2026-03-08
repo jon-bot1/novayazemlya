@@ -339,7 +339,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
                 <span className="text-base">🐟</span>
                 <div>
                   <p className="text-[11px] font-display text-foreground">The Fishing Village <span className="text-[9px] text-warning font-mono">(3 extractions to unlock)</span></p>
-                  <p className="text-[10px] font-mono text-muted-foreground">Coastal smuggler village with docks, shacks, and a lighthouse. Boss: <span className="text-warning">Dock Master</span> — shotgun-armed smuggler surrounded by redneck guards and dogs.</p>
+                  <p className="text-[10px] font-mono text-muted-foreground">Coastal smuggler village with docks, shacks, and a lighthouse. Boss: <span className="text-warning">Nachalnik</span> — shotgun-armed smuggler surrounded by redneck guards and dogs.</p>
                 </div>
               </div>
               <div className="flex gap-2 items-start">

@@ -380,6 +380,18 @@ export function generateHospitalMap() {
     makeLoot(BX + 800, BY + 1600, 'weapon_cabinet', 'weapon_cabinet'),
     rLoot(ZONE_CORRIDOR_N, 'locker', 'locker'),
     rLoot(ZONE_PARKING, 'crate', 'common'),
+    rLoot(ZONE_PARKING, 'barrel', 'common'),
+    rLoot(ZONE_PARKING, 'crate', 'military'),
+    // Outdoor loot — around hospital perimeter
+    rLoot(ZONE_FOREST_W, 'crate', 'common'),
+    rLoot(ZONE_FOREST_W, 'barrel', 'common'),
+    rLoot(ZONE_FOREST_E, 'crate', 'military'),
+    rLoot(ZONE_FOREST_E, 'crate', 'common'),
+    // Near entrances
+    makeLoot(BX - 40, BY + 720, 'crate', 'common'),
+    makeLoot(BX + BW + 30, BY + 920, 'barrel', 'military'),
+    makeLoot(BX + BW / 2 - 60, BY + BH + 50, 'crate', 'common'),
+    makeLoot(BX + BW / 2 + 60, BY + BH + 50, 'barrel', 'common'),
     { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createTNT()], looted: false, type: 'crate' as const },
     { id: `loot_${containerId++}`, pos: randIn(ZONE_BASEMENT.x, ZONE_BASEMENT.y, ZONE_BASEMENT.w, ZONE_BASEMENT.h), size: 24, items: [createExtractionCode()], looted: false, type: 'archive' as const },
   ];
