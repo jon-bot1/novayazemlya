@@ -989,12 +989,17 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
 // Terrain colors — per-map palettes for distinct atmosphere
 type MapPalette = {
   terrain: Record<string, [string, string]>;
-  outside: string; // color beyond map bounds
-  ambientOverlay: string | null; // full-screen tint
+  outside: string;
+  ambientOverlay: string | null;
   grassDetailA: string;
   grassDetailB: string;
   dirtDetailA: string;
   concreteDetail: string;
+  // New: map-specific detail generators
+  waterFoam?: string;
+  wallStain?: string;
+  puddles?: boolean;
+  debrisChance?: number; // 0-1 how much random debris
 };
 
 const MAP_PALETTES: Record<string, MapPalette> = {
