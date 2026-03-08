@@ -3824,7 +3824,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 sourceId: enemy.id,
                 sourceType: 'boss',
               });
-              addMessage(state, '💫 OSIPOVITJ throws FLASHBANG!', 'warning');
+              addMessage(state, `💫 ${getBossTitle(enemy)} throws FLASHBANG!`, 'warning');
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffffaa', 5);
             } else {
               state.grenades.push({
