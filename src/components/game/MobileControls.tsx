@@ -14,7 +14,7 @@ interface MobileControlsProps {
 export const MobileControls: React.FC<MobileControlsProps> = ({
   inputRef, stateRef, canvasRef, onToggleInventory, onToggleIntel, movementMode,
 }) => {
-  const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>('walk');
+  const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>(movementMode);
   const aimTouchRef = useRef<number | null>(null);
 
   // Left joystick → direct movement
