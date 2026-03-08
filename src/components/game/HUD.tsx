@@ -217,9 +217,15 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
         )}
 
-        {/* Top-right: Minimap + Kill count */}
+        {/* Top-right: Enhanced Minimap + Kill count + Weather */}
         <div className="flex items-start gap-2">
           <div className="flex flex-col items-end gap-1">
+            {weather && weather.type !== 'clear' && (
+              <span className="text-[9px] font-mono text-foreground/50 bg-card/50 rounded px-1.5 py-0.5">
+                {weather.type === 'blizzard' ? '🌨️' : weather.type === 'snow' ? '❄️' : weather.type === 'fog' ? '🌫️' : weather.type === 'rain' ? '🌧️' : '💨'}
+                {weather.type.toUpperCase()}
+              </span>
+            )}
             <span className="text-[10px] font-mono text-foreground/60 bg-card/50 rounded px-1.5 py-0.5">☠ {killCount}</span>
             <button
               className="text-[10px] font-mono text-accent/70 hover:text-accent pointer-events-auto bg-card/50 rounded px-1.5 py-0.5"
@@ -230,7 +236,14 @@ export const HUD: React.FC<HUDProps> = ({
             </button>
           </div>
           <div className="hidden sm:block">
-            <MiniMap playerX={player.pos.x} playerY={player.pos.y} mapW={2400} mapH={2400} />
+            <EnhancedMiniMap
+              playerX={player.pos.x} playerY={player.pos.y}
+              playerAngle={player.angle}
+              mapW={mapWidth || 2400} mapH={mapHeight || 2400}
+              enemies={enemyPositions || []}
+              extractions={extractionPositions || []}
+              objectives={objectivePositions || []}
+            />
           </div>
         </div>
       </div>
