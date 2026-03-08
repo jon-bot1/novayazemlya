@@ -2380,7 +2380,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // === BODYGUARD HEALS BOSS — nearby bodyguards can patch up the boss ===
     if ((enemy as any)._isBodyguard && !(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
       const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-      if (boss && boss.hp < boss.maxHp * 0.8 && dist(enemy.pos, boss.pos) < 50) {
+      if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
         // Start heal — 1 second animation
         (enemy as any)._bgHealTimer = 1.0;
         enemy.state = 'idle';
