@@ -4,6 +4,7 @@ import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, 
 import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
+import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion, DailyMission } from '../../game/dailyMissions';
 
 export interface StashState {
   items: Item[];
