@@ -516,7 +516,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       {tab === 'briefing' && (
         <>
           <div>
-            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Operation Aurora Borealis</h2>
+            <h2 className="text-sm font-display text-warning uppercase tracking-wider mb-2">📋 Operation Grindvakt</h2>
             <p className="text-xs font-mono text-foreground/80 leading-relaxed">
               You are <span className="text-accent">Operatör 8</span> — a NORDVAKT ghost operative on a mission to secure intelligence on the Soviet Substance Zero program.
               Operate from your <span className="text-accent">Safe House</span> between raids. 
