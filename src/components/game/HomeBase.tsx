@@ -3,7 +3,7 @@ import { Item } from '../../game/types';
 import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
-import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
+import { LORE_DOCUMENTS, LoreDocument, GAME_ENDINGS, GameEnding, canTriggerEnding, getEndingProgress, hasCompletedEnding, saveEnding } from '../../game/lore';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion, DailyMission } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
@@ -67,6 +67,10 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft' | 'mastery'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const [showEndingChoice, setShowEndingChoice] = useState(false);
+  const [chosenEnding, setChosenEnding] = useState<GameEnding | null>(null);
+  const [endingPhase, setEndingPhase] = useState<'choice' | 'narrative' | 'epilogue'>('choice');
+  const [completedEndingId, setCompletedEndingId] = useState<string | null>(hasCompletedEnding);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
   // Restore found docs from localStorage on mount (or unlock all for test3)
   React.useEffect(() => {
@@ -587,85 +591,200 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         {/* Archive Tab — Numbered document list */}
         {tab === 'intel' && (
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
-            <div className="border border-accent/30 rounded p-3 bg-accent/5">
-              <h3 className="text-[10px] font-display text-accent uppercase tracking-wider mb-1">📄 ARCHIVE — Collected Documents</h3>
-              <div className="text-[9px] font-mono text-muted-foreground">
-                {foundDocs.length}/{LORE_DOCUMENTS.length} documents recovered
-              </div>
-            </div>
 
-            {readingDoc ? (
-              <div className="flex flex-col gap-2">
+            {/* Ending screen overlay */}
+            {chosenEnding ? (
+              <div className="flex flex-col gap-3">
                 <button
                   className="text-xs font-mono text-accent hover:text-accent/80 self-start"
-                  onClick={() => setReadingDoc(null)}
+                  onClick={() => { setChosenEnding(null); setEndingPhase('choice'); setShowEndingChoice(true); }}
                 >
-                  ← Back to archive
+                  ← Back
                 </button>
-                <div className="border border-border rounded p-4 bg-background/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-display text-foreground">{readingDoc.title}</h3>
-                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                      readingDoc.classification === 'TOP SECRET' ? 'bg-red-900/30 text-red-400' :
-                      readingDoc.classification === 'SECRET' ? 'bg-yellow-900/30 text-yellow-400' :
-                      'bg-gray-800/30 text-gray-400'
-                    }`}>
-                      {readingDoc.classification}
+                <div className="border-2 border-accent/50 rounded p-4 bg-accent/5">
+                  <div className="text-center mb-3">
+                    <span className="text-2xl">{chosenEnding.icon}</span>
+                    <h3 className="text-sm font-display text-accent uppercase tracking-wider mt-1">
+                      {endingPhase === 'narrative' ? chosenEnding.label : 'EPILOGUE'}
+                    </h3>
+                    <span className="text-[9px] font-mono text-muted-foreground">
+                      {chosenEnding.faction}
                     </span>
                   </div>
-                  <div className="flex gap-3 text-[9px] font-mono text-muted-foreground mb-3">
-                    <span>Author: {readingDoc.author}</span>
-                    <span>Date: {readingDoc.date}</span>
-                  </div>
                   <pre className="text-[11px] font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                    {readingDoc.content}
+                    {endingPhase === 'narrative' ? chosenEnding.narrative : chosenEnding.epilogue}
                   </pre>
-                  {readingDoc.hasCode && readingDoc.code && (
-                    <div className="mt-3 p-2 border border-accent/30 rounded bg-accent/5">
-                      <span className="text-[10px] font-mono text-accent">☢ CODE: {readingDoc.code}</span>
+                  {endingPhase === 'narrative' && (
+                    <button
+                      className="mt-4 w-full px-4 py-2 bg-accent/20 hover:bg-accent/30 border border-accent/40 rounded text-xs font-display text-accent uppercase tracking-wider transition-colors"
+                      onClick={() => setEndingPhase('epilogue')}
+                    >
+                      Continue → Epilogue
+                    </button>
+                  )}
+                  {endingPhase === 'epilogue' && !completedEndingId && (
+                    <button
+                      className="mt-4 w-full px-4 py-2 bg-primary hover:bg-primary/80 text-primary-foreground rounded text-xs font-display uppercase tracking-wider transition-colors"
+                      onClick={() => { saveEnding(chosenEnding.id); setCompletedEndingId(chosenEnding.id); }}
+                    >
+                      ✓ Accept This Ending
+                    </button>
+                  )}
+                  {endingPhase === 'epilogue' && completedEndingId === chosenEnding.id && (
+                    <div className="mt-4 text-center text-xs font-mono text-accent">
+                      ✓ This is your chosen ending
                     </div>
                   )}
                 </div>
               </div>
+            ) : showEndingChoice ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  className="text-xs font-mono text-accent hover:text-accent/80 self-start"
+                  onClick={() => setShowEndingChoice(false)}
+                >
+                  ← Back to archive
+                </button>
+                <div className="border-2 border-accent/50 rounded p-4 bg-accent/5 text-center">
+                  <h3 className="text-sm font-display text-accent uppercase tracking-wider mb-1">☢ THE FINAL DECISION</h3>
+                  <p className="text-[10px] font-mono text-muted-foreground mb-3">
+                    You have recovered enough intelligence to change the course of history.<br/>
+                    What will you do with the truth about Substance Zero?
+                  </p>
+                </div>
+                {GAME_ENDINGS.map(ending => (
+                  <button
+                    key={ending.id}
+                    className={`flex items-start gap-3 p-3 border rounded text-left w-full transition-colors ${
+                      completedEndingId === ending.id
+                        ? 'border-accent bg-accent/10'
+                        : 'border-border hover:border-accent/50 hover:bg-accent/5'
+                    }`}
+                    onClick={() => { setChosenEnding(ending); setEndingPhase('narrative'); }}
+                  >
+                    <span className="text-xl mt-0.5">{ending.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-display text-foreground uppercase tracking-wider">{ending.label}</span>
+                        {completedEndingId === ending.id && <span className="text-[9px] font-mono text-accent">✓ CHOSEN</span>}
+                      </div>
+                      <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{ending.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             ) : (
-              <div className="flex flex-col gap-0.5">
-                {LORE_DOCUMENTS.map((doc, idx) => {
-                  const num = String(idx + 1).padStart(2, '0');
-                  const isFound = doc.found;
+              /* Normal archive view */
+              <>
+                <div className="border border-accent/30 rounded p-3 bg-accent/5">
+                  <h3 className="text-[10px] font-display text-accent uppercase tracking-wider mb-1">📄 ARCHIVE — Collected Documents</h3>
+                  <div className="text-[9px] font-mono text-muted-foreground">
+                    {foundDocs.length}/{LORE_DOCUMENTS.length} documents recovered
+                  </div>
+                </div>
+
+                {/* Ending trigger */}
+                {(() => {
+                  const progress = getEndingProgress();
                   return (
-                    <button
-                      key={doc.id}
-                      className={`flex items-center gap-3 p-2 border rounded text-left w-full transition-colors ${
-                        isFound
-                          ? 'border-border hover:border-accent/50 hover:bg-accent/5'
-                          : 'border-border/20 opacity-40 cursor-default'
-                      }`}
-                      onClick={() => isFound && setReadingDoc(doc)}
-                      disabled={!isFound}
-                    >
-                      <span className={`text-[10px] font-mono w-6 text-center ${isFound ? 'text-accent' : 'text-muted-foreground/50'}`}>
-                        {num}
-                      </span>
-                      {isFound ? (
-                        <>
-                          <span className="text-base">
-                            {doc.classification === 'TOP SECRET' ? '🔴' : doc.classification === 'SECRET' ? '🟡' : '⚪'}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-display text-foreground truncate">{doc.title}</p>
-                            <p className="text-[8px] font-mono text-muted-foreground">{doc.author} — {doc.date}</p>
-                          </div>
-                          {doc.hasCode && <span className="text-[9px] font-mono text-accent">☢</span>}
-                        </>
+                    <div className={`border rounded p-3 ${canTriggerEnding() ? 'border-accent bg-accent/10 animate-pulse' : 'border-border/50 bg-secondary/10'}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-display text-accent uppercase tracking-wider">
+                          {canTriggerEnding() ? '☢ FINAL DECISION UNLOCKED' : '🔒 Final Decision'}
+                        </span>
+                        <span className="text-[9px] font-mono text-muted-foreground">
+                          {progress.found}/{progress.required} docs
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-1">
+                        <div className="h-full bg-accent transition-all duration-500" style={{ width: `${progress.percentage}%` }} />
+                      </div>
+                      {canTriggerEnding() ? (
+                        <button
+                          className="mt-1 w-full px-3 py-1.5 bg-accent/20 hover:bg-accent/30 border border-accent/40 rounded text-[10px] font-display text-accent uppercase tracking-wider transition-colors"
+                          onClick={() => setShowEndingChoice(true)}
+                        >
+                          {completedEndingId ? '📖 Review Your Ending' : '☢ Make Your Choice'}
+                        </button>
                       ) : (
-                        <div className="flex-1">
-                          <p className="text-[11px] font-mono text-muted-foreground/40">— CLASSIFIED —</p>
+                        <p className="text-[9px] font-mono text-muted-foreground">
+                          Recover more documents across all maps to unlock the final decision.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {readingDoc ? (
+                  <div className="flex flex-col gap-2">
+                    <button
+                      className="text-xs font-mono text-accent hover:text-accent/80 self-start"
+                      onClick={() => setReadingDoc(null)}
+                    >
+                      ← Back to archive
+                    </button>
+                    <div className="border border-border rounded p-4 bg-background/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-display text-foreground">{readingDoc.title}</h3>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          readingDoc.classification === 'TOP SECRET' ? 'bg-red-900/30 text-red-400' :
+                          readingDoc.classification === 'SECRET' ? 'bg-yellow-900/30 text-yellow-400' :
+                          'bg-gray-800/30 text-gray-400'
+                        }`}>
+                          {readingDoc.classification}
+                        </span>
+                      </div>
+                      <div className="flex gap-3 text-[9px] font-mono text-muted-foreground mb-3">
+                        <span>Author: {readingDoc.author}</span>
+                        <span>Date: {readingDoc.date}</span>
+                      </div>
+                      <pre className="text-[11px] font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                        {readingDoc.content}
+                      </pre>
+                      {readingDoc.hasCode && readingDoc.code && (
+                        <div className="mt-3 p-2 border border-accent/30 rounded bg-accent/5">
+                          <span className="text-[10px] font-mono text-accent">☢ CODE: {readingDoc.code}</span>
                         </div>
                       )}
-                    </button>
-                  );
-                })}
-              </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5">
+                    {LORE_DOCUMENTS.map((doc, idx) => {
+                      const num = String(idx + 1).padStart(2, '0');
+                      const isFound = doc.found;
+                      return (
+                        <button
+                          key={doc.id}
+                          className={`flex items-center gap-3 p-2 border rounded text-left w-full transition-colors ${
+                            isFound
+                              ? 'border-border hover:border-accent/50 hover:bg-accent/5'
+                              : 'border-border/20 opacity-40 cursor-default'
+                          }`}
+                          onClick={() => isFound && setReadingDoc(doc)}
+                          disabled={!isFound}
+                        >
+                          <span className={`text-[10px] font-mono w-6 text-center ${isFound ? 'text-accent' : 'text-muted-foreground/50'}`}>
+                            {num}
+                          </span>
+                          {isFound ? (
+                            <>
+                              <span className="flex-1 text-[10px] font-mono text-foreground truncate">{doc.title}</span>
+                              <span className={`text-[8px] font-mono px-1 py-0.5 rounded ${
+                                doc.classification === 'TOP SECRET' ? 'bg-red-900/30 text-red-400' :
+                                doc.classification === 'SECRET' ? 'bg-yellow-900/30 text-yellow-400' :
+                                'bg-gray-800/30 text-gray-400'
+                              }`}>{doc.classification}</span>
+                            </>
+                          ) : (
+                            <span className="flex-1 text-[10px] font-mono text-muted-foreground/50 italic">[ CLASSIFIED — NOT YET RECOVERED ]</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
