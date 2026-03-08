@@ -2831,7 +2831,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
             const sameGroup = ally.radioGroup === enemy.radioGroup;
-            const closeEnough = dist(ally.pos, enemy.pos) < 400;
+            const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
             if ((sameGroup || closeEnough) && (ally.state === 'idle' || ally.state === 'patrol')) {
               ally.state = 'investigate';
               ally.investigateTarget = { ...state.player.pos };
