@@ -38,6 +38,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 210, shootRange: 70, fireRate: 1000 },
     dog:     { hp: 35, speed: 1.80, damage: 25, alertRange: 260, shootRange: 28, fireRate: 900 },
     cultist: { hp: 65, speed: 0.85, damage: 18, alertRange: 200, shootRange: 100, fireRate: 1200 },
+    miner_cult: { hp: 90, speed: 0.70, damage: 22, alertRange: 180, shootRange: 80, fireRate: 1100 },
     svarta_sol: { hp: 120, speed: 1.05, damage: 30, alertRange: 350, shootRange: 180, fireRate: 750 },
   };
   // Personality traits per type — affects combat behavior
@@ -52,6 +53,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     redneck: { _cowardice: 0.4, _accuracy: 0.55, _aggression: 0.5, _seekCoverChance: 0.2 },
     dog:     { _cowardice: 0.3, _accuracy: 1.0, _aggression: 0.9, _seekCoverChance: 0.0 },
     cultist: { _cowardice: 0.1, _accuracy: 0.55, _aggression: 0.9, _seekCoverChance: 0.05 },
+    miner_cult: { _cowardice: 0.05, _accuracy: 0.50, _aggression: 0.95, _seekCoverChance: 0.1 },
     svarta_sol: { _cowardice: 0.15, _accuracy: 0.90, _aggression: 0.7, _seekCoverChance: 0.6 },
   };
   const s = stats[type] || stats.scav;
