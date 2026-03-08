@@ -385,6 +385,23 @@ export function generateMiningVillageMap() {
     enemies.push(ort, stoll);
   }
 
+  // === STÅLHANDSKE-KULTEN — 3-4 miners in the underground tunnels ===
+  const minerCultZones = [ZONE_MINE_WEST_BRANCH, ZONE_MINE_EAST_BRANCH, ZONE_MINE_MAIN_TUNNEL, ZONE_MINE_EAST_TUNNEL];
+  const minerCultCount = 3 + Math.floor(Math.random() * 2); // 3-4
+  for (let i = 0; i < minerCultCount; i++) {
+    const zone = minerCultZones[i % minerCultZones.length];
+    const mc = rz(zone, 'miner_cult');
+    (mc as any)._cultFaction = 'stalhandske';
+    enemies.push(mc);
+  }
+
+  // === SVARTA SOLEN OPERATIVE — rare spawn (25% chance) near mine entrance ===
+  if (Math.random() < 0.25) {
+    const op = rz(ZONE_MINE_ENTRANCE, 'svarta_sol');
+    (op as any)._cultFaction = 'svarta_sol';
+    enemies.push(op);
+  }
+
   // ══════════════════════════════════════
   // LOOT
   // ══════════════════════════════════════
