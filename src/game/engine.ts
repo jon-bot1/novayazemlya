@@ -554,6 +554,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // Decay screenshake
+  if ((state as any)._screenShake > 0) {
+    (state as any)._screenShake = Math.max(0, (state as any)._screenShake - dt * 4);
+  }
+
   // Player movement — blocked when flashbanged (stunned)
   let moveX = input.moveX;
   let moveY = input.moveY;
