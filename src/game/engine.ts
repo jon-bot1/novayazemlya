@@ -4052,7 +4052,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Opportunistic shots while flanking
         if (distToPlayer < enemy.shootRange && state.time - enemy.lastShot > enemy.fireRate / 1000 * 2 && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y) && los) {
-          const spread = (Math.random() - 0.5) * 0.2;
+          const accF = (enemy as any)._accuracy ?? 0.7;
+          const spread = (Math.random() - 0.5) * (0.30 - accF * 0.15); // flanking = less accurate
           const angle = enemy.angle + spread;
           state.bullets.push({
             pos: { x: enemy.pos.x + Math.cos(angle) * 14, y: enemy.pos.y + Math.sin(angle) * 14 },
