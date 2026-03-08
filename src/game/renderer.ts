@@ -95,36 +95,36 @@ function drawCuteCharacter(
   ctx.save();
   ctx.translate(x, y);
 
-  const headR = size * 0.42;
-  const torsoW = size * 0.7;
-  const torsoH = size * 0.55;
-  const legW = size * 0.18;
-  const legH = size * 0.42;
-  const armW = size * 0.14;
-  const armH = size * 0.38;
-  const shoulderOff = torsoW * 0.42;
+  const headR = size * 0.30; // smaller, proportional head
+  const torsoW = size * 0.65;
+  const torsoH = size * 0.60;
+  const legW = size * 0.16;
+  const legH = size * 0.48;
+  const armW = size * 0.13;
+  const armH = size * 0.42;
+  const shoulderOff = torsoW * 0.44;
 
-  // Drop shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  // Drop shadow — subtle, elongated
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
   ctx.beginPath();
-  ctx.ellipse(1, size * 0.85, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
+  ctx.ellipse(1, size * 0.9, size * 0.45, size * 0.1, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // === LEGS (simplified) ===
+  // === LEGS ===
   const walkPhase = (_frameTime * 2.5) % 1;
-  const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.35 : 0;
-  ctx.fillStyle = shadeColor(bodyColor, -15);
+  const legSwing = isMoving ? Math.sin(walkPhase * Math.PI * 2) * 0.3 : 0;
+  ctx.fillStyle = shadeColor(bodyColor, -20);
   for (const side of [-1, 1]) {
-    const lx = legW * 1.1 * side;
-    const ly = torsoH * 0.35;
+    const lx = legW * 1.2 * side;
+    const ly = torsoH * 0.32;
     ctx.save();
     ctx.translate(lx, ly);
     ctx.rotate(legSwing * side);
     ctx.fillRect(-legW / 2, 0, legW, legH * 0.95);
-    // Boot
-    ctx.fillStyle = '#3a3832';
-    ctx.fillRect(-legW * 0.55, legH * 0.88, legW * 1.1, legH * 0.18);
-    ctx.fillStyle = shadeColor(bodyColor, -15);
+    // Boot — darker, angular
+    ctx.fillStyle = '#2a2a24';
+    ctx.fillRect(-legW * 0.55, legH * 0.85, legW * 1.1, legH * 0.2);
+    ctx.fillStyle = shadeColor(bodyColor, -20);
     ctx.restore();
   }
 
@@ -132,110 +132,94 @@ function drawCuteCharacter(
   if (hasGun) {
     ctx.save();
     ctx.rotate(angle);
-    // Arm
-    ctx.fillStyle = shadeColor(bodyColor, -5);
+    ctx.fillStyle = shadeColor(bodyColor, -8);
     ctx.fillRect(shoulderOff - armW / 2, -armH * 0.1, armW, armH * 0.8);
-    // Hand
-    ctx.fillStyle = '#f0dcc0';
+    // Gloved hand
+    ctx.fillStyle = '#3a3a30';
     ctx.fillRect(shoulderOff - 3, armH * 0.6, 6, 5);
-    // Gun barrel
-    ctx.fillStyle = '#6a6a66';
+    // Gun barrel — matte metal
+    ctx.fillStyle = '#4a4a44';
     const gunX = shoulderOff - 3;
     const gunY = armH * 0.55;
-    ctx.fillRect(gunX, gunY - 2, size * 0.9, 4.5);
-    // Muzzle
-    ctx.fillStyle = '#333';
-    ctx.fillRect(gunX + size * 0.85, gunY - 1.5, 5, 3);
+    ctx.fillRect(gunX, gunY - 2, size * 0.85, 4);
+    ctx.fillStyle = '#2a2a28';
+    ctx.fillRect(gunX + size * 0.8, gunY - 1.5, 5, 3);
     ctx.restore();
   }
 
-  // === TORSO ===
+  // === TORSO — angular, tactical vest look ===
   ctx.save();
   ctx.rotate(angle);
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
-  ctx.roundRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH, [4, 4, 2, 2]);
+  ctx.roundRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH, [3, 3, 1, 1]);
   ctx.fill();
   ctx.strokeStyle = outlineColor;
-  ctx.lineWidth = 1.8;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
-  // Highlight
-  ctx.fillStyle = 'rgba(255,255,255,0.1)';
-  ctx.fillRect(-torsoW / 2, -torsoH * 0.35, torsoW, torsoH * 0.4);
+  // Vest detail — horizontal strap
+  ctx.fillStyle = shadeColor(bodyColor, -12);
+  ctx.fillRect(-torsoW * 0.38, -torsoH * 0.05, torsoW * 0.76, 3);
   // Belt
-  ctx.fillStyle = '#4a4a3a';
-  ctx.fillRect(-torsoW * 0.4, torsoH * 0.42, torsoW * 0.8, 4);
+  ctx.fillStyle = '#3a3a2e';
+  ctx.fillRect(-torsoW * 0.4, torsoH * 0.42, torsoW * 0.8, 3.5);
 
   // Off-arm
-  ctx.fillStyle = shadeColor(bodyColor, -5);
+  ctx.fillStyle = shadeColor(bodyColor, -8);
   ctx.fillRect(-shoulderOff - armW / 2, -armH * 0.05, armW, armH * 0.7);
-  // Hand
-  ctx.fillStyle = '#f0dcc0';
+  ctx.fillStyle = '#3a3a30';
   ctx.fillRect(-shoulderOff - 3, armH * 0.55, 6, 5);
   ctx.restore();
 
-  // === HEAD ===
+  // === HEAD — smaller, more proportional ===
   ctx.save();
-  ctx.translate(0, -torsoH * 0.5);
+  ctx.translate(0, -torsoH * 0.48);
   // Neck
-  ctx.fillStyle = '#f0dcc0';
-  ctx.fillRect(-4, headR * 0.55, 8, 8);
+  ctx.fillStyle = '#c8a882';
+  ctx.fillRect(-3.5, headR * 0.5, 7, 7);
   // Head
-  ctx.fillStyle = '#f0dcc0';
+  ctx.fillStyle = '#c8a882';
   ctx.beginPath();
   ctx.arc(0, 0, headR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = '#d4b896';
-  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = '#a88a6a';
+  ctx.lineWidth = 1.2;
   ctx.stroke();
-  // Head shine — flat instead of gradient
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.beginPath();
-  ctx.arc(-headR * 0.2, -headR * 0.25, headR * 0.5, 0, Math.PI * 2);
-  ctx.fill();
 
-  // Face
+  // Face — small, angular, no sparkles
   const facingLeft = Math.abs(angle) > Math.PI * 0.5;
   ctx.save();
   if (facingLeft) ctx.scale(-1, 1);
   if (isBlinking) {
     ctx.strokeStyle = eyeColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(headR * 0.32, -headR * 0.15, 3.5, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.moveTo(headR * 0.2, -headR * 0.12);
+    ctx.lineTo(headR * 0.45, -headR * 0.12);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(headR * 0.32, headR * 0.15, 3.5, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.moveTo(headR * 0.2, headR * 0.15);
+    ctx.lineTo(headR * 0.45, headR * 0.15);
     ctx.stroke();
   } else {
     const eyeX = headR * 0.35;
-    const eyeYOff = headR * 0.17;
+    const eyeYOff = headR * 0.15;
     for (const ey of [-eyeYOff, eyeYOff]) {
-      // Eye white
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.ellipse(eyeX, ey, 4.5, 5.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Iris
+      // Small, sharp eyes — no white, no sparkle
       ctx.fillStyle = eyeColor;
       ctx.beginPath();
-      ctx.arc(eyeX + 1.5, ey, 3.2, 0, Math.PI * 2);
+      ctx.ellipse(eyeX, ey, 2.5, 2, 0, 0, Math.PI * 2);
       ctx.fill();
-      // Pupil
-      ctx.fillStyle = '#111';
+      // Pupil dot
+      ctx.fillStyle = '#0a0a0a';
       ctx.beginPath();
-      ctx.arc(eyeX + 2, ey, 1.8, 0, Math.PI * 2);
-      ctx.fill();
-      // Sparkle
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(eyeX + 3, ey - 2, 1.3, 0, Math.PI * 2);
+      ctx.arc(eyeX + 0.8, ey, 1.2, 0, Math.PI * 2);
       ctx.fill();
     }
   }
   ctx.restore(); // face
 
-  // === HAT ===
+  // === HAT — grittier ===
   if (hatType !== 'none') {
     ctx.save();
     if (facingLeft) ctx.scale(-1, 1);
@@ -243,60 +227,65 @@ function drawCuteCharacter(
       case 'ushanka':
         ctx.fillStyle = hatColor;
         ctx.beginPath();
-        ctx.arc(0, 0, headR * 1.12, -Math.PI * 0.82, Math.PI * 0.82);
-        ctx.lineTo(0, -headR * 1.12);
+        ctx.arc(0, 0, headR * 1.1, -Math.PI * 0.8, Math.PI * 0.8);
+        ctx.lineTo(0, -headR * 1.1);
         ctx.closePath();
         ctx.fill();
-        // Fur trim
-        ctx.fillStyle = shadeColor(hatColor, 20);
+        // Fur trim — darker
+        ctx.fillStyle = shadeColor(hatColor, 12);
         ctx.beginPath();
-        ctx.arc(0, 0, headR * 1.12, Math.PI * 0.55, Math.PI * 0.82);
-        ctx.arc(0, 0, headR * 0.95, Math.PI * 0.82, Math.PI * 0.55, true);
+        ctx.arc(0, 0, headR * 1.1, Math.PI * 0.55, Math.PI * 0.8);
+        ctx.arc(0, 0, headR * 0.95, Math.PI * 0.8, Math.PI * 0.55, true);
         ctx.closePath();
         ctx.fill();
         // Ear flaps
         ctx.fillStyle = hatColor;
-        ctx.fillRect(-headR * 1.15, -headR * 0.35, headR * 0.35, headR * 0.7);
-        // Star
-        ctx.fillStyle = '#dd3333';
-        ctx.font = `bold ${headR * 0.55}px sans-serif`;
+        ctx.fillRect(-headR * 1.12, -headR * 0.3, headR * 0.3, headR * 0.65);
+        // Star — faded
+        ctx.fillStyle = '#992222';
+        ctx.font = `bold ${headR * 0.5}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillText('★', headR * 0.05, headR * -0.3);
+        ctx.fillText('★', headR * 0.05, headR * -0.28);
         break;
       case 'helmet':
         ctx.fillStyle = hatColor;
         ctx.beginPath();
-        ctx.arc(0, -headR * 0.05, headR * 1.18, -Math.PI * 0.9, Math.PI * 0.9);
+        ctx.arc(0, -headR * 0.05, headR * 1.15, -Math.PI * 0.85, Math.PI * 0.85);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = shadeColor(hatColor, -20);
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = shadeColor(hatColor, -25);
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        // Helmet strap
+        ctx.strokeStyle = shadeColor(hatColor, -15);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, headR * 0.1, headR * 0.9, Math.PI * 0.3, Math.PI * 0.7);
         ctx.stroke();
         break;
       case 'beret':
         ctx.fillStyle = hatColor;
         ctx.beginPath();
-        ctx.ellipse(-headR * 0.1, -headR * 0.68, headR * 0.88, headR * 0.4, -0.15, 0, Math.PI * 2);
+        ctx.ellipse(-headR * 0.1, -headR * 0.65, headR * 0.85, headR * 0.35, -0.15, 0, Math.PI * 2);
         ctx.fill();
-        // Band
-        ctx.fillStyle = shadeColor(hatColor, -20);
+        ctx.fillStyle = shadeColor(hatColor, -15);
         ctx.beginPath();
-        ctx.arc(0, 0, headR * 1.02, -Math.PI * 0.55, Math.PI * 0.55);
-        ctx.arc(0, 0, headR * 0.95, Math.PI * 0.55, -Math.PI * 0.55, true);
+        ctx.arc(0, 0, headR * 1.0, -Math.PI * 0.5, Math.PI * 0.5);
+        ctx.arc(0, 0, headR * 0.93, Math.PI * 0.5, -Math.PI * 0.5, true);
         ctx.closePath();
         ctx.fill();
         break;
       case 'bandana':
         ctx.fillStyle = hatColor;
         ctx.beginPath();
-        ctx.arc(0, 0, headR * 1.04, -Math.PI * 0.72, Math.PI * 0.72);
+        ctx.arc(0, 0, headR * 1.02, -Math.PI * 0.7, Math.PI * 0.7);
         ctx.closePath();
         ctx.fill();
-        // Knot
+        // Knot — smaller
         ctx.beginPath();
-        ctx.moveTo(-headR * 0.65, -headR * 0.35);
-        ctx.quadraticCurveTo(-headR * 1.3, -headR * 0.55, -headR * 1.1, -headR * 0.1);
-        ctx.lineTo(-headR * 0.7, -headR * 0.05);
+        ctx.moveTo(-headR * 0.6, -headR * 0.3);
+        ctx.quadraticCurveTo(-headR * 1.2, -headR * 0.5, -headR * 1.0, -headR * 0.1);
+        ctx.lineTo(-headR * 0.65, -headR * 0.05);
         ctx.closePath();
         ctx.fill();
         break;
