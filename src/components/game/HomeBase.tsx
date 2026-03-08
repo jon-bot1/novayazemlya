@@ -3,6 +3,7 @@ import { Item } from '../../game/types';
 import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
+import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
 
 export interface StashState {
   items: Item[];
