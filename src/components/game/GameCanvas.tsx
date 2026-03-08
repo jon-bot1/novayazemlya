@@ -20,6 +20,7 @@ import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp 
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
 import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../game/haptics';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
+import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
 
 const TIME_LIMIT = 300; // 5 minutes
