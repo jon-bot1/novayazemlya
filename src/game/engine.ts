@@ -1537,10 +1537,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       state.player.currentAmmo = Math.max(0, Math.floor(state.player.currentAmmo) - 1);
     }
     
-    // === RECOIL BLOOM — consecutive shots increase spread ===
+    // === WEAPON-SPECIFIC RECOIL BLOOM ===
     if (!(state as any)._recoilBloom) (state as any)._recoilBloom = 0;
-    const bloomRate = isAutoFire ? 0.025 : 0.015; // auto weapons bloom faster
-    (state as any)._recoilBloom = Math.min(0.35, (state as any)._recoilBloom + bloomRate);
+    // Bloom rate varies by weapon: heavy weapons bloom faster, precision weapons slower
+    const bloomRate = (() => {
+      if (isMosinWpn) return 0.005; // bolt-action — minimal bloom
+      const n = (wpn?.name || '').toLowerCase();
+      if (n.includes('ksp 58')) return 0.04;  // MG — heavy bloom
+      if (n.includes('ppsh') || n.includes('kpist')) return 0.035; // SMGs — fast bloom
+      if (n.includes('akm')) return 0.03; // AKM — noticeable
+      if (n.includes('ak-74') || n.includes('ak 4')) return 0.022; // controlled
+      if (n.includes('makarov') || n.includes('revolver')) return 0.015; // pistols — low
+      return isAutoFire ? 0.028 : 0.015;
+    })();
+    const bloomCap = isMosinWpn ? 0.08 : isAutoFire ? 0.30 : 0.20;
+    (state as any)._recoilBloom = Math.min(bloomCap, (state as any)._recoilBloom + bloomRate);
+    
+    // Track sustained shots for auto-fire penalty
+    if (!(state as any)._sustainedShots) (state as any)._sustainedShots = 0;
+    (state as any)._sustainedShots = Math.min(20, (state as any)._sustainedShots + 1);
+    (state as any)._lastShotTime = state.time;
     
     const muzzleAngle = state.player.angle;
     addMuzzleFlash(state, state.player.pos.x + Math.cos(muzzleAngle) * 25, state.player.pos.y + Math.sin(muzzleAngle) * 25, true);
