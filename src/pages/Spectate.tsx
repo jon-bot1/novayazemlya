@@ -48,12 +48,9 @@ function timeSince(isoString: string): string {
 }
 
 const SPECTATE_KEY = 'novaya_spectate_auth';
-const SPECTATE_HASH = '5a3c1f'; // simple hash check
 
-function simpleHash(s: string): string {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(16).slice(0, 6);
+function checkPass(s: string): boolean {
+  return s === 'zemlya47';
 }
 
 const Spectate: React.FC = () => {
@@ -96,6 +93,15 @@ const Spectate: React.FC = () => {
   }, [authed, fetchSessions]);
 
   if (!authed) {
+    const tryLogin = () => {
+      if (checkPass(pin)) {
+        sessionStorage.setItem(SPECTATE_KEY, '1');
+        setAuthed(true);
+      } else {
+        setPinError(true);
+      }
+    };
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="max-w-xs w-full p-6 border border-border rounded bg-card/80">
@@ -107,29 +113,13 @@ const Spectate: React.FC = () => {
             placeholder="Enter password..."
             value={pin}
             onChange={e => { setPin(e.target.value); setPinError(false); }}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && pin) {
-                if (simpleHash(pin) === SPECTATE_HASH) {
-                  sessionStorage.setItem(SPECTATE_KEY, '1');
-                  setAuthed(true);
-                } else {
-                  setPinError(true);
-                }
-              }
-            }}
+            onKeyDown={e => { if (e.key === 'Enter' && pin) tryLogin(); }}
             autoFocus
           />
           {pinError && <p className="text-xs font-mono text-destructive mt-2">Access denied</p>}
           <button
             className="mt-3 w-full px-3 py-2 bg-primary text-primary-foreground text-xs font-mono uppercase tracking-wider rounded hover:bg-primary/80 transition-colors"
-            onClick={() => {
-              if (simpleHash(pin) === SPECTATE_HASH) {
-                sessionStorage.setItem(SPECTATE_KEY, '1');
-                setAuthed(true);
-              } else {
-                setPinError(true);
-              }
-            }}
+            onClick={tryLogin}
           >
             Enter
           </button>
@@ -139,38 +129,6 @@ const Spectate: React.FC = () => {
     );
   }
 
-  const fetchSessions = useCallback(async () => {
-    if (!authed) return;
-    const { data } = await supabase
-      .from('active_sessions')
-      .select('*')
-      .order('last_heartbeat', { ascending: false });
-    if (data) setSessions(data as ActiveSession[]);
-    setLoading(false);
-  }, [authed]);
-
-  useEffect(() => {
-    if (!authed) return;
-    fetchSessions();
-
-    const channel = supabase
-      .channel('spectate-sessions')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'active_sessions' },
-        () => fetchSessions()
-      )
-      .subscribe();
-
-    const interval = setInterval(fetchSessions, 10000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(interval);
-    };
-  }, [authed, fetchSessions]);
-
-  // Separate active (heartbeat < 15s ago) from stale
   const now = Date.now();
   const activeSessions = sessions.filter(s => {
     const age = (now - new Date(s.last_heartbeat).getTime()) / 1000;
@@ -184,7 +142,6 @@ const Spectate: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-display text-accent tracking-wider">📡 SPECTATOR</h1>
@@ -198,10 +155,9 @@ const Spectate: React.FC = () => {
           </button>
         </div>
 
-        {/* Active sessions */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <h2 className="text-sm font-display text-foreground uppercase tracking-wider">
               Live Now ({activeSessions.length})
             </h2>
@@ -223,7 +179,6 @@ const Spectate: React.FC = () => {
           )}
         </div>
 
-        {/* Recent sessions */}
         {recentSessions.length > 0 && (
           <div>
             <h2 className="text-sm font-display text-muted-foreground uppercase tracking-wider mb-3">
@@ -244,13 +199,13 @@ const Spectate: React.FC = () => {
 const SessionCard: React.FC<{ session: ActiveSession; isLive: boolean }> = ({ session: s, isLive }) => {
   const statusInfo = STATUS_LABELS[s.status] || STATUS_LABELS.playing;
   const hpPct = s.max_hp > 0 ? Math.round((s.hp / s.max_hp) * 100) : 0;
-  const hpColor = hpPct > 60 ? 'text-green-400' : hpPct > 30 ? 'text-yellow-400' : 'text-red-400';
+  const hpColor = hpPct > 60 ? 'text-primary' : hpPct > 30 ? 'text-accent' : 'text-destructive';
 
   return (
-    <div className={`border rounded p-3 sm:p-4 bg-card/80 ${isLive ? 'border-green-800/60' : 'border-border/60'}`}>
+    <div className={`border rounded p-3 sm:p-4 bg-card/80 ${isLive ? 'border-primary/40' : 'border-border/60'}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}
+          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
           <span className="font-display text-sm text-foreground">{s.player_name}</span>
           <span className={`text-[10px] font-mono ${statusInfo.color} px-1.5 py-0.5 border border-current/30 rounded`}>
             {statusInfo.label}
@@ -290,7 +245,7 @@ const SessionCard: React.FC<{ session: ActiveSession; isLive: boolean }> = ({ se
         <div className="mt-2">
           <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-1000 ${hpPct > 60 ? 'bg-green-600' : hpPct > 30 ? 'bg-yellow-600' : 'bg-red-600'}`}
+              className={`h-full rounded-full transition-all duration-1000 ${hpPct > 60 ? 'bg-primary' : hpPct > 30 ? 'bg-accent' : 'bg-destructive'}`}
               style={{ width: `${hpPct}%` }}
             />
           </div>
