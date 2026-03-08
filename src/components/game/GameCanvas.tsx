@@ -1095,8 +1095,7 @@ export const GameCanvas: React.FC = () => {
                 items: prev.items.filter((_, i) => i !== idx),
                 rubles: prev.rubles + item.value,
               };
-              saveStash(updated);
-              syncStashToDb(playerName, updated);
+              persistStash(updated, playerName);
               return updated;
             });
           }}
