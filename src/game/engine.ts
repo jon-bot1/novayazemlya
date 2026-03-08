@@ -3532,11 +3532,52 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
     } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'investigate')) {
-      // Heard a sound — go investigate (boost awareness too)
-      enemy.state = 'investigate';
-      enemy.investigateTarget = heardSound;
-      enemy.awareness = Math.max(enemy.awareness, 0.7);
-      setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+      // === AMBUSH AI — some enemies set up ambush instead of rushing toward sound ===
+      const ambushRoll = Math.random();
+      const isSmartType = enemy.type === 'soldier' || enemy.type === 'heavy' || enemy.type === 'svarta_sol';
+      const ambushChance = isSmartType ? 0.35 : 0.12; // smart types ambush more often
+
+      if (ambushRoll < ambushChance && !los && !(enemy as any)._ambushSet) {
+        // Find a prop near the sound that provides cover (choke point ambush)
+        const coverTypes = ['concrete_barrier', 'sandbags', 'wood_crate', 'barrel_stack', 'vehicle_wreck', 'metal_shelf'];
+        let bestAmbushPos: Vec2 | null = null;
+        let bestScore = -Infinity;
+        for (const prop of state.props) {
+          if (!coverTypes.includes(prop.type)) continue;
+          const dToSound = dist(prop.pos, heardSound);
+          const dToEnemy = dist(prop.pos, enemy.pos);
+          // Good ambush: between enemy and sound, within 200px of sound, not too far from enemy
+          if (dToSound < 200 && dToEnemy < 300 && dToSound > 30) {
+            // Score: prefer positions that are between enemy and the sound source
+            const score = (300 - dToEnemy) + (200 - dToSound) * 1.5;
+            if (score > bestScore) {
+              bestScore = score;
+              bestAmbushPos = { ...prop.pos };
+            }
+          }
+        }
+        if (bestAmbushPos) {
+          (enemy as any)._ambushSet = true;
+          (enemy as any)._ambushTimer = 8 + Math.random() * 6; // wait up to 14s
+          enemy.state = 'investigate';
+          enemy.investigateTarget = bestAmbushPos;
+          enemy.awareness = Math.max(enemy.awareness, 0.6);
+          setSpeech(enemy, isSmartType ? 'ТИХО... ЖДЁМ.' : 'ЧТО ТАМ?', 2.0);
+          addMessage(state, `🎯 ${enemy.type.toUpperCase()} sets up an ambush!`, 'info');
+        } else {
+          // No good ambush position — investigate normally
+          enemy.state = 'investigate';
+          enemy.investigateTarget = heardSound;
+          enemy.awareness = Math.max(enemy.awareness, 0.7);
+          setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+        }
+      } else {
+        // Normal investigate (majority of the time)
+        enemy.state = 'investigate';
+        enemy.investigateTarget = heardSound;
+        enemy.awareness = Math.max(enemy.awareness, 0.7);
+        setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+      }
     } else if (heardSound && (enemy.state === 'chase' || enemy.state === 'attack')) {
       // Already in combat — update known player position from sound
       enemy.investigateTarget = heardSound;
