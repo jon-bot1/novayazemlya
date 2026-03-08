@@ -71,7 +71,9 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     enemy.bossSpawnTimer = 0;
   }
   if (type === 'redneck') {
-    enemy.loot = [WEAPON_TEMPLATES.toz(), createDogFood()];
+    // Swedish map — rednecks carry Swedish weapons
+    const swWeapons = [WEAPON_TEMPLATES.kpist45, WEAPON_TEMPLATES.ak4, WEAPON_TEMPLATES.toz];
+    enemy.loot = [swWeapons[Math.floor(Math.random() * swWeapons.length)](), createDogFood()];
   }
   return enemy;
 };
