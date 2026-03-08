@@ -256,7 +256,7 @@ export function generateHospitalMap() {
     rz(ZONE_BASEMENT, 'shocker'),
     rz(ZONE_BASEMENT, 'shocker'),
     // Forest
-    rz(ZONE_FOREST_W, 'sniper'),
+    rz(ZONE_FOREST_W, 'soldier'),
     rz(ZONE_FOREST_E, 'soldier'),
     // Parking
     rz(ZONE_PARKING, 'scav'),
