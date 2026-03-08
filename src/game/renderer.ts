@@ -2197,6 +2197,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         sniper: Math.PI * 0.25,
         redneck: Math.PI * 0.4 - DEG15,
         dog: Math.PI * 0.6,
+        cultist: Math.PI * 0.4 - DEG15,
+        miner_cult: Math.PI * 0.35 - DEG15,
+        svarta_sol: Math.PI * 0.5 - DEG15,
       }[enemy.type] || Math.PI * 0.45 - DEG15);
       const rearRange = isBodyguard ? 0.4 : ({
         scav: 0.15,
@@ -2206,6 +2209,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         sniper: 0.1,
         redneck: 0.2,
         dog: 0.5,
+        cultist: 0.2,
+        miner_cult: 0.15,
+        svarta_sol: 0.3,
       }[enemy.type] || 0.25);
 
       // Clip vision cone to walls (non-elevated only)
