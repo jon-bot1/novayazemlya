@@ -712,7 +712,7 @@ export const GameCanvas: React.FC = () => {
       updateKeys();
     };
 
-    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const skipMouse = isMobile;
 
     const onMouseDown = (e: MouseEvent) => {
       // Skip synthetic mouse events on touch devices — handled by pointer events
