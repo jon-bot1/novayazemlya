@@ -1,5 +1,7 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
+import { generateFishingVillageMap, createFishingVillagePlayer } from './mapFishingVillage';
+import { MapId } from './maps';
 import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
