@@ -87,11 +87,37 @@ const VILLAGE_BONUS: ObjectiveTemplate[] = [
 ];
 
 // ═══════════════════════════════════════
+// HOSPITAL — Abandoned Soviet hospital objectives
+// ═══════════════════════════════════════
+const HOSPITAL_MAIN: ObjectiveTemplate[] = [
+  { id: 'kill_doctor', name: 'Eliminate Chief Doctor', icon: '💀', description: 'Kill the mutated Chief Doctor in the basement', reward: 550, isMain: true },
+  { id: 'clear_basement', name: 'Purge the Basement', icon: '🔦', description: 'Eliminate all enemies in the hospital basement', reward: 500, isMain: true },
+  { id: 'hack_lab', name: 'Steal Research Data', icon: '💻', description: 'Hack the lab terminal and extract the data', reward: 450, isMain: true },
+  { id: 'collect_all_docs', name: 'Recover Patient Files', icon: '📚', description: 'Collect all classified documents in the hospital', reward: 450, isMain: true },
+  { id: 'wipe_garrison', name: 'Sanitize the Building', icon: '☠️', description: 'Eliminate at least 12 hostiles in the hospital', reward: 500, isMain: true },
+];
+
+const HOSPITAL_BONUS: ObjectiveTemplate[] = [
+  { id: 'ghost_extract', name: 'Ghost Patient', icon: '👻', description: 'Extract without triggering alarms or killing anyone', reward: 600, isMain: false },
+  { id: 'rooftop_escape', name: 'Rooftop Escape', icon: '🚁', description: 'Extract via the rooftop helicopter pad', reward: 350, isMain: false },
+  { id: 'parking_escape', name: 'Emergency Exit', icon: '🚗', description: 'Extract via the parking lot', reward: 250, isMain: false },
+  { id: 'no_kills', name: 'Do No Harm', icon: '🕊️', description: 'Extract without killing anyone', reward: 450, isMain: false },
+  { id: 'speedrun', name: 'Code Blue', icon: '⏱', description: 'Extract within 90 seconds', reward: 400, isMain: false },
+  { id: 'loot_value', name: 'Organ Harvester', icon: '💰', description: 'Extract with at least 600₽ worth of loot', reward: 250, isMain: false },
+  { id: 'headshots', name: 'Brain Surgeon', icon: '🎯', description: 'Get 4 headshot kills', reward: 300, isMain: false },
+  { id: 'knife_kills', name: 'Scalpel', icon: '🗡️', description: 'Kill 3 enemies with the combat knife', reward: 300, isMain: false },
+  { id: 'loot_caches', name: 'Medicine Cabinet', icon: '💊', description: 'Loot 7 containers', reward: 200, isMain: false },
+  { id: 'hack_alarm', name: 'System Override', icon: '🔓', description: 'Hack 2 terminals', reward: 250, isMain: false },
+  { id: 'no_alarm', name: 'Silent Treatment', icon: '🤫', description: 'Extract without triggering alarms', reward: 300, isMain: false },
+];
+
+// ═══════════════════════════════════════
 // MAP → OBJECTIVE REGISTRY
 // ═══════════════════════════════════════
 const MAP_OBJECTIVES: Record<MapId, { main: ObjectiveTemplate[]; bonus: ObjectiveTemplate[] }> = {
   novaya_zemlya: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
   fishing_village: { main: VILLAGE_MAIN, bonus: VILLAGE_BONUS },
+  hospital: { main: HOSPITAL_MAIN, bonus: HOSPITAL_BONUS },
 };
 
 function shuffle<T>(arr: T[]): T[] {
