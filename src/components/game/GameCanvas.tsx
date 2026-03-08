@@ -1074,9 +1074,11 @@ export const GameCanvas: React.FC = () => {
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
       updateKeysRef.current();
+      if (!stateRef.current) return;
       const prevHp = stateRef.current.player.hp;
       const prevKills = stateRef.current.killCount;
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
+      if (!state) return;
       stateRef.current = state;
       inputRef.current.interact = false;
       inputRef.current.shootPressed = false; // clear single-frame flag
