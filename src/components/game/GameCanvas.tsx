@@ -716,7 +716,7 @@ export const GameCanvas: React.FC = () => {
 
     const onMouseDown = (e: MouseEvent) => {
       // Skip synthetic mouse events on touch devices — handled by pointer events
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       unlockSpeech();
       if ((e.target as HTMLElement).closest('button, [role="button"], .pointer-events-auto')) return;
       if (showInventory || showIntel || readingDoc) return;
