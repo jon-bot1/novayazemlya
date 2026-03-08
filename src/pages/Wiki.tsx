@@ -953,7 +953,7 @@ function UpgradesSection() {
 }
 
 export default function Wiki() {
-  const [section, setSection] = useState<WikiSection>('controls');
+  const [section, setSection] = useState<WikiSection>('lore');
   const navigate = useNavigate();
 
   return (
