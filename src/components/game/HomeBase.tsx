@@ -482,32 +482,39 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         )}
 
 
-        {(() => {
-          const selMap = MAPS.find(m => m.id === selectedMap);
-          const isTest3 = playerName.trim().toLowerCase() === 'test3';
-          const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
-          return (
-            <button
-              disabled={mapLocked}
-              className={`w-full px-6 py-4 font-display uppercase tracking-widest rounded-sm transition-colors text-lg mt-2 sticky bottom-0 z-10 border border-border/30 backdrop-blur-sm ${
-                mapLocked
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/80'
-              }`}
-              onClick={() => { if (!mapLocked) onDeploy(selectedMap); }}
-            >
-              {mapLocked ? `🔒 LOCKED — ${selMap!.unlockRequirement! - stash.extractionCount} MORE EXTRACTION${selMap!.unlockRequirement! - stash.extractionCount !== 1 ? 'S' : ''} NEEDED` : `🪖 DEPLOY TO ${selMap?.name?.toUpperCase() || 'MISSION'}`}
-            </button>
-          );
-        })()}
+      </div>
+      </div>
+      </div>
 
-        <p className="text-[10px] font-mono text-muted-foreground/50 text-center">
-          {selectedMap === 'fishing_village'
-            ? 'Infiltrate the abandoned fishing village — find the speedboat and extract'
-            : selectedMap === 'hospital'
-            ? 'Descend into the abandoned hospital — survive the horror and extract'
-            : 'Infiltrate Objekt 47 — Extract with loot to bring it back to your stash'}
-        </p>
+      {/* Fixed deploy footer - always visible */}
+      <div className="shrink-0 border-t border-border bg-card px-3 sm:px-6 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+        <div className="max-w-2xl mx-auto">
+          {(() => {
+            const selMap = MAPS.find(m => m.id === selectedMap);
+            const isTest3 = playerName.trim().toLowerCase() === 'test3';
+            const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+            return (
+              <button
+                disabled={mapLocked}
+                className={`w-full px-6 py-3 font-display uppercase tracking-widest rounded-sm transition-colors text-base ${
+                  mapLocked
+                    ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/80'
+                }`}
+                onClick={() => { if (!mapLocked) onDeploy(selectedMap); }}
+              >
+                {mapLocked ? `🔒 LOCKED — ${selMap!.unlockRequirement! - stash.extractionCount} MORE EXTRACTION${selMap!.unlockRequirement! - stash.extractionCount !== 1 ? 'S' : ''} NEEDED` : `🪖 DEPLOY TO ${selMap?.name?.toUpperCase() || 'MISSION'}`}
+              </button>
+            );
+          })()}
+          <p className="text-[10px] font-mono text-muted-foreground/50 text-center mt-1">
+            {selectedMap === 'fishing_village'
+              ? 'Infiltrate the abandoned fishing village — find the speedboat and extract'
+              : selectedMap === 'hospital'
+              ? 'Descend into the abandoned hospital — survive the horror and extract'
+              : 'Infiltrate Objekt 47 — Extract with loot to bring it back to your stash'}
+          </p>
+        </div>
       </div>
     </div>
   );
