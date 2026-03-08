@@ -347,7 +347,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ LEFT SIDE: Mission items + Objectives ═══════ */}
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+      <div className="absolute left-2 sm:left-3 top-10 sm:top-1/2 sm:-translate-y-1/2 flex flex-col gap-1 sm:gap-1.5 scale-90 sm:scale-100 origin-top-left">
         {/* Mission items — tiny indicators */}
         <div className="flex flex-col gap-0.5">
           <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
