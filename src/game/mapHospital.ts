@@ -274,18 +274,31 @@ export function generateHospitalMap() {
     })(),
   ];
 
-  // Boss bodyguards
-  const bossIdx = enemies.findIndex(e => e.type === 'boss');
-  if (bossIdx >= 0) {
-    const boss = enemies[bossIdx];
-    for (const offset of [-30, 30]) {
-      const bg = makeEnemy(boss.pos.x + offset, boss.pos.y + 15, 'soldier');
+  // Kravtsov's bodyguards (lab guards)
+  const kravtsovIdx = enemies.findIndex(e => (e as any)._bossId === 'kravtsov');
+  if (kravtsovIdx >= 0) {
+    const boss = enemies[kravtsovIdx];
+    for (const offset of [-35, 35]) {
+      const bg = makeEnemy(boss.pos.x + offset, boss.pos.y + 20, 'soldier');
       (bg as any)._bodyguardOf = boss.id;
       (bg as any)._isBodyguard = true;
-      bg.hp = 110; bg.maxHp = 110;
-      bg.alertRange = 250; bg.shootRange = 200;
+      bg.hp = 100; bg.maxHp = 100;
+      bg.alertRange = 220; bg.shootRange = 180;
       bg.radioGroup = boss.radioGroup;
       enemies.push(bg);
+    }
+  }
+
+  // Patient Zero has no bodyguards — but add extra shockers nearby as "failed experiments"
+  const pzIdx = enemies.findIndex(e => (e as any)._bossId === 'patient_zero');
+  if (pzIdx >= 0) {
+    const pz = enemies[pzIdx];
+    for (const offset of [{ x: -60, y: -30 }, { x: 60, y: -30 }, { x: 0, y: 40 }]) {
+      const minion = makeEnemy(pz.pos.x + offset.x, pz.pos.y + offset.y, 'shocker');
+      minion.hp = 50; minion.maxHp = 50;
+      minion.speed = 1.5;
+      minion.radioGroup = pz.radioGroup;
+      enemies.push(minion);
     }
   }
 
