@@ -539,18 +539,18 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
   // Bodyguards and boss get wider AND longer arc
   const isBodyguard = !!(enemy as any)._isBodyguard;
   const arcMap: Record<string, number> = {
-    scav: Math.PI * 0.35 - DEG15,
-    soldier: Math.PI * 0.45 - DEG15,
-    heavy: Math.PI * 0.6 - DEG15,
-    turret: Math.PI * 0.5 - DEG15,
-    boss: Math.PI * 0.7,
-    sniper: Math.PI * 0.15, // extremely narrow, laser-focused
-    shocker: Math.PI * 0.5 - DEG15, // wide arc for melee rush
-    cultist: Math.PI * 0.4 - DEG15,
-    miner_cult: Math.PI * 0.35 - DEG15,
-    svarta_sol: Math.PI * 0.5 - DEG15, // well-trained, wide arc
+    scav: Math.PI * 0.385,
+    soldier: Math.PI * 0.495,
+    heavy: Math.PI * 0.66,
+    turret: Math.PI * 0.55,
+    boss: Math.PI * 0.77,
+    sniper: Math.PI * 0.165,
+    shocker: Math.PI * 0.55,
+    cultist: Math.PI * 0.44,
+    miner_cult: Math.PI * 0.385,
+    svarta_sol: Math.PI * 0.55,
   };
-  let arc = arcMap[enemy.type] || Math.PI * 0.45 - DEG15;
+  let arc = arcMap[enemy.type] || Math.PI * 0.495;
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
   
   return angleDiff <= arc;
