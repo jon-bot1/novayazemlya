@@ -215,54 +215,66 @@ function spawnWeaponDrop(state: GameState, item: Item, sourcePos: Vec2) {
 function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer) {
   const item = lc.items[0];
   if (!item) return;
-  const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
-  const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+
+  const lowerName = (item.name || '').toLowerCase();
+  const isMeleeWeapon = lowerName.includes('knife') || lowerName.includes('baton');
+  const slot: 'melee' | 'secondary' | 'primary' = isMeleeWeapon
+    ? 'melee'
+    : isSecondaryWeapon(item)
+      ? 'secondary'
+      : 'primary';
+
+  const currentInSlot = slot === 'primary'
+    ? state.player.primaryWeapon
+    : slot === 'secondary'
+      ? state.player.sidearm
+      : state.player.meleeWeapon;
+
+  const setSlotWeapon = (wpn: Item) => {
+    if (slot === 'primary') {
+      state.player.primaryWeapon = wpn;
+      if (state.player.activeSlot === 3) state.player.equippedWeapon = wpn;
+    } else if (slot === 'secondary') {
+      state.player.sidearm = wpn;
+      if (state.player.activeSlot === 2) state.player.equippedWeapon = wpn;
+    } else {
+      state.player.meleeWeapon = wpn;
+      if (state.player.activeSlot === 1) state.player.equippedWeapon = wpn;
+    }
+  };
 
   if (!currentInSlot) {
-    // Empty slot — just equip
-    if (slot === 'primary') {
-      state.player.primaryWeapon = item;
-      state.player.activeSlot = 3;
-      state.player.equippedWeapon = item;
-    } else {
-      state.player.sidearm = item;
-      state.player.activeSlot = 2;
-      state.player.equippedWeapon = item;
-    }
+    setSlotWeapon(item);
+    state.player.activeSlot = slot === 'primary' ? 3 : slot === 'secondary' ? 2 : 1;
+    state.player.equippedWeapon = item;
     state.player.inventory.push(item);
-    if (item.ammoType) setWeaponAmmo(state, item);
-    addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
+    if (slot !== 'melee' && item.ammoType) setWeaponAmmo(state, item);
+    addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : slot === 'secondary' ? 2 : 1}]!`, 'info');
     lc.looted = true;
     playPickup();
-  } else if (currentInSlot.name === item.name) {
-    // Same weapon — skip
-    addMessage(state, `Already have ${item.name}`, 'info');
-  } else {
-    // Swap — drop old weapon, equip new one
-    const oldWpn = currentInSlot;
-    // Save current ammo to old weapon before dropping
-    if (state.player.equippedWeapon === oldWpn) {
-      (oldWpn as any)._loadedAmmo = state.player.currentAmmo;
-    }
-    // Remove old from inventory
-    const oldIdx = state.player.inventory.indexOf(oldWpn);
-    if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
-    // Put new weapon in slot
-    if (slot === 'primary') {
-      state.player.primaryWeapon = item;
-      if (state.player.activeSlot === 3) state.player.equippedWeapon = item;
-    } else {
-      state.player.sidearm = item;
-      if (state.player.activeSlot === 2) state.player.equippedWeapon = item;
-    }
-    state.player.inventory.push(item);
-    if (item.ammoType) setWeaponAmmo(state, item);
-    // Replace this drop's contents with the old weapon
-    lc.items = [oldWpn];
-    lc.looted = false; // keep it on the ground with the old weapon
-    addMessage(state, `🔫 Swapped to ${item.name}! (dropped ${oldWpn.name})`, 'info');
-    playPickup();
+    return;
   }
+
+  if (currentInSlot.name === item.name) {
+    addMessage(state, `Already have ${item.name}`, 'info');
+    return;
+  }
+
+  const oldWpn = currentInSlot;
+  if (state.player.equippedWeapon === oldWpn) {
+    (oldWpn as any)._loadedAmmo = state.player.currentAmmo;
+  }
+  const oldIdx = state.player.inventory.indexOf(oldWpn);
+  if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+
+  setSlotWeapon(item);
+  state.player.inventory.push(item);
+  if (slot !== 'melee' && item.ammoType) setWeaponAmmo(state, item);
+
+  lc.items = [oldWpn];
+  lc.looted = false;
+  addMessage(state, `🔫 Swapped to ${item.name}! (dropped ${oldWpn.name})`, 'info');
+  playPickup();
 }
 
 const BASE_INVENTORY_SLOTS = 12;
