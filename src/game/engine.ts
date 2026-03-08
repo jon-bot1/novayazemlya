@@ -1586,20 +1586,38 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     } // end else (has ammo)
   }
 
-  // Recoil bloom decay — recovers when not shooting
+  // Recoil bloom decay — recovers when not shooting (weapon-specific recovery)
   if ((state as any)._recoilBloom > 0) {
-    const decayRate = 0.15 * dt; // recovers ~0.15/s
-    (state as any)._recoilBloom = Math.max(0, (state as any)._recoilBloom - decayRate);
+    const wpnDecay = state.player.equippedWeapon;
+    const dn = (wpnDecay?.name || '').toLowerCase();
+    // Light weapons recover faster, heavy weapons slower
+    const recoveryRate = dn.includes('ksp 58') ? 0.08 : dn.includes('ppsh') || dn.includes('kpist') ? 0.12
+      : dn.includes('mosin') ? 0.25 : dn.includes('makarov') || dn.includes('revolver') ? 0.20
+      : 0.14;
+    (state as any)._recoilBloom = Math.max(0, (state as any)._recoilBloom - recoveryRate * dt);
+  }
+  // Sustained shot counter decay — resets after 0.5s of not shooting
+  if ((state as any)._sustainedShots > 0) {
+    const timeSinceShot = state.time - ((state as any)._lastShotTime || 0);
+    if (timeSinceShot > 0.4) {
+      (state as any)._sustainedShots = Math.max(0, (state as any)._sustainedShots - 8 * dt); // fast recovery when burst stops
+    }
   }
   
   // Store current spread for HUD visualization
   {
     const wpnVis = state.player.equippedWeapon;
-    const isMosinVis = wpnVis?.name?.toLowerCase().includes('mosin');
-    const baseSpreadVis = isMosinVis ? 0.06 : 0.12;
-    const moveSpreadVis = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.15 : effectiveMode === 'walk' ? 0.06 : 0.01) : -0.03;
+    const wpnVisName = (wpnVis?.name || '').toLowerCase();
+    const baseSpreadVis = wpnVisName.includes('mosin') ? 0.03 : wpnVisName.includes('ak 4') ? 0.06
+      : wpnVisName.includes('ksp 58') ? 0.11 : wpnVisName.includes('ppsh') || wpnVisName.includes('kpist') ? 0.12
+      : 0.10;
+    const wpnWt = wpnVis?.weight || 2;
+    const wtFactor = Math.min(1.5, wpnWt / 4);
+    const moveSpreadVis = moveLen > 0.1 ? (effectiveMode === 'sprint' ? 0.18 * wtFactor : effectiveMode === 'walk' ? 0.07 * wtFactor : 0.015) : -0.02;
     const bloomVis = (state as any)._recoilBloom || 0;
-    (state as any)._currentSpread = Math.max(0.02, baseSpreadVis + moveSpreadVis + bloomVis);
+    const sustainVis = (wpnVis?.fireMode === 'auto') ? Math.min(0.12, ((state as any)._sustainedShots || 0) * 0.008) : 0;
+    const coverVis = state.player.inCover ? -0.04 : 0;
+    (state as any)._currentSpread = Math.max(0.02, baseSpreadVis + moveSpreadVis + bloomVis + sustainVis + coverVis);
   }
 
   // Cycle throwable type (V key)
