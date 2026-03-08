@@ -4542,17 +4542,46 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillRect(0, 0, w, h);
     }
     
-    // Fishing village — fog/mist
+    // Fishing village — heavy snowfall + icy mist
     if (mapId === 'fishing_village') {
-      // Drifting fog banks
-      const fogTime = state.time * 0.15;
-      for (let i = 0; i < 4; i++) {
-        const fx = (Math.sin(fogTime + i * 1.7) * 0.5 + 0.5) * w;
-        const fy = (Math.cos(fogTime * 0.7 + i * 2.3) * 0.3 + 0.5) * h;
-        const fr = 150 + Math.sin(fogTime + i) * 50;
+      // Snow particles — heavier than objekt47
+      if (!(state as any)._fishingSnow) {
+        const snow: { x: number; y: number; speed: number; size: number; drift: number }[] = [];
+        for (let i = 0; i < 90; i++) {
+          snow.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            speed: 0.4 + Math.random() * 1.8,
+            size: 1 + Math.random() * 3,
+            drift: (Math.random() - 0.5) * 1.2,
+          });
+        }
+        (state as any)._fishingSnow = snow;
+      }
+      const snow = (state as any)._fishingSnow as { x: number; y: number; speed: number; size: number; drift: number }[];
+      ctx.fillStyle = 'rgba(230, 235, 240, 0.7)';
+      for (const s of snow) {
+        s.y += s.speed;
+        s.x += s.drift + Math.sin(state.time * 0.4 + s.x * 0.008) * 0.5;
+        if (s.y > h) { s.y = -5; s.x = Math.random() * w; }
+        if (s.x > w) s.x = 0;
+        if (s.x < 0) s.x = w;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Cold blue overlay tint
+      ctx.fillStyle = 'rgba(180, 200, 225, 0.03)';
+      ctx.fillRect(0, 0, w, h);
+      // Drifting icy mist banks
+      const fogTime = state.time * 0.1;
+      for (let i = 0; i < 3; i++) {
+        const fx = (Math.sin(fogTime + i * 2.1) * 0.5 + 0.5) * w;
+        const fy = (Math.cos(fogTime * 0.6 + i * 1.8) * 0.3 + 0.6) * h;
+        const fr = 120 + Math.sin(fogTime + i) * 40;
         const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
-        fogGrad.addColorStop(0, 'rgba(180, 190, 170, 0.06)');
-        fogGrad.addColorStop(1, 'rgba(180, 190, 170, 0)');
+        fogGrad.addColorStop(0, 'rgba(200, 215, 230, 0.05)');
+        fogGrad.addColorStop(1, 'rgba(200, 215, 230, 0)');
         ctx.fillStyle = fogGrad;
         ctx.fillRect(fx - fr, fy - fr, fr * 2, fr * 2);
       }
