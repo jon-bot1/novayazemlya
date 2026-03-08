@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          enemies_alive: number
+          hp: number
+          id: string
+          kills: number
+          last_heartbeat: string
+          level: number
+          map_id: string
+          max_hp: number
+          player_name: string
+          position_x: number
+          position_y: number
+          rubles: number
+          status: string
+          time_elapsed: number
+        }
+        Insert: {
+          created_at?: string
+          enemies_alive?: number
+          hp?: number
+          id?: string
+          kills?: number
+          last_heartbeat?: string
+          level?: number
+          map_id?: string
+          max_hp?: number
+          player_name: string
+          position_x?: number
+          position_y?: number
+          rubles?: number
+          status?: string
+          time_elapsed?: number
+        }
+        Update: {
+          created_at?: string
+          enemies_alive?: number
+          hp?: number
+          id?: string
+          kills?: number
+          last_heartbeat?: string
+          level?: number
+          map_id?: string
+          max_hp?: number
+          player_name?: string
+          position_x?: number
+          position_y?: number
+          rubles?: number
+          status?: string
+          time_elapsed?: number
+        }
+        Relationships: []
+      }
       highscores: {
         Row: {
           achievements: string | null
