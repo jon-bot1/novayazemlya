@@ -1884,7 +1884,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
-            addMessage(state, '💾 OSIPOVITJ\'S USB DRIVE! Get to the extraction point!', 'intel');
+            addMessage(state, '💾 BOSS USB DRIVE! Get to the extraction point!', 'intel');
           }
         }
         spawnParticles(state, enemy.pos.x, enemy.pos.y, '#bbaa44', 6);
