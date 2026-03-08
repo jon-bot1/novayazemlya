@@ -948,6 +948,23 @@ export const GameCanvas: React.FC = () => {
             totalDogsOnMap: state.totalDogsOnMap,
           },
           pendingWeapon: state.pendingWeapon,
+          nearInteractable: (() => {
+            const p = state.player.pos;
+            // Check loot containers, gates, alarm panels, weapon drops, document pickups
+            for (const lc of state.lootContainers) {
+              if (!lc.looted && Math.hypot(lc.pos.x - p.x, lc.pos.y - p.y) < 70) return true;
+            }
+            for (const w of state.walls) {
+              if (w.color === '#aa4444' && Math.hypot((w.x + w.w/2) - p.x, (w.y + w.h/2) - p.y) < 80) return true;
+            }
+            for (const ap of state.alarmPanels) {
+              if (!ap.hacked && Math.hypot(ap.pos.x - p.x, ap.pos.y - p.y) < 60) return true;
+            }
+            for (const dp of state.documentPickups) {
+              if (!dp.collected && Math.hypot(dp.pos.x - p.x, dp.pos.y - p.y) < 50) return true;
+            }
+            return false;
+          })(),
         });
 
         // Live objective tracking
