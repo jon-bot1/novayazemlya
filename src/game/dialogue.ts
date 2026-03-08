@@ -61,6 +61,9 @@ export const BERSERK_LINES: Record<string, string[]> = {
   heavy:   ['НИЧЕГО НЕ ЧУВСТВУЮ!!', 'ЯРОСТЬ!!', 'РАЗРУШУ ТЕБЯ!!'],
   redneck: ['THAT\'S IT!!', 'I\'LL KILL YA!!', 'RAAAH!!'],
   shocker: ['МАКСИМАЛЬНЫЙ РАЗРЯД!!', 'ПЕРЕГРУЗКА!!'],
+  cultist: ['ВЕЩЕСТВО ДАЁТ СИЛУ!!', 'КРОВЬ ДЛЯ БОРЕАЛИСА!!', 'Я ВИЖУ СВЕТ!!'],
+  miner_cult: ['BERGET GER MIG KRAFT!!', 'MALMEN BRINNER I MINA ÅDROR!!', 'DU DÖR HÄR NERE!!'],
+  svarta_sol: ['FULL ASSAULT.', 'NO QUARTER.', 'THULE DEMANDS BLOOD.'],
 };
 
 // === FLEEING ===
