@@ -1319,10 +1319,10 @@ export const GameCanvas: React.FC = () => {
 
         {/* Mode toggle — top-left corner */}
         <button
-          className="absolute top-2 left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
         >
-          {isMobile ? '🖥️' : '📱'}
+          {isMobile ? 'Desktop' : 'Mobil'}
         </button>
 
         {/* Inventory Panel */}
