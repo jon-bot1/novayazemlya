@@ -2472,6 +2472,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const doc = LORE_DOCUMENTS.find(d => d.id === dp.loreDocId);
         if (doc) {
           doc.found = true;
+          // Persist found documents to localStorage
+          try {
+            const saved = JSON.parse(localStorage.getItem('nz_found_docs') || '[]') as string[];
+            if (!saved.includes(doc.id)) {
+              saved.push(doc.id);
+              localStorage.setItem('nz_found_docs', JSON.stringify(saved));
+            }
+          } catch {}
+
           state.documentsRead.push(doc.id);
           if (doc.hasCode && doc.code && !state.codesFound.includes(doc.code)) {
             state.codesFound.push(doc.code);
