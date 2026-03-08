@@ -2675,8 +2675,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         inExtraction = true;
         state.extractionProgress += dt;
         if (state.extractionProgress >= ep.timer) {
-          // Perform level transition
-          performMineElevatorTransition(state, (ep as any)._elevatorDirection);
+          // Start blackout fade, then perform transition mid-fade
+          (state as any)._elevatorFadeDir = (ep as any)._elevatorDirection;
+          (state as any)._elevatorFade = 2.0; // total fade duration (1s black-in, 1s black-out)
+          (state as any)._elevatorSwapped = false;
           state.extractionProgress = 0;
         }
         continue; // skip normal extraction logic for elevator
