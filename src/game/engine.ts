@@ -595,7 +595,28 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.camera.y += Math.cos(state.time * 9) * 3;
   }
 
-  if (input.moveTarget) {
+  // Kravtsov fear effect: forced flee away from source, can't shoot
+  if (state.fearTimer > 0) {
+    state.fearTimer = Math.max(0, state.fearTimer - dt);
+    input.shooting = false;
+    input.shootPressed = false;
+    input.moveTarget = null;
+    if (state.fearSourcePos) {
+      const fdx = state.player.pos.x - state.fearSourcePos.x;
+      const fdy = state.player.pos.y - state.fearSourcePos.y;
+      const fd = Math.sqrt(fdx * fdx + fdy * fdy) || 1;
+      moveX = fdx / fd;
+      moveY = fdy / fd;
+    }
+    // Camera shake — panic effect
+    state.camera.x += (Math.random() - 0.5) * 4;
+    state.camera.y += (Math.random() - 0.5) * 4;
+    if (state.fearTimer <= 0) {
+      state.fearSourcePos = null;
+      addMessage(state, '😤 Fear subsides — you regain control!', 'info');
+    }
+  }
+
     const dx = input.moveTarget.x - state.player.pos.x;
     const dy = input.moveTarget.y - state.player.pos.y;
     const d = Math.sqrt(dx * dx + dy * dy);
