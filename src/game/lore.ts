@@ -1720,6 +1720,209 @@ We were never its masters. We were never even its equals. We are bacteria on the
     hasCode: false,
     found: false,
   },
+  {
+    id: 'doc_kven_songs',
+    title: 'Kven Folk Songs — Collected Fragments',
+    author: 'Dr. Aino Keskitalo, University of Tromsø',
+    date: '09.11.1978',
+    classification: 'SECRET',
+    content: `KVEN FOLK SONGS — COLLECTED FRAGMENTS
+Translated and annotated by Dr. Aino Keskitalo
+Ethnomusicological Field Study, Finnmark 1976–1978
+Classification upgraded to SECRET by NATO NORTHERN COMMAND, 1979
+
+FOREWORD:
+The following songs were collected from elderly Kven-speaking communities along the northern Norwegian and Finnish coastline. The Kvens — descendants of Finnish-speaking settlers who migrated to northern Scandinavia centuries ago — have preserved an oral tradition that predates written records in the region. Several of these songs contain references to a force, a presence, that the singers describe with remarkable consistency across isolated communities separated by hundreds of kilometers.
+
+I initially catalogued these as standard folk songs about nature spirits. I was wrong.
+
+The Kven word they use is "voima" — force, power. But in these songs, voima is not something you possess. It is something that possesses you. And then leaves.
+
+————————————————————
+
+SONG I: "VOIMAN LAULU" (The Song of the Force)
+Collected from Martta Niemi, age 89, Børselv, 1976
+
+  Vuoren alla voima nukkuu,
+  vuoren alla voima kuulee.
+  Se tuli ennen tulta,
+  se tuli ennen jäätä,
+  se tuli ennen meitä kaikkia.
+
+  Älä laula vuorelle, lapsi.
+  Vuori laulaa takaisin.
+  Ja silloin voima herää
+  ja kattoo sinun silmilläs.
+
+(Under the mountain the force sleeps,
+under the mountain the force listens.
+It came before fire,
+it came before ice,
+it came before all of us.
+
+Do not sing to the mountain, child.
+The mountain sings back.
+And then the force awakens
+and looks through your eyes.)
+
+[ANNOTATION: Mrs. Niemi refused to sing the final verse. She said "the last part belongs to the mountain." She died three weeks after this recording.]
+
+————————————————————
+
+SONG II: "HYLKÄÄMISEN VIRSI" (Hymn of Abandonment)
+Collected from Juho Alatalo, age 94, Skibotn, 1977
+
+  Voima tuli minuun yöllä,
+  voima asui minun luissani.
+  Näin kaikki mitä vuori näkee:
+  jään alla virtaavat suonet,
+  maan alla sykkivät sydämet,
+  pohjoiseen kääntyvät kasvot.
+
+  Sitten voima lähti.
+  Se otti mukaansa värit.
+  Se otti mukaansa lämmön.
+  Se jätti minut tyhjäksi
+  kuin kivi josta malmi on louhittu.
+
+  Minä olen kuori.
+  Voima on muualla.
+  Mutta öisin — öisin tunnen sen vielä,
+  syvällä, syvällä alla,
+  odottamassa.
+
+(The force came to me at night,
+the force lived in my bones.
+I saw everything the mountain sees:
+the veins flowing beneath the ice,
+the hearts pulsing beneath the earth,
+the faces turning north.
+
+Then the force left.
+It took the colors with it.
+It took the warmth with it.
+It left me empty
+like a stone from which the ore has been mined.
+
+I am a shell.
+The force is elsewhere.
+But at night — at night I still feel it,
+deep, deep below,
+waiting.)
+
+[ANNOTATION: Mr. Alatalo's body temperature was measured at 34.1°C during this recording — clinical hypothermia — yet he showed no signs of distress. His pupils were dilated. He was facing north.]
+
+————————————————————
+
+SONG III: "KAIVOSMIEHEN VAROITUS" (The Miner's Warning)
+Collected from anonymous singer, Kåfjord, 1977
+
+  Älä kaiva liian syvälle, veli,
+  sillä syvällä asuu se joka ei nuku.
+  Se antaa sinulle voimaa —
+  kätes eivät väsy,
+  silmäs näkevät pimeässä,
+  sydämesi lyö hitaasti kuin vuoren sydän.
+
+  Mutta hinta, veli.
+  Hinta on sinä itse.
+
+  Kun voima on käyttänyt sinut loppuun,
+  se heittää sinut pois
+  kuin tyhjän lampun,
+  ja sinä vaellat maan päällä
+  mutta et ole enää täällä.
+
+  Olen nähnyt heidät. Kaivoksissa.
+  He kävelevät. He työskentelevät.
+  Mutta heidän silmänsä ovat mustaa kiveä.
+
+(Do not dig too deep, brother,
+for deep below lives that which does not sleep.
+It gives you strength —
+your hands do not tire,
+your eyes see in the dark,
+your heart beats slowly like the heart of the mountain.
+
+But the price, brother.
+The price is yourself.
+
+When the force has used you up,
+it throws you away
+like an empty lantern,
+and you wander the earth
+but you are no longer here.
+
+I have seen them. In the mines.
+They walk. They work.
+But their eyes are black stone.)
+
+[ANNOTATION: The singer refused to give his name. He was missing three fingers on his left hand. The stumps were black — not from frostbite. The tissue appeared to beite.Ite.ITE. Crystallized.]
+
+————————————————————
+
+SONG IV: "REVONTULTEN RUKOUS" (Prayer to the Northern Lights)
+Collected from Hilja Pääkkönen, age 81, Tana, 1978
+
+  Revontulet, revontulet,
+  ettekö te ole voiman hengitystä?
+  Kun taivas palaa vihreänä,
+  vuori puhuu.
+  Kun taivas palaa punaisena,
+  vuori huutaa.
+
+  Me olemme pieniä.
+  Me olemme hetkellisiä.
+  Voima on ikuinen.
+
+  Älkää herättäkö sitä.
+  Älkää ruokkiko sitä.
+  Älkää räjäyttäkö maata
+  sillä maa muistaa jokaisen haavan
+  ja voima — voima kostaa.
+
+(Northern lights, northern lights,
+are you not the breath of the force?
+When the sky burns green,
+the mountain speaks.
+When the sky burns red,
+the mountain screams.
+
+We are small.
+We are momentary.
+The force is eternal.
+
+Do not wake it.
+Do not feed it.
+Do not blast the earth,
+for the earth remembers every wound
+and the force — the force takes revenge.)
+
+[ANNOTATION: This song was recorded in 1978 — AFTER the Tsar Bomba test but the singer claims to have learned it from her grandmother in the 1910s. The final three lines about "blasting the earth" appear in versions collected from communities that had no contact with each other and no knowledge of nuclear testing. The song predates the bomb by at least forty years.]
+
+————————————————————
+
+PERSONAL NOTE — Dr. Keskitalo, December 1978:
+
+I submitted this collection to the University as an ethnomusicological study. Within a week, NATO officers visited my office. They took my original tapes. They classified this document. They told me to stop.
+
+I will not stop. These songs are warnings. They have been warnings for centuries.
+
+The Kvens knew. Long before our instruments, long before our bombs, they knew. The force is real. It lives beneath us. And according to every singer I spoke with, it has been growing more restless since the 1950s.
+
+The oldest song — the Miner's Warning — describes workers whose eyes turned to black stone. I have read the classified NATO reports on SZ-0 exposure symptoms. The correlation is exact.
+
+These are not folk songs. They are field reports from a thousand years of contact with something we are only now beginning to understand.
+
+And the one thing every song agrees on: once the force has touched you, you are never entirely your own again.
+
+— A. Keskitalo
+
+[STAMP: CLASSIFIED — NATO NORTHERN COMMAND — DO NOT DISTRIBUTE]
+[HANDWRITTEN: "Cross-reference with PRECAMBRIAN SENTINEL. The timelines match. — CONTROL"]`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
