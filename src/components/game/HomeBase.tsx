@@ -70,6 +70,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
   const dailyMissions = getDailyMissions();
+  const repTier = getRepTier(stash.extractionCount);
+  const nextRep = getNextRepTier(stash.extractionCount);
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
