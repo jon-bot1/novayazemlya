@@ -917,13 +917,13 @@ P.S. The confiscated Stålhandske tape is in my safe. What he recorded before hi
     classification: 'TOP SECRET',
     content: `PERSONAL — NOT FOR OPERATIONAL FILE
 
-Day one of Aurora Borealis. STYRESMAN handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
+Day one of Operation Grindvakt. Styrelsen handed me the mission dossier in a parking garage in Oslo. Fitting — my whole life has been lived in shadows.
 
 NORDVAKT recruited me after East Berlin. They said I was dead — officially. Good. The dead have no loyalties, no attachments, no countries. That's what they wanted. An operator with nothing to lose.
 
-STYRESMAN says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it connects to the Swedish mine at Norrberget. The same geological vein. Thousands of kilometers of it, running beneath our feet.
+Styrelsen says the Soviets have been extracting a substance from the Arctic bedrock — something that amplifies nuclear reactions. Something they found during the tests on Novaya Zemlya. And it connects to the Swedish mine at Norrberget. The same geological vein. Thousands of kilometers of it, running beneath our feet.
 
-Four sites. Four raids. STYRESMAN says secure the intelligence, deny Substance Zero to all parties. But I've read between the lines. NORDVAKT doesn't want to destroy it. They want to CONTROL it. A Nordic deterrent. Something that would make Scandinavia untouchable.
+Four sites. Four raids. Styrelsen says secure the intelligence, deny Substance Zero to all parties. But I've read between the lines. NORDVAKT doesn't want to destroy it. They want to CONTROL it. A Nordic deterrent. Something that would make Scandinavia untouchable.
 
 I'm not sure that's possible. The reports on what happened to the miners at Norrberget — the absorption, the crystallization — this isn't a weapon you control. This is something that controls you.
 
@@ -1962,44 +1962,65 @@ export const GAME_ENDINGS: GameEnding[] = [
     id: 'ending_nordvakt',
     faction: 'NORDVAKT',
     icon: '🛡️',
-    label: 'Report to NORDVAKT',
-    description: 'Submit all intelligence to STYRESMAN. Let the Nordic nations control the power.',
+    label: 'Report to Styrelsen',
+    description: 'Submit all intelligence to Styrelsen. Let the Nordic nations control the power.',
     narrative: `NORDVAKT INTERNAL — CLASSIFICATION: FJÄLL
 
-STYRESMAN has received the complete intelligence package from Operatör 8. The delivery was made at the designated safe house in Kiruna. No NATO or Soviet assets were aware of the transfer.
+Styrelsen has received the complete intelligence package from Operatör 8. The delivery was made at the designated safe house in Kiruna, in a room beneath the old iron ore railway. Three members of Styrelsen were present. Their faces were not visible. They never are.
 
-Assessment: Substance Zero represents the most significant strategic asset discovered since nuclear fission. Control of the vein network — which runs primarily beneath Nordic territory — gives NORDVAKT leverage beyond anything previously imagined.
+The intelligence confirms what NORDVAKT has suspected since 1957: Substance Zero is not a Soviet asset. It is not an American asset. It is a NORDIC asset. The primary vein runs beneath Swedish, Norwegian, and Finnish territory. The Soviets have been stealing from our bedrock. NATO has been monitoring our mountains without permission.
 
 DIRECTIVE: Project MIDVINTER is hereby activated.
 
-Phase 1: Secure all SZ-0 access points on Nordic soil (Norrberget, coastal sites).
-Phase 2: Establish controlled extraction under NORDVAKT supervision.
-Phase 3: Develop SZ-0 enhanced deterrent capability — independent of NATO nuclear umbrella.
+Phase 1: Secure all SZ-0 access points on Nordic soil — Norrberget, the coastal sites, the Kola approach corridors. Establish NORDVAKT military presence under cover of "environmental monitoring."
 
-Operatör 8 has been promoted to STYRESMAN's personal staff. His field experience with the substance is invaluable. He has expressed... reservations. These have been noted and overruled.
+Phase 2: Controlled extraction. Small quantities. Rotating crews of no more than 14 days' exposure. The Kravtsov countermeasure formula — recovered by Operatör 8 — will be administered to all extraction personnel.
 
-The Nordic nations will no longer depend on foreign powers for their defense. The mountain beneath our feet will guarantee our sovereignty for a thousand years.
+Phase 3: Development of an independent Nordic deterrent. Three SZ-0 enhanced devices. Yield: sufficient to destroy any invasion fleet in the North Atlantic, Baltic, or Arctic corridors. No NATO involvement. No American oversight. Scandinavia will defend itself.
 
-— STYRESMAN
+Phase 4: [CLASSIFIED — STYRELSEN EYES ONLY]
 
-[HANDWRITTEN: "He doesn't understand what he's asking me to help build. None of them do. — Op. 8"]`,
-    epilogue: `NORDVAKT begins controlled extraction at Norrberget six weeks later. The operation is meticulous — small quantities, rotating crews, strict exposure protocols based on Kravtsov's research.
+Operatör 8 has been promoted to field commander of MIDVINTER operations. He has expressed reservations about Phase 3. These have been noted.
 
-For eighteen months, it works. The Nordic deterrent takes shape in a bunker beneath the Lofoten Islands. Three SZ-0 enhanced devices, each small enough to fit in a briefcase, each powerful enough to vaporize a fleet.
+ASSESSMENT: The geopolitical implications are staggering. For the first time since the Viking Age, the Nordic nations will possess a military capability that neither Washington nor Moscow can match or counter. The substance beneath our mountains — OUR mountains — will guarantee sovereignty for a millennium.
+
+The Americans will object. The Soviets will threaten. Let them. They cannot invade what they cannot survive.
+
+Operatör 8's final field report contained an observation that Styrelsen has chosen to classify separately: "The substance responds to intention. It grows faster when people plan to use it. As if it wants to be used."
+
+This observation has been filed. It does not alter the directive.
+
+— Styrelsen
+
+[HANDWRITTEN, MARGIN: "They're not listening. The mountain is not a weapon. It's a trap. And we're building ourselves into it. — Op. 8"]`,
+    epilogue: `NORDVAKT begins controlled extraction at Norrberget six weeks later. The operation is meticulous — small quantities, rotating crews, strict exposure protocols based on Kravtsov's research. The Kravtsov formula works. The crews do not go insane. They do not absorb.
+
+For eighteen months, it works. The Nordic deterrent takes shape in a bunker beneath the Lofoten Islands — hollowed from the same bedrock that contains the vein. Three SZ-0 enhanced devices, each small enough to fit in a briefcase, each powerful enough to vaporize a carrier group.
+
+Sweden, Norway, and Finland sign a secret defense pact. Denmark is not informed. Iceland is not informed. They are considered security risks.
 
 Then the mountain responds.
 
-Not violently. Not suddenly. The vein network simply... shifts. New tendrils grow toward the Lofoten facility. The aurora over northern Norway turns a shade of blue that does not exist in nature. NORDVAKT personnel at the facility begin hearing the same voice — speaking Old Norse.
+Not violently. Not suddenly. The vein network simply... adjusts. New tendrils grow toward the Lofoten facility — not attacking, but CONNECTING. The aurora over northern Norway turns a shade of blue that does not exist in nature. NORDVAKT personnel at the facility begin hearing the same voice — speaking Old Norse. Not threatening. Welcoming.
 
-Operatör 8 files his final report to STYRESMAN: "We are not controlling it. It is studying us. Learning our language. Our intentions. It is letting us build these weapons because it wants us to USE them. Every detonation feeds the network. We are insects building a fire for something that eats fire."
+The Kravtsov formula stops working. Not because the substance overpowers it — but because the personnel stop taking it. They say they don't need it anymore. They say the mountain is friendly. They say it has been waiting for someone to COOPERATE instead of extract.
 
-STYRESMAN classifies the report and continues the program.
+Operatör 8 files his final report to Styrelsen:
 
-The mountain is patient. It has waited four billion years.
-It can wait a little longer.
+"We are not controlling it. It is studying us. Learning our language. Our intentions. Our fears. It is letting us build these weapons because it WANTS us to use them. Every detonation feeds the network. Every explosion makes it stronger. We are insects building a fire for something that eats fire.
 
-NORDVAKT ÖVERVAKAR. BERGET VÄNTAR.
-(NORDVAKT watches. The mountain waits.)
+Styrelsen believes we are building a deterrent. We are building an OFFERING.
+
+I recommend immediate cessation of all —"
+
+The report ends mid-sentence. Operatör 8's security clearance was revoked the same day. His current location is classified.
+
+Beneath the Lofoten Islands, the three devices sit in their bunker. The walls of the bunker are now laced with fine black crystal, growing in patterns that resemble circuitry. The devices are armed. They have been armed since Tuesday.
+
+No one gave the arming order.
+
+NORDVAKT ÖVERVAKAR. BERGET VÄNTAR. BERGET ÄR TÅLMODIGT.
+(NORDVAKT watches. The mountain waits. The mountain is patient.)
 
 — END —`
   },
@@ -2008,28 +2029,55 @@ NORDVAKT ÖVERVAKAR. BERGET VÄNTAR.
     faction: 'NATO',
     icon: '🇺🇸',
     label: 'Submit to NATO',
-    description: 'Betray NORDVAKT. Hand over all intelligence to NATO Task Force AURORA.',
-    narrative: `OPERATION AURORA BOREALIS — FINAL REPORT
-CLASSIFICATION: ULTRAVIOLET — EYES ONLY
+    description: 'Betray NORDVAKT. Hand over all intelligence to NATO. They will know what to do. Won\'t they?',
+    narrative: `OPERATION AURORA BOREALIS — FINAL INTELLIGENCE ASSESSMENT
+CLASSIFICATION: ULTRAVIOLET — EYES ONLY — PENTAGON SPECIAL PROGRAMS
 
-The operative known as Operatör 8 has made contact with CONTROL at a dead drop in Tromsø, bypassing his NORDVAKT handlers. He has delivered the complete intelligence package — including NORDVAKT's own classified assessments of the substance.
+An unaffiliated operative — designation "Operatör 8," formerly of the Nordic clandestine organization NORDVAKT — has delivered a comprehensive intelligence package to CONTROL at the Tromsø dead drop. The package includes:
 
-NATO Strategic Command has been briefed on both the Substance Zero threat AND the existence of NORDVAKT — a clandestine Nordic stay-behind organization that has been operating without NATO's knowledge or authorization.
+— Complete geological survey of the SZ-0 vein network
+— Soviet extraction and refinement protocols
+— Dr. Kravtsov's countermeasure formula
+— NORDVAKT's own classified strategic assessments
+— Evidence of three additional clandestine organizations with SZ-0 interests
 
-NATO has authorized PROJECT CONTAINMENT — a three-phase operation to seal all known SZ-0 access points using deep-bore concrete injection. The Norrberget mine will be filled. Objekt 47 will be demolished. NORDVAKT will be dismantled.
+CONTROL's assessment: this is the most significant intelligence windfall since ULTRA.
 
-Operatör 8 has been offered asylum and a new identity. His NORDVAKT colleagues will be arrested. He has accepted these terms without hesitation.
+IMMEDIATE ACTIONS TAKEN:
 
-"NORDVAKT wanted to build a weapon," he told CONTROL. "You want to bury a weapon. Burying is better than building."`,
-    epilogue: `Six months later, seismographs across Scandinavia detect a pulse — a single, massive vibration originating from 11 kilometers below Norrberget. The concrete seals crack. The aurora turns red for three consecutive nights.
+1. NORDVAKT has been designated a hostile intelligence organization. All known NORDVAKT operatives are to be detained. The Nordic governments have been informed that a "rogue military faction" was operating on their soil — the existence of NORDVAKT as an authorized stay-behind network has been suppressed. Sweden, Norway, and Finland have been told this was a Soviet deception operation.
 
-CONTROL sends a single encrypted message to Operatör 8's safehouse: "It's growing through the concrete."
+2. The Soviet SZ-0 program will be countered not by destruction but by APPROPRIATION. Pentagon Special Programs has established PROJECT DEEP WINTER — a covert extraction operation using American military assets under NATO cover. The Norrberget site will be "sealed" publicly while extraction continues through a new access tunnel drilled from the Norwegian side.
 
-STYRESMAN, now imprisoned in a NATO black site, sends a message through channels that should not exist: "I told you. You cannot bury it. It IS the ground."
+3. Dr. Kravtsov's research will be continued at [REDACTED] — a facility in [REDACTED] that does not appear in any congressional budget. The ethical constraints that limited Kravtsov's work will not apply. American test subjects have been sourced from [REDACTED].
 
-Operatör 8 books a flight to Tromsø. He doesn't know who he's working for anymore. But the mountain knows where he is.
+4. Operatör 8 has been offered asylum and a new identity in the United States. He accepted. He will be debriefed extensively. When the debriefing is complete, he will be relocated to [REDACTED] and monitored indefinitely. He will not be told about PROJECT DEEP WINTER. He believes the substance is being destroyed. This belief is useful.
 
-THE MOUNTAIN REMEMBERS.
+NOTE FROM CONTROL TO PENTAGON:
+"Operatör 8 is idealistic. He believes he prevented the substance from being weaponized by betraying NORDVAKT. He does not understand that he merely changed which flag flies over the extraction site. Recommend we maintain his illusions. A disillusioned asset is a dangerous asset."
+
+— CONTROL
+
+[STAMP: APPROVED — J.C.S. — EYES ONLY — NO CONGRESSIONAL OVERSIGHT]`,
+    epilogue: `Six months later, the American extraction operation at Norrberget is producing 200 grams of refined Substance Zero per week. The yield is triple what the Soviets achieved. American drilling technology is superior. American ambition is unlimited.
+
+The Pentagon authorizes the first SZ-0 enhanced weapon test at a site in the Nevada desert. The device is the size of a lunch box. The yield is equivalent to 14 megatons. The test is not recorded in any official log.
+
+In his monitored apartment in Arlington, Virginia, Operatör 8 watches the news. There is no news about Norrberget. There is no news about Substance Zero. The world continues as if nothing happened.
+
+But he feels it. At night. A vibration beneath the floor of his apartment — six stories up, nowhere near bedrock. A hum at a frequency below human hearing. His compass — the one he took from the field — sits on his nightstand. The needle has started moving again. It used to point north. Now it points southwest. Toward Nevada.
+
+He contacts CONTROL. CONTROL does not answer. He contacts the CIA. He is told his security clearance has been revoked. He contacts a journalist. The journalist disappears.
+
+Three months later, seismographs detect a new vein forming beneath the Nevada test site. Growing at 40 meters per day. Connecting to the continental bedrock. Reaching toward the existing network.
+
+The substance is not contained. It is SPREADING. Every detonation teaches it. Every extraction feeds it. And now it has learned from the Americans what it learned from the Soviets: humans will never stop. Humans will always dig deeper. Humans will always build bigger bombs.
+
+In Arlington, Operatör 8's compass needle spins once and stops. It points straight down.
+
+He understands now. He didn't save anything. He just gave the mountain a new address.
+
+THE MOUNTAIN HAS NO BORDERS.
 
 — END —`
   },
@@ -2038,29 +2086,64 @@ THE MOUNTAIN REMEMBERS.
     faction: 'Soviet Union',
     icon: '☭',
     label: 'Submit to the Soviets',
-    description: 'Betray everyone. Deliver the intelligence to GRU. Let Moscow control the power.',
-    narrative: `СОВЕРШЕННО СЕКРЕТНО — GRU NORTHERN COMMAND
+    description: 'Betray everyone. Deliver the intelligence to GRU. Let Moscow have the power.',
+    narrative: `СОВЕРШЕННО СЕКРЕТНО — ГЕНЕРАЛЬНЫЙ ШТАБ
+(TOP SECRET — GENERAL STAFF)
 
-The asset designated Operatör 8 — formerly of the Nordic clandestine organization NORDVAKT — has made contact through the Murmansk channel. He has delivered complete intelligence on Substance Zero, including NATO assessments, NORDVAKT's own research, and — critically — the classified data on weaponization potential.
+The foreign operative designated "Operatör 8" — formerly of the Nordic clandestine organization NORDVAKT — has made contact through the Murmansk channel. He has delivered the following:
 
-General Secretary has been briefed. Decision: FULL EXPLOITATION.
+— Complete NATO intelligence on Substance Zero
+— NORDVAKT strategic assessments and operational plans
+— Dr. Kravtsov's countermeasure formula (which we did not possess — Kravtsov destroyed his notes before capture)
+— Geological data confirming the vein extends further than our surveys indicated — beneath all of Scandinavia, the Baltic seabed, and into Central Europe
 
-Project ЧЁРНОЕ СОЛНЦЕ (Black Sun) is hereby activated. Mining operations at Norrberget will resume under military supervision. Objekt 47 will be expanded. A new processing facility will be constructed at [REDACTED].
+General Secretary has been briefed. Politburo decision: FULL EXPLOITATION. ALL RESOURCES.
 
-The asset has been offered Soviet citizenship and the rank of Colonel. He has accepted. His stated motivation: "NATO would bury it. NORDVAKT would hoard it. At least you'll use it openly. Someone should."
+Project ЧЁРНОЕ СОЛНЦЕ (Black Sun) is hereby activated with unlimited budget authority.
 
-First SZ-0 enhanced warhead test scheduled for [REDACTED]. Yield projections exceed theoretical maximum by a factor of 340.`,
-    epilogue: `The first SZ-0 enhanced warhead is detonated underground on Novaya Zemlya. The yield is not 340 times greater. It is 340,000 times greater.
+Phase 1: Norrberget Mine will be seized under pretext of a "joint geological research agreement" with Sweden. Swedish resistance will be suppressed through diplomatic pressure. If diplomacy fails, SPETSNAZ units are authorized.
 
-The blast does not dissipate. It travels through the vein network like electricity through a wire. Every SZ-0 node on the planet pulses simultaneously. The aurora covers the entire northern hemisphere for six hours.
+Phase 2: Objekt 47 production will increase tenfold. Three new refinery facilities will be constructed along the vein — at Murmansk, Archangelsk, and Norilsk.
 
-In Moscow, Operatör 8 watches the classified footage. The underground detonation chamber is intact — but the walls are no longer rock. They are black crystal. And the crystal is growing. Toward Moscow. Toward everywhere.
+Phase 3: SZ-0 enhanced warheads will be deployed to all strategic rocket forces. Every SS-18 in the Soviet arsenal will be retrofitted. Yield improvement: estimated factor of 340.
+
+Phase 4: First strike capability. With SZ-0 enhanced weapons, the Soviet Union achieves absolute strategic superiority. NATO's nuclear umbrella becomes irrelevant. The balance of power shifts permanently.
+
+The operative Operatör 8 has been offered Soviet citizenship, the rank of Colonel, and a dacha on the Black Sea. He has accepted. His stated motivation: "NATO would hide it. NORDVAKT would hoard it. At least you're honest about what you want — power. I'm tired of people who lie about their intentions."
+
+KGB assessment of Operatör 8: "Useful but unstable. Recommend monitoring. He switches allegiance too easily. Today he betrays NORDVAKT for us. Tomorrow he may betray us for someone else. Or for the mountain."
+
+First SZ-0 enhanced warhead test scheduled for Novaya Zemlya, Site C. Yield projection: 50 megatons equivalent.
+
+— General Petrov, Strategic Rocket Forces
+
+[HANDWRITTEN: "50 megatons. The Tsar Bomba was 50 megatons. That was without Substance Zero. What are we about to do? — P."]`,
+    epilogue: `The first SZ-0 enhanced warhead is detonated underground on Novaya Zemlya, Test Site C, at 08:00 Moscow time on a Tuesday in March.
+
+The projected yield was 50 megatons. The actual yield cannot be measured. The seismograph at the Kola monitoring station registers the blast and then melts. The seismograph in Helsinki registers it. The seismograph in London registers it. The seismograph in Washington registers it.
+
+The blast does not dissipate. It travels through the vein network like electricity through a wire — like blood through an artery. Every SZ-0 node on the planet pulses simultaneously. The aurora covers the entire northern hemisphere for six hours. In Stockholm, people stand in the streets and watch the sky burn green and red and colors that have no name.
+
+Underground, at the detonation site, something unexpected: the blast chamber is intact. Not destroyed — INTACT. The walls are no longer rock. They are black crystal, perfectly smooth, humming at a frequency that makes teeth ache and eyes water. The crystal is warm. 37 degrees Celsius. Body temperature.
+
+And it is growing. At the moment of detonation, the vein network expanded by 12% — in every direction simultaneously. New tendrils reaching toward Moscow, toward Leningrad, toward every population center on the Eurasian continent.
+
+In his dacha on the Black Sea — 3,000 kilometers from the nearest known SZ-0 deposit — Operatör 8 wakes at 08:01 Moscow time. His compass needle is spinning. He walks to the garden. The soil is warm. Warmer than it should be in March. He kneels and presses his palm to the earth.
+
+He feels it. The pulse. The heartbeat. Here. Three thousand kilometers from Norrberget. Three thousand kilometers from Novaya Zemlya.
+
+The mountain is everywhere now.
 
 "What have we fed it?" he whispers.
 
-No one answers. But deep below, something does.
+The earth hums. Not an answer. A digestion.
 
-THE MOUNTAIN IS AWAKE.
+In Moscow, the General Secretary is informed that the vein network has been detected beneath the Kremlin. Growing upward. Slowly. Patiently. At exactly the rate of continental drift. It will reach the surface in approximately 200 years.
+
+Unless they detonate again. In which case: much sooner.
+
+ГОРА НЕ СПИТ.
+(THE MOUNTAIN DOES NOT SLEEP.)
 
 — END —`
   },
@@ -2070,35 +2153,77 @@ THE MOUNTAIN IS AWAKE.
     icon: '🔮',
     label: 'Give to the Cultists',
     description: 'Deliver the documents to Stålhandske-kulten. Let the mountain\'s children decide.',
-    narrative: `No official record exists of this event.
+    narrative: `No official record exists of this event. The following has been reconstructed from Operatör 8's abandoned field journal, found at the entrance to Norrberget Mine on March 15th, and from seismographic data.
 
-Operatör 8 descended into Norrberget Mine on March 14th, carrying the complete intelligence archive. He passed the sealed drift at level 7. He passed the chamber where Stålhandske's compass was found. He kept going.
+Operatör 8 descended into Norrberget Mine at approximately 22:00 on March 14th, carrying the complete intelligence archive — NATO assessments, Soviet research, NORDVAKT operational plans, Kravtsov's formula, geological surveys, the Kven song transcriptions. Everything.
 
-At approximately 1,100 meters below the surface, he encountered them. The Stålhandske-kulten — the cult that had formed around the disappearances. Men and women with amber light in their eyes, speaking a language that was old when Finnish was young. Some of them had been miners. Some had been researchers. Some had been NORDVAKT operatives sent before him — operatives who never reported back.
+He passed the sealed drift at level 7 — the concrete barrier had been broken from the inside, recently, the edges still warm. He passed the chamber where Stålhandske's compass was found in 1957. The walls here were no longer rock. They were black crystal, veined with amber light, pulsing slowly like a resting heartbeat.
 
-Their leader — or the closest thing they had to one — stood at the center of the chamber. A woman whose skin had the texture of polished stone. Her eyes were veined with gold. She spoke Swedish, but her voice resonated at frequencies that made his teeth ache.
+He kept going down.
 
-"Du har med dig deras hemligheter," she said. You bring their secrets.
+At approximately 1,100 meters below the surface — far deeper than any official geological survey has mapped — the tunnel opened into a cathedral. Not carved. Grown. The ceiling was 40 meters high, supported by crystal columns that hummed in harmony. The air was warm and smelled of copper and winter rain.
 
-Operatör 8 gave her the documents. All of them. Every secret NATO, the Soviets, and NORDVAKT had gathered about the substance. She pressed them against the chamber wall. The black crystal absorbed them. Every page. Every word.
+They were waiting for him.
+
+The Stålhandske-kulten. Perhaps sixty people. Some recognizable as former miners — men who disappeared in the 1950s and 60s, who should be dead, who were not dead. Some were researchers from Objekt 47 who had walked away from the facility and into the earth. Some were NORDVAKT operatives — agents sent before Operatör 8, agents who never reported back.
+
+Their skin had the texture of polished stone. Their eyes were veined with amber light — like the crystal walls around them. They breathed slowly. Once every thirty seconds. Their hearts beat in unison — he could hear it, a single pulse that synchronized with the mountain itself.
+
+A woman stepped forward. She might have been 30 or 300. Her Swedish was archaic, formal, but clear.
+
+"Vi har väntat på dig, Åtta," she said. We have been waiting for you, Eight.
+
+"Vem är ni?" he asked. Who are you?
+
+"Vi är de som valde. Berget erbjöd och vi accepterade. Inte som slavar. Som delar. Som celler i en kropp."
+
+(We are those who chose. The mountain offered and we accepted. Not as slaves. As parts. As cells in a body.)
+
+He gave them the documents. All of them. Every secret that NATO, the Soviets, and NORDVAKT had gathered. The woman pressed them against the crystal wall. The pages dissolved — not destroyed but ABSORBED, the information flowing into the network like data into a circuit.
 
 "Nu vet Berget vad de vet," she said. Now the Mountain knows what they know.
 
-"Och vad händer nu?" he asked. And what happens now?
+"Och vad gör Berget med den kunskapen?" What does the Mountain do with that knowledge?
 
-"Nu väntar vi. Som vi alltid har väntat."
+She smiled. It was not a human smile. It was too slow and too wide and too patient.
 
-Now we wait. As we have always waited.`,
-    epilogue: `Operatör 8 was never seen again. NORDVAKT listed him as compromised. NATO listed him as KIA. The Soviets listed him as a defector. None were correct.
+"Berget gör inget. Berget väntar. Det har väntat i fyra miljarder år. Det kan vänta fyra miljarder till. Frågan är inte vad Berget gör. Frågan är vad DU gör. Stannar du? Eller går du tillbaka till deras värld — till bomber och lögner och rädsla?"
 
-Deep inside Norrberget, in a chamber that does not appear on any geological survey, Operatör 8 sits among the taken. The amber light has begun to grow behind his own eyes. He can feel the vein network — thousands of kilometers of living crystal, pulsing beneath Scandinavia, beneath the Arctic, beneath the sea.
+(The Mountain does nothing. The Mountain waits. It has waited four billion years. It can wait four billion more. The question is not what the Mountain does. The question is what YOU do. Do you stay? Or do you go back to their world — to bombs and lies and fear?)
 
-He can hear the Kven songs now. Not as music, but as memory. The mountain's memory. Four billion years of patient waiting.
+The journal ends here. The last entry is a single line, written in a hand that was already changing — the letters pressed too deep into the paper, as if the pen had become part of the stone:
 
-Sometimes, on winter nights, hikers near Norrberget report seeing figures at the mine entrance. Standing still. Facing north. Eyes like molten gold.
+"Jag stannar."
 
-HAN TILLHÖR BERGET NU.
-(He belongs to the mountain now.)
+(I stay.)`,
+    epilogue: `NORDVAKT sent three recovery teams into Norrberget over the following months. None returned. Radio contact was lost at approximately 800 meters depth in each case. The last transmission from the third team, led by Operatör 3, contained the following:
+
+"Styrelsen, vi har hittat dem. De... de sjunger. Alla sjunger samma sång. Den kvänska sången om voima. De ser ut att... de ser lyckliga ut. De bad oss stanna. De sa att Berget har plats. De sa —"
+
+[TRANSMISSION LOST]
+
+(Styrelsen, we found them. They... they're singing. All of them singing the same song. The Kven song about voima. They look... they look happy. They asked us to stay. They said the Mountain has room. They said —)
+
+The Swedish government sealed Norrberget Mine with 200 tons of reinforced concrete. NORDVAKT monitored the seal with seismographic equipment.
+
+Within six months, the concrete had been absorbed. Not broken — absorbed. Incorporated into the crystal network. The mine entrance stood open, as if it had never been sealed.
+
+Hikers near Norrberget report lights in the mine at night. Amber and gold, pulsing slowly like breathing. Sometimes they hear singing — in Finnish, in Old Norse, in languages that have no names. The singing is beautiful.
+
+The population of the surrounding villages has decreased by 7% per year since the sealing. Not through death or emigration. Through disappearance. People walk into the forest one evening and do not return. Their belongings are found neatly arranged in their homes. Their beds are made. Their doors are unlocked.
+
+They are not taken. They choose.
+
+Deep inside the mountain, in a chamber that grows larger every year, Operatör 8 sits among the chosen. His skin is stone. His eyes are gold. He can feel the vein network — tens of thousands of kilometers of living crystal, connecting every piece of the ancient world.
+
+He can hear every song ever sung to the mountain. Every prayer. Every warning. Four billion years of memory, and he is part of it now.
+
+He does not miss the surface. He does not miss the sun. He does not miss being human.
+
+The mountain is not a prison. The mountain is a HOME.
+
+HAN TILLHÖR BERGET NU. BERGET TILLHÖR ALLA.
+(He belongs to the mountain now. The mountain belongs to everyone.)
 
 — END —`
   },
@@ -2108,51 +2233,90 @@ HAN TILLHÖR BERGET NU.
     icon: '🔥',
     label: 'Burn Everything',
     description: 'Destroy all the documents. Let the truth die. Some knowledge is too dangerous.',
-    narrative: `Operatör 8's final transmission — recipient unknown:
+    narrative: `Operatör 8's final transmission — sent on all frequencies, unencrypted, in the clear:
 
-"This is Operatör 8. Final report. Disregard all previous intelligence. I am destroying the archive.
+"This is Operatör 8. Former MUST. Former NORDVAKT. Former human being, if I'm being honest about what this mission has done to me.
 
-I have read every document. I have listened to every tape. I have spoken to the miners, the cultists, the scientists, and the soldiers. I have stood in the chamber at 1,100 meters and felt the mountain's heartbeat through my boots.
+I am broadcasting on all frequencies because this message is for everyone. NATO. GRU. NORDVAKT. The cults. Whoever else is listening. I don't care about classification anymore. I don't care about security. I don't care about any of you.
 
-And I have reached a conclusion that none of you — NATO, GRU, NORDVAKT, the cults — are prepared to hear:
+I have in my possession the complete intelligence archive on Substance Zero. Every document. Every tape. Every photograph. Every geological survey. Every research note. Kravtsov's formula. The Soviet extraction protocols. NORDVAKT's strategic assessments. NATO's containment plans. All of it.
 
-The substance is not a weapon. It is not a resource. It is not a god. It is an IMMUNE SYSTEM. This planet's immune system. And we — humanity — are what it was designed to fight.
+I am burning it. Right now. The fire is already lit.
 
-Every bomb we've dropped, every mine we've dug, every gram of SZ-0 we've extracted — we've been triggering an immune response. The vein network isn't growing toward us. It's growing AROUND us. Encircling us. Preparing.
+I will tell you why.
 
-If NATO gets these documents, they'll try to contain it. They'll fail.
-If the Soviets get them, they'll try to weaponize it. They'll wake it fully.
-If NORDVAKT gets them, they'll try to harness it. They'll become it.
-If the cults get them, they'll accelerate whatever transformation they're undergoing.
+I have spent eleven months inside these four sites. I have killed 247 men. I have read every document twice. I have listened to Stålhandske's final recording fourteen times. I have stood in the deep chamber at Norrberget and felt the mountain's heartbeat through the soles of my boots. I have looked into the eyes of the cultists and seen something that was not madness. I have looked into Osipovitj's eyes and seen something that was.
 
-The only correct move is to destroy the information and WALK AWAY.
+And I have reached a conclusion that none of you are capable of hearing:
 
-I'm burning everything. Every page. Every tape. Every photograph. The fire is already lit.
+The substance is not a weapon. It is not a resource. It is not a god. It is not an enemy.
 
-Operatör 8, signing off. There is no Operatör 8."
+It is an IMMUNE SYSTEM. This planet's immune system. Four billion years old. Older than oxygen. Older than multicellular life. It was here before us and it will be here after us.
 
-[TRANSMISSION ENDS]
-[NO FURTHER CONTACT]`,
-    epilogue: `The documents burn. The tapes melt. The photographs curl and blacken and are gone.
+And we — humanity — are what it was designed to respond to.
 
-Operatör 8 watches the fire from the shore of the Barents Sea. The aurora is green tonight — peaceful. Normal. The mountain is silent.
+Not because we are evil. Not because we are a virus. But because we DIG. We DRILL. We DETONATE. We reach into the earth and take what we find and we never, ever stop. The substance is not attacking us. It is RESPONDING to us. The way a body responds to a splinter. The way an ocean responds to a storm.
 
-For three months, nothing happens. The vein network's growth rate slows by 12%. Then 20%. Then 40%. Without human interference, without bombs and drills and extraction, the substance returns to its ancient rhythm. Sleeping. Dreaming. Waiting — but not urgently.
+Every gram of SZ-0 we extract, we teach it that we are a threat.
+Every bomb we detonate, we teach it that we are dangerous.
+Every person it absorbs, it learns more about what we are.
 
-Operatör 8 disappears into northern Finland under a false name. He works as a carpenter in a small village. He never speaks of the mountain. He never looks north.
+NATO wants to contain it. You CANNOT contain a continent.
+The Soviets want to weaponize it. You CANNOT weaponize something that feeds on weapons.
+NORDVAKT wants to harness it. You CANNOT harness something that has been thinking since before the dinosaurs.
+The cults want to join it. And maybe they're right — but I am not ready to stop being human.
 
-But sometimes, late at night, he hears the Kven song:
+The only winning move is to STOP PLAYING.
 
-  "Älä laula vuorelle, lapsi.
-   Vuori laulaa takaisin."
+I am burning the intelligence. Every page. Every tape. Every formula. Without Kravtsov's notes, no one can safely extract. Without the geological surveys, no one can find new access points. Without the operational data, everyone starts from zero.
 
-  Do not sing to the mountain, child.
-  The mountain sings back.
+It won't stop you forever. I know that. Humans are curious. Humans are greedy. Humans dig.
 
-He closes his eyes. He goes to sleep.
-The mountain waits. Patient. Eternal. Undisturbed.
+But it will buy time. And maybe — maybe — the mountain will go back to sleep.
 
-Perhaps that is enough.
+Operatör 8, signing off. There is no Operatör 8. There never was.
+
+And if Styrelsen is listening — I want you to know: I would have followed your orders. I would have brought you the substance. I would have helped you build your deterrent.
+
+But I stood in the chamber at Norrberget. And I heard the Kven song. And I understood.
+
+Some things are not ours to take.
+
+End transmission."
+
+[ALL FREQUENCIES — UNENCRYPTED — INTERCEPTS LOGGED BY: NSA, GCHQ, GRU SIGINT, NORDVAKT SIGNALS, MOSSAD STATION OSLO]
+[NO FURTHER CONTACT WITH OPERATIVE]`,
+    epilogue: `The documents burn on the shore of the Barents Sea. The tapes melt. The photographs curl and blacken. Kravtsov's formula — the only known countermeasure against SZ-0 exposure — turns to ash. The geological surveys that took thirty years to compile are gone in thirty minutes.
+
+Operatör 8 watches the fire until it dies. The aurora is green tonight — the normal green. Peaceful. The mountain is quiet. For the first time in eleven months, he cannot feel the hum beneath his feet.
+
+Three months later, the vein network's growth rate slows by 12%. Then 20%. Then 40%. Without human interference — without drills and bombs and extraction — the substance returns to its ancient rhythm. Not dead. Not dormant. Just... resting. The way a forest rests in winter.
+
+NATO sends teams to Norrberget. The mine entrance has collapsed — naturally, it appears. No crystal. No anomaly. Just rock.
+
+The Soviets return to Objekt 47. The underground chambers are flooded with groundwater. The Substance Zero deposits are gone — not extracted, not destroyed. Reabsorbed. As if the mountain took back what was taken.
+
+NORDVAKT sends Operatör 3 to find Operatör 8. Operatör 3 searches for four months. He finds nothing. Operatör 8 has ceased to exist. Not absorbed. Not dead. Simply gone. A man who erased himself as thoroughly as he erased the archive.
+
+Somewhere in northern Finland — or northern Norway, or the deep forests of Swedish Lapland — a man with no name works as a carpenter in a small village. He builds furniture from local pine. He does not speak of the past. He does not look at maps. He does not own a compass.
+
+But sometimes, on winter nights, when the aurora appears above the trees, he pauses. He listens. And very faintly — so faintly he might be imagining it — he hears a song. An old song. A Kven song. Carried on a frequency below human hearing, transmitted through bedrock, through the bones of the earth:
+
+"Älä laula vuorelle, lapsi.
+ Vuori laulaa takaisin."
+
+Do not sing to the mountain, child.
+The mountain sings back.
+
+He does not sing. He closes his eyes. He breathes. The mountain waits beneath him — patient, ancient, undisturbed.
+
+And perhaps — just perhaps — that is enough. Perhaps the only victory against something four billion years old is to simply let it be. To stop digging. To stop detonating. To stop taking.
+
+To be still.
+
+The mountain rests. The man rests. The snow falls. The aurora fades.
+
+Silence.
 
 — END —`
   }

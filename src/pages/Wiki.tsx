@@ -137,7 +137,7 @@ function LoreSection() {
           <Stat label="Former Unit" value="MUST" />
           <Stat label="Organization" value="NORDVAKT" />
           <Stat label="Status" value="KIA (officially)" />
-          <Stat label="Handler" value="STYRESMAN" />
+          <Stat label="Handler" value="Styrelsen" />
         </div>
         <P>Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted by NORDVAKT and given a new identity. Operates as a ghost: no country, no name, no backup.</P>
         <P>NORDVAKT is a secret Nordic stay-behind defense organization, operating independently of NATO and the Warsaw Pact. Operatör 8 does not know the full scope of NORDVAKT's interest in Substance Zero.</P>
@@ -221,9 +221,9 @@ function FactionsSection() {
 
       <div className="border border-border rounded p-3 mb-3 bg-card/50">
         <div className="text-sm font-display text-foreground mb-1">🛡️ NORDVAKT — Nordic Stay-Behind Defense Organization</div>
-        <P>A secret Nordic defense organization established during the early Cold War by the Scandinavian intelligence services. Operates independently of NATO and the Warsaw Pact. Operatör 8 is their field operative for Aurora Borealis. STYRESMAN is the operations chief.</P>
+        <P>A secret Nordic defense organization established during the early Cold War by the Scandinavian intelligence services. Operates independently of NATO and the Warsaw Pact. Operatör 8 is their field operative for Operation Grindvakt. Styrelsen is the operations council.</P>
         <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
-          <div><span className="text-accent">Units:</span> Operatör 8 (player), STYRESMAN (handler)</div>
+          <div><span className="text-accent">Units:</span> Operatör 8 (player), Styrelsen (handler)</div>
           <div><span className="text-accent">Agenda:</span> Secure SZ-0 intelligence. Establish Nordic defense independence. Deny the substance to NATO and Moscow alike.</div>
         </div>
       </div>
@@ -406,7 +406,7 @@ function WorldSection() {
       <div className="space-y-2 mb-3">
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: NORDVAKT'S TRUE AGENDA</strong><br/>
-          STYRESMAN's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
+          Styrelsen's briefings emphasize "securing" SZ-0, not destroying it. NORDVAKT may intend to weaponize the substance as a Nordic deterrent — independent of NATO's nuclear umbrella. Is Operatör 8 a saboteur, or a procurement agent?
         </div>
         <div className="border-l-2 border-accent/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-accent">THEORY: CONTROL IS AGENT FALKE</strong><br/>
@@ -422,7 +422,7 @@ function WorldSection() {
         </div>
         <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
           <strong className="text-destructive">THEORY: THE OPERATION IS A SACRIFICE</strong><br/>
-          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if STYRESMAN knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
+          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if Styrelsen knows the demolition team won't survive? What if Operatör 8 was chosen because he's expendable — a ghost who's already "dead"?
         </div>
       </div>
 

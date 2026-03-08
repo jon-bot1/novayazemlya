@@ -83,12 +83,12 @@ export const STORY_ARC = {
     formerUnit: 'MUST (Militära Underrättelse- och Säkerhetstjänsten)',
     organization: 'NORDVAKT — Nordic Stay-Behind Defense Organization',
     status: 'Officially KIA — East Berlin, 1984',
-    handler: 'STYRESMAN (NORDVAKT Operations Chief)',
+    handler: 'Styrelsen (NORDVAKT Operations Council)',
     background: `Born 1958. Recruited from MUST after deep-cover operations across the Eastern Bloc. Distinguished operative — fluent in Russian, Finnish, and Norwegian. Trained in Arctic survival, demolitions, and close-quarters combat.
 
 Declared killed in action during a failed exfiltration in East Berlin — in reality, extracted by NORDVAKT and given a new identity. Now operates as a ghost: no country, no name, no backup.
 
-NORDVAKT selected Operatör 8 for Operation Aurora Borealis based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
+NORDVAKT selected Operatör 8 for Operation Grindvakt based on his operational record and psychological profile: high resilience, low attachment, comfortable with moral ambiguity. He does not know the full scope of NORDVAKT's interest in Substance Zero. He is not meant to.`,
   },
 
   missionBriefing: `OPERATION AURORA BOREALIS — FINAL BRIEFING
@@ -112,7 +112,7 @@ WARNING: Extended exposure to Substance Zero causes paranoia, magnetic sensitivi
 
 HANDLER NOTE: Operatör 8 — this operation exists outside all official channels. NATO does not know we are here. Moscow does not know we are here. If you are captured, NORDVAKT will deny your existence. Complete the mission. Secure the intelligence. Trust no one — not even CONTROL.
 
-— STYRESMAN`,
+— Styrelsen`,
 
   siteIntel: {
     objekt47: {
@@ -218,7 +218,7 @@ PRIMARY: Reach the deep chamber. Plant demolition charges.
 SECONDARY: Recover Stålhandske's survey equipment and field notes.
 TERTIARY: Destroy Gruvrå — or seal it permanently.
 
-HANDLER NOTE: Operatör 8 — Norrberget is NORDVAKT's highest priority. The substance beneath this mountain may be the key to Nordic defense independence for the next century. Gather everything you can. STYRESMAN out.`,
+HANDLER NOTE: Operatör 8 — Norrberget is NORDVAKT's highest priority. The substance beneath this mountain may be the key to Nordic defense independence for the next century. Gather everything you can. Styrelsen out.`,
   };
   return briefings[mapId] || briefings.objekt47;
 }

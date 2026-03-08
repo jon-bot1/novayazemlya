@@ -203,7 +203,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 border border-primary/30 rounded">PLAYER</span>
             </div>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed">
-              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization. Answers to STYRESMAN.
+              Former Swedish military intelligence (<span className="text-accent">MUST</span>). Officially declared KIA during a failed operation in East Berlin, 1984. Recruited by <span className="text-accent">NORDVAKT</span> — a secret Nordic stay-behind defense organization. Answers to Styrelsen.
             </p>
             <p className="text-[11px] font-mono text-foreground/70 leading-relaxed mt-2">
               <span className="text-warning">Mission:</span> Secure Substance Zero intelligence for NORDVAKT. Deny SZ-0 to NATO, Moscow, and all other parties. Trust no one.
