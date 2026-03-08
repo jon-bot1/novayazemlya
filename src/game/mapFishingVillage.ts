@@ -477,7 +477,7 @@ export function generateFishingVillageMap() {
   const windows: WindowDef[] = [
     ...westCabins.map(c => ({ x: c.x + cabinW - T, y: c.y + 10, w: T, h: 20, direction: 'east' as const })),
     ...eastCabins.map(c => ({ x: c.x, y: c.y + 10, w: T, h: 20, direction: 'west' as const })),
-    { x: 500, y: 380, w: T, h: 30, direction: 'west' as const },
+    { x: 460, y: 380, w: T, h: 30, direction: 'west' as const },
   ];
 
   return { walls, enemies, lootContainers, documentPickups, extractionPoints, alarmPanels, props, lights, windows, terrainZones, mapWidth: MAP_W, mapHeight: MAP_H };
