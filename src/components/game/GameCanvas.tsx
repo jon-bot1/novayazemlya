@@ -87,7 +87,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
     return () => window.removeEventListener('keydown', handler);
   }, [handleStart]);
 
-  const [tab, setTab] = React.useState<'briefing' | 'characters' | 'updates' | 'highscores'>('briefing');
+  const [tab, setTab] = React.useState<'briefing' | 'story' | 'characters' | 'updates' | 'highscores'>('briefing');
 
   return (
   <div className="absolute inset-0 flex items-start justify-center bg-background z-50 overflow-auto py-2">
