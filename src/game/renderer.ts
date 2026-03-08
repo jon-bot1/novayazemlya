@@ -1,7 +1,7 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier } from './graphics';
+import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier, getDarknessFactor, getTimeOfDay, getFlashlightParams, getHitMarkers, clearOldHitMarkers } from './graphics';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
@@ -3166,8 +3166,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 7, aBarY + aBarH);
     }
 
-    // HP bar
-    if (enemy.hp < enemy.maxHp) {
+    // HP bar — bosses get a big cinematic bar drawn later in screen-space
+    if (enemy.hp < enemy.maxHp && enemy.type !== 'boss') {
       const barW = 28;
       const ratio = enemy.hp / enemy.maxHp;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -4186,6 +4186,111 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.textAlign = 'left';
   }
 
+  // ── BOSS HEALTH BAR — cinematic screen-space bar at bottom ──
+  {
+    const bosses = state.enemies.filter(e => e.type === 'boss' && e.state !== 'dead');
+    for (let bi = 0; bi < bosses.length; bi++) {
+      const boss = bosses[bi];
+      const bossId = (boss as any)._bossId;
+      const bossTitle = bossId === 'kravtsov' ? 'ДОКТОР КРАВЦОВ' : bossId === 'uzbek' ? 'УЗБЕК — SUBJECT 7' : bossId === 'nachalnik' ? 'НАЧАЛЬНИК' : 'COMMANDANT OSIPOVITJ';
+      const ratio = boss.hp / boss.maxHp;
+      const phase = boss.bossPhase || 0;
+      const barW = Math.min(400, w * 0.55);
+      const barH = 10;
+      const barX = w / 2 - barW / 2;
+      const barY = h - 65 - bi * 50;
+
+      // Background
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(barX - 8, barY - 22, barW + 16, barH + 32, 4);
+      ctx.fill();
+      ctx.strokeStyle = phase === 2 ? 'rgba(255, 40, 30, 0.8)' : phase === 1 ? 'rgba(255, 160, 30, 0.7)' : 'rgba(200, 200, 200, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Boss name
+      ctx.fillStyle = phase === 2 ? '#ff4433' : phase === 1 ? '#ffaa33' : '#ddddcc';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`💀 ${bossTitle}`, barX, barY - 8);
+
+      // Phase indicator
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(200, 200, 200, 0.6)';
+      ctx.font = '9px monospace';
+      const phaseLabels = ['PHASE I', 'PHASE II — ENRAGED', 'PHASE III — DESPERATE'];
+      ctx.fillText(phaseLabels[phase] || '', barX + barW, barY - 8);
+
+      // HP bar background
+      ctx.fillStyle = 'rgba(40, 40, 40, 0.9)';
+      ctx.fillRect(barX, barY, barW, barH);
+
+      // HP fill — color based on phase
+      const barColor = phase === 2 ? '#cc2222' : phase === 1 ? '#cc8822' : '#888866';
+      ctx.fillStyle = barColor;
+      ctx.fillRect(barX, barY, barW * ratio, barH);
+
+      // Phase thresholds — thin lines at 60% and 30%
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(barX + barW * 0.6, barY); ctx.lineTo(barX + barW * 0.6, barY + barH);
+      ctx.moveTo(barX + barW * 0.3, barY); ctx.lineTo(barX + barW * 0.3, barY + barH);
+      ctx.stroke();
+
+      // HP text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.ceil(boss.hp)} / ${boss.maxHp}`, barX + barW / 2, barY + barH - 1);
+
+      // Border
+      ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX, barY, barW, barH);
+
+      // Pulsing glow at low HP
+      if (ratio < 0.3) {
+        const glow = 0.1 + Math.sin(state.time * 8) * 0.08;
+        ctx.fillStyle = `rgba(255, 30, 20, ${glow})`;
+        ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+      }
+    }
+  }
+
+  // ── HIT MARKERS — crosshair X feedback ──
+  {
+    clearOldHitMarkers(state.time);
+    const markers = getHitMarkers();
+    for (const hm of markers) {
+      const age = state.time - hm.time;
+      const alpha = Math.max(0, 1 - age / 0.8);
+      const size = hm.isKill ? 14 : hm.isHeadshot ? 12 : 8;
+      const expandSize = size + age * 15;
+      const color = hm.isKill ? `rgba(255, 50, 30, ${alpha})` : hm.isHeadshot ? `rgba(255, 200, 50, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+      
+      // Draw X at screen center (crosshair hit marker)
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = hm.isKill ? 3 : 2;
+      ctx.beginPath();
+      ctx.moveTo(-expandSize, -expandSize); ctx.lineTo(expandSize, expandSize);
+      ctx.moveTo(expandSize, -expandSize); ctx.lineTo(-expandSize, expandSize);
+      ctx.stroke();
+      
+      // Damage number floating up
+      if (hm.damage > 0) {
+        ctx.fillStyle = color;
+        ctx.font = `bold ${hm.isHeadshot ? 14 : 11}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`${hm.isHeadshot ? '🎯 ' : ''}${Math.round(hm.damage)}`, 0, -expandSize - 8 - age * 30);
+      }
+      ctx.restore();
+    }
+  }
+
   // Map-specific atmosphere overlay
   {
     const pal = getMapPalette(state);
@@ -4208,6 +4313,72 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillRect(w - 60, 0, 60, 60);
       ctx.fillRect(0, h - 60, 60, 60);
       ctx.fillRect(w - 60, h - 60, 60, 60);
+    }
+  }
+
+  // ── DAY/NIGHT DARKNESS OVERLAY ──
+  {
+    const darkness = getDarknessFactor(state.time);
+    if (darkness > 0.01) {
+      // Global darkness overlay
+      ctx.fillStyle = `rgba(5, 8, 20, ${darkness})`;
+      ctx.fillRect(0, 0, w, h);
+      
+      // Flashlight cone — player illumination piercing the dark
+      if (darkness > 0.15) {
+        const fl = getFlashlightParams();
+        const playerScreenX = state.player.pos.x - state.camera.x + w * 0.5;
+        const playerScreenY = state.player.pos.y - state.camera.y + h * 0.5;
+        // Cutout: draw flashlight as a lighter area
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        const coneGrad = ctx.createRadialGradient(playerScreenX, playerScreenY, 20, playerScreenX, playerScreenY, fl.range);
+        coneGrad.addColorStop(0, `rgba(0, 0, 0, ${Math.min(0.9, darkness * 1.3)})`);
+        coneGrad.addColorStop(0.7, `rgba(0, 0, 0, ${Math.min(0.5, darkness * 0.8)})`);
+        coneGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = coneGrad;
+        // Draw cone in player's facing direction
+        ctx.beginPath();
+        const coneStart = state.player.angle - fl.coneAngle;
+        const coneEnd = state.player.angle + fl.coneAngle;
+        ctx.moveTo(playerScreenX, playerScreenY);
+        ctx.arc(playerScreenX, playerScreenY, fl.range, coneStart, coneEnd);
+        ctx.closePath();
+        ctx.fill();
+        // Small ambient glow around player
+        const ambGrad = ctx.createRadialGradient(playerScreenX, playerScreenY, 0, playerScreenX, playerScreenY, 60);
+        ambGrad.addColorStop(0, `rgba(0, 0, 0, ${Math.min(0.6, darkness * 0.9)})`);
+        ambGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = ambGrad;
+        ctx.beginPath();
+        ctx.arc(playerScreenX, playerScreenY, 60, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // Warm flashlight glow overlay
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        const warmGrad = ctx.createRadialGradient(playerScreenX, playerScreenY, 10, playerScreenX, playerScreenY, fl.range * 0.8);
+        warmGrad.addColorStop(0, `rgba(255, 240, 200, ${darkness * 0.06})`);
+        warmGrad.addColorStop(1, 'rgba(255, 240, 200, 0)');
+        ctx.fillStyle = warmGrad;
+        ctx.beginPath();
+        ctx.moveTo(playerScreenX, playerScreenY);
+        ctx.arc(playerScreenX, playerScreenY, fl.range * 0.8, coneStart, coneEnd);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Time-of-day indicator (subtle text)
+    const tod = getTimeOfDay(state.time);
+    if (tod !== 'day') {
+      const todLabel = tod === 'dawn' ? '🌅 DAWN' : tod === 'dusk' ? '🌆 DUSK' : '🌙 NIGHT';
+      ctx.fillStyle = `rgba(200, 200, 200, 0.3)`;
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(todLabel, 10, h - 10);
     }
   }
 
