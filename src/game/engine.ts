@@ -79,6 +79,32 @@ function calcHeadshotChance(state: GameState, b: Bullet, enemy: Enemy): number {
   return Math.max(0, Math.min(0.55, chance));
 }
 
+// Helper: handle weapon pickup with slot system
+function handleWeaponPickup(state: GameState, item: Item, sourcePos: Vec2) {
+  const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
+  const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
+  const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
+  if (currentInSlot && currentInSlot.name === item.name) {
+    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+  } else if (!currentInSlot) {
+    if (slot === 'primary') {
+      state.player.primaryWeapon = item;
+      state.player.activeSlot = 3;
+      state.player.equippedWeapon = item;
+    } else {
+      state.player.sidearm = item;
+      state.player.activeSlot = 2;
+      state.player.equippedWeapon = item;
+    }
+    if (item.ammoType) setWeaponAmmo(state, item);
+    addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
+  } else {
+    if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
+    (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...sourcePos }, time: state.time };
+    addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
+  }
+}
+
 const BASE_INVENTORY_SLOTS = 12;
 
 // Centralized magazine size lookup
@@ -221,7 +247,7 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
   let flankers = 0, suppressors = 0;
   for (const ally of state.enemies) {
     if (ally === enemy || ally.state === 'dead') continue;
-    if (ally.radioGroup !== enemy.radioGroup && dist(ally.pos, enemy.pos) > 400) continue;
+    if (ally.radioGroup !== enemy.radioGroup && distSq(ally.pos, enemy.pos) > 160000) continue; // 400²
     if (ally.tacticalRole === 'flanker') flankers++;
     if (ally.tacticalRole === 'suppressor') suppressors++;
   }
@@ -265,14 +291,14 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
 function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   if (!deadGuard.elevated) return;
   const platformPos = { ...deadGuard.pos };
-  let bestDist = 500; // max range to rush
+  let bestDistSq = 250000; // 500²
   let bestAlly: Enemy | null = null;
   for (const ally of state.enemies) {
     if (ally === deadGuard || ally.state === 'dead' || ally.elevated) continue;
     if (ally.type === 'turret' || ally.type === 'boss') continue;
-    const d = dist(ally.pos, platformPos);
-    if (d < bestDist) {
-      bestDist = d;
+    const dSq = distSq(ally.pos, platformPos);
+    if (dSq < bestDistSq) {
+      bestDistSq = dSq;
       bestAlly = ally;
     }
   }
@@ -1450,8 +1476,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret' || enemy.type === 'boss') continue;
         if (enemy.elevated) continue; // platform enemies can't flee
         if ((enemy as any)._fleeingTNT) continue;
-        const dToTNT = dist(tnt.pos, enemy.pos);
-        if (dToTNT < 200) {
+        const dToTNTSq = distSq(tnt.pos, enemy.pos);
+        if (dToTNTSq < 40000) { // 200²
           (enemy as any)._fleeingTNT = true;
           // Find cover away from TNT
           const awayAngle = Math.atan2(enemy.pos.y - tnt.pos.y, enemy.pos.x - tnt.pos.x);
@@ -1639,33 +1665,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           }
           // Weapon pickup with slot system & confirmation
           if (item.category === 'weapon' && item.damage) {
-            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
-            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-
-            // Skip if player already has the same weapon equipped in that slot
-            if (currentInSlot && currentInSlot.name === item.name) {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-            } else if (!currentInSlot) {
-              // Empty slot — auto-equip
-            if (slot === 'primary') {
-                state.player.primaryWeapon = item;
-                state.player.activeSlot = 3;
-                state.player.equippedWeapon = item;
-              } else {
-                state.player.sidearm = item;
-                state.player.activeSlot = 2;
-                state.player.equippedWeapon = item;
-              }
-              if (item.ammoType) setWeaponAmmo(state, item);
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
-            } else {
-              // Slot occupied — show message instead of popup, player can press E again to swap
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              // Store nearby weapon info for E-to-swap
-              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...lc.pos }, time: state.time };
-              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
-            }
+            handleWeaponPickup(state, item, lc.pos);
           }
         }
         spawnParticles(state, lc.pos.x, lc.pos.y, '#bbaa44', 6);
@@ -1719,29 +1719,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             addMessage(state, `🛡️ +${item.damage} armor!`, 'info');
           }
           if (item.category === 'weapon' && item.damage) {
-            const slot = isSecondaryWeapon(item) ? 'secondary' : 'primary';
-            const currentInSlot = slot === 'primary' ? state.player.primaryWeapon : state.player.sidearm;
-            const invIdx = state.player.inventory.findIndex(invItem => invItem === item);
-
-            if (currentInSlot && currentInSlot.name === item.name) {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-            } else if (!currentInSlot) {
-            if (slot === 'primary') {
-                state.player.primaryWeapon = item;
-                state.player.activeSlot = 3;
-                state.player.equippedWeapon = item;
-              } else {
-                state.player.sidearm = item;
-                state.player.activeSlot = 2;
-                state.player.equippedWeapon = item;
-              }
-              if (item.ammoType) setWeaponAmmo(state, item);
-              addMessage(state, `🔫 ${item.name} equipped [${slot === 'primary' ? 3 : 2}]!`, 'info');
-            } else {
-              if (invIdx >= 0) state.player.inventory.splice(invIdx, 1);
-              (state as any)._nearbyWeapon = { item, slot, replacing: currentInSlot, pos: { ...enemy.pos }, time: state.time };
-              addMessage(state, `🔫 ${item.name} nearby — press E again to swap with ${currentInSlot.name}`, 'info');
-            }
+            handleWeaponPickup(state, item, enemy.pos);
           }
           if (item.id === 'boss_usb') {
             state.hasExtractionCode = true;
@@ -2027,14 +2005,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       } else {
         // Friendly AI: attack nearest non-friendly enemy
         let nearestHostile: Enemy | null = null;
-        let nearestDist = enemy.shootRange;
+        let nearestDistSq = enemy.shootRange * enemy.shootRange;
         for (const other of state.enemies) {
           if (other === enemy || other.state === 'dead' || other.friendly) continue;
-          const d = dist(enemy.pos, other.pos);
-          if (d < nearestDist) { nearestHostile = other; nearestDist = d; }
+          const dSq = distSq(enemy.pos, other.pos);
+          if (dSq < nearestDistSq) { nearestHostile = other; nearestDistSq = dSq; }
         }
         if (nearestHostile) {
           enemy.angle = Math.atan2(nearestHostile.pos.y - enemy.pos.y, nearestHostile.pos.x - enemy.pos.x);
+          const nearestDist = Math.sqrt(nearestDistSq);
           if (nearestDist > 100) {
             // Move towards target
             const mv = normalize({ x: nearestHostile.pos.x - enemy.pos.x, y: nearestHostile.pos.y - enemy.pos.y });
@@ -2379,7 +2358,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // === BODYGUARD HEALS BOSS — nearby bodyguards can patch up the boss ===
     if ((enemy as any)._isBodyguard && !(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
       const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-      if (boss && boss.hp < boss.maxHp * 0.8 && dist(enemy.pos, boss.pos) < 50) {
+      if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
         // Start heal — 1 second animation
         (enemy as any)._bgHealTimer = 1.0;
         enemy.state = 'idle';
@@ -2521,7 +2500,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody) {
       for (const dead of state.enemies) {
         if (dead.state !== 'dead' || dead === enemy) continue;
-        if (dist(enemy.pos, dead.pos) < 80 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) {
+        if (distSq(enemy.pos, dead.pos) < 6400 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) { // 80²
           (enemy as any)._discoveredBody = true;
           enemy.state = 'investigate';
           enemy.investigateTarget = { ...dead.pos };
@@ -2529,7 +2508,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // Alert nearby allies
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
-            if (dist(ally.pos, enemy.pos) < 300 && ally.state !== 'chase' && ally.state !== 'attack') {
+            if (distSq(ally.pos, enemy.pos) < 90000 && ally.state !== 'chase' && ally.state !== 'attack') { // 300²
               ally.state = 'investigate';
               ally.investigateTarget = { ...dead.pos };
               if (!ally.speechBubble) {
@@ -2745,7 +2724,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < 500;
+          const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
             // Add reaction delay for radio-alerted allies
             if (ally.type !== 'boss' && ally.type !== 'turret') {
@@ -2769,10 +2748,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         enemy.radioAlert = 1.5;
         playRadio();
         const radioRange = state.alarmActive ? 800 : 500;
+        const radioRangeSq = radioRange * radioRange;
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
-          const closeEnough = dist(ally.pos, enemy.pos) < radioRange;
+          const closeEnough = distSq(ally.pos, enemy.pos) < radioRangeSq;
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
@@ -2829,7 +2809,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           for (const ally of state.enemies) {
             if (ally === enemy || ally.state === 'dead') continue;
             const sameGroup = ally.radioGroup === enemy.radioGroup;
-            const closeEnough = dist(ally.pos, enemy.pos) < 400;
+            const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
             if ((sameGroup || closeEnough) && (ally.state === 'idle' || ally.state === 'patrol')) {
               ally.state = 'investigate';
               ally.investigateTarget = { ...state.player.pos };
@@ -3789,8 +3769,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
         if ((enemy as any)._grenadeFleeRolled) continue; // already decided not to flee
-        const dToGrenade = dist(g.pos, enemy.pos);
-        if (dToGrenade < g.radius * 1.5 && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+        const grenadeFleeRadiusSq = (g.radius * 1.5) * (g.radius * 1.5);
+        if (distSq(g.pos, enemy.pos) < grenadeFleeRadiusSq && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
           // Random flee chance — bosses flee MORE often, others less
           let fleeChance = 0.4; // default 40%
           if (enemy.type === 'boss') fleeChance = 0.8;
@@ -3836,8 +3816,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
         if ((enemy as any)._mortarFleeRolled) continue;
-        const dToMortar = dist(m.pos, enemy.pos);
-        if (dToMortar < m.radius * 1.3 && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
+        const mortarRadiusSq = (m.radius * 1.3) * (m.radius * 1.3);
+        const dToMortarSq = distSq(m.pos, enemy.pos);
+        if (dToMortarSq < mortarRadiusSq && hasLineOfSight(state, m.pos, enemy.pos, enemy.elevated)) {
           let fleeChance = 0.5;
           if (enemy.type === 'boss') fleeChance = 0.7;
           else if (enemy.type === 'heavy' || (enemy as any)._isBodyguard) fleeChance = 0.5;
@@ -3867,13 +3848,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         state.soundEvents.push({ pos: { ...g.pos }, radius: 200, time: state.time });
         const gasRadius = 60; // small radius — only hits 1 enemy
         let closest: Enemy | null = null;
-        let closestDist = gasRadius;
+        let closestDistSq = gasRadius * gasRadius;
         for (const enemy of state.enemies) {
           if (enemy.state === 'dead' || enemy.type === 'boss' || enemy.type === 'turret' || enemy.type === 'sniper' || (enemy as any)._isBodyguard || enemy.friendly) continue;
-          const d = dist(g.pos, enemy.pos);
-          if (d < closestDist && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+          const dSq = distSq(g.pos, enemy.pos);
+          if (dSq < closestDistSq && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
             closest = enemy;
-            closestDist = d;
+            closestDistSq = dSq;
           }
         }
         if (closest) {
