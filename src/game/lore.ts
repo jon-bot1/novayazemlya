@@ -1656,6 +1656,70 @@ Archangelsk, February 1938
     hasCode: false,
     found: false,
   },
+  {
+    id: 'doc_ancient_1',
+    title: 'Counter-Theory: The Precambrian Sentinel',
+    author: 'Prof. Halldór Sigurdsson, University of Iceland (Geology)',
+    date: '11.05.1986',
+    classification: 'TOP SECRET',
+    content: `DISSENTING ANALYSIS — Submitted to NATO Task Force AURORA
+Classification: ULTRAVIOLET — EYES ONLY
+
+RE: "Nuclear Awakening Hypothesis" (ref: CONTROL brief SZ-0/1985-01)
+
+With respect to CONTROL and the Task Force, the prevailing theory — that Soviet nuclear testing "awakened" Substance Zero — is WRONG. Or at best, dangerously incomplete.
+
+I have spent eighteen months reviewing the geological and historical evidence. My conclusion is this: Substance Zero has NEVER been dormant. It has been active — continuously, deliberately — for at least 4,000 years. Possibly far longer.
+
+THE EVIDENCE:
+
+1. THE ARCHANGELSK EVENT (1938): Death and darkness came to Archangelsk sixteen years BEFORE the first Soviet nuclear test. Seventeen people died. The vein pulsed. The aurora responded. No nuclear trigger existed. The mountain acted on its own.
+
+2. POMOR ORAL HISTORIES (est. 1500s-1800s): Centuries of documented encounters with anomalous ice, boiling seas, and nameless guides. The russenorsk coastal communities built their entire social structure around CONTAINING the phenomenon. These traditions predate the atomic age by 400 years.
+
+3. THE NORSE FRAGMENTS (c. 1240 AD): The Ísaþing manuscript describes cryokinetic events, walking ice, and a consciousness inside the mountain — 700 years before Oppenheimer.
+
+4. SÁMI ORAL TRADITION (est. 2000+ years): The Sámi have avoided Norrberget since before recorded history. Their reindeer refuse to cross the ridge. They describe the mountain as "alive" and its breath as the aurora. This knowledge is ANCIENT.
+
+5. GEOLOGICAL RECORD: Core samples from the vein show periodic growth surges — roughly every 800-1,200 years — going back to the Holocene. The network has been expanding and contracting cyclically for at least 10,000 years. Long before humans split the atom.
+
+6. THE KOLA SUPERDEEP BOREHOLE (1970-1989): The Soviets drilled the deepest hole in history on the Kola Peninsula — 12,262 meters. At 7,000m, they encountered temperatures 80°C higher than predicted. At 9,500m, they reported "acoustic anomalies" — sounds in the rock that did not correspond to any geological process. At 11,000m, the drill began to DEVIATE on its own, curving away from a subsurface structure the instruments could not identify. The project was abandoned. The official reason: "technical limitations." The classified reason: the drill was being REDIRECTED. By what, no one will say.
+
+The borehole intersected an SZ-0 tendril at 9,800m. The tendril was 1,200 km from the nearest known surface deposit. The network goes deeper and wider than anyone has mapped.
+
+MY THEORY:
+
+The nuclear tests did not wake Substance Zero. They ANGERED it.
+
+The substance has been awake — aware, responsive, growing — since before human civilization. The coastal communities knew this. The Sámi knew this. The Norse knew this. The mountain has been speaking for millennia. We simply lacked the instruments to hear.
+
+What the nuclear tests did was something far worse than awakening: they demonstrated to the consciousness in the rock that the surface organisms had developed the capacity for planetary destruction. 224 nuclear detonations — each one a declaration of violence pressed directly into the lithosphere.
+
+Before 1954, the vein's behavior was PROTECTIVE. Cryokinetic events blocked paths, sealed entrances, guided travelers to safety. The vägvisare appeared in storms. The ice kept people AWAY from the deposits.
+
+After 1954, the behavior shifted. The ice became aggressive. People were absorbed into the rock. The aurora changed frequency. The secondary voices appeared.
+
+The substance is no longer protecting itself.
+
+It is PREPARING.
+
+For what, I do not know. But I note the following: the growth rate of the vein network has accelerated by 340% since 1961. New tendrils are reaching toward population centers. The crystalline structure at depth is becoming more organized — more complex — more NEURAL.
+
+It is building something. A structure. A body. A mind vast enough to span a continent.
+
+And we, with our bombs, told it that we are dangerous.
+
+RECOMMENDATION: Immediate cessation of all nuclear testing near the vein. Withdrawal from all SZ-0 extraction sites. Leave the mountain alone.
+
+We were never its masters. We were never even its equals. We are bacteria on the skin of something that has been thinking since before the dinosaurs died. And we just spent thirty years screaming into its ear.
+
+— Prof. H. Sigurdsson
+
+[CONTROL'S ANNOTATION: "Noted. Recommendation rejected. The strategic value of SZ-0 supersedes theoretical risk assessments. — J.H."]
+[HANDWRITTEN, DIFFERENT INK: "They're not going to stop. God help us all. — H.S."]`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
