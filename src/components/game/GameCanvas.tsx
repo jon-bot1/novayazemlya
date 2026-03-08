@@ -1300,66 +1300,36 @@ export const GameCanvas: React.FC = () => {
 
         <LootPopup notifications={lootNotifications} />
 
-        {/* Weapon swap now uses E-press — no popup needed */}
+        {/* Mobile controls — joystick + action buttons */}
+        {isMobile && (
+          <MobileControls
+            inputRef={inputRef}
+            stateRef={stateRef}
+            canvasRef={canvasRef}
+            onToggleInventory={() => { setShowInventory(v => !v); setShowIntel(false); }}
+            onToggleIntel={() => { setShowIntel(v => !v); setShowInventory(false); }}
+            movementMode={hudState.movementMode}
+          />
+        )}
 
-        {/* Mobile action buttons — thumb-optimized layout */}
-        <div className="sm:hidden">
-          {/* Right thumb cluster — combat actions */}
-          <div className="absolute bottom-20 right-3 flex flex-col gap-2 items-center pointer-events-auto">
-            <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; inputRef.current.shooting = false; }} variant="action" />
+        {/* Desktop hints */}
+        {!isMobile && (
+          <div className="absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
+            WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
           </div>
+        )}
 
-          {/* Left thumb cluster — utility actions */}
-          <div className="absolute bottom-20 left-3 flex flex-col gap-2 items-center pointer-events-auto">
-            <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; inputRef.current.shooting = false; }} />
-            <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; inputRef.current.shooting = false; }} variant="action" />
-            <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} variant="action" />
-          </div>
+        {/* Mode toggle — top-left corner */}
+        <button
+          className="absolute top-2 left-2 z-50 pointer-events-auto px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
+        >
+          {isMobile ? '🖥️' : '📱'}
+        </button>
 
-          {/* Top-right quick buttons */}
-          <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3 pointer-events-auto" variant="action" />
-          <ActionButton label="🎒" onPress={() => { setShowInventory(v => !v); setShowIntel(false); }} className="absolute top-14 right-[4.5rem] pointer-events-auto" variant="action" />
-
-          {/* Bottom-center: movement mode + grenade cycle */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto z-40">
-            {(['sneak', 'walk', 'sprint'] as const).map(mode => {
-              const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
-              const isActive = inputRef.current.movementMode === mode;
-              return (
-                <button
-                  key={mode}
-                  className={`px-3 py-2 rounded text-xs font-mono border transition-colors touch-none select-none
-                    ${isActive
-                      ? 'bg-primary/60 border-primary text-primary-foreground'
-                      : 'bg-secondary/30 border-border/40 text-muted-foreground'
-                    }`}
-                  onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.movementMode = mode; }}
-                >
-                  {icons[mode]}
-                </button>
-              );
-            })}
-            <button
-              className="px-3 py-2 rounded text-xs font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
-              onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); inputRef.current.cycleThrowable = true; }}
-            >
-              🔄
-            </button>
-          </div>
-        </div>
-
-        <div className="sm:hidden absolute bottom-0 left-2 right-2 text-center text-[8px] text-muted-foreground/30 pointer-events-none pb-safe">
-          Tap to move · Tap enemy to shoot
-        </div>
-
-        <div className="hidden sm:block absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
-          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
-        </div>
-        {/* Inventory Panel — toggled with Tab/I */}
+        {/* Inventory Panel */}
         {showInventory && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-30">
+          <div className={`absolute z-30 ${isMobile ? 'top-10 left-1/2 -translate-x-1/2' : 'top-12 right-3'}`}>
             <InventoryPanel
               items={backpackItems}
               inCover={hudState.inCover}
