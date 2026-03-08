@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type WikiSection = 'controls' | 'weapons' | 'enemies' | 'maps' | 'mechanics' | 'items' | 'recoil' | 'upgrades' | 'stealth' | 'bosses';
+type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'enemies' | 'maps' | 'mechanics' | 'items' | 'recoil' | 'upgrades' | 'stealth' | 'bosses';
 
 const SECTIONS: { id: WikiSection; label: string; icon: string }[] = [
+  { id: 'lore', label: 'Story & Lore', icon: '📜' },
+  { id: 'factions', label: 'Factions', icon: '⚔️' },
+  { id: 'occult', label: 'The Occult', icon: '🔮' },
+  { id: 'world', label: 'World & Theories', icon: '🌍' },
   { id: 'controls', label: 'Controls', icon: '🎮' },
   { id: 'weapons', label: 'Weapons', icon: '🔫' },
   { id: 'recoil', label: 'Recoil & Spread', icon: '🎯' },
@@ -84,6 +88,371 @@ const EnemyRow = ({ name, icon, hp, speed, dmg, range, personality, notes }: {
     {notes && <p className="text-[9px] font-mono text-muted-foreground italic">{notes}</p>}
   </div>
 );
+
+function LoreSection() {
+  return (
+    <>
+      <H2>📜 Operation Aurora Borealis</H2>
+      <div className="border border-accent/30 rounded p-3 bg-accent/5 mb-3">
+        <div className="text-[9px] font-mono text-accent uppercase tracking-wider mb-1">NATO CLASSIFIED — CLEARANCE ULTRAVIOLET</div>
+        <P>Beneath the Arctic bedrock — from Norrberget in Sweden across the Kola Peninsula to Novaya Zemlya — runs a geological vein of an unknown material. NATO calls it "Substance Zero." The Soviets call it "Вещество Ноль." The miners at Norrberget called it "the blood of the mountain."</P>
+        <P>It predates human civilization. It predates the ice age. When concentrated, it amplifies nuclear chain reactions by a factor of twelve. A warhead the size of a briefcase could level a city.</P>
+      </div>
+
+      <H3>Substance Zero (SZ-0)</H3>
+      <div className="border border-border rounded p-3 mb-2 bg-card/50">
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div><span className="text-accent">Classification:</span> UNKNOWN — Not mineral. Not organic.</div>
+          <div><span className="text-accent">Physical:</span> Absorbs sound and light. Magnetic field 400-800% above norm. Refined form glows blue at exactly 37°C.</div>
+          <div><span className="text-accent">Nuclear:</span> Amplifies fission by 12×. 50g of refined SZ-0 = 600 kiloton yield.</div>
+        </div>
+      </div>
+      <H3>Exposure Stages</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1 mb-3">
+        <div><Tag color="muted">Stage 1</Tag> 1-7 days: Headaches, insomnia, compass malfunction.</div>
+        <div><Tag color="primary">Stage 2</Tag> 1-4 weeks: Auditory hallucinations — "the mountain speaks." Magnetic sensitivity.</div>
+        <div><Tag color="accent">Stage 3</Tag> 1-6 months: Paranoia, personality changes, sensation of being watched from below.</div>
+        <div><Tag color="danger">Stage 4</Tag> 6+ months: Skin hardens, body temp drops. Subject begins to merge with rock.</div>
+        <div><Tag color="danger">Stage 5</Tag> Absorption. Subject becomes part of the mountain. <span className="text-destructive">Irreversible.</span></div>
+      </div>
+
+      <H3>Known Exposed Individuals</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>💀 <strong>Commandant Osipovitj:</strong> Stage 3-4. Eyes glow in the dark. Claims to hear "orders from below." Has not slept in 23 days.</div>
+        <div>💉 <strong>Dr. Kravtsov:</strong> Stage 2. Protected by his own countermeasures. Rational but obsessed.</div>
+        <div>⛓️ <strong>The Uzbek:</strong> Stage 4+. Accelerated by REBIRTH injections. No longer biologically human.</div>
+        <div>⛏️ <strong>Gruvrå:</strong> Stage 5. Fully absorbed. The consciousness IS the mountain.</div>
+        <div>🧭 <strong>Nils Stålhandske:</strong> Stage 5. Absorbed in 1957. His magnetic readings are now part of the anomaly.</div>
+      </div>
+
+      <H3>Agent VARG — Player Dossier</H3>
+      <div className="border border-accent/30 rounded p-3 bg-accent/5 mb-2">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono mb-2">
+          <Stat label="Codename" value="VARG" />
+          <Stat label="Nationality" value="Swedish" />
+          <Stat label="Former Unit" value="MUST" />
+          <Stat label="Status" value="KIA (officially)" />
+          <Stat label="Handler" value="CONTROL" />
+        </div>
+        <P>Born 1955. Son of survey engineer Nils Stålhandske, who vanished inside Norrberget Mine in 1957. Joined Swedish military intelligence at 22. Recruited by NATO after deep-cover missions across the Eastern Bloc. Declared KIA in East Berlin, 1984 — in reality extracted and given a new identity.</P>
+        <P>VARG carries his father's compass — the needle permanently bent toward magnetic north since the day Nils entered the mine. It still points toward Norrberget.</P>
+      </div>
+
+      <H3>The Mission</H3>
+      <P>Four sites along the geological vein. Four raids. Each reveals intel leading to the next. Recover the nuclear detonation codes from Objekt 47's deep storage. Plant synchronized demolition charges at the deepest point of each site. Trigger a cascade that collapses the entire vein — denying Substance Zero to all parties.</P>
+      <P>The substance regenerates. Destroying one site doesn't stop the others. The only solution is total geological collapse.</P>
+
+      <H3>The Four Sites</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-2">
+        <div className="border-l-2 border-accent/40 pl-2">
+          <strong className="text-foreground">█ OBJEKT 47 "Severnyj Vektor"</strong> — Primary extraction & refinery. Commandant Osipovitj. Nuclear codes in deep storage. GRU's crown jewel.
+        </div>
+        <div className="border-l-2 border-accent/40 pl-2">
+          <strong className="text-foreground">█ COASTAL VILLAGE "Rybnaya"</strong> — Maritime smuggling pipeline. Nachalnik exports refined SZ-0 to global buyers via fishing boats.
+        </div>
+        <div className="border-l-2 border-accent/40 pl-2">
+          <strong className="text-foreground">█ HOSPITAL №6 "Kravtsov Institute"</strong> — Human experimentation. Dr. Kravtsov creates SZ-0 resistant soldiers. The Uzbek is Test Subject 7.
+        </div>
+        <div className="border-l-2 border-accent/40 pl-2">
+          <strong className="text-foreground">█ NORRBERGET MINE (Gruvsamhället)</strong> — Original discovery site. Swedish mine where Gruvrå, a SZ-0 consciousness, dwells. VARG's father disappeared here.
+        </div>
+      </div>
+
+      <H3>Cassette Tapes & Documents</H3>
+      <P>Lore is uncovered through documents, cassette tapes, and secret codes found during raids. Check the Intel panel (📂) in-game to review collected intelligence. Six secret codes unlock deeper narrative connections.</P>
+    </>
+  );
+}
+
+function FactionsSection() {
+  return (
+    <>
+      <H2>⚔️ Factions</H2>
+      <P>The Arctic conflict involves multiple factions with competing agendas. Not all enemies serve the same master.</P>
+
+      <div className="border border-border rounded p-3 mb-3 bg-card/50">
+        <div className="text-sm font-display text-destructive mb-1">☭ SOVIET GRU — Military Intelligence</div>
+        <P>The official Soviet military presence. GRU controls Objekt 47 and funds the Hospital research. Their goal: weaponize Substance Zero into tactical nuclear warheads. Professional, disciplined, and well-equipped.</P>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+          <div><span className="text-accent">Units:</span> Soldiers, Heavy gunners, Snipers, Officers</div>
+          <div><span className="text-accent">Leaders:</span> Commandant Osipovitj (Objekt 47), Colonel Karpov (Moscow)</div>
+          <div><span className="text-accent">Presence:</span> Dominant on Objekt 47. Officers embedded at all sites.</div>
+          <div><span className="text-accent">Agenda:</span> Extract, refine, and weaponize SZ-0. Maintain total secrecy.</div>
+        </div>
+      </div>
+
+      <div className="border border-border rounded p-3 mb-3 bg-card/50">
+        <div className="text-sm font-display text-primary-foreground mb-1">🔬 KRAVTSOV INSTITUTE — Project REBIRTH</div>
+        <P>Dr. Kravtsov's autonomous research division, technically under GRU but operating with increasing independence. Goal: create humans immune to SZ-0's psychic effects — soldiers who can work the deep mines indefinitely.</P>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+          <div><span className="text-accent">Units:</span> Shockers (test subjects), Hospital guards, Orderlies</div>
+          <div><span className="text-accent">Leaders:</span> Dr. Kravtsov, Director Gromov (nominal)</div>
+          <div><span className="text-accent">Presence:</span> Hospital exclusively. Some escaped subjects on other maps.</div>
+          <div><span className="text-accent">Agenda:</span> Complete REBIRTH program. Create the perfect SZ-0 soldier.</div>
+        </div>
+      </div>
+
+      <div className="border border-border rounded p-3 mb-3 bg-card/50">
+        <div className="text-sm font-display text-accent mb-1">🪝 NACHALNIK'S NETWORK — The Smugglers</div>
+        <P>Viktor "Nachalnik" Dragunov's black-market operation. Former Soviet Navy, now running a smuggling pipeline moving refined SZ-0 to the highest bidder — including Western intelligence agencies, rogue states, and private collectors.</P>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+          <div><span className="text-accent">Units:</span> Rednecks, Scavs, Dogs, Smuggler guards</div>
+          <div><span className="text-accent">Leaders:</span> Nachalnik (the Boss)</div>
+          <div><span className="text-accent">Presence:</span> Fishing Village. Supply routes to other sites.</div>
+          <div><span className="text-accent">Agenda:</span> Profit. Sell SZ-0 to anyone with rubles.</div>
+        </div>
+      </div>
+
+      <div className="border border-border rounded p-3 mb-3 bg-card/50">
+        <div className="text-sm font-display text-foreground mb-1">🏔️ THE MOUNTAIN — Gruvrå & Its Guardians</div>
+        <P>Not a faction in the human sense. Gruvrå is the accumulated consciousness of Substance Zero — millions of years of absorbed organic matter forming something resembling intelligence. It does not want to be extracted. It does not want to be weaponized. It wants to grow.</P>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+          <div><span className="text-accent">Units:</span> Ort & Stoll (crystalline guardians), absorbed workers</div>
+          <div><span className="text-accent">Leaders:</span> Gruvrå (the entity)</div>
+          <div><span className="text-accent">Presence:</span> Gruvsamhället deep levels. Influence felt at all sites.</div>
+          <div><span className="text-accent">Agenda:</span> Protect the vein. Absorb intruders. Expand.</div>
+        </div>
+      </div>
+
+      <div className="border border-border rounded p-3 mb-3 bg-card/50">
+        <div className="text-sm font-display text-foreground mb-1">🇸🇪 NATO TASK FORCE AURORA — The Player's Side</div>
+        <P>A secret NATO task force assembled to deny Substance Zero to all parties. VARG is their only field operative. CONTROL handles communications. The task force has no official existence — if VARG is captured, NATO disavows.</P>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+          <div><span className="text-accent">Units:</span> Agent VARG (player), CONTROL (handler)</div>
+          <div><span className="text-accent">Agenda:</span> Recover nuclear codes. Collapse the geological vein. Deny SZ-0 to everyone.</div>
+        </div>
+      </div>
+
+      <H3>Faction Relations</H3>
+      <div className="border border-border rounded p-3 bg-card/50 text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>☭ GRU ↔ 🔬 Kravtsov: <span className="text-accent">Strained alliance.</span> GRU funds Kravtsov but distrusts his methods.</div>
+        <div>☭ GRU ↔ 🪝 Nachalnik: <span className="text-accent">Uneasy partnership.</span> GRU tolerates smuggling as long as supply flows.</div>
+        <div>☭ GRU ↔ 🏔️ Mountain: <span className="text-destructive">Hostile.</span> GRU extracts by force. The mountain resists.</div>
+        <div>🔬 Kravtsov ↔ 🔮 Ordo: <span className="text-destructive">Infiltrated.</span> Some Kravtsov staff are secret Ordo members.</div>
+        <div>🪝 Nachalnik ↔ 🔮 Svarta Solen: <span className="text-accent">Business.</span> Nachalnik sells to anyone, including the cult.</div>
+        <div>All factions ↔ 🇸🇪 NATO: <span className="text-destructive">Hostile.</span> VARG is an enemy to everyone.</div>
+      </div>
+    </>
+  );
+}
+
+function OccultSection() {
+  return (
+    <>
+      <H2>🔮 The Occult — Three Branches, One Root</H2>
+      <P>Substance Zero has attracted three distinct occult movements. They disagree on methods but share one belief: SZ-0 is not a resource to be exploited — it is a force to be worshipped, channeled, or awakened.</P>
+
+      <div className="border border-destructive/30 rounded p-3 mb-3 bg-destructive/5">
+        <div className="text-sm font-display text-destructive mb-1">🔴 ORDO BOREALIS — "The Northern Order"</div>
+        <div className="text-[9px] font-mono text-destructive/70 mb-2">Est. ~1978 · Soviet-internal · Active at Objekt 47 & Hospital</div>
+        <P>A secret brotherhood within the Soviet military-scientific complex. Founded by officers and researchers who were among the first to be exposed to Substance Zero and survived. They believe SZ-0 is a divine signal — a message from something beneath the Earth's crust that predates all life.</P>
+        
+        <H3>Beliefs</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• Substance Zero is the blood of a sleeping god buried in the Arctic bedrock.</div>
+          <div>• Stage 5 absorption is not death — it is ascension. Those absorbed join the god's consciousness.</div>
+          <div>• The "voices" that exposed subjects hear are prayers from the absorbed, calling others to join.</div>
+          <div>• The geological vein is a nervous system. The four sites are sensory organs.</div>
+          <div>• Destroying the vein would kill a god. They will prevent this at any cost.</div>
+        </div>
+
+        <H3>Rituals & Practices</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• Members carry a small vial of liquid SZ-0 around their neck (glows faint blue).</div>
+          <div>• Initiation involves voluntary Stage 1 exposure — "hearing the signal for the first time."</div>
+          <div>• Senior members have reached Stage 2-3 deliberately. They consider the hallucinations to be visions.</div>
+          <div>• They perform "communion" — placing hands on raw SZ-0 deposits and meditating.</div>
+        </div>
+
+        <H3>In-Game Presence</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• <span className="text-destructive">Cultist enemies</span> wear standard GRU uniforms but with a small aurora borealis patch on the collar.</div>
+          <div>• They fight with zero cowardice — they welcome death as "joining the signal."</div>
+          <div>• Some sabotage GRU equipment — they don't want SZ-0 exported, they want it left undisturbed.</div>
+          <div>• Found primarily at Objekt 47 (infiltrators among soldiers) and Hospital (among Kravtsov's staff).</div>
+          <div>• Drop unique lore items: <span className="text-accent">Ordo Prayer Scroll</span>, <span className="text-accent">Vial of Blue Light</span>.</div>
+        </div>
+
+        <H3>Key Figures</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>🔴 <strong>The Archon</strong> — Identity unknown. Communicates via coded radio transmissions on freq 147.300.</div>
+          <div>🔴 <strong>Commandant Osipovitj</strong> — Suspected Ordo sympathizer. His "orders from below" may be Ordo doctrine.</div>
+          <div>🔴 <strong>Nurse Volkov</strong> — Unwitting informant. Her notes describe phenomena the Ordo considers sacred.</div>
+        </div>
+      </div>
+
+      <div className="border border-accent/30 rounded p-3 mb-3 bg-accent/5">
+        <div className="text-sm font-display text-accent mb-1">⛏️ STÅLHANDSKE-KULTEN — "The Absorption Cult"</div>
+        <div className="text-[9px] font-mono text-accent/70 mb-2">Est. ~1960 · Swedish origin · Active at Gruvsamhället</div>
+        <P>Founded by miners who worked the deep levels of Norrberget and witnessed the disappearance of Nils Stålhandske in 1957. They believe Stålhandske didn't die — he was chosen. The mountain selected him because he was the first to truly listen.</P>
+
+        <H3>Beliefs</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• Absorption is evolution. Flesh is temporary. Stone is eternal.</div>
+          <div>• Nils Stålhandske is the cult's prophet — the first human to willingly merge with the mountain.</div>
+          <div>• The Gruvrå is not an enemy — it is a mother welcoming her children home.</div>
+          <div>• The surface world is dying. The underground world is alive and growing.</div>
+          <div>• They want to open the sealed mine levels and guide others to the deep chamber for "reunification."</div>
+        </div>
+
+        <H3>Rituals & Practices</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• Members tattoo a compass rose on their left palm — the needle always pointing down.</div>
+          <div>• They leave offerings of iron ore at the mine entrance at midnight.</div>
+          <div>• "Listening sessions" — sitting in silence in the deepest accessible tunnel, waiting to hear the mountain speak.</div>
+          <div>• Members who reach Stage 3 are celebrated, not quarantined.</div>
+        </div>
+
+        <H3>In-Game Presence</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• <span className="text-accent">Kulten-fiender</span> appear as rednecks and scavs but with distinct behavior — they don't flee and whisper Swedish prayers.</div>
+          <div>• Found at Gruvsamhället, especially near the mine entrance and deep levels.</div>
+          <div>• Some have partially hardened skin (Stage 3-4) — they take reduced damage from melee.</div>
+          <div>• They try to lure the player deeper into the mine rather than kill outright.</div>
+          <div>• Drop unique items: <span className="text-accent">Stålhandske's Compass Fragment</span>, <span className="text-accent">Iron Offering</span>.</div>
+        </div>
+
+        <H3>Key Figures</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>⛏️ <strong>Holmström</strong> — Former mine director. Sealed the deep levels in 1964, but secretly a cult founder. Still alive at 78. Somewhere in the village.</div>
+          <div>⛏️ <strong>"Bergsmannen"</strong> — A miner absorbed in 1961 whose voice is still heard in Tunnel 7. The cult's spiritual guide.</div>
+          <div>⛏️ <strong>Nils Stålhandske</strong> — VARG's father. The original absorbed. His compass readings are now part of Gruvrå's magnetic field.</div>
+        </div>
+      </div>
+
+      <div className="border border-foreground/20 rounded p-3 mb-3 bg-muted/10">
+        <div className="text-sm font-display text-foreground mb-1">☀️ SVARTA SOLEN — "The Black Sun"</div>
+        <div className="text-[9px] font-mono text-muted-foreground mb-2">Est. ~1943 · Pan-European · Independent operators</div>
+        <P>An esoteric organization with roots in WWII-era occult research. Originally German, now a decentralized network spanning Europe and South America. They believe Substance Zero is the remnant of a pre-human civilization — the Hyperboreans — who mastered a technology indistinguishable from magic.</P>
+
+        <H3>Beliefs</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• The Arctic was once home to an advanced pre-ice-age civilization — the Hyperboreans.</div>
+          <div>• Substance Zero is their technology: a programmable matter that responds to consciousness.</div>
+          <div>• The "hallucinations" are actually fragments of Hyperborean memories embedded in the substance.</div>
+          <div>• Whoever masters SZ-0 gains access to Hyperborean knowledge — including weapons beyond nuclear.</div>
+          <div>• Neither NATO nor the Soviets should control it. Svarta Solen will claim it for humanity's "true heirs."</div>
+        </div>
+
+        <H3>Rituals & Practices</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• Members wear a black sun medallion (twelve-spoke wheel) hidden under clothing.</div>
+          <div>• They use an old Germanic runic cipher for communications.</div>
+          <div>• "Awakening rituals" attempt to use electromagnetic equipment to "tune in" to SZ-0's frequency.</div>
+          <div>• Senior members claim to have decoded fragments of Hyperborean language from exposure visions.</div>
+        </div>
+
+        <H3>In-Game Presence</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>• <span className="text-foreground">Svarta Solen operatives</span> appear as a third faction — neither GRU nor smuggler. They wear dark civilian clothing with tactical gear.</div>
+          <div>• Highly trained — accuracy and tactics match or exceed GRU soldiers.</div>
+          <div>• They target SZ-0 containers and research data, not the player (unless obstructed).</div>
+          <div>• Can appear on any map as rare spawn events — competing with the player for intel.</div>
+          <div>• Drop unique items: <span className="text-accent">Black Sun Medallion</span>, <span className="text-accent">Runic Cipher Page</span>, <span className="text-accent">Hyperborean Fragment</span>.</div>
+        </div>
+
+        <H3>Key Figures</H3>
+        <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+          <div>☀️ <strong>"Der Wächter"</strong> — The organization's current leader. Never seen in person. Communicates via couriers.</div>
+          <div>☀️ <strong>Erik Lindqvist</strong> — Swedish archaeologist, publicly respected, secretly Svarta Solen's Arctic expert. Provided the geological survey data that led the Soviets to Norrberget.</div>
+          <div>☀️ <strong>Agent FALKE</strong> — A Svarta Solen operative embedded within NATO Task Force AURORA. Identity unknown. CONTROL suspects a mole.</div>
+        </div>
+      </div>
+
+      <H3>The Connection</H3>
+      <div className="border border-destructive/30 rounded p-3 bg-destructive/5 text-[10px] font-mono text-foreground/70 space-y-1">
+        <div className="text-destructive font-display text-xs mb-1">THREE BRANCHES, ONE ROOT</div>
+        <div>All three occult movements are drawn to the same phenomenon. They interpret it differently:</div>
+        <div className="mt-1">🔴 <strong>Ordo Borealis:</strong> It is a god. Worship it. Join it.</div>
+        <div>⛏️ <strong>Stålhandske-kulten:</strong> It is a mother. Return to it. Become stone.</div>
+        <div>☀️ <strong>Svarta Solen:</strong> It is a technology. Decode it. Control it.</div>
+        <div className="mt-1 text-destructive italic">The substance doesn't care what they believe. It absorbs them all the same.</div>
+      </div>
+    </>
+  );
+}
+
+function WorldSection() {
+  return (
+    <>
+      <H2>🌍 World State & Theories</H2>
+
+      <H3>The Cold War Context (1985)</H3>
+      <P>The game takes place in late 1985. Reagan and Gorbachev have just met in Geneva. The Cold War is at a crossroads — the world teeters between détente and annihilation. Both superpowers are secretly racing to weaponize Substance Zero, which could tip the balance permanently.</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1 mb-3">
+        <div>• NATO fears a Soviet first-strike capability enhanced by SZ-0.</div>
+        <div>• The KGB and GRU are in a power struggle over who controls the SZ-0 program.</div>
+        <div>• Sweden officially neutral, but compromised officials have sold access to Norrberget.</div>
+        <div>• Third-party buyers (Libya, South Africa, unnamed corporations) are bidding for refined SZ-0.</div>
+        <div>• The IAEA has no knowledge of Substance Zero's existence.</div>
+      </div>
+
+      <H3>The Maskirovka — Layers of Deception</H3>
+      <div className="border border-border rounded p-3 bg-card/50 mb-3 text-[10px] font-mono text-foreground/70 space-y-1">
+        <div><strong className="text-foreground">Objekt 47:</strong> Officially a weather monitoring station. Listed as decommissioned in 1981. Still fully active.</div>
+        <div><strong className="text-foreground">Fishing Village:</strong> Dismissed as civilian settlement. Took NATO 3 years and 2 missing recon teams to confirm.</div>
+        <div><strong className="text-foreground">Hospital №6:</strong> Functions as real hospital alongside the experiments. Staff who ask questions become subjects.</div>
+        <div><strong className="text-foreground">Norrberget:</strong> Erased from Swedish maps. The village deleted from census records since 1965. The government denies it exists.</div>
+      </div>
+
+      <H3>Player Theories & Conspiracies</H3>
+      <P>The following are unconfirmed theories pieced together from recovered documents:</P>
+      
+      <div className="space-y-2 mb-3">
+        <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
+          <strong className="text-destructive">THEORY: VARG IS ALREADY EXPOSED</strong><br/>
+          The compass VARG carries has pointed toward Norrberget since 1957. His father's compass. Magnetic anomaly — or has VARG been Stage 1 since childhood? The mountain may have been calling him his entire life.
+        </div>
+        <div className="border-l-2 border-accent/40 pl-2 text-[10px] font-mono text-foreground/70">
+          <strong className="text-accent">THEORY: CONTROL IS AGENT FALKE</strong><br/>
+          CONTROL knows too much about Substance Zero for a NATO handler. His briefings contain details that only someone with direct exposure — or Svarta Solen connections — would know. The mole may be hiding in plain sight.
+        </div>
+        <div className="border-l-2 border-primary/40 pl-2 text-[10px] font-mono text-foreground/70">
+          <strong className="text-primary-foreground">THEORY: THE VEIN IS ONE ORGANISM</strong><br/>
+          What if the geological vein isn't a mineral deposit but a single, continent-spanning organism? The four sites aren't extraction points — they're wounds. And the organism is trying to heal.
+        </div>
+        <div className="border-l-2 border-foreground/20 pl-2 text-[10px] font-mono text-foreground/70">
+          <strong className="text-foreground">THEORY: STÅLHANDSKE IS STILL CONSCIOUS</strong><br/>
+          Cassette recordings from Tunnel 7 contain audio anomalies that, when frequency-shifted, produce speech patterns matching Nils Stålhandske's voice from 1956 recordings. He may still be aware inside the mountain. Trapped. Watching.
+        </div>
+        <div className="border-l-2 border-destructive/40 pl-2 text-[10px] font-mono text-foreground/70">
+          <strong className="text-destructive">THEORY: THE OPERATION IS A SACRIFICE</strong><br/>
+          The synchronized detonation plan requires planting charges at the deepest point of each site — exactly where SZ-0 concentration is highest. What if CONTROL knows the demolition team won't survive? What if VARG was chosen because he's expendable — a ghost who's already "dead"?
+        </div>
+      </div>
+
+      <H3>Unanswered Questions</H3>
+      <div className="border border-border rounded p-3 bg-card/50 text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>❓ Why does Substance Zero maintain exactly 37°C — human body temperature?</div>
+        <div>❓ What did the Hyperboreans look like? Are the "creatures" some soldiers report seeing related?</div>
+        <div>❓ If absorption is irreversible, why do some absorbed subjects' voices still transmit on radio frequencies?</div>
+        <div>❓ Osipovitj claims to receive "orders from below." Is he receiving genuine communication — or is the substance manipulating him?</div>
+        <div>❓ The Uzbek was injected with concentrated SZ-0 and didn't absorb — he mutated. Why is he different?</div>
+        <div>❓ Who sent the original geological survey data to the Soviets? Erik Lindqvist? Or someone inside MUST?</div>
+        <div>❓ If the vein is collapsed, what happens to the absorbed? Do they die? Or are they released?</div>
+      </div>
+
+      <H3>Timeline</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div><span className="text-accent">Pre-Cambrian:</span> Substance Zero deposits form in Arctic bedrock.</div>
+        <div><span className="text-accent">~10,000 BC:</span> Hyperborean civilization (if it existed) interacts with SZ-0.</div>
+        <div><span className="text-accent">1943:</span> German occult research division discovers references to SZ-0. Svarta Solen founded.</div>
+        <div><span className="text-accent">1947:</span> Swedish miners at Norrberget hit SZ-0 at 420m depth. First modern contact.</div>
+        <div><span className="text-accent">1957:</span> Nils Stålhandske disappears in Norrberget Mine. Survey equipment found. Body never recovered.</div>
+        <div><span className="text-accent">1960:</span> Stålhandske-kulten formed by surviving miners.</div>
+        <div><span className="text-accent">1964:</span> Mine Director Holmström seals deep levels. Mine officially closed.</div>
+        <div><span className="text-accent">1965:</span> Norrberget village erased from Swedish records.</div>
+        <div><span className="text-accent">1970:</span> Soviet geological survey identifies the vein extending to Novaya Zemlya.</div>
+        <div><span className="text-accent">1977:</span> Objekt 47 established. Osipovitj appointed commandant.</div>
+        <div><span className="text-accent">1978:</span> First Ordo Borealis cell forms among Objekt 47 researchers.</div>
+        <div><span className="text-accent">1980:</span> Nachalnik establishes the smuggling pipeline.</div>
+        <div><span className="text-accent">1983:</span> Hospital №6 begins human experimentation. Project REBIRTH launched.</div>
+        <div><span className="text-accent">1984:</span> The Uzbek (Subject 7) survives extreme B-7 exposure. VARG "killed" in East Berlin.</div>
+        <div><span className="text-accent">1985:</span> NATO Task Force AURORA activated. Operation Aurora Borealis begins.</div>
+      </div>
+    </>
+  );
+}
 
 function ControlsSection() {
   return (
@@ -584,7 +953,7 @@ function UpgradesSection() {
 }
 
 export default function Wiki() {
-  const [section, setSection] = useState<WikiSection>('controls');
+  const [section, setSection] = useState<WikiSection>('lore');
   const navigate = useNavigate();
 
   return (
@@ -621,6 +990,10 @@ export default function Wiki() {
 
         {/* Content */}
         <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+          {section === 'lore' && <LoreSection />}
+          {section === 'factions' && <FactionsSection />}
+          {section === 'occult' && <OccultSection />}
+          {section === 'world' && <WorldSection />}
           {section === 'controls' && <ControlsSection />}
           {section === 'weapons' && <WeaponsSection />}
           {section === 'recoil' && <RecoilSection />}
