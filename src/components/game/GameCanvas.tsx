@@ -1287,6 +1287,7 @@ export const GameCanvas: React.FC = () => {
           achievementStats={hudState.achievementStats}
           objectives={objectives}
           activeUpgrades={stash.upgrades}
+          isMobile={isMobile}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
