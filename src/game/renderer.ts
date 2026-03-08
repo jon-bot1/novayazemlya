@@ -3166,8 +3166,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 7, aBarY + aBarH);
     }
 
-    // HP bar
-    if (enemy.hp < enemy.maxHp) {
+    // HP bar — bosses get a big cinematic bar drawn later in screen-space
+    if (enemy.hp < enemy.maxHp && enemy.type !== 'boss') {
       const barW = 28;
       const ratio = enemy.hp / enemy.maxHp;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
