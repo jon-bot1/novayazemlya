@@ -88,27 +88,27 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
       </button>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
+      <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
         <button
-          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'briefing' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'briefing' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('briefing')}
         >
           📋 Briefing
         </button>
         <button
-          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'characters' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'characters' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('characters')}
         >
           👤 Characters
         </button>
         <button
-          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'updates' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'updates' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('updates')}
         >
           📡 Updates
         </button>
         <button
-          className={`px-4 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === 'highscores' ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-3 py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors rounded-sm sm:rounded-none ${tab === 'highscores' ? 'text-accent border border-accent/40 sm:border-0 sm:border-b-2 sm:border-accent bg-accent/10 sm:bg-transparent' : 'text-muted-foreground border border-border/50 hover:text-foreground hover:border-border'}`}
           onClick={() => setTab('highscores')}
         >
           🏆 Highscores
