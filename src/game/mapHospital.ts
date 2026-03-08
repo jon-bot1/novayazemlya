@@ -129,9 +129,9 @@ export function generateHospitalMap() {
     // North segment: from building top down to cross-corridor top (y=BY+300)
     makeWall(BX + BW / 2 - 50, BY + T, T, 300 - T, TILE),
     makeWall(BX + BW / 2 + 50, BY + T, T, 300 - T, TILE),
-    // South segment: from courtyard south (y=BY+1100) to reception north wall (y=BY+BH-250)
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 250, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 250, TILE),
+    // South segment: from courtyard south (y=BY+1100) toward reception — stop 80px short to leave opening
+    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 250 - 80, TILE),
+    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 250 - 80, TILE),
 
     // East-west corridor (y=300-400) — connects to N-S corridor via open intersection
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
