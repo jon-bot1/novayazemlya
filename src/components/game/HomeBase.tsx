@@ -310,7 +310,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                     ? 'border-accent bg-accent/10 text-foreground'
                     : 'border-border/50 bg-secondary/20 text-muted-foreground hover:border-foreground/30'
                 }`}
-                onClick={() => setSelectedMap(m.id)}
+                onClick={() => { setSelectedMap(m.id); onMapChange(m.id); }}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{m.icon}</span>
