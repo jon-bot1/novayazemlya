@@ -7,7 +7,7 @@ export type DamageType = 'bullet' | 'bleed' | 'explosion' | 'melee' | 'electric'
 
 export type AmmoType = '9x18' | '5.45x39' | '7.62x39' | '12gauge' | '7.62x54R';
 
-export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack' | 'special';
+export type ItemCategory = 'weapon' | 'ammo' | 'medical' | 'valuable' | 'armor' | 'grenade' | 'flashbang' | 'gas_grenade' | 'key' | 'backpack' | 'special' | 'weapon_mod';
 
 export type MedicalType = 'bandage' | 'medkit' | 'morphine';
 
@@ -35,6 +35,13 @@ export interface Item {
   isBuckshot?: boolean; // fires multiple pellets in a cone
   pelletCount?: number; // number of pellets (default 5)
   coneAngle?: number; // spread cone in radians (default 0.5 ~30°)
+  // Weapon mod properties
+  modType?: 'scope' | 'suppressor' | 'ext_magazine';
+  modBulletSpeedBonus?: number;
+  modFireRateBonus?: number;
+  modMagBonus?: number;
+  modNoiseReduction?: number;
+  attachedMods?: Item[]; // mods attached to this weapon
 }
 
 export interface PendingWeapon {

@@ -17,7 +17,9 @@ import { LootPopup, LootNotification } from './LootPopup';
 import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
-import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES } from '../../game/items';
+import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
+import { hapticShoot, hapticDamage, hapticKill, hapticInteract } from '../../game/haptics';
+import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { supabase } from '@/integrations/supabase/client';
 
 const TIME_LIMIT = 300; // 5 minutes
@@ -626,6 +628,7 @@ export const GameCanvas: React.FC = () => {
     exfilRevealed: undefined as string | undefined,
     achievementStats: undefined as any,
     pendingWeapon: null as any,
+    nearInteractable: false,
   });
   const [showInventory, setShowInventory] = useState(false);
   const [showIntel, setShowIntel] = useState(false);
@@ -860,10 +863,19 @@ export const GameCanvas: React.FC = () => {
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
       updateKeysRef.current();
+      const prevHp = stateRef.current.player.hp;
+      const prevKills = stateRef.current.killCount;
       const state = updateGame(stateRef.current, inputRef.current, dt, cssW, cssH);
       stateRef.current = state;
       inputRef.current.interact = false;
       inputRef.current.shootPressed = false; // clear single-frame flag
+
+      // Haptic feedback on mobile
+      if (isMobile) {
+        if (state.player.hp < prevHp) hapticDamage();
+        if (state.killCount > prevKills) hapticKill();
+        if (inputRef.current.shooting) hapticShoot();
+      }
 
       // 5-minute timer — game over with reinforcements
       if (state.time >= TIME_LIMIT && !state.gameOver && !state.extracted && !reinforcementsSpawned) {
@@ -936,6 +948,23 @@ export const GameCanvas: React.FC = () => {
             totalDogsOnMap: state.totalDogsOnMap,
           },
           pendingWeapon: state.pendingWeapon,
+          nearInteractable: (() => {
+            const p = state.player.pos;
+            // Check loot containers, gates, alarm panels, weapon drops, document pickups
+            for (const lc of state.lootContainers) {
+              if (!lc.looted && Math.hypot(lc.pos.x - p.x, lc.pos.y - p.y) < 70) return true;
+            }
+            for (const w of state.walls) {
+              if (w.color === '#aa4444' && Math.hypot((w.x + w.w/2) - p.x, (w.y + w.h/2) - p.y) < 80) return true;
+            }
+            for (const ap of state.alarmPanels) {
+              if (!ap.hacked && Math.hypot(ap.pos.x - p.x, ap.pos.y - p.y) < 60) return true;
+            }
+            for (const dp of state.documentPickups) {
+              if (!dp.collected && Math.hypot(dp.pos.x - p.x, dp.pos.y - p.y) < 50) return true;
+            }
+            return false;
+          })(),
         });
 
         // Live objective tracking
@@ -974,14 +1003,44 @@ export const GameCanvas: React.FC = () => {
       const lootXp = Math.floor(lootValue / 50);
       const totalXp = killXp + extractionXp + lootXp + objectiveXp;
 
+      // ── Daily mission rewards ──
+      const dailyMissions = getDailyMissions();
+      const dailyProg = loadDailyProgress();
+      const raidStats: Record<string, number | boolean> = {
+        killCount: state.killCount,
+        headshotKills: state.headshotKills,
+        grenadeKills: state.grenadeKills,
+        bodiesLooted: state.bodiesLooted,
+        cachesLooted: state.cachesLooted,
+        noHitsTaken: state.noHitsTaken,
+        longShots: state.longShots,
+        wallsBreached: state.wallsBreached,
+        documentsCollected: state.documentsCollected,
+        dogsNeutralized: state.dogsNeutralized,
+        mosinKills: state.mosinKills,
+        knifeDistanceKills: state.knifeDistanceKills,
+      };
+      let dailyRubles = 0;
+      let dailyXp = 0;
+      for (const dm of dailyMissions) {
+        if (!dailyProg.completed.includes(dm.id) && checkDailyCompletion(dm, raidStats)) {
+          dailyProg.completed.push(dm.id);
+          dailyRubles += dm.reward.rubles;
+          dailyXp += dm.reward.xp;
+        }
+      }
+      if (dailyRubles > 0 || dailyXp > 0) {
+        saveDailyProgress(dailyProg);
+      }
+
       setStash(prev => {
-        const newXp = prev.xp + totalXp;
+        const newXp = prev.xp + totalXp + dailyXp;
         const newLevel = getLevelForXp(newXp);
         const updated = {
           ...prev,
           items: [...prev.items, ...lootItems],
           extractionCount: prev.extractionCount + 1,
-          rubles: prev.rubles + objectiveReward,
+          rubles: prev.rubles + objectiveReward + dailyRubles,
           xp: newXp,
           level: newLevel,
         };
@@ -1064,6 +1123,43 @@ export const GameCanvas: React.FC = () => {
             // Match-grade barrel — critical hit bonus
             const matchBarrelLvl = getUpgradeLevel(ups, 'match_barrel');
             if (matchBarrelLvl > 0) (st as any)._critChanceBonus = matchBarrelLvl * 0.05;
+            // ── NEW SKILL TREE UPGRADES ──
+            // Quick Hands — faster reload
+            const quickReloadLvl = getUpgradeLevel(ups, 'quick_reload');
+            if (quickReloadLvl > 0) (st as any)._reloadSpeedBonus = quickReloadLvl * 0.15;
+            // Silent Step — reduced noise
+            const silentStepLvl = getUpgradeLevel(ups, 'silent_step');
+            if (silentStepLvl > 0) (st as any)._noiseReduction = silentStepLvl * 0.10;
+            // Iron Constitution — more HP
+            const ironBodyLvl = getUpgradeLevel(ups, 'iron_body');
+            if (ironBodyLvl > 0) { st.player.maxHp += ironBodyLvl * 15; st.player.hp = st.player.maxHp; }
+            // Pack Mule — extra backpack space
+            st.backpackCapacity += getUpgradeLevel(ups, 'big_backpack') * 6;
+            // Endurance — more stamina
+            const enduranceLvl = getUpgradeLevel(ups, 'endurance');
+            if (enduranceLvl > 0) {
+              st.player.maxStamina *= (1 + enduranceLvl * 0.20);
+              st.player.stamina = st.player.maxStamina;
+            }
+            // ── Apply weapon mods from stash items ──
+            // Auto-attach mods to equipped weapons
+            for (const item of stash.items) {
+              if (item.category === 'weapon_mod' && st.player.primaryWeapon) {
+                const wpn = st.player.primaryWeapon;
+                if (!wpn.attachedMods) wpn.attachedMods = [];
+                if (item.modType === 'scope' && !wpn.attachedMods.some(m => m.modType === 'scope')) {
+                  wpn.bulletSpeed = (wpn.bulletSpeed || 8) * (1 + (item.modBulletSpeedBonus || 0));
+                  wpn.attachedMods.push(item);
+                } else if (item.modType === 'suppressor' && !wpn.attachedMods.some(m => m.modType === 'suppressor')) {
+                  (st as any)._suppressorEquipped = true;
+                  wpn.attachedMods.push(item);
+                } else if (item.modType === 'ext_magazine' && !wpn.attachedMods.some(m => m.modType === 'ext_magazine')) {
+                  st.player.maxAmmo += (item.modMagBonus || 8);
+                  st.player.currentAmmo = st.player.maxAmmo;
+                  wpn.attachedMods.push(item);
+                }
+              }
+            }
 
             // ── Test player overrides ──
             const nameLower = playerName.trim().toLowerCase();
@@ -1150,6 +1246,9 @@ export const GameCanvas: React.FC = () => {
                 case 'buy_ak74': newItem = WEAPON_TEMPLATES.ak74(); break;
                 case 'buy_mosin': newItem = WEAPON_TEMPLATES.mosin(); break;
                 case 'buy_toz': newItem = WEAPON_TEMPLATES.toz(); break;
+                case 'buy_scope': newItem = createScope(); break;
+                case 'buy_suppressor': newItem = createSuppressor(); break;
+                case 'buy_ext_mag': newItem = createExtMagazine(); break;
                 default: return prev;
               }
               const updated = {
@@ -1269,6 +1368,7 @@ export const GameCanvas: React.FC = () => {
             onCloseDoc={() => setReadingDoc(null)}
             movementMode={hudState.movementMode}
             hasDoc={!!readingDoc}
+            nearInteractable={hudState.nearInteractable}
           />
         )}
 

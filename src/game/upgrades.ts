@@ -90,6 +90,52 @@ export const UPGRADES: Upgrade[] = [
     maxLevel: 3,
     effect: '+5% critical hit chance per level',
   },
+  // ── SKILL TREE (new passive upgrades) ──
+  {
+    id: 'quick_reload',
+    name: 'Quick Hands',
+    icon: '⚡',
+    description: 'Faster reload speed',
+    cost: 400,
+    maxLevel: 3,
+    effect: '-15% reload time per level',
+  },
+  {
+    id: 'silent_step',
+    name: 'Silent Step',
+    icon: '🤫',
+    description: 'Quieter footsteps — reduced detection radius',
+    cost: 500,
+    maxLevel: 3,
+    effect: '-10% noise radius per level',
+  },
+  {
+    id: 'iron_body',
+    name: 'Iron Constitution',
+    icon: '💪',
+    description: 'Increased maximum health',
+    cost: 600,
+    maxLevel: 3,
+    effect: '+15 max HP per level',
+  },
+  {
+    id: 'big_backpack',
+    name: 'Pack Mule',
+    icon: '🎒',
+    description: 'Even more inventory space',
+    cost: 700,
+    maxLevel: 2,
+    effect: '+6 inventory slots per level',
+  },
+  {
+    id: 'endurance',
+    name: 'Endurance Training',
+    icon: '🫁',
+    description: 'Increased stamina pool',
+    cost: 450,
+    maxLevel: 2,
+    effect: '+20% max stamina per level',
+  },
 ];
 
 // Consumable items for sale at trader
@@ -124,6 +170,9 @@ export const TRADER_ITEMS: TraderItem[] = [
   { id: 'buy_toz', name: 'TOZ-34 Shotgun', icon: '🔫', description: 'Devastating close range buckshot', cost: 500, category: 'weapon' },
   { id: 'buy_propaganda', name: 'Propaganda Leaflet', icon: '📢', description: 'Converts one enemy to ally for 60s', cost: 600, category: 'gear' },
   { id: 'buy_dogfood', name: 'Dog Food', icon: '🦴', description: 'Neutralizes a guard dog', cost: 100, category: 'gear' },
+  { id: 'buy_scope', name: 'Red Dot Scope', icon: '🔭', description: 'Weapon mod: +20% bullet speed', cost: 300, category: 'gear' },
+  { id: 'buy_suppressor', name: 'Suppressor', icon: '🔇', description: 'Weapon mod: -50% shot noise', cost: 450, category: 'gear' },
+  { id: 'buy_ext_mag', name: 'Extended Magazine', icon: '📎', description: 'Weapon mod: +8 mag capacity', cost: 250, category: 'gear' },
 ];
 
 // XP level thresholds — level N requires XP_LEVELS[N-1] total XP

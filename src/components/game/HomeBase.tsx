@@ -4,6 +4,7 @@ import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, 
 import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
+import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion, DailyMission } from '../../game/dailyMissions';
 
 export interface StashState {
   items: Item[];
@@ -58,11 +59,13 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
+  const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
   const foundDocs = LORE_DOCUMENTS.filter(d => d.found);
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
   const stashValue = stash.items.reduce((s, i) => s + i.value, 0);
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
+  const dailyMissions = getDailyMissions();
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
@@ -164,6 +167,30 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                 </div>
               </div>
             ))}
+            {/* Daily Missions */}
+            <div className="border-t border-border/30 pt-3 mt-1">
+              <span className="text-xs font-display text-accent uppercase tracking-wider">📅 Daily Challenges</span>
+              <p className="text-[9px] font-mono text-muted-foreground mb-2">Resets every 24 hours — complete in any raid</p>
+              {dailyMissions.map(dm => {
+                const claimed = dailyProgress.completed.includes(dm.id);
+                return (
+                  <div key={dm.id} className={`flex items-center gap-3 p-2 rounded border mb-1 ${claimed ? 'border-accent/30 bg-accent/5 opacity-60' : 'border-border/30 bg-secondary/10'}`}>
+                    <span className="text-lg">{dm.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] font-display text-foreground">{dm.name}</span>
+                      <p className="text-[9px] font-mono text-muted-foreground">{dm.description}</p>
+                    </div>
+                    <div className="text-right">
+                      {claimed ? (
+                        <span className="text-[9px] font-mono text-accent">✓ DONE</span>
+                      ) : (
+                        <span className="text-[9px] font-mono text-warning">{dm.reward.rubles}₽ +{dm.reward.xp}XP</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
