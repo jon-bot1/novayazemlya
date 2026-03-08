@@ -37,7 +37,7 @@ function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
       (enemy as any)._hookAttack = true;
       (enemy as any)._hookRange = (enemy as any)._hookRange || 55;
       (enemy as any)._hookDamage = (enemy as any)._hookDamage || 60;
-    } else if (mapId === 'novaya_zemlya') {
+    } else if (mapId === 'objekt47') {
       (enemy as any)._bossId = 'osipovitj';
       (enemy as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
     }
