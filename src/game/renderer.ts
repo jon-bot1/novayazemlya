@@ -2961,6 +2961,94 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
+  // ── SOUND RIPPLES — visual feedback for player noise ──
+  {
+    const playerX = state.player.pos.x;
+    const playerY = state.player.pos.y;
+    for (const se of state.soundEvents) {
+      // Only show player-originated sounds (close to player pos)
+      const dx = se.pos.x - playerX;
+      const dy = se.pos.y - playerY;
+      if (dx * dx + dy * dy > 400) continue; // only sounds from player position
+      const age = state.time - se.time;
+      if (age > 1.2) continue; // fade out after 1.2s
+      const progress = age / 1.2;
+      const radius = se.radius * progress;
+      const alpha = (1 - progress) * 0.25;
+      // Color based on loudness
+      const isLoud = se.radius > 150;
+      const isMedium = se.radius > 50;
+      const color = isLoud ? `rgba(255, 80, 40, ${alpha})` : isMedium ? `rgba(255, 200, 60, ${alpha})` : `rgba(100, 220, 100, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(se.pos.x, se.pos.y, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = isLoud ? 1.5 : 1;
+      ctx.stroke();
+    }
+  }
+
+  // ── DISTRACTION ROCK — show landing indicator ──
+  {
+    const rocks: any[] = (state as any)._thrownRocks || [];
+    for (const rock of rocks) {
+      const age = state.time - rock.time;
+      if (age > 3) continue;
+      const fadeIn = Math.min(1, age * 4);
+      const fadeOut = age > 2 ? (3 - age) : 1;
+      const alpha = fadeIn * fadeOut * 0.5;
+      // Impact ripple
+      ctx.beginPath();
+      const rippleR = 10 + age * 30;
+      ctx.arc(rock.pos.x, rock.pos.y, rippleR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(180, 150, 100, ${alpha * 0.4})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Rock icon
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = alpha;
+      ctx.fillText('🪨', rock.pos.x, rock.pos.y + 4);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ── CONTEXTUAL TUTORIAL TIPS — non-intrusive world-space hints ──
+  {
+    const tips = (state as any)._activeTutorialTip;
+    if (tips) {
+      const { text, worldPos, fadeIn } = tips;
+      const tipAge = state.time - (tips.startTime || 0);
+      if (tipAge < 6) {
+        const alpha = Math.min(1, tipAge * 2) * (tipAge > 4 ? (6 - tipAge) / 2 : 1) * 0.9;
+        ctx.save();
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        const tx = worldPos ? worldPos.x : state.player.pos.x;
+        const ty = worldPos ? worldPos.y - 50 : state.player.pos.y - 50;
+        // Background pill
+        const tw = ctx.measureText(text).width + 16;
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.7})`;
+        const rr = 4;
+        ctx.beginPath();
+        ctx.moveTo(tx - tw / 2 + rr, ty - 8);
+        ctx.lineTo(tx + tw / 2 - rr, ty - 8);
+        ctx.quadraticCurveTo(tx + tw / 2, ty - 8, tx + tw / 2, ty - 8 + rr);
+        ctx.lineTo(tx + tw / 2, ty + 6 - rr);
+        ctx.quadraticCurveTo(tx + tw / 2, ty + 6, tx + tw / 2 - rr, ty + 6);
+        ctx.lineTo(tx - tw / 2 + rr, ty + 6);
+        ctx.quadraticCurveTo(tx - tw / 2, ty + 6, tx - tw / 2, ty + 6 - rr);
+        ctx.lineTo(tx - tw / 2, ty - 8 + rr);
+        ctx.quadraticCurveTo(tx - tw / 2, ty - 8, tx - tw / 2 + rr, ty - 8);
+        ctx.closePath();
+        ctx.fill();
+        // Text
+        ctx.fillStyle = `rgba(180, 255, 140, ${alpha})`;
+        ctx.fillText(text, tx, ty + 2);
+        ctx.restore();
+      }
+    }
+  }
+
   // Grenade charge indicator
   if ((state as any)._grenadeChargeStart) {
     const chargeTime = Math.min(2.0, (performance.now() - (state as any)._grenadeChargeStart) / 1000);
