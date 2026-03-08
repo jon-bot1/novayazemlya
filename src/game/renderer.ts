@@ -390,7 +390,7 @@ function drawMountedGun(ctx: CanvasRenderingContext2D, x: number, y: number, ang
   ctx.restore();
 }
 
-// Draw a wall with 3/4 perspective south face
+// Draw a wall with 3/4 perspective south face + weathering
 function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string) {
   // South face (visible depth)
   const faceColor = shadeColor(color, -30);
@@ -420,12 +420,34 @@ function drawWall3D(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
   ctx.fillStyle = color;
   ctx.fillRect(x, y, w, h);
 
-  // Top highlight — flat instead of gradient for Firefox perf
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillRect(x, y, w, h * 0.4);
+  // Top edge highlight — very subtle
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  ctx.fillRect(x, y, w, Math.min(h * 0.3, 4));
 
-  // Edge line
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  // Bottom edge shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(x, y + h - 2, w, 2);
+
+  // Weathering — dirt stain at base of south face
+  ctx.fillStyle = 'rgba(30,25,15,0.08)';
+  ctx.fillRect(x, y + h + WALL_HEIGHT - 4, w, 4);
+
+  // Surface texture — subtle horizontal lines for brickwork/panels
+  if (w > 20 && h > 8) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+    ctx.lineWidth = 0.5;
+    const lines = Math.floor(h / 8);
+    for (let i = 1; i < lines; i++) {
+      const ly = y + i * (h / lines);
+      ctx.beginPath();
+      ctx.moveTo(x + 1, ly);
+      ctx.lineTo(x + w - 1, ly);
+      ctx.stroke();
+    }
+  }
+
+  // Edge line — darker
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
 }
