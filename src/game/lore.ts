@@ -1942,3 +1942,200 @@ export function getIntelSummary(documents: LoreDocument[]): IntelEntry[] {
       icon: d.classification === 'TOP SECRET' ? '🔴' : d.classification === 'SECRET' ? '🟡' : '⚪',
     }));
 }
+
+// ═══════════════════════════════════════════════
+// ENDINGS SYSTEM
+// ═══════════════════════════════════════════════
+
+export const ENDING_DOCS_REQUIRED = 15;
+
+export interface GameEnding {
+  id: string;
+  faction: string;
+  icon: string;
+  label: string;
+  description: string;
+  narrative: string;
+  epilogue: string;
+}
+
+export const GAME_ENDINGS: GameEnding[] = [
+  {
+    id: 'ending_nato',
+    faction: 'NATO',
+    icon: '🇺🇸',
+    label: 'Submit to NATO',
+    description: 'Hand over all intelligence to Task Force AURORA. The West will know the truth.',
+    narrative: `OPERATION AURORA BOREALIS — FINAL REPORT
+CLASSIFICATION: ULTRAVIOLET — EYES ONLY
+
+Agent VARG has delivered the complete intelligence package to CONTROL at the designated dead drop in Tromsø. The documents confirm the existence and extent of the Substance Zero vein network, its pre-Cambrian origin, and its reaction to nuclear detonation.
+
+NATO Strategic Command has authorized PROJECT CONTAINMENT — a three-phase operation to seal all known SZ-0 access points using deep-bore concrete injection. The Norrberget mine will be filled. Objekt 47 will be demolished. The fishing village has been evacuated under cover of a "chemical spill."
+
+Agent VARG has been awarded the Intelligence Star (classified) and reassigned to a non-operational post in Brussels. His request to return to the field has been denied. His request to visit his father's grave inside Norrberget has been denied.
+
+The mountain will be sealed. The vein will be buried. The documents will be archived in a vault beneath the Pentagon that does not officially exist.`,
+    epilogue: `Six months later, seismographs across Scandinavia detect a pulse — a single, massive vibration originating from 11 kilometers below Norrberget. The concrete seals crack. The aurora turns red for three consecutive nights.
+
+CONTROL sends a single encrypted message to VARG's Brussels apartment: "It's growing through the concrete."
+
+VARG books a flight to Tromsø the same evening. He packs his father's compass. The needle is spinning.
+
+THE MOUNTAIN REMEMBERS.
+
+— END —`
+  },
+  {
+    id: 'ending_soviet',
+    faction: 'Soviet Union',
+    icon: '☭',
+    label: 'Submit to the Soviets',
+    description: 'Betray NATO and deliver the intelligence to GRU. Let Moscow control the power.',
+    narrative: `СОВЕРШЕННО СЕКРЕТНО — GRU NORTHERN COMMAND
+
+The asset known as VARG has made contact through the Murmansk channel. He has delivered complete NATO intelligence on Substance Zero, including the location of all known vein access points, extraction methods, and — critically — the classified research on weaponization.
+
+General Secretary has been briefed. Decision: FULL EXPLOITATION.
+
+Project ЧЁРНОЕ СОЛНЦЕ (Black Sun) is hereby activated. Mining operations at Norrberget will resume under military supervision. Objekt 47 will be expanded. A new processing facility will be constructed at [REDACTED].
+
+The asset VARG has been offered Soviet citizenship and the rank of Colonel. He has accepted. His stated motivation: "NATO would bury the truth. At least you'll use it. My father didn't die for nothing."
+
+First SZ-0 enhanced warhead test scheduled for [REDACTED]. Yield projections exceed theoretical maximum by a factor of 340.`,
+    epilogue: `The first SZ-0 enhanced warhead is detonated underground on Novaya Zemlya. The yield is not 340 times greater. It is 340,000 times greater.
+
+The blast does not dissipate. It travels through the vein network like electricity through a wire. Every SZ-0 node on the planet pulses simultaneously. The aurora covers the entire northern hemisphere for six hours.
+
+In Moscow, VARG watches the classified footage. The underground detonation chamber is intact — but the walls are no longer rock. They are black crystal. And the crystal is growing. Toward Moscow. Toward everywhere.
+
+His father's compass needle snaps off and embeds itself in the wall, pointing north.
+
+"What have we fed it?" VARG whispers.
+
+No one answers. But deep below, something does.
+
+THE MOUNTAIN IS AWAKE.
+
+— END —`
+  },
+  {
+    id: 'ending_cult',
+    faction: 'The Cults',
+    icon: '🔮',
+    label: 'Give to the Cultists',
+    description: 'Deliver the documents to Stålhandske-kulten. Let the mountain\'s children decide.',
+    narrative: `No official record exists of this event.
+
+Agent VARG descended into Norrberget Mine on March 14th, carrying the complete intelligence archive. He passed the sealed drift at level 7. He passed the chamber where his father's compass was found. He kept going.
+
+At approximately 1,100 meters below the surface, he encountered them. The Stålhandske-kulten — the cult that had formed around the disappearances. Men and women with amber light in their eyes, speaking a language that was old when Finnish was young. Some of them had been miners. Some had been researchers. One of them, VARG realized with absolute certainty, had been his father.
+
+Björn Stålhandske — or what remained of him — stood at the center of the chamber. His skin had the texture of polished stone. His eyes were veined with gold. He was 89 years old but looked 40.
+
+"Du kom till slut, pojke," he said. You came at last, boy.
+
+VARG gave him the documents. All of them. Every secret NATO and the Soviets had gathered about the substance. Björn read them in minutes — his eyes moving too fast to follow — and then placed them against the chamber wall. The black crystal absorbed them. Every page. Every word.
+
+"Nu vet Berget vad de vet," Björn said. Now the Mountain knows what they know.
+
+"Och vad händer nu?" VARG asked. And what happens now?
+
+"Nu väntar vi. Som vi alltid har väntat."
+
+Now we wait. As we have always waited.`,
+    epilogue: `VARG was never seen again. NATO listed him as KIA. The Soviets listed him as a defector. Neither was correct.
+
+Deep inside Norrberget, in a chamber that does not appear on any geological survey, Agent VARG sits beside his father. The amber light has begun to grow behind his own eyes. He can feel the vein network — thousands of kilometers of living crystal, pulsing beneath Scandinavia, beneath the Arctic, beneath the sea.
+
+He can hear the Kven songs now. Not as music, but as memory. The mountain's memory. Four billion years of patient waiting.
+
+Sometimes, on winter nights, hikers near Norrberget report seeing two figures standing at the mine entrance. A young man and an old man. Both facing north. Both with eyes like molten gold.
+
+The compass needle in VARG's pocket has stopped spinning. It points straight down.
+
+HAN TILLHÖR BERGET NU.
+(He belongs to the mountain now.)
+
+— END —`
+  },
+  {
+    id: 'ending_burn',
+    faction: 'No One',
+    icon: '🔥',
+    label: 'Burn Everything',
+    description: 'Destroy all the documents. Let the truth die. Some knowledge is too dangerous.',
+    narrative: `Agent VARG's final transmission to CONTROL, Task Force AURORA:
+
+"This is VARG. Final report. Disregard all previous intelligence. I am destroying the archive.
+
+I have read every document. I have listened to every tape. I have spoken to the miners, the cultists, the scientists, and the soldiers. I have stood in the chamber at 1,100 meters and felt the mountain's heartbeat through my boots.
+
+And I have reached a conclusion that none of you — NATO, GRU, the cults — are prepared to hear:
+
+The substance is not a weapon. It is not a resource. It is not a god. It is a IMMUNE SYSTEM. This planet's immune system. And we — humanity — are what it was designed to fight.
+
+Every bomb we've dropped, every mine we've dug, every gram of SZ-0 we've extracted — we've been triggering an immune response. The vein network isn't growing toward us. It's growing AROUND us. Encircling us. Preparing.
+
+If NATO gets these documents, they'll try to contain it. They'll fail.
+If the Soviets get them, they'll try to weaponize it. They'll wake it fully.
+If the cults get them, they'll accelerate whatever transformation they're undergoing.
+
+The only correct move is to destroy the information and WALK AWAY.
+
+I'm burning everything. Every page. Every tape. Every photograph. The fire is already lit.
+
+Tell my father I'm sorry I couldn't bring him home.
+
+VARG out."
+
+[TRANSMISSION ENDS]
+[NO FURTHER CONTACT WITH AGENT VARG]`,
+    epilogue: `The documents burn. The tapes melt. The photographs curl and blacken and are gone.
+
+VARG watches the fire from the shore of the Barents Sea. The aurora is green tonight — peaceful. Normal. The mountain is silent.
+
+For three months, nothing happens. The vein network's growth rate slows by 12%. Then 20%. Then 40%. Without human interference, without bombs and drills and extraction, the substance returns to its ancient rhythm. Sleeping. Dreaming. Waiting — but not urgently.
+
+VARG disappears into northern Finland under a false name. He works as a carpenter in a small village. He never speaks of the mountain. He never looks north.
+
+But sometimes, late at night, he takes out his father's compass. The needle still points toward Norrberget. It always will.
+
+And sometimes — very rarely — he hears the Kven song:
+
+  "Älä laula vuorelle, lapsi.
+   Vuori laulaa takaisin."
+
+  Do not sing to the mountain, child.
+  The mountain sings back.
+
+He closes the compass. He goes to sleep.
+The mountain waits. Patient. Eternal. Undisturbed.
+
+Perhaps that is enough.
+
+— END —`
+  }
+];
+
+export function canTriggerEnding(): boolean {
+  const found = LORE_DOCUMENTS.filter(d => d.found).length;
+  return found >= ENDING_DOCS_REQUIRED;
+}
+
+export function getEndingProgress(): { found: number; required: number; percentage: number } {
+  const found = LORE_DOCUMENTS.filter(d => d.found).length;
+  return { found, required: ENDING_DOCS_REQUIRED, percentage: Math.min(100, Math.round((found / ENDING_DOCS_REQUIRED) * 100)) };
+}
+
+export function hasCompletedEnding(): string | null {
+  try {
+    return localStorage.getItem('nz_ending_chosen');
+  } catch { return null; }
+}
+
+export function saveEnding(endingId: string) {
+  try {
+    localStorage.setItem('nz_ending_chosen', endingId);
+  } catch {}
+}
