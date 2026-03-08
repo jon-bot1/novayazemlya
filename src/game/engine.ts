@@ -22,6 +22,7 @@ function getBossTitle(enemy: Enemy): string {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
   if (bossId === 'uzbek') return 'УЗБЕК';
+  if (bossId === 'dock_master') return 'DOCK MASTER';
   return 'COMMANDANT OSIPOVITJ';
 }
 
@@ -396,13 +397,16 @@ function generateEnemyLoot(enemy: Enemy) {
     return rLoot;
   }
   if (enemy.type === 'boss') {
-    return [
-      ...existingLoot,
-      ...LOOT_POOLS.military(),
-      ...LOOT_POOLS.body(),
-      { id: 'boss_usb', name: 'Osipovitj\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
-      { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
-    ];
+    const bossId = (enemy as any)._bossId;
+    const baseLoot = [...existingLoot, ...LOOT_POOLS.military(), ...LOOT_POOLS.body()];
+    if (bossId === 'osipovitj') {
+      baseLoot.push(
+        { id: 'boss_usb', name: 'Osipovitj\'s USB Drive', category: 'valuable' as const, icon: '💾', weight: 0.1, value: 5000, description: 'CRITICAL INTEL — Extract with this to complete the mission!' },
+        { id: 'boss_dogtag', name: 'Osipovitj\'s Dogtag', category: 'valuable' as const, icon: '💀', weight: 0.1, value: 1500, description: 'Commandant Osipovitj\'s ID tag — extremely rare' },
+      );
+    }
+    // Kravtsov, Uzbek, Dock Master keep their pre-assigned loot from map generators
+    return baseLoot;
   }
   const poolType = enemy.type === 'heavy' ? 'military' : enemy.type === 'soldier' ? 'military' : enemy.type === 'shocker' ? 'military' : 'common';
   const baseLoot = [...existingLoot, ...LOOT_POOLS[poolType]()];

@@ -320,7 +320,10 @@ export function generateMap() {
       const bossZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_OFFICES_BOT];
       const bz = bossZones[Math.floor(Math.random() * bossZones.length)];
       const bp = randIn(bz.x, bz.y, bz.w, bz.h);
-      return makeEnemy(bp.x, bp.y, 'boss');
+      const boss = makeEnemy(bp.x, bp.y, 'boss');
+      (boss as any)._bossId = 'osipovitj';
+      (boss as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
+      return boss;
     })(),
 
     // === OUTDOOR ENEMIES — reduced ===
