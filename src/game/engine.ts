@@ -7,7 +7,7 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, PATIENT_ZERO_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, PATIENT_ZERO_TAUNTS, KRAVTSOV_PHASES, PATIENT_ZERO_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, IDLE_LINES, HIT_LINES, pickLine } from './dialogue';
 
 // Helper: get boss-specific death monologue
 function getBossDeathMonologue(enemy: Enemy): string[] {
