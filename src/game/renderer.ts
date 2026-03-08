@@ -3049,6 +3049,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
     }
   }
+  for (const dp of state.documentPickups) {
     if (!dp.collected && dist2d(state.player.pos, dp.pos) < 70) {
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
       ctx.font = 'bold 10px sans-serif';
