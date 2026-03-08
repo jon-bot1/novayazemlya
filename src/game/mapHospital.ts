@@ -473,6 +473,10 @@ export function generateHospitalMap() {
     { pos: { x: MAP_W / 2, y: 100 }, radius: 80, timer: 5, active: false, name: 'ROOFTOP HELICOPTER' },
   ];
   allExfils[Math.floor(Math.random() * allExfils.length)].active = true;
+  // Conditional exfil — only works if alarm is off (stealth extraction)
+  const stealthExfil: ExtractionPoint = { pos: { x: 100, y: MAP_H / 2 }, radius: 60, timer: 2, active: true, name: 'SEWER TUNNEL' };
+  (stealthExfil as any)._requirements = 'no_alarm';
+  allExfils.push(stealthExfil);
 
   // ═══ LIGHTS — dimmer, horror atmosphere ═══
   const lights: LightSource[] = [

@@ -466,6 +466,10 @@ export function generateFishingVillageMap() {
     { pos: { x: MAP_W - 80, y: 500 }, radius: 80, timer: 5, active: false, name: 'FOREST TRAIL EAST' },
   ];
   allExfils[Math.floor(Math.random() * allExfils.length)].active = true;
+  // Conditional exfil — keycard required for the speedboat shortcut
+  const quickExfil: ExtractionPoint = { pos: { x: 700, y: 100 }, radius: 60, timer: 2, active: true, name: 'SMUGGLER BOAT' };
+  (quickExfil as any)._requirements = 'keycard';
+  allExfils.push(quickExfil);
   const extractionPoints = allExfils;
 
   // ══════════════════════════════════════
