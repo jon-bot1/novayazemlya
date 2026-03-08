@@ -819,6 +819,7 @@ export const GameCanvas: React.FC = () => {
     exfilRevealed: undefined as string | undefined,
     achievementStats: undefined as any,
     pendingWeapon: null as any,
+    noiseLevel: 0,
     nearInteractable: false,
   });
   const [showInventory, setShowInventory] = useState(false);
