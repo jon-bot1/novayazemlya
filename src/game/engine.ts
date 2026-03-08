@@ -2422,20 +2422,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   for (const enemy of state.enemies) {
     if (enemy.state === 'dead') continue;
 
-    // Performance: skip full AI for enemies far off-screen that aren't alerted
-    const isOffScreen = enemy.pos.x < viewCx || enemy.pos.x > viewCx + viewW ||
-                        enemy.pos.y < viewCy || enemy.pos.y > viewCy + viewH;
-    if (isOffScreen && (enemy.state === 'idle' || enemy.state === 'patrol') && !enemy.friendly) {
-      // Only update patrol movement at reduced rate
-      enemy.eyeBlink -= dt;
-      if (enemy.eyeBlink < 0) enemy.eyeBlink = 3 + Math.random() * 4;
-      // Speech bubble timer
-      if (enemy.speechBubbleTimer && enemy.speechBubbleTimer > 0) {
-        enemy.speechBubbleTimer -= dt;
-        if (enemy.speechBubbleTimer <= 0) { enemy.speechBubble = undefined; enemy.speechBubbleTimer = undefined; }
-      }
-      continue; // skip expensive AI for idle off-screen enemies
-    }
+    // Keep AI fully active so enemies always patrol/aggro reliably
+    // (previous off-screen idle skip could make encounters feel frozen).
 
     // Friendly timer countdown
     if (enemy.friendly) {
