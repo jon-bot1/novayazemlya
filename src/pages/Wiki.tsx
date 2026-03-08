@@ -500,41 +500,87 @@ function WeaponsSection() {
       <H2>🔫 Weapons</H2>
       <P>All weapons are balanced using an eDPS algorithm: eDPS = (damage × 1000 / fireRate) × (auto ? 0.6 : 1.0). Auto weapons receive a 0.6× penalty to account for spread.</P>
       
-      <H3>Sidearms (Tier 1)</H3>
-      <WeaponRow name="PM Makarov" icon="🔫" tier="Common" ammo="9x18" dmg={15} rpm={143} mag={8} mode="Semi" spread="0.10" weight={3} notes="Standard sidearm. Always available." />
-      <WeaponRow name="Nagant M1895" icon="🔫" tier="Common" ammo="9x18" dmg={22} rpm={75} mag={7} mode="Semi" spread="0.07" weight={1} notes="Slow but punchy revolver." />
+      <H3>Sidearms (Tier 1) — Slot: Secondary</H3>
+      <WeaponRow name="PM Makarov" icon="🔫" tier="Common" ammo="9x18" dmg={15} rpm={143} mag={8} mode="Semi" spread="0.10" weight={3} notes="Standard sidearm. Bullet speed: 8. Range: 40 frames. eDPS: 35.7" />
+      <WeaponRow name="Nagant M1895" icon="🔫" tier="Common" ammo="9x18" dmg={22} rpm={75} mag={7} mode="Semi" spread="0.07" weight={1} notes="Slow but punchy revolver. Bullet speed: 9. Range: 50 frames. eDPS: 27.5" />
 
-      <H3>Melee</H3>
-      <WeaponRow name="Combat Knife" icon="🗡️" tier="Common" ammo="—" dmg={40} rpm={200} mag={0} mode="Melee" spread="—" weight={0.3} notes="Silent. One-shots most scavs." />
-      <WeaponRow name="Baton" icon="🔫" tier="Common" ammo="—" dmg={10} rpm={120} mag={0} mode="Melee" spread="—" weight={0.5} notes="Weak but non-lethal." />
+      <H3>Melee — Slot: Secondary</H3>
+      <WeaponRow name="Combat Knife" icon="🗡️" tier="Common" ammo="—" dmg={40} rpm={200} mag={0} mode="Melee" spread="—" weight={0.3} notes="Silent. Fast (300ms). Range: 6. One-shots most scavs. Best stealth weapon." />
+      <WeaponRow name="Baton" icon="🔫" tier="Common" ammo="—" dmg={10} rpm={120} mag={0} mode="Melee" spread="—" weight={0.5} notes="Weak but non-lethal. Range: 8. Fire rate: 500ms." />
 
-      <H3>SMGs (Tier 2)</H3>
-      <WeaponRow name="PPSh-41" icon="🔫" tier="Rare" ammo="9x18" dmg={8} rpm={600} mag={35} mode="Auto" spread="0.12" weight={3} notes="Bullet hose. Burns through 9x18 fast." />
-      <WeaponRow name="Kpist m/45" icon="🔫" tier="Rare" ammo="9x18" dmg={10} rpm={500} mag={36} mode="Auto" spread="0.12" weight={2.5} notes="Swedish SMG. Higher damage per bullet than PPSh." />
+      <H3>SMGs (Tier 2) — Slot: Primary</H3>
+      <WeaponRow name="PPSh-41" icon="🔫" tier="Rare" ammo="9x18" dmg={8} rpm={600} mag={35} mode="Auto" spread="0.12" weight={3} notes="Bullet hose. Bullet speed: 6. Range: 22 frames. Fire rate: 100ms. eDPS: 48" />
+      <WeaponRow name="Kpist m/45" icon="🔫" tier="Rare" ammo="9x18" dmg={10} rpm={500} mag={36} mode="Auto" spread="0.12" weight={2.5} notes="Swedish Carl Gustaf SMG. Bullet speed: 7. Range: 25 frames. Fire rate: 120ms. eDPS: 50" />
 
-      <H3>Shotgun (Tier 2)</H3>
-      <WeaponRow name="TOZ-34" icon="🔫" tier="Rare" ammo="12gauge" dmg={11} rpm={55} mag={2} mode="Semi" spread="Cone 0.55rad" weight={3} notes="5 pellets per shot. Devastating close range. 2-round break action." />
+      <H3>Shotgun (Tier 2) — Slot: Primary</H3>
+      <WeaponRow name="TOZ-34" icon="🔫" tier="Rare" ammo="12gauge" dmg={11} rpm={55} mag={2} mode="Semi" spread="Cone 0.55rad" weight={3} notes="5 pellets × 11 dmg = 55 potential. Bullet speed: 7. Range: 20 frames. Fire rate: 1100ms. 2-round break action." />
 
-      <H3>Assault Rifles (Tier 3)</H3>
-      <WeaponRow name="AK-74" icon="🔫" tier="Rare" ammo="5.45x39" dmg={16} rpm={214} mag={30} mode="Auto" spread="0.09" weight={3} notes="Controllable. Most common rifle." />
-      <WeaponRow name="AKM" icon="🔫" tier="Epic" ammo="7.62x39" dmg={20} rpm={167} mag={30} mode="Auto" spread="0.09" weight={3} notes="Harder hitting but slower than AK-74." />
-      <WeaponRow name="Ak 4 (HK G3)" icon="🔫" tier="Epic" ammo="7.62x39" dmg={24} rpm={150} mag={20} mode="Auto" spread="0.06" weight={4} notes="Battle rifle. Most precise auto weapon. Heavy recoil." />
+      <H3>Assault Rifles (Tier 3) — Slot: Primary</H3>
+      <WeaponRow name="AK-74" icon="🔫" tier="Rare" ammo="5.45x39" dmg={16} rpm={214} mag={30} mode="Auto" spread="0.09" weight={3} notes="Controllable. Bullet speed: 10. Range: 60 frames. Fire rate: 280ms. eDPS: 34.3" />
+      <WeaponRow name="AKM" icon="🔫" tier="Epic" ammo="7.62x39" dmg={20} rpm={167} mag={30} mode="Auto" spread="0.09" weight={3} notes="Harder hitting. Bullet speed: 9. Range: 50 frames. Fire rate: 360ms. eDPS: 33.3" />
+      <WeaponRow name="Ak 4 (HK G3)" icon="🔫" tier="Epic" ammo="7.62x39" dmg={24} rpm={150} mag={20} mode="Auto" spread="0.06" weight={4} notes="Battle rifle. Bullet speed: 11. Range: 70 frames. Fire rate: 400ms. eDPS: 36. Heavy recoil." />
 
-      <H3>Precision (Tier 4)</H3>
-      <WeaponRow name="Mosin-Nagant" icon="🔫" tier="Legendary" ammo="7.62x54R" dmg={50} rpm={33} mag={5} mode="Semi" spread="0.03" weight={3} notes="One-shot potential. Extremely slow fire rate. Sniper weapon." />
+      <H3>Precision (Tier 4) — Slot: Primary</H3>
+      <WeaponRow name="Mosin-Nagant" icon="🔫" tier="Legendary" ammo="7.62x54R" dmg={50} rpm={33} mag={5} mode="Semi" spread="0.03" weight={3} notes="One-shot potential. Bullet speed: 13. Range: 95 frames. Fire rate: 1800ms. eDPS: 27.8. Headshot bonus +20%." />
 
-      <H3>Heavy (Tier 5)</H3>
-      <WeaponRow name="Ksp 58 (FN MAG)" icon="🔫" tier="Legendary" ammo="7.62x54R" dmg={20} rpm={375} mag={50} mode="Auto" spread="0.11" weight={6} notes="Devastating suppression. Extremely heavy. Eats rare 7.62x54R ammo." />
+      <H3>Heavy (Tier 5) — Slot: Primary</H3>
+      <WeaponRow name="Ksp 58 (FN MAG)" icon="🔫" tier="Legendary" ammo="7.62x54R" dmg={20} rpm={375} mag={50} mode="Auto" spread="0.11" weight={6} notes="Devastating. Bullet speed: 10. Range: 75 frames. Fire rate: 160ms. eDPS: 75. Extremely heavy (6kg)." />
 
       <H3>Special</H3>
-      <WeaponRow name="Laser Designator" icon="🔴" tier="Legendary" ammo="—" dmg={0} rpm={0} mag={0} mode="Special" spread="—" weight={1} notes="Calls mortar strike on target after 3s delay. Does not fire bullets." />
+      <WeaponRow name="Laser Designator" icon="🔴" tier="Legendary" ammo="—" dmg={0} rpm={0} mag={0} mode="Special" spread="—" weight={1} notes="Calls mortar strike (200 dmg, 150px radius) on target after 3s delay. Does not fire bullets." />
+
+      <H3>Ammunition Types</H3>
+      <P>Ammo is stored in vest slots (not backpack). Each type feeds specific weapons:</P>
+      <div className="space-y-1">
+        {[
+          { type: '9x18', weapons: 'Makarov, Nagant M1895, PPSh-41, Kpist m/45, Baton, Knife', notes: 'Most common. Starting ammo. Reserve: 32 rounds.' },
+          { type: '5.45x39', weapons: 'AK-74', notes: 'Standard rifle ammo. Shop: 20 rounds for 80₽.' },
+          { type: '7.62x39', weapons: 'AKM, Ak 4', notes: 'Heavy rifle ammo. Shop: 15 rounds for 100₽.' },
+          { type: '12gauge', weapons: 'TOZ-34', notes: 'Shotgun shells. Found on rednecks.' },
+          { type: '7.62x54R', weapons: 'Mosin-Nagant, Ksp 58', notes: 'Rare sniper/MG ammo. Shop: 10 rounds for 120₽.' },
+        ].map(a => (
+          <div key={a.type} className="flex items-start gap-2 text-[10px] font-mono text-foreground/70 border-b border-border/30 pb-1">
+            <span className="text-accent font-bold min-w-[70px]">{a.type}</span>
+            <div>
+              <div>{a.weapons}</div>
+              <div className="text-muted-foreground">{a.notes}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <H3>Weapon Slot System</H3>
+      <P>Players carry 3 weapon slots:</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div><span className="text-accent">[1] Melee</span> — Knife/Baton (always equipped)</div>
+        <div><span className="text-accent">[2] Secondary</span> — Sidearm (Makarov, Revolver)</div>
+        <div><span className="text-accent">[3] Primary</span> — Rifle/SMG/Shotgun/Heavy</div>
+      </div>
+      <P>Press [1], [2], [3] to switch slots. New weapons found on ground — press [E] to pick up.</P>
 
       <H3>Weapon Modifications</H3>
       <div className="space-y-1">
-        <P>🔭 <strong>Red Dot Scope</strong> — +20% bullet speed. Found in crates.</P>
-        <P>🔇 <strong>Suppressor</strong> — -50% shot noise radius. Enables stealth shooting.</P>
-        <P>📎 <strong>Extended Magazine</strong> — +8 magazine capacity.</P>
-        <P>Mods attach automatically to your primary weapon on deployment.</P>
+        <div className="border border-border rounded p-2 bg-card/50 text-[10px] font-mono text-foreground/70">
+          <strong className="text-foreground">🔭 Red Dot Scope</strong> — +20% bullet speed (300₽). Makes projectiles faster = less leading required.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50 text-[10px] font-mono text-foreground/70">
+          <strong className="text-foreground">🔇 Suppressor</strong> — -50% shot noise radius (450₽). Reduces enemy detection. Enables stealth shooting.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50 text-[10px] font-mono text-foreground/70">
+          <strong className="text-foreground">📎 Extended Magazine</strong> — +8 magazine capacity (250₽). More shots before reloading.
+        </div>
+      </div>
+      <P>One mod per slot. 3 slots per weapon: Scope, Suppressor, Magazine. Attach/detach at Safe House 🔧 bench.</P>
+
+      <H3>Damage Modifiers</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🎯 <strong>Headshot:</strong> +50% damage (15% base chance, +15% vs soldiers, +20% with Mosin)</div>
+        <div>🩸 <strong>Bleed:</strong> 2 HP/s continuous. Stopped by bandage or morphine.</div>
+        <div>💥 <strong>Explosion (grenade/TNT):</strong> 200 dmg in 150px radius. Ignores armor.</div>
+        <div>⚡ <strong>Electric (Shocker):</strong> Melee range, causes bleeding. Stun effect.</div>
+        <div>🌙 <strong>Night bonus:</strong> Enemy damage +21% at full darkness.</div>
+        <div>🛡️ <strong>Armor:</strong> Reduces incoming bullet damage. Body Armor +30, Helmet +15.</div>
+        <div>🤝 <strong>Friendly fire:</strong> Enemy-to-enemy damage reduced by 50%.</div>
       </div>
     </>
   );
