@@ -1091,6 +1091,8 @@ function ensureGroundCanvas(state: GameState) {
   const gctx = (_groundCanvas as any).getContext('2d') as CanvasRenderingContext2D;
   const terrainGrid = getRendererTerrainGrid(state);
   const tileSize = 48;
+  const debrisChance = palette.debrisChance || 0.04;
+  
   for (let tx = 0; tx < _groundMapW; tx += tileSize) {
     for (let ty = 0; ty < _groundMapH; ty += tileSize) {
       const terrain = getTerrainFast(terrainGrid, tx + tileSize / 2, ty + tileSize / 2);
@@ -1100,61 +1102,220 @@ function ensureGroundCanvas(state: GameState) {
       gctx.fillRect(tx, ty, tileSize, tileSize);
       
       const hash = (tx * 7 + ty * 13) % 100;
-      // Grass & forest details
-      if (hash < 10 && (terrain === 'grass' || terrain === 'forest')) {
-        gctx.strokeStyle = terrain === 'forest' ? palette.grassDetailB : palette.grassDetailA;
-        gctx.lineWidth = 1;
-        const gx = tx + 10 + (hash % 20);
-        const gy = ty + 15 + (hash % 15);
-        gctx.beginPath();
-        gctx.moveTo(gx, gy + 6); gctx.lineTo(gx - 2, gy); gctx.stroke();
-        gctx.beginPath();
-        gctx.moveTo(gx + 3, gy + 6); gctx.lineTo(gx + 5, gy - 1); gctx.stroke();
-        // Extra grass blade for denser feel
-        if (hash < 5) {
+      const hash2 = (tx * 11 + ty * 3) % 100;
+      
+      // === GRASS & FOREST — varied grass tufts, fallen leaves, undergrowth ===
+      if (terrain === 'grass' || terrain === 'forest') {
+        // Grass blades — more dense and varied
+        if (hash < 18) {
+          gctx.strokeStyle = terrain === 'forest' ? palette.grassDetailB : palette.grassDetailA;
+          gctx.lineWidth = 1;
+          const gx = tx + 6 + (hash % 25);
+          const gy = ty + 10 + (hash % 20);
           gctx.beginPath();
-          gctx.moveTo(gx + 14, gy + 4); gctx.lineTo(gx + 12, gy - 2); gctx.stroke();
+          gctx.moveTo(gx, gy + 7); gctx.lineTo(gx - 1, gy); gctx.stroke();
+          gctx.beginPath();
+          gctx.moveTo(gx + 4, gy + 7); gctx.lineTo(gx + 6, gy - 1); gctx.stroke();
+          if (hash < 10) {
+            gctx.beginPath();
+            gctx.moveTo(gx + 15, gy + 5); gctx.lineTo(gx + 13, gy - 2); gctx.stroke();
+            gctx.beginPath();
+            gctx.moveTo(gx + 22, gy + 6); gctx.lineTo(gx + 20, gy); gctx.stroke();
+          }
+        }
+        // Darker patches — uneven ground
+        if (hash2 < 8) {
+          gctx.fillStyle = terrain === 'forest' ? 'rgba(15,25,10,0.12)' : 'rgba(20,30,15,0.08)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 20 + hash2 % 15, ty + 18 + hash2 % 12, 10 + hash2 % 8, 6 + hash2 % 5, hash2 * 0.5, 0, Math.PI * 2);
+          gctx.fill();
+        }
+        // Forest: fallen twigs, leaf litter
+        if (terrain === 'forest' && hash < 12) {
+          gctx.strokeStyle = 'rgba(60,45,25,0.2)';
+          gctx.lineWidth = 0.8;
+          const sx = tx + 5 + hash * 0.3;
+          const sy = ty + 8 + hash2 * 0.3;
+          gctx.beginPath();
+          gctx.moveTo(sx, sy); gctx.lineTo(sx + 8 + hash % 6, sy + 3 + hash2 % 4); gctx.stroke();
+        }
+        // Mud patches near forest edges
+        if (terrain === 'forest' && hash2 < 5) {
+          gctx.fillStyle = 'rgba(50,40,28,0.15)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 24, ty + 30, 8, 5, 0, 0, Math.PI * 2);
+          gctx.fill();
         }
       }
-      // Dirt pebble details
-      if (hash < 6 && terrain === 'dirt') {
-        gctx.fillStyle = palette.dirtDetailA;
-        const px = tx + 8 + (hash * 3) % 30;
-        const py = ty + 6 + (hash * 7) % 28;
-        gctx.beginPath(); gctx.arc(px, py, 1.5, 0, Math.PI * 2); gctx.fill();
-        gctx.beginPath(); gctx.arc(px + 12, py + 8, 1, 0, Math.PI * 2); gctx.fill();
+      
+      // === DIRT — pebbles, tire tracks, erosion marks ===
+      if (terrain === 'dirt') {
+        // Pebbles — more varied sizes
+        if (hash < 12) {
+          gctx.fillStyle = palette.dirtDetailA;
+          const px = tx + 6 + (hash * 3) % 32;
+          const py = ty + 5 + (hash * 7) % 30;
+          gctx.beginPath(); gctx.arc(px, py, 1 + hash % 2, 0, Math.PI * 2); gctx.fill();
+          gctx.beginPath(); gctx.arc(px + 14, py + 10, 0.8 + hash2 % 2, 0, Math.PI * 2); gctx.fill();
+          if (hash < 6) {
+            gctx.beginPath(); gctx.arc(px + 28, py + 4, 1.2, 0, Math.PI * 2); gctx.fill();
+          }
+        }
+        // Tire ruts / drag marks (map-specific)
+        if (hash2 < 4 && mapId === 'objekt47') {
+          gctx.strokeStyle = 'rgba(40,35,25,0.12)';
+          gctx.lineWidth = 2;
+          gctx.beginPath();
+          gctx.moveTo(tx, ty + 20 + hash % 10);
+          gctx.lineTo(tx + tileSize, ty + 22 + hash % 10);
+          gctx.stroke();
+        }
+        // Fishing village: shell fragments, sand patches
+        if (mapId === 'fishing_village' && hash < 8) {
+          gctx.fillStyle = 'rgba(140,120,90,0.1)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 20 + hash % 10, ty + 25, 5 + hash % 4, 3, 0, 0, Math.PI * 2);
+          gctx.fill();
+        }
       }
-      // Concrete crack details
-      if (hash < 4 && terrain === 'concrete') {
-        gctx.strokeStyle = palette.concreteDetail;
-        gctx.lineWidth = 0.8;
-        const cx = tx + 5 + (hash * 5) % 30;
-        const cy = ty + 10 + (hash * 3) % 25;
-        gctx.beginPath();
-        gctx.moveTo(cx, cy);
-        gctx.lineTo(cx + 8 + hash % 10, cy + 6 + hash % 8);
-        gctx.lineTo(cx + 14 + hash % 12, cy + 3);
-        gctx.stroke();
+      
+      // === CONCRETE — cracks, stains, expansion joints ===
+      if (terrain === 'concrete') {
+        // Cracks — more complex branching
+        if (hash < 8) {
+          gctx.strokeStyle = palette.concreteDetail;
+          gctx.lineWidth = 0.8;
+          const cx = tx + 4 + (hash * 5) % 28;
+          const cy = ty + 8 + (hash * 3) % 24;
+          gctx.beginPath();
+          gctx.moveTo(cx, cy);
+          gctx.lineTo(cx + 6 + hash % 8, cy + 5 + hash % 6);
+          gctx.lineTo(cx + 12 + hash % 10, cy + 2);
+          gctx.stroke();
+          // Branch
+          if (hash < 4) {
+            gctx.beginPath();
+            gctx.moveTo(cx + 6, cy + 5);
+            gctx.lineTo(cx + 3, cy + 12);
+            gctx.stroke();
+          }
+        }
+        // Expansion joints — grid lines
+        if (hash2 < 3) {
+          gctx.strokeStyle = 'rgba(0,0,0,0.06)';
+          gctx.lineWidth = 0.5;
+          gctx.beginPath();
+          gctx.moveTo(tx, ty + tileSize / 2);
+          gctx.lineTo(tx + tileSize, ty + tileSize / 2);
+          gctx.stroke();
+        }
+        // Oil/rust stains
+        if (hash < 3 && (palette.wallStain)) {
+          gctx.fillStyle = palette.wallStain;
+          gctx.beginPath();
+          gctx.ellipse(tx + 15 + hash2 % 20, ty + 20 + hash % 15, 6 + hash % 5, 4 + hash2 % 3, hash * 0.3, 0, Math.PI * 2);
+          gctx.fill();
+        }
+        // Hospital: blood spatter on floor
+        if (mapId === 'hospital' && hash2 < 2) {
+          gctx.fillStyle = 'rgba(60,15,15,0.08)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 25, ty + 20, 4 + hash % 3, 3, hash * 0.5, 0, Math.PI * 2);
+          gctx.fill();
+        }
       }
-      // Asphalt line markings (occasional)
-      if (hash < 3 && terrain === 'asphalt') {
-        gctx.fillStyle = 'rgba(200,180,60,0.08)';
-        gctx.fillRect(tx + 20, ty, 6, tileSize);
+      
+      // === ASPHALT — road markings, potholes, cracks ===
+      if (terrain === 'asphalt') {
+        // Worn center line
+        if (hash < 5) {
+          gctx.fillStyle = 'rgba(180,160,50,0.06)';
+          gctx.fillRect(tx + 20, ty, 5, tileSize);
+        }
+        // Pothole patches
+        if (hash2 < 3) {
+          gctx.fillStyle = 'rgba(25,25,22,0.15)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 12 + hash % 20, ty + 10 + hash2 % 25, 4 + hash % 3, 3 + hash2 % 2, 0, 0, Math.PI * 2);
+          gctx.fill();
+        }
+        // Fine cracks
+        if (hash < 6) {
+          gctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          gctx.lineWidth = 0.5;
+          gctx.beginPath();
+          gctx.moveTo(tx + hash % 40, ty + hash2 % 10);
+          gctx.lineTo(tx + hash % 40 + 10, ty + hash2 % 10 + 20);
+          gctx.stroke();
+        }
       }
-      // Water wave details
+      
+      // === WATER — waves, depth variation, foam ===
       if (terrain === 'water') {
-        gctx.strokeStyle = hash < 50 ? 'rgba(100,160,200,0.15)' : 'rgba(60,120,160,0.12)';
+        // Depth variation — darker patches
+        if (hash2 < 15) {
+          gctx.fillStyle = 'rgba(10,25,40,0.08)';
+          gctx.beginPath();
+          gctx.ellipse(tx + 20, ty + 24, 16, 10, hash * 0.2, 0, Math.PI * 2);
+          gctx.fill();
+        }
+        // Wave lines
+        gctx.strokeStyle = hash < 50 ? 'rgba(80,140,180,0.12)' : 'rgba(50,110,150,0.1)';
         gctx.lineWidth = 0.8;
-        const wx = tx + (hash * 3) % 40;
-        const wy = ty + 10 + (hash * 7) % 25;
+        const wx = tx + (hash * 3) % 38;
+        const wy = ty + 8 + (hash * 7) % 26;
         gctx.beginPath();
         gctx.moveTo(wx, wy);
-        gctx.quadraticCurveTo(wx + 12, wy - 3, wx + 24, wy);
+        gctx.quadraticCurveTo(wx + 14, wy - 3, wx + 28, wy);
         gctx.stroke();
-        if (hash < 30) {
+        if (hash < 35) {
           gctx.beginPath();
-          gctx.moveTo(wx + 5, wy + 14);
-          gctx.quadraticCurveTo(wx + 18, wy + 11, wx + 30, wy + 14);
+          gctx.moveTo(wx + 4, wy + 15);
+          gctx.quadraticCurveTo(wx + 20, wy + 12, wx + 34, wy + 15);
+          gctx.stroke();
+        }
+        // Foam near edges
+        if (palette.waterFoam && hash2 < 8) {
+          gctx.fillStyle = palette.waterFoam;
+          gctx.beginPath();
+          gctx.ellipse(tx + 10 + hash % 25, ty + hash2 % 40, 3, 1.5, 0, 0, Math.PI * 2);
+          gctx.fill();
+        }
+      }
+      
+      // === PUDDLES — on applicable maps, random small water patches on dirt/concrete ===
+      if (palette.puddles && hash2 < 3 && (terrain === 'dirt' || terrain === 'concrete')) {
+        gctx.fillStyle = 'rgba(30,50,60,0.08)';
+        gctx.beginPath();
+        gctx.ellipse(tx + 18 + hash % 12, ty + 22 + hash2 % 10, 5 + hash % 4, 3, hash * 0.4, 0, Math.PI * 2);
+        gctx.fill();
+        // Puddle highlight
+        gctx.strokeStyle = 'rgba(80,120,140,0.06)';
+        gctx.lineWidth = 0.5;
+        gctx.beginPath();
+        gctx.arc(tx + 18 + hash % 12, ty + 21 + hash2 % 10, 3, -0.5, 0.5);
+        gctx.stroke();
+      }
+      
+      // === DEBRIS — scattered small details (map-specific) ===
+      if (hash2 / 100 < debrisChance) {
+        if (mapId === 'hospital' && terrain === 'concrete') {
+          // Broken glass fragments
+          gctx.fillStyle = 'rgba(120,140,160,0.06)';
+          for (let d = 0; d < 3; d++) {
+            gctx.fillRect(tx + 8 + d * 12 + hash % 5, ty + 15 + hash2 % 15, 2 + hash % 2, 1);
+          }
+        } else if (mapId === 'objekt47' && terrain === 'dirt') {
+          // Shell casings
+          gctx.fillStyle = 'rgba(140,120,60,0.1)';
+          gctx.fillRect(tx + 10 + hash % 20, ty + 12 + hash2 % 20, 3, 1);
+        } else if (mapId === 'fishing_village' && terrain === 'grass') {
+          // Driftwood fragments
+          gctx.strokeStyle = 'rgba(80,60,35,0.12)';
+          gctx.lineWidth = 1.5;
+          gctx.beginPath();
+          gctx.moveTo(tx + 10 + hash % 15, ty + 20 + hash2 % 10);
+          gctx.lineTo(tx + 18 + hash % 15, ty + 22 + hash2 % 10);
           gctx.stroke();
         }
       }
