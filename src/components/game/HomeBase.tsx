@@ -484,7 +484,6 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
 
       </div>
       </div>
-      </div>
 
       {/* Fixed deploy footer - always visible */}
       <div className="shrink-0 border-t border-border bg-card px-3 sm:px-6 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
