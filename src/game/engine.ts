@@ -787,6 +787,22 @@ function pickPatrolTarget(state: GameState, enemy: Enemy, minDistance: number = 
   return { ...enemy.pos };
 }
 
+function relocateEnemyToOpenArea(state: GameState, enemy: Enemy): boolean {
+  for (let radius = 16; radius <= 220; radius += 16) {
+    const seed = Math.random() * Math.PI * 2;
+    for (let i = 0; i < 24; i++) {
+      const a = seed + (i / 24) * Math.PI * 2;
+      const nx = Math.max(12, Math.min(state.mapWidth - 12, enemy.pos.x + Math.cos(a) * radius));
+      const ny = Math.max(12, Math.min(state.mapHeight - 12, enemy.pos.y + Math.sin(a) * radius));
+      if (!collidesWithWalls(state, nx, ny, 10) && !isInMinefield(state, nx, ny, 10)) {
+        enemy.pos = { x: nx, y: ny };
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
   if (state.gameOver || state.extracted) return state;
 
