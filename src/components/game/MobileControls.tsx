@@ -5,7 +5,6 @@ import { VirtualJoystick, ActionButton } from './TouchControls';
 interface MobileControlsProps {
   inputRef: React.MutableRefObject<InputState>;
   stateRef: React.MutableRefObject<any>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
   onToggleInventory: () => void;
   onToggleIntel: () => void;
   movementMode: 'sneak' | 'walk' | 'sprint';
