@@ -2963,14 +2963,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         : IDLE_LINES;
       setSpeech(enemy, pickLine(idlePool, enemy.type), 3.0);
     }
-    // === REDNECK CHASE CHATTER (Swedish on mining village) ===
-    if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
-      const mapId = (state as any)._mapId as string || 'objekt47';
-      const lines = mapId === 'mining_village'
-        ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!']
-        : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
-      enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
-      enemy.speechBubbleTimer = 3;
+    // === COMBAT CHATTER — type-specific callouts during firefight ===
+    if ((enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && enemy.type !== 'boss' && Math.random() < 0.0015) {
+      // Rednecks have map-specific combat lines
+      if (enemy.type === 'redneck') {
+        const mapId = (state as any)._mapId as string || 'objekt47';
+        const lines = mapId === 'mining_village'
+          ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!', 'FÖRSVINN!']
+          : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!', 'EAT LEAD!'];
+        enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
+        enemy.speechBubbleTimer = 3;
+      } else {
+        setSpeech(enemy, pickLine(COMBAT_LINES, enemy.type), 2.5);
+      }
     }
 
     // Vision cone — NARROW for stealth gameplay (roguelike)
