@@ -1589,6 +1589,56 @@ Kari Henriksen
     hasCode: false,
     found: false,
   },
+  {
+    id: 'doc_archangelsk',
+    title: 'The Archangelsk Testimony',
+    author: 'Father Dimitri Volkonsky, Diocese of Archangelsk',
+    date: '02.02.1938',
+    classification: 'SECRET',
+    content: `SEALED TESTIMONY — Diocese of Archangelsk
+Recorded by Bishop's Secretary, filed under "Unexplained Phenomena — Northern Parishes"
+
+I, Father Dimitri Alexeievich Volkonsky, parish priest of the Church of the Intercession, Archangelsk, do hereby set down this account of the events of January 1938, in full knowledge that my superiors will dismiss it, and in full acceptance that recording it may cost me my position — or my life, given the times we live in.
+
+On the night of January 14th, the Feast of the Circumcision by the old calendar, death and darkness came to Archangelsk.
+
+It began with the lights. The aurora had been unusually active for weeks — green curtains that hung so low they seemed to brush the cathedral spire. The fishermen said the lights were "angry." The old women crossed themselves and would not leave their homes after sundown.
+
+At 11:47 PM, every electric light in the city went dark. Not a power failure — the bulbs remained intact, the generators running. The light simply... stopped. As if darkness itself had become a substance, filling the streets like black water. Candles still burned, but their flames gave no illumination beyond a hand's width.
+
+Then came the cold.
+
+Not winter cold. Not the honest cold of the Arctic that we know and endure. This was a cold with INTENT. It moved through the streets like a living thing. Where it passed, windows frosted from the inside. Water froze in kettles still hanging over lit stoves. A mother nursing her infant felt the milk freeze in her breast.
+
+The temperature, measured by the meteorological station, dropped from -18°C to -67°C in nine minutes. This is not possible. The instruments were checked and rechecked. The reading stands.
+
+And in the darkness, people heard a sound. Not wind. Not ice. A VOICE. Vast and low, coming from everywhere and nowhere — from the frozen river, from the stone foundations of the old buildings, from the earth itself. It spoke no language anyone recognized. But every person who heard it understood the same thing:
+
+I AM AWAKE.
+
+The event lasted forty-seven minutes. When the lights returned and the cold retreated, seventeen people were dead. Frozen where they stood. Their expressions were not of fear. They were of AWE. Every one of them faced north. Toward Novaya Zemlya.
+
+The authorities blamed a "polar vortex anomaly." The deaths were attributed to "exposure due to inadequate heating." The meteorological readings were classified.
+
+But I know what I heard. And I know what the dead saw in their final moments, because old Yekaterina Ivanovna survived long enough to whisper it to me as I administered last rites:
+
+"Батюшка... гора открыла глаза. И в глазах — звёзды. Не наши звёзды. СТАРЫЕ звёзды."
+
+"Father... the mountain opened its eyes. And in the eyes — stars. Not our stars. OLD stars."
+
+She died with her hand pointing north.
+
+I have buried seventeen of my parishioners. I have blessed their graves. And every night since, when the aurora burns green above the White Sea, I hear it again. The voice beneath the earth. Patient. Ancient. And no longer sleeping.
+
+Death and darkness came to Archangelsk. And I fear they have not left. They have merely gone quiet. Waiting for the next time the mountain chooses to speak.
+
+— Fr. Dimitri Volkonsky
+Archangelsk, February 1938
+
+[DIOCESE NOTE: Fr. Volkonsky was transferred to a remote monastery in Georgia, March 1938. His testimony was sealed. The seventeen graves in the Church of the Intercession cemetery were unmarked by Soviet order. The meteorological records for January 14, 1938 remain classified.]`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
