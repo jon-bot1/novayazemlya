@@ -217,7 +217,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
               <p>█ <span className="text-accent">OBJEKT 47</span> — Primary extraction & refinery. Nuclear codes in Osipovitj's safe. <span className="text-muted-foreground">The heart of the operation.</span></p>
               <p>█ <span className="text-accent">COASTAL VILLAGE</span> — Maritime smuggling pipeline. Nachalnik ships refined SZ-0 to foreign buyers. <span className="text-muted-foreground">The export terminal.</span></p>
               <p>█ <span className="text-accent">HOSPITAL №6</span> — Human experimentation. Kravtsov creates SZ-0-resistant soldiers. <span className="text-muted-foreground">The research lab.</span></p>
-              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. Where VARG's father vanished. <span className="text-muted-foreground">The source.</span></p>
+              <p>█ <span className="text-accent">NORRBERGET MINE</span> — The original discovery. NORDVAKT's highest priority. <span className="text-muted-foreground">The source.</span></p>
             </div>
           </div>
 
