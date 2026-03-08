@@ -77,8 +77,8 @@ export interface TerrainGrid {
 import { TerrainZone, TerrainType } from './types';
 
 const TERRAIN_CELL = 48; // match tile size
-const TERRAIN_MAP: Record<TerrainType, number> = { grass: 0, dirt: 1, asphalt: 2, concrete: 3, forest: 4 };
-const TERRAIN_REVERSE: TerrainType[] = ['grass', 'dirt', 'asphalt', 'concrete', 'forest'];
+const TERRAIN_MAP: Record<TerrainType, number> = { grass: 0, dirt: 1, asphalt: 2, concrete: 3, forest: 4, water: 5 };
+const TERRAIN_REVERSE: TerrainType[] = ['grass', 'dirt', 'asphalt', 'concrete', 'forest', 'water'];
 
 export function buildTerrainGrid(zones: TerrainZone[], mapW: number, mapH: number): TerrainGrid {
   const cols = Math.ceil(mapW / TERRAIN_CELL);
