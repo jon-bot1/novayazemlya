@@ -3968,6 +3968,23 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
     if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
 
+    // === TACTICAL COMBAT SPEECH — periodic callouts during combat ===
+    if (!enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && !enemy.friendly) {
+      if (!(enemy as any)._combatCalloutTimer) (enemy as any)._combatCalloutTimer = 3 + Math.random() * 5;
+      (enemy as any)._combatCalloutTimer -= dt;
+      if ((enemy as any)._combatCalloutTimer <= 0) {
+        (enemy as any)._combatCalloutTimer = 4 + Math.random() * 8; // 4-12s between callouts
+        // Pick callout based on current state
+        if (enemy.state === 'suppress') {
+          setSpeech(enemy, pickLine(SUPPRESSING_LINES, enemy.type), 1.8);
+        } else if (enemy.state === 'flank') {
+          if (Math.random() < 0.4) setSpeech(enemy, pickLine(FLANKING_LINES, enemy.type), 1.8);
+        } else if ((enemy.state === 'chase' || enemy.state === 'attack') && Math.random() < 0.15) {
+          setSpeech(enemy, pickLine(COMBAT_LINES, enemy.type), 1.8);
+        }
+      }
+    }
+
     // Ambush timer decay — if ambush position reached, hold and wait
     if ((enemy as any)._ambushSet && (enemy as any)._ambushTimer > 0) {
       (enemy as any)._ambushTimer -= dt;
