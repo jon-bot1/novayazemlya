@@ -221,7 +221,7 @@ function assignTacticalRole(state: GameState, enemy: Enemy) {
   let flankers = 0, suppressors = 0;
   for (const ally of state.enemies) {
     if (ally === enemy || ally.state === 'dead') continue;
-    if (ally.radioGroup !== enemy.radioGroup && dist(ally.pos, enemy.pos) > 400) continue;
+    if (ally.radioGroup !== enemy.radioGroup && distSq(ally.pos, enemy.pos) > 160000) continue; // 400²
     if (ally.tacticalRole === 'flanker') flankers++;
     if (ally.tacticalRole === 'suppressor') suppressors++;
   }
