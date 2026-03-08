@@ -1,4 +1,5 @@
 import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './types';
+import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 
 const R = 28;
