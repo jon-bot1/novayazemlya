@@ -4080,8 +4080,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           if (!(enemy as any)._coverPos) {
             let bestCoverSq = Infinity;
             let coverFound: Vec2 | null = null;
+            const coverPropTypes = ['concrete_barrier', 'sandbags', 'vehicle_wreck', 'wood_crate', 'barrel_stack', 'metal_shelf', 'tree', 'pine_tree'];
             for (const prop of state.props) {
-              if (!prop.blocksPlayer) continue;
+              if (!coverPropTypes.includes(prop.type)) continue;
               const pdx = prop.pos.x - enemy.pos.x, pdy = prop.pos.y - enemy.pos.y;
               const dsq = pdx * pdx + pdy * pdy;
               if (dsq < 150 * 150 && dsq < bestCoverSq) {
@@ -4089,21 +4090,20 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 coverFound = { x: prop.pos.x, y: prop.pos.y };
               }
             }
-            // No valid cover nearby: abort cover mode so enemy doesn't freeze in place
+            // No valid cover nearby: abort cover mode and fall through to normal chase
             if (!coverFound) {
               (enemy as any)._seekCover = false;
               (enemy as any)._coverPos = null;
               (enemy as any)._coverTimer = 0;
               (enemy as any)._coverDecided = false;
+              // Fall through to normal chase logic below (don't break!)
             } else {
               (enemy as any)._coverPos = coverFound;
             }
           }
+          // Only process cover behavior if we still have a valid cover position
           const cp = (enemy as any)._coverPos as Vec2 | null;
-          if (!cp) {
-            // No cover point available this frame; continue with normal chase logic
-            break;
-          }
+          if (cp) {
           const dToCover = dist(enemy.pos, cp);
           if (dToCover > 15) {
             // Move toward cover
