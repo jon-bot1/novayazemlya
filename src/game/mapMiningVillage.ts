@@ -71,12 +71,14 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     enemy.bossSpawnTimer = 0;
   }
   if (type === 'redneck') {
-    enemy.loot = [WEAPON_TEMPLATES.toz(), createDogFood()];
+    // Swedish map — rednecks carry Swedish weapons
+    const swWeapons = [WEAPON_TEMPLATES.kpist45, WEAPON_TEMPLATES.ak4, WEAPON_TEMPLATES.toz];
+    enemy.loot = [swWeapons[Math.floor(Math.random() * swWeapons.length)](), createDogFood()];
   }
   return enemy;
 };
 
-type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body' | 'weapon_cabinet';
+type LootPoolType = 'common' | 'military' | 'valuable' | 'desk' | 'archive' | 'locker' | 'body' | 'weapon_cabinet' | 'weapon_cabinet_swedish';
 
 const makeLoot = (x: number, y: number, type: LootContainer['type'], pool: LootPoolType): LootContainer => ({
   id: `loot_${containerId++}`,
@@ -310,7 +312,7 @@ export function generateMiningVillageMap() {
       (boss as any)._caveInRadius = 120;
       (boss as any)._caveInDamage = 45;
       boss.loot = [
-        WEAPON_TEMPLATES.ak74(),
+        WEAPON_TEMPLATES.ksp58(),
         createKeycard(),
         createValuable('Gruvrås Krona', 1200, '👑'),
         createValuable('Sällsynt Malm', 600, '💎'),
@@ -381,7 +383,7 @@ export function generateMiningVillageMap() {
     rLoot(ZONE_CREW, 'desk', 'archive'),
     rLoot(ZONE_MACHINE_HALL, 'crate', 'military'),
     rLoot(ZONE_MACHINE_HALL, 'crate', 'common'),
-    makeLoot(machX + 50, machY + 50, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(machX + 50, machY + 50, 'weapon_cabinet', 'weapon_cabinet_swedish'),
     rLoot(ZONE_SHED, 'crate', 'military'),
     rLoot(ZONE_SHED, 'barrel', 'common'),
     rLoot(ZONE_VILLAGE_CENTER, 'barrel', 'common'),
@@ -399,7 +401,7 @@ export function generateMiningVillageMap() {
     rLoot(ZONE_MINE_EAST_BRANCH, 'locker', 'locker'),
     rLoot(ZONE_BOSS_ARENA, 'crate', 'valuable'),
     rLoot(ZONE_BOSS_ARENA, 'crate', 'military'),
-    makeLoot(1000, 2400, 'weapon_cabinet', 'weapon_cabinet'),
+    makeLoot(1000, 2400, 'weapon_cabinet', 'weapon_cabinet_swedish'),
     {
       id: `loot_${containerId++}`,
       pos: randIn(ZONE_MINE_WEST_BRANCH.x, ZONE_MINE_WEST_BRANCH.y, ZONE_MINE_WEST_BRANCH.w, ZONE_MINE_WEST_BRANCH.h),

@@ -214,6 +214,10 @@ export const WEAPON_TEMPLATES = {
   baton:    () => { const w = createWeapon('Baton',        '9x18',      8, '🔫',   3.6,      8,   500,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.5; w.description = 'Melee — short range baton strike'; return w; },
   knife:    () => { const w = createWeapon('Combat Knife', '9x18',     45, '🗡️',   3.6,      6,   280,   'single'); w.weaponSlot = 'secondary'; w.weight = 0.3; w.description = 'Melee — fast, silent, deadly up close'; return w; },
   laser:    () => { const w = createWeapon('Laser Designator', '9x18', 0, '🔴', 0, 0, 3000, 'single'); w.weaponSlot = 'primary'; w.weight = 1; w.description = 'Laser designator — calls in mortar fire on target. 3s delay.'; (w as any).isLaserDesignator = true; return w; },
+  // Swedish weapons (Gruvsamhället map)
+  kpist45:  () => { const w = createWeapon('Kpist m/45',      '9x18',     9,  '🔫',   7.2,     28,   100,   'auto'); w.weaponSlot = 'primary'; w.weight = 2.5; w.description = 'Carl Gustaf SMG — Swedish 9mm, high rate of fire, moderate damage'; return w; },
+  ak4:      () => { const w = createWeapon('Ak 4',            '7.62x39',  26, '🔫',   11.4,    75,   360,   'auto'); w.weaponSlot = 'primary'; w.weight = 4; w.description = 'Swedish Ak 4 (HK G3) — hard-hitting 7.62 battle rifle'; return w; },
+  ksp58:    () => { const w = createWeapon('Ksp 58',           '7.62x54R', 24, '🔫',   10.8,    80,   140,   'auto'); w.weaponSlot = 'primary'; w.weight = 5; w.description = 'Ksp 58 (FN MAG) — belt-fed machine gun, devastating sustained fire'; return w; },
 };
 
 // ── WEAPON MODIFICATIONS ──
@@ -389,6 +393,26 @@ export const LOOT_POOLS = {
       [createGrenade(), 0.25],
       [createFlashbang(), 0.15],
       [createGasGrenade(), 0.15],
+      [createScope(), 0.10],
+      [createSuppressor(), 0.08],
+      [createExtMagazine(), 0.10],
+    ]);
+  },
+  // Swedish weapon cabinet — Gruvsamhället map
+  weapon_cabinet_swedish: (): Item[] => {
+    return pickMany<Item>([
+      [WEAPON_TEMPLATES.kpist45(), 0.30],
+      [WEAPON_TEMPLATES.ak4(), 0.25],
+      [WEAPON_TEMPLATES.ksp58(), 0.10],
+      [WEAPON_TEMPLATES.toz(), 0.20],
+      [WEAPON_TEMPLATES.mosin(), 0.12],
+      [WEAPON_TEMPLATES.makarov(), 0.25],
+      [WEAPON_TEMPLATES.knife(), 0.20],
+      [createAmmo('9x18', 5 + Math.floor(Math.random() * 5)), 0.35],
+      [createAmmo('7.62x39', 3 + Math.floor(Math.random() * 4)), 0.30],
+      [createAmmo('7.62x54R', 2 + Math.floor(Math.random() * 3)), 0.25],
+      [createGrenade(), 0.20],
+      [createFlashbang(), 0.12],
       [createScope(), 0.10],
       [createSuppressor(), 0.08],
       [createExtMagazine(), 0.10],
