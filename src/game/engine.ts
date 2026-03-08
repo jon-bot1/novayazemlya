@@ -22,7 +22,7 @@ function getBossTitle(enemy: Enemy): string {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return 'ДОКТОР КРАВЦОВ';
   if (bossId === 'uzbek') return 'УЗБЕК';
-  if (bossId === 'dock_master') return 'DOCK MASTER';
+  if (bossId === 'nachalnik') return 'НАЧАЛЬНИК';
   return 'COMMANDANT OSIPOVITJ';
 }
 

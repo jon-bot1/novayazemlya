@@ -2525,7 +2525,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillStyle = phase === 2 ? 'rgba(255, 50, 50, 0.9)' : phase === 1 ? 'rgba(255, 150, 50, 0.9)' : 'rgba(200, 160, 255, 0.8)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('★ COMMANDANT OSIPOVITJ ★', enemy.pos.x, enemy.pos.y + bossSize + 20);
+        ctx.fillText(`★ ${(enemy as any)._bossTitle || 'COMMANDANT OSIPOVITJ'} ★`, enemy.pos.x, enemy.pos.y + bossSize + 20);
         if (phase >= 1) {
           ctx.font = 'bold 8px sans-serif';
           ctx.fillText(phase === 2 ? '☠ DESPERAT' : '⚠ RASANDE', enemy.pos.x, enemy.pos.y + bossSize + 30);

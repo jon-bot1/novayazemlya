@@ -61,7 +61,7 @@ const OBJEKT47_BONUS: ObjectiveTemplate[] = [
 // FISHING VILLAGE — Coastal village objectives
 // ═══════════════════════════════════════
 const VILLAGE_MAIN: ObjectiveTemplate[] = [
-  { id: 'kill_dockmaster', name: 'Eliminate Dock Master', icon: '💀', description: 'Kill the Dock Master and take the boat keys', reward: 500, isMain: true },
+  { id: 'kill_dockmaster', name: 'Eliminate Nachalnik', icon: '💀', description: 'Kill the Nachalnik and take the boat keys', reward: 500, isMain: true },
   { id: 'clear_dock', name: 'Secure the Dock', icon: '⚓', description: 'Eliminate all enemies in the dock area', reward: 450, isMain: true },
   { id: 'raid_warehouse', name: 'Raid the Warehouse', icon: '📦', description: 'Loot the dock warehouse and hack the terminal inside', reward: 400, isMain: true },
   { id: 'village_sweep', name: 'Clear the Village', icon: '🏚️', description: 'Search all 6 cabins and loot their contents', reward: 400, isMain: true },

@@ -479,7 +479,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                   <div className="flex gap-3 items-start">
                     <span className="text-2xl">⚓</span>
                     <div>
-                      <p className="text-xs font-display text-yellow-400">DOCK MASTER</p>
+                      <p className="text-xs font-display text-yellow-400">НАЧАЛЬНИК (NACHALNIK)</p>
                       <p className="text-[9px] font-mono text-muted-foreground leading-relaxed mt-1">
                         A grizzled smuggler who controls the pier and the only speedboat out. Armed with a shotgun and surrounded by loyal redneck guards and their dogs. Holds the boat keys.
                       </p>
