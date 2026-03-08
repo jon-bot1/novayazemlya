@@ -625,6 +625,10 @@ export default function Wiki() {
 
         {/* Content */}
         <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+          {section === 'lore' && <LoreSection />}
+          {section === 'factions' && <FactionsSection />}
+          {section === 'occult' && <OccultSection />}
+          {section === 'world' && <WorldSection />}
           {section === 'controls' && <ControlsSection />}
           {section === 'weapons' && <WeaponsSection />}
           {section === 'recoil' && <RecoilSection />}
