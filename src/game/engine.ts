@@ -3769,8 +3769,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (enemy.state === 'dead' || enemy.type === 'turret') continue;
         if ((enemy as any)._grenadeFlee) continue; // already fleeing
         if ((enemy as any)._grenadeFleeRolled) continue; // already decided not to flee
-        const dToGrenade = dist(g.pos, enemy.pos);
-        if (dToGrenade < g.radius * 1.5 && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
+        const grenadeFleeRadiusSq = (g.radius * 1.5) * (g.radius * 1.5);
+        if (distSq(g.pos, enemy.pos) < grenadeFleeRadiusSq && hasLineOfSight(state, g.pos, enemy.pos, enemy.elevated)) {
           // Random flee chance — bosses flee MORE often, others less
           let fleeChance = 0.4; // default 40%
           if (enemy.type === 'boss') fleeChance = 0.8;
