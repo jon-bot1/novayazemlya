@@ -1211,9 +1211,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const ammoAvail = state.player.ammoReserves[state.player.ammoType] || 0;
       if (ammoAvail > 0) {
         state.player.reloading = true;
-        const reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
+        let reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
                            wpn.name?.toLowerCase().includes('toz') ? 2.5 :
                            wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
+        // Quick Hands upgrade — reduce reload time
+        const reloadBonus = (state as any)._reloadSpeedBonus || 0;
+        if (reloadBonus > 0) reloadTime *= (1 - reloadBonus);
         state.player.reloadTimer = reloadTime;
         state.player.reloadTime = reloadTime;
         addMessage(state, '🔄 RELOADING...', 'info');
