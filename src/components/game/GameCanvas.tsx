@@ -66,7 +66,7 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
           placeholder="Enter name..."
           value={name}
           onChange={e => setName(e.target.value)}
-          autoFocus={!anonymous}
+          autoFocus={!anonymous && !introIsMobile}
           disabled={anonymous}
         />
         <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
