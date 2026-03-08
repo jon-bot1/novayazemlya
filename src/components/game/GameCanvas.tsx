@@ -555,8 +555,6 @@ export const GameCanvas: React.FC = () => {
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 0, aimY: 0, shooting: false, shootPressed: false, interact: false, heal: false, throwGrenade: false, cycleThrowable: false, movementMode: 'walk', moveTarget: null, takeCover: false, useTNT: false, useSpecial: false, reload: false, throwKnife: false, chokehold: false, throwRock: false });
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const moveTouchRef = useRef<number | null>(null);
-  const aimTouchRef = useRef<number | null>(null);
   const updateKeysRef = useRef<() => void>(() => {});
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
