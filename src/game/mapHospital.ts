@@ -214,25 +214,62 @@ export function generateHospitalMap() {
     // Parking
     rz(ZONE_PARKING, 'scav'),
 
-    // Boss — Chief Doctor (mutated)
+    // ═══ BOSS 1 — Доктор Кравцов (The Experimenter) ═══
+    // Found in the lab/east wing, surrounded by his "subjects"
     (() => {
-      const boss = makeEnemy(BX + 550, BY + 1600, 'boss');
+      const boss = makeEnemy(BX + BW - 280, BY + 500, 'boss');
+      (boss as any)._bossId = 'kravtsov';
+      (boss as any)._bossTitle = 'ДОКТОР КРАВЦОВ';
+      boss.hp = 400; boss.maxHp = 400;
+      boss.speed = 0.70;
+      boss.damage = 30;
+      boss.fireRate = 800;
+      boss.alertRange = 220;
+      boss.shootRange = 140;
       boss.loot = [
         WEAPON_TEMPLATES.ak74(),
         createKeycard(),
+        createValuable('Experiment Logs', 800, '📋'),
+        createValuable('Mutagen Sample', 1200, '🧪'),
+      ];
+      (boss as any)._patrolWaypoints = [
+        { x: BX + BW - 330, y: BY + 430 },
+        { x: BX + BW - 180, y: BY + 430 },
+        { x: BX + BW - 180, y: BY + 580 },
+        { x: BX + BW - 330, y: BY + 580 },
+      ];
+      (boss as any)._waypointIdx = 0;
+      boss.patrolTarget = (boss as any)._patrolWaypoints[0];
+      boss.state = 'patrol';
+      return boss;
+    })(),
+
+    // ═══ BOSS 2 — Пациент Ноль (Patient Zero) ═══
+    // Locked in the basement — fast, melee-focused, horrifying
+    (() => {
+      const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
+      (boss as any)._bossId = 'patient_zero';
+      (boss as any)._bossTitle = 'ПАЦИЕНТ НОЛЬ';
+      boss.hp = 600; boss.maxHp = 600;
+      boss.speed = 1.60; // very fast — charges at you
+      boss.damage = 55;  // devastating melee-range hits
+      boss.fireRate = 400;
+      boss.alertRange = 250;
+      boss.shootRange = 40; // almost pure melee
+      boss.loot = [
         createExtractionCode(),
-        createValuable('Research Data', 600, '💾'),
+        createValuable('Patient Zero Blood Sample', 2000, '🩸'),
+        createValuable('Old Dog Tags', 500, '💀'),
       ];
       (boss as any)._patrolWaypoints = [
         { x: BX + 200, y: BY + 1550 },
-        { x: BX + 600, y: BY + 1550 },
+        { x: BX + 600, y: BY + 1650 },
         { x: BX + 900, y: BY + 1700 },
         { x: BX + 400, y: BY + 1700 },
       ];
       (boss as any)._waypointIdx = 0;
       boss.patrolTarget = (boss as any)._patrolWaypoints[0];
       boss.state = 'patrol';
-      boss.speed = 0.85;
       return boss;
     })(),
   ];
