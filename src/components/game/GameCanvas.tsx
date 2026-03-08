@@ -27,6 +27,7 @@ const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
 const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
   const [name, setName] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
+  const introIsMobile = useIsMobile();
   
   const handleStart = React.useCallback(() => {
     if (anonymous) {
