@@ -1338,6 +1338,7 @@ export const GameCanvas: React.FC = () => {
             onCloseDoc={() => setReadingDoc(null)}
             movementMode={hudState.movementMode}
             hasDoc={!!readingDoc}
+            nearInteractable={hudState.nearInteractable}
           />
         )}
 

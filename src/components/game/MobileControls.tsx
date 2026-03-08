@@ -10,10 +10,11 @@ interface MobileControlsProps {
   onCloseDoc: () => void;
   movementMode: 'sneak' | 'walk' | 'sprint';
   hasDoc: boolean;
+  nearInteractable: boolean;
 }
 
 export const MobileControls: React.FC<MobileControlsProps> = ({
-  inputRef, stateRef, onToggleInventory, onToggleIntel, onCloseDoc, movementMode, hasDoc,
+  inputRef, stateRef, onToggleInventory, onToggleIntel, onCloseDoc, movementMode, hasDoc, nearInteractable,
 }) => {
   const [currentMode, setCurrentMode] = useState<'sneak' | 'walk' | 'sprint'>(movementMode);
   const aimTouchRef = useRef<number | null>(null);
