@@ -419,27 +419,56 @@ function spawnParticles(state: GameState, x: number, y: number, color: string, c
   }
 }
 
-// Assign tactical roles to enemies in combat — distribute flankers and suppressors
+// Assign tactical roles to enemies in combat — squad-aware coordination with randomization
 function assignTacticalRole(state: GameState, enemy: Enemy) {
-  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'scav' || enemy.type === 'dog' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') {
-    enemy.tacticalRole = (enemy.type === 'scav' || enemy.type === 'redneck' || enemy.type === 'cultist' || enemy.type === 'miner_cult') ? 'assault' : 'none';
+  if (enemy.type === 'turret' || enemy.type === 'boss' || enemy.type === 'dog') {
+    enemy.tacticalRole = 'none';
     return;
   }
-  // Count current roles in radio group
-  let flankers = 0, suppressors = 0;
+
+  // Personality-based random override: ~15% chance enemy ignores coordination and picks random role
+  if (Math.random() < 0.15) {
+    const randomRoles: TacticalRole[] = ['assault', 'flanker', 'suppressor'];
+    enemy.tacticalRole = randomRoles[Math.floor(Math.random() * randomRoles.length)];
+    return;
+  }
+
+  // Count current roles in squad (same radio group or nearby)
+  let flankers = 0, suppressors = 0, assaults = 0, squadSize = 0;
+  const squadMembers: Enemy[] = [];
   for (const ally of state.enemies) {
     if (ally === enemy || ally.state === 'dead') continue;
-    if (ally.radioGroup !== enemy.radioGroup && distSq(ally.pos, enemy.pos) > 160000) continue; // 400²
+    if (ally.type === 'turret' || ally.type === 'boss' || ally.type === 'dog') continue;
+    const sameGroup = ally.radioGroup === enemy.radioGroup;
+    const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
+    if (!sameGroup && !closeEnough) continue;
+    squadMembers.push(ally);
+    squadSize++;
     if (ally.tacticalRole === 'flanker') flankers++;
-    if (ally.tacticalRole === 'suppressor') suppressors++;
+    else if (ally.tacticalRole === 'suppressor') suppressors++;
+    else assaults++;
   }
-  // Heavies prefer suppression, soldiers prefer flanking
+
+  // Squad composition logic: aim for balanced squad
+  // Ideal: 1 suppressor per 3 members, 1 flanker per 2 members, rest assault
+  const idealSuppressors = Math.max(1, Math.floor((squadSize + 1) / 3));
+  const idealFlankers = Math.max(1, Math.floor((squadSize + 1) / 2));
+
+  // Type-based preferences with squad awareness
   if (enemy.type === 'heavy') {
-    enemy.tacticalRole = suppressors < 2 ? 'suppressor' : 'assault';
+    // Heavies prefer suppression but can assault if squad has enough suppressors
+    if (suppressors < idealSuppressors) enemy.tacticalRole = 'suppressor';
+    else enemy.tacticalRole = Math.random() < 0.7 ? 'assault' : 'flanker';
   } else if (enemy.type === 'soldier' || enemy.type === 'svarta_sol') {
-    if (flankers < 2) enemy.tacticalRole = 'flanker';
+    // Soldiers are versatile — fill gaps
+    if (flankers < idealFlankers && suppressors >= 1) enemy.tacticalRole = 'flanker';
     else if (suppressors < 1) enemy.tacticalRole = 'suppressor';
-    else enemy.tacticalRole = 'assault';
+    else enemy.tacticalRole = Math.random() < 0.6 ? 'assault' : 'flanker';
+  } else if (enemy.type === 'scav' || enemy.type === 'redneck') {
+    // Scavs/rednecks mostly rush but occasionally flank
+    enemy.tacticalRole = Math.random() < 0.2 ? 'flanker' : 'assault';
+  } else if (enemy.type === 'cultist' || enemy.type === 'miner_cult') {
+    enemy.tacticalRole = Math.random() < 0.3 ? 'flanker' : 'assault';
   } else {
     enemy.tacticalRole = 'assault';
   }
@@ -588,11 +617,39 @@ function generateEnemyLoot(enemy: Enemy) {
   return baseLoot;
 }
 
-export function createGameState(mapId: MapId = 'objekt47'): GameState {
+export function createGameState(mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : mapId === 'mining_village' ? generateMiningVillageMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : mapId === 'mining_village' ? createMiningVillagePlayer() : createInitialPlayer();
   // Hard safety: Sniper Tuman should only exist on Objekt 47
   const mapEnemies = mapId === 'objekt47' ? map.enemies : map.enemies.filter(e => e.type !== 'sniper');
+
+  // === DYNAMIC DIFFICULTY — scale enemy stats based on player progression ===
+  // Each level adds ~2% stat boost, each extraction adds ~4%, with per-enemy randomization
+  const difficultyBase = 1 + Math.min(0.5, (playerLevel - 1) * 0.02 + extractionCount * 0.04);
+  for (const enemy of mapEnemies) {
+    // Per-enemy random variance: ±15% so not all enemies are identical
+    const variance = 0.85 + Math.random() * 0.30;
+    const scale = difficultyBase * variance;
+    
+    // Don't scale bosses — they're already tuned
+    if (enemy.type === 'boss') continue;
+    
+    // Scale HP, damage, and awareness decay (harder = slower decay)
+    enemy.maxHp = Math.round(enemy.maxHp * scale);
+    enemy.hp = enemy.maxHp;
+    enemy.damage = Math.round(enemy.damage * (0.9 + (scale - 1) * 0.6)); // damage scales slower
+    enemy.awarenessDecay = Math.max(0.05, enemy.awarenessDecay / (0.8 + (scale - 1) * 0.5));
+    
+    // Higher difficulty: slightly faster fire rate (lower = faster)
+    if (scale > 1.1) {
+      enemy.fireRate = Math.max(300, enemy.fireRate * (1 - (scale - 1) * 0.15));
+    }
+    
+    // Occasional extra enemy alertness at higher levels
+    if (difficultyBase > 1.2 && Math.random() < 0.2) {
+      enemy.alertRange = Math.min(400, enemy.alertRange * 1.15);
+    }
+  }
   const state: GameState = {
     player,
     enemies: mapEnemies,
@@ -2815,28 +2872,75 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
       enemy.speed = (enemy as any)._originalSpeed * 0.25; // 75% speed loss
     }
-    // Flee chance check — uses _cowardice personality trait
+    // === RETREAT & REGROUP — low HP enemies have varied reactions ===
     if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && !(enemy as any)._isBodyguard) {
       if (!(enemy as any)._fleeCheckTimer) (enemy as any)._fleeCheckTimer = 1.0;
       (enemy as any)._fleeCheckTimer -= dt;
       if ((enemy as any)._fleeCheckTimer <= 0) {
         (enemy as any)._fleeCheckTimer = 1.0;
         const cowardice = (enemy as any)._cowardice ?? 0.3;
-        // Cowardly enemies flee earlier and more often
-        const fleeThresholdHigh = 0.50 + cowardice * 0.25; // scav(0.7): flee at 75% HP, soldier(0.2): 55%
-        const fleeThresholdLow = 0.30 + cowardice * 0.20;  // scav: 44%, soldier: 34%
+        const aggression = (enemy as any)._aggression ?? 0.5;
+        const fleeThresholdHigh = 0.50 + cowardice * 0.25;
+        const fleeThresholdLow = 0.30 + cowardice * 0.20;
         const fleeChance = hpRatio < fleeThresholdLow ? (0.10 + cowardice * 0.25) : hpRatio < fleeThresholdHigh ? (0.05 + cowardice * 0.15) : 0;
         if (fleeChance > 0 && Math.random() < fleeChance && (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress')) {
-          // Flee! Run away from player
-          const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
-          enemy.investigateTarget = {
-            x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * 300)),
-            y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 300)),
-          };
-          enemy.state = 'investigate';
-          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * (cowardice > 0.5 ? 0.7 : 0.5); // cowards run faster
-          setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
-          addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
+          // Random reaction: flee (40%), retreat to ally (30%), go berserk (15%), fight through (15%)
+          const reaction = Math.random();
+          const berserkChance = 0.15 + aggression * 0.15; // aggressive enemies more likely to berserk
+          const retreatChance = 0.30;
+          const fleeFullChance = 0.40 - aggression * 0.15; // aggressive enemies less likely to flee
+
+          if (reaction < fleeFullChance) {
+            // Full flee — run away from player
+            const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+            enemy.investigateTarget = {
+              x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * 300)),
+              y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 300)),
+            };
+            enemy.state = 'investigate';
+            if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * (cowardice > 0.5 ? 0.7 : 0.5);
+            setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
+            addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
+          } else if (reaction < fleeFullChance + retreatChance) {
+            // Retreat to nearest alive ally — regroup
+            let nearestAlly: Enemy | null = null;
+            let nearestDsq = 250000; // 500²
+            for (const ally of state.enemies) {
+              if (ally === enemy || ally.state === 'dead' || ally.type === 'turret' || ally.type === 'dog') continue;
+              const dsq = distSq(enemy.pos, ally.pos);
+              if (dsq < nearestDsq && dsq > 2500) { // at least 50px away
+                nearestDsq = dsq;
+                nearestAlly = ally;
+              }
+            }
+            if (nearestAlly) {
+              enemy.investigateTarget = { ...nearestAlly.pos };
+              enemy.state = 'investigate';
+              if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.6;
+              setSpeech(enemy, 'ОТХОДИМ!', 2.0);
+              addMessage(state, `🔙 ${enemy.type.toUpperCase()} retreats to regroup!`, 'info');
+            } else {
+              // No ally found — flee instead
+              const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
+              enemy.investigateTarget = {
+                x: Math.max(50, Math.min(state.mapWidth - 50, enemy.pos.x + Math.cos(awayAngle) * 250)),
+                y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 250)),
+              };
+              enemy.state = 'investigate';
+              setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
+            }
+          } else if (reaction < fleeFullChance + retreatChance + berserkChance) {
+            // Berserk — adrenaline surge, fight harder
+            if (!(enemy as any)._berserkTimer) {
+              (enemy as any)._berserkTimer = 6 + Math.random() * 4;
+              if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
+              enemy.speed = ((enemy as any)._originalSpeed || enemy.speed) * 1.5;
+              enemy.damage *= 1.3;
+              setSpeech(enemy, 'АААА!!!', 2.5);
+              addMessage(state, `🔥 ${enemy.type.toUpperCase()} goes BERSERK instead of fleeing!`, 'warning');
+            }
+          }
+          // else: fight through — do nothing, keep current behavior (15% base)
         }
       }
     }
@@ -3456,11 +3560,52 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
       }
     } else if (heardSound && (enemy.state === 'idle' || enemy.state === 'patrol' || enemy.state === 'investigate')) {
-      // Heard a sound — go investigate (boost awareness too)
-      enemy.state = 'investigate';
-      enemy.investigateTarget = heardSound;
-      enemy.awareness = Math.max(enemy.awareness, 0.7);
-      setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+      // === AMBUSH AI — some enemies set up ambush instead of rushing toward sound ===
+      const ambushRoll = Math.random();
+      const isSmartType = enemy.type === 'soldier' || enemy.type === 'heavy' || enemy.type === 'svarta_sol';
+      const ambushChance = isSmartType ? 0.35 : 0.12; // smart types ambush more often
+
+      if (ambushRoll < ambushChance && !los && !(enemy as any)._ambushSet) {
+        // Find a prop near the sound that provides cover (choke point ambush)
+        const coverTypes = ['concrete_barrier', 'sandbags', 'wood_crate', 'barrel_stack', 'vehicle_wreck', 'metal_shelf'];
+        let bestAmbushPos: Vec2 | null = null;
+        let bestScore = -Infinity;
+        for (const prop of state.props) {
+          if (!coverTypes.includes(prop.type)) continue;
+          const dToSound = dist(prop.pos, heardSound);
+          const dToEnemy = dist(prop.pos, enemy.pos);
+          // Good ambush: between enemy and sound, within 200px of sound, not too far from enemy
+          if (dToSound < 200 && dToEnemy < 300 && dToSound > 30) {
+            // Score: prefer positions that are between enemy and the sound source
+            const score = (300 - dToEnemy) + (200 - dToSound) * 1.5;
+            if (score > bestScore) {
+              bestScore = score;
+              bestAmbushPos = { ...prop.pos };
+            }
+          }
+        }
+        if (bestAmbushPos) {
+          (enemy as any)._ambushSet = true;
+          (enemy as any)._ambushTimer = 8 + Math.random() * 6; // wait up to 14s
+          enemy.state = 'investigate';
+          enemy.investigateTarget = bestAmbushPos;
+          enemy.awareness = Math.max(enemy.awareness, 0.6);
+          setSpeech(enemy, isSmartType ? 'ТИХО... ЖДЁМ.' : 'ЧТО ТАМ?', 2.0);
+          addMessage(state, `🎯 ${enemy.type.toUpperCase()} sets up an ambush!`, 'info');
+        } else {
+          // No good ambush position — investigate normally
+          enemy.state = 'investigate';
+          enemy.investigateTarget = heardSound;
+          enemy.awareness = Math.max(enemy.awareness, 0.7);
+          setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+        }
+      } else {
+        // Normal investigate (majority of the time)
+        enemy.state = 'investigate';
+        enemy.investigateTarget = heardSound;
+        enemy.awareness = Math.max(enemy.awareness, 0.7);
+        setSpeech(enemy, pickLine(INVESTIGATE_LINES, enemy.type), 2.0);
+      }
     } else if (heardSound && (enemy.state === 'chase' || enemy.state === 'attack')) {
       // Already in combat — update known player position from sound
       enemy.investigateTarget = heardSound;
@@ -3683,6 +3828,22 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Decay timers
     if (enemy.callForHelpTimer > 0) enemy.callForHelpTimer -= dt;
     if (enemy.suppressTimer > 0) enemy.suppressTimer -= dt;
+
+    // Ambush timer decay — if ambush position reached, hold and wait
+    if ((enemy as any)._ambushSet && (enemy as any)._ambushTimer > 0) {
+      (enemy as any)._ambushTimer -= dt;
+      if ((enemy as any)._ambushTimer <= 0) {
+        // Ambush expired — return to patrol
+        delete (enemy as any)._ambushSet;
+        delete (enemy as any)._ambushTimer;
+        enemy.state = 'patrol';
+        enemy.patrolTarget = pickPatrolTarget(state, enemy, 80, 200);
+      } else if (enemy.state === 'investigate' && enemy.investigateTarget && dist(enemy.pos, enemy.investigateTarget) < 30) {
+        // Reached ambush position — hold still, face toward sound origin, stay in alert
+        enemy.state = 'alert' as any;
+        enemy.awareness = Math.max(enemy.awareness, 0.5);
+      }
+    }
 
     // Decay radio alert visual
     if (enemy.radioAlert > 0) {

@@ -50,9 +50,9 @@ const createDefaultInputState = (): InputState => ({
   throwRock: false,
 });
 
-const safeCreateGameState = (mapId: MapId = 'objekt47'): GameState => {
+const safeCreateGameState = (mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState => {
   try {
-    return createGameState(mapId);
+    return createGameState(mapId, playerLevel, extractionCount);
   } catch (error) {
     console.error('Failed to create game state:', error);
     return createGameState('objekt47');
@@ -1355,7 +1355,7 @@ export const GameCanvas: React.FC = () => {
             setSelectedMapId(mapId);
             inputRef.current = createDefaultInputState();
             // Apply upgrades to game state
-            stateRef.current = safeCreateGameState(mapId);
+            stateRef.current = safeCreateGameState(mapId, stash.level || 1, stash.extractionCount || 0);
             const st = stateRef.current;
             const ups = stash.upgrades;
             // Backpack upgrade
