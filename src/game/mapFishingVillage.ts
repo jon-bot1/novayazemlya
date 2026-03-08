@@ -204,19 +204,21 @@ export function generateFishingVillageMap() {
   // ══════════════════════════════════════
   // ZONES
   // ══════════════════════════════════════
-  const ZONE_WEST_VILLAGE = { x: 280, y: 380, w: 350, h: 600 };
-  const ZONE_EAST_VILLAGE = { x: 830, y: 380, w: 350, h: 600 };
-  const ZONE_ROAD_NORTH = { x: 680, y: 300, w: 140, h: 350 };
-  const ZONE_ROAD_SOUTH = { x: 680, y: 700, w: 140, h: 500 };
-  const ZONE_DOCK = { x: 530, y: 1530, w: 440, h: 150 };
-  const ZONE_WAREHOUSE = { x: 390, y: 1410, w: 120, h: 80 };
+  const ZONE_WEST_VILLAGE = { x: 260, y: 380, w: 300, h: 600 };
+  const ZONE_EAST_VILLAGE = { x: 730, y: 380, w: 280, h: 600 };
+  const ZONE_ROAD_NORTH = { x: 600, y: 300, w: 140, h: 350 };
+  const ZONE_ROAD_SOUTH = { x: 600, y: 700, w: 140, h: 500 };
+  const ZONE_DOCK = { x: 440, y: 1380, w: 420, h: 70 };
+  const ZONE_PIER = { x: 600, y: 1470, w: 140, h: 380 };
+  const ZONE_WAREHOUSE = { x: 330, y: 1260, w: 120, h: 80 };
   const ZONE_FOREST_NW = { x: 30, y: 30, w: 300, h: 250 };
-  const ZONE_FOREST_NE = { x: MAP_W - 330, y: 30, w: 300, h: 250 };
-  const ZONE_FOREST_W = { x: 30, y: 350, w: 200, h: 700 };
-  const ZONE_FOREST_E = { x: MAP_W - 230, y: 350, w: 200, h: 700 };
-  const ZONE_STORE = { x: 510, y: 350, w: 150, h: 80 };
+  const ZONE_FOREST_NE = { x: MAP_W - 220, y: 30, w: 190, h: 250 };
+  const ZONE_FOREST_W = { x: 30, y: 350, w: 150, h: 700 };
+  const ZONE_FOREST_E = { x: MAP_W - 130, y: 350, w: 100, h: 700 };
+  const ZONE_STORE = { x: 470, y: 350, w: 150, h: 80 };
+  const ZONE_ROCKY_E = { x: 1050, y: 400, w: 200, h: 450 };
 
-  const PLAYER_SPAWN = { x: 750, y: 230 }; // north road entrance
+  const PLAYER_SPAWN = { x: 670, y: 230 };
   const MIN_SPAWN_DIST = 400;
 
   const rz = (zone: { x: number; y: number; w: number; h: number }, type: Enemy['type'], angle?: number) => {
