@@ -1383,22 +1383,35 @@ export const GameCanvas: React.FC = () => {
 
         {/* Weapon swap now uses E-press — no popup needed */}
 
-        {/* Mobile action buttons */}
+        {/* Mobile action buttons — thumb-optimized layout */}
         <div className="sm:hidden">
-          <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 -translate-x-1/2" />
-          <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 translate-x-8" variant="action" />
-          <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 -translate-x-16" variant="action" />
-          <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} className="absolute bottom-24 left-1/2 translate-x-20" variant="action" />
-          <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3" variant="action" />
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
+          {/* Right thumb cluster — combat actions */}
+          <div className="absolute bottom-20 right-3 flex flex-col gap-2 items-center pointer-events-auto">
+            <ActionButton label="💣" onPress={() => { inputRef.current.throwGrenade = true; inputRef.current.shooting = false; }} variant="action" />
+            <ActionButton label="🧨" onPress={() => { inputRef.current.useTNT = true; inputRef.current.shooting = false; }} variant="action" />
+            <ActionButton label="🗡️" onPress={() => { inputRef.current.throwKnife = true; inputRef.current.shooting = false; }} variant="action" />
+          </div>
+
+          {/* Left thumb cluster — utility actions */}
+          <div className="absolute bottom-20 left-3 flex flex-col gap-2 items-center pointer-events-auto">
+            <ActionButton label="🔍" onPress={() => { inputRef.current.interact = true; inputRef.current.shooting = false; }} />
+            <ActionButton label="💊" onPress={() => { inputRef.current.heal = true; inputRef.current.shooting = false; }} variant="action" />
+            <ActionButton label="🛡️" onPress={() => { inputRef.current.takeCover = true; inputRef.current.shooting = false; }} variant="action" />
+          </div>
+
+          {/* Top-right quick buttons */}
+          <ActionButton label="📄" onPress={() => setShowIntel(v => !v)} className="absolute top-14 right-3 pointer-events-auto" variant="action" />
+          <ActionButton label="🎒" onPress={() => { setShowInventory(v => !v); setShowIntel(false); }} className="absolute top-14 right-[4.5rem] pointer-events-auto" variant="action" />
+
+          {/* Bottom-center: movement mode + grenade cycle */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 pointer-events-auto">
             {(['sneak', 'walk', 'sprint'] as const).map(mode => {
               const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
-              const labels = { sneak: 'SNEAK', walk: 'WALK', sprint: 'SPRINT' };
               const isActive = inputRef.current.movementMode === mode;
               return (
                 <button
                   key={mode}
-                  className={`px-2 py-1 rounded text-[10px] font-mono border transition-colors touch-none select-none
+                  className={`px-3 py-2 rounded text-xs font-mono border transition-colors touch-none select-none
                     ${isActive
                       ? 'bg-primary/60 border-primary text-primary-foreground'
                       : 'bg-secondary/30 border-border/40 text-muted-foreground'
@@ -1406,14 +1419,20 @@ export const GameCanvas: React.FC = () => {
                   onTouchStart={(e) => { e.preventDefault(); inputRef.current.movementMode = mode; }}
                   onMouseDown={() => { inputRef.current.movementMode = mode; }}
                 >
-                  {icons[mode]} {labels[mode]}
+                  {icons[mode]}
                 </button>
               );
             })}
+            <button
+              className="px-3 py-2 rounded text-xs font-mono border border-warning/40 bg-warning/10 text-warning touch-none select-none"
+              onTouchStart={(e) => { e.preventDefault(); inputRef.current.cycleThrowable = true; }}
+            >
+              🔄
+            </button>
           </div>
         </div>
 
-        <div className="sm:hidden absolute bottom-1 left-2 right-2 text-center text-[10px] text-muted-foreground/50 pointer-events-none">
+        <div className="sm:hidden absolute bottom-0 left-2 right-2 text-center text-[8px] text-muted-foreground/30 pointer-events-none pb-safe">
           Tap to move · Tap enemy to shoot
         </div>
 
@@ -1422,7 +1441,7 @@ export const GameCanvas: React.FC = () => {
         </div>
         {/* Inventory Panel — toggled with Tab/I */}
         {showInventory && (
-          <div className="absolute top-12 right-3 z-30">
+          <div className="absolute top-12 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-30">
             <InventoryPanel
               items={backpackItems}
               inCover={hudState.inCover}

@@ -174,9 +174,9 @@ export const HUD: React.FC<HUDProps> = ({
     <div className="absolute inset-0 pointer-events-none">
 
       {/* ═══════ TOP BAR — Timer + Minimap + Status ═══════ */}
-      <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-3 pt-2">
+      <div className="absolute top-0 left-0 right-0 flex items-start justify-between px-2 sm:px-3 pt-1 sm:pt-2">
         {/* Top-left: Stealth/movement indicator — single compact line */}
-        <div className="flex items-center gap-2 bg-card/60 backdrop-blur-sm rounded px-2 py-1 border border-border/30">
+        <div className="flex items-center gap-1 sm:gap-2 bg-card/60 backdrop-blur-sm rounded px-1.5 sm:px-2 py-0.5 sm:py-1 border border-border/30">
           {(() => {
             const icons = { sneak: '🤫', walk: '🚶', sprint: '🏃' };
             const colors = { sneak: 'text-accent', walk: 'text-foreground/60', sprint: 'text-warning' };
@@ -220,7 +220,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-LEFT: HP + Stamina + Medical ═══════ */}
-      <div className="absolute bottom-12 left-3 flex flex-col gap-1">
+      <div className="absolute bottom-28 sm:bottom-12 left-2 sm:left-3 flex flex-col gap-1 scale-90 sm:scale-100 origin-bottom-left">
         {/* HP bar */}
         <div className="flex items-center gap-1.5">
           <div className="w-32 h-3 bg-background/60 rounded-sm overflow-hidden border border-border/30">
@@ -257,7 +257,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-RIGHT: Weapon + Ammo + Throwables ═══════ */}
-      <div className="absolute bottom-12 right-3 flex flex-col items-end gap-1">
+      <div className="absolute bottom-28 sm:bottom-12 right-2 sm:right-3 flex flex-col items-end gap-1 scale-90 sm:scale-100 origin-bottom-right">
         {/* Active weapon — compact */}
         <div className="flex items-center gap-2 bg-card/70 backdrop-blur-sm rounded px-2.5 py-1.5 border border-accent/40">
           <div className="flex flex-col items-start">
@@ -347,7 +347,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ LEFT SIDE: Mission items + Objectives ═══════ */}
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+      <div className="absolute left-2 sm:left-3 top-10 sm:top-1/2 sm:-translate-y-1/2 flex flex-col gap-1 sm:gap-1.5 scale-90 sm:scale-100 origin-top-left">
         {/* Mission items — tiny indicators */}
         <div className="flex flex-col gap-0.5">
           <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
@@ -390,7 +390,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* ═══════ BOTTOM-CENTER: Messages ═══════ */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full">
+      <div className="absolute bottom-36 sm:bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 max-w-md w-full px-16 sm:px-0">
         {messages.slice(-4).map((msg, i) => {
           const age = time - msg.time;
           if (age > 6) return null;

@@ -84,7 +84,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropIte
   const fillPercent = Math.min(100, (items.length / maxSlots) * 100);
 
   return (
-    <div ref={panelRef} className="w-44 max-h-[62vh] bg-card/55 backdrop-blur-md border border-border/40 rounded-lg shadow-xl flex flex-col pointer-events-auto select-none overflow-hidden">
+    <div ref={panelRef} className="w-[85vw] sm:w-44 max-h-[55vh] sm:max-h-[62vh] bg-card/80 sm:bg-card/55 backdrop-blur-md border border-border/40 rounded-lg shadow-xl flex flex-col pointer-events-auto select-none overflow-hidden">
       {/* Backpack header with shape */}
       <div className="px-2 pt-2 pb-1">
         <div className="relative mx-auto w-36">
@@ -125,7 +125,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ items, onDropIte
 
       {/* Item grid — backpack contents */}
       <div className="flex-1 overflow-y-auto px-1.5 pb-1 scrollbar-thin">
-        <div className="grid grid-cols-4 gap-[3px]">
+        <div className="grid grid-cols-6 sm:grid-cols-4 gap-1 sm:gap-[3px]">
           {Array.from({ length: maxSlots }).map((_, slotIdx) => {
             const item = items[slotIdx];
             const isEmpty = !item;
