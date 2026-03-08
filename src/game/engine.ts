@@ -1013,6 +1013,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // === ELEVATOR BLACKOUT FADE ===
+  if ((state as any)._elevatorFade > 0) {
+    (state as any)._elevatorFade -= dt;
+    // Swap map at midpoint (when fully black)
+    if (!(state as any)._elevatorSwapped && (state as any)._elevatorFade <= 1.0) {
+      (state as any)._elevatorSwapped = true;
+      performMineElevatorTransition(state, (state as any)._elevatorFadeDir);
+    }
+    // Freeze player during fade
+    return state;
+  }
+
   // Track HP at start of frame for damage-taken calculation
   const _hpAtFrameStart = state.player.hp;
 
