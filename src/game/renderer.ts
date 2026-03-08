@@ -3440,6 +3440,39 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.stroke();
   }
 
+  // ── MUZZLE FLASHES ──
+  if (hasMuzzleFlash()) {
+    const flashes = (state as any)._muzzleFlashes as { x: number; y: number; time: number; fromPlayer: boolean }[] | undefined;
+    if (flashes) {
+      for (const f of flashes) {
+        if (!isOnScreen(f.x, f.y, cx, cy, w, h, 20)) continue;
+        const age = state.time - f.time;
+        const alpha = Math.max(0, 1 - age / 0.08);
+        const size = f.fromPlayer ? 12 : 8;
+        // Bright core
+        ctx.fillStyle = `rgba(255, 240, 150, ${alpha * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        // Outer glow
+        ctx.fillStyle = `rgba(255, 180, 50, ${alpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, size, 0, Math.PI * 2);
+        ctx.fill();
+        // Radial spikes
+        ctx.strokeStyle = `rgba(255, 220, 100, ${alpha * 0.6})`;
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI * 2 * i / 4) + age * 40;
+          ctx.beginPath();
+          ctx.moveTo(f.x, f.y);
+          ctx.lineTo(f.x + Math.cos(a) * size * 1.2, f.y + Math.sin(a) * size * 1.2);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
   // ── LASER DESIGNATOR BEAM ──
   if (state.laserTarget) {
     ctx.save();
