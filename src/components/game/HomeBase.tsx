@@ -5,6 +5,9 @@ import { MissionObjective } from '../../game/objectives';
 import { MapId, MAPS } from '../../game/maps';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion, DailyMission } from '../../game/dailyMissions';
+import { RECIPES, canCraft, craft } from '../../game/crafting';
+import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
+import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
 
 export interface StashState {
   items: Item[];
@@ -49,14 +52,15 @@ interface HomeBaseProps {
   onSellItem: (index: number) => void;
   onSellAll: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
-  onBuyTraderItem: (itemId: string) => void;
+  onBuyTraderItem: (itemId: string, adjustedCost: number) => void;
   onRerollObjectives: (cost: number) => void;
   onMapChange: (mapId: MapId) => void;
+  onCraft: (recipeId: string) => void;
   rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, rerollCount }) => {
-  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel'>('mission');
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, rerollCount }) => {
+  const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
@@ -66,6 +70,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
   const dailyMissions = getDailyMissions();
+  const repTier = getRepTier(stash.extractionCount);
+  const nextRep = getNextRepTier(stash.extractionCount);
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
@@ -81,7 +87,13 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             <span>Raids: {stash.raidCount}</span>
             <span>Extracted: {stash.extractionCount}</span>
             <span className="text-accent">Lv.{level}</span>
+            <span title={repTier.description}>{repTier.icon} {repTier.name}</span>
           </div>
+          {nextRep && (
+            <div className="text-[9px] font-mono text-muted-foreground/60 mt-1">
+              Next rank: {nextRep.icon} {nextRep.name} — {nextRep.minRep - stash.extractionCount} more extractions ({nextRep.discount}% discount)
+            </div>
+          )}
           {/* XP Bar */}
           <div className="mt-2 mx-auto max-w-xs">
             <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground">
@@ -102,6 +114,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           {([
             { key: 'mission', label: '🎯 Mission' },
             { key: 'stash', label: '📦 Stash' },
+            { key: 'craft', label: '🔨 Craft' },
             { key: 'trader', label: '⬆ Upgrades' },
             { key: 'shop', label: '🏪 Shop' },
             { key: 'intel', label: `📄 Intel${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
@@ -216,18 +229,22 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-[300px] overflow-y-auto">
-                {stash.items.map((item, idx) => (
-                  <button
-                    key={`${item.id}_${idx}`}
-                    className="flex flex-col items-center gap-0.5 p-2 bg-secondary/30 border border-border/50 rounded hover:border-warning/50 hover:bg-warning/10 transition-colors group"
-                    onClick={() => onSellItem(idx)}
-                    title={`${item.name} — ${item.value}₽ (click to sell)`}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="text-[9px] font-mono text-foreground/80 leading-tight text-center truncate w-full">{item.name}</span>
-                    <span className="text-[9px] font-mono text-warning group-hover:text-warning">{item.value}₽</span>
-                  </button>
-                ))}
+                {stash.items.map((item, idx) => {
+                  const rarity = getItemRarity(item.value, item.category);
+                  return (
+                    <button
+                      key={`${item.id}_${idx}`}
+                      className={`flex flex-col items-center gap-0.5 p-2 rounded hover:border-warning/50 hover:bg-warning/10 transition-colors group ${RARITY_BG[rarity]} ${RARITY_GLOW[rarity]}`}
+                      onClick={() => onSellItem(idx)}
+                      title={`${item.name} — ${item.value}₽ (${RARITY_LABEL[rarity]}) — click to sell`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-[9px] font-mono text-foreground/80 leading-tight text-center truncate w-full">{item.name}</span>
+                      <span className="text-[9px] font-mono text-warning group-hover:text-warning">{item.value}₽</span>
+                      <span className="text-[7px] font-mono font-bold" style={{ color: RARITY_COLORS[rarity] }}>{RARITY_LABEL[rarity]}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -292,19 +309,24 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
-        {/* Shop Tab (consumables) */}
+        {/* Shop Tab (consumables) — with dynamic prices & reputation discount */}
         {tab === 'shop' && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🏪</span>
               <div>
                 <span className="text-xs font-display text-foreground">Delyets' Shop</span>
-                <p className="text-[10px] font-mono text-muted-foreground italic">"Items go to your stash. Equip before deploying."</p>
+                <p className="text-[10px] font-mono text-muted-foreground italic">
+                  {repTier.discount > 0 ? `${repTier.icon} ${repTier.name} — ${repTier.discount}% discount applied` : '"Items go to your stash. Equip before deploying."'}
+                </p>
               </div>
             </div>
             <div className="grid gap-1.5 max-h-[400px] overflow-y-auto">
               {TRADER_ITEMS.map(item => {
-                const affordable = stash.rubles >= item.cost;
+                const adjustedCost = getAdjustedPrice(item.cost, item.id, stash.extractionCount);
+                const affordable = stash.rubles >= adjustedCost;
+                const cheaper = adjustedCost < item.cost;
+                const expensive = adjustedCost > item.cost;
                 return (
                   <div
                     key={item.id}
@@ -313,16 +335,67 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
                         ? 'border-warning/40 bg-warning/5 hover:bg-warning/10 cursor-pointer'
                         : 'border-border/30 bg-secondary/10 opacity-50'
                     }`}
-                    onClick={() => affordable && onBuyTraderItem(item.id)}
+                    onClick={() => affordable && onBuyTraderItem(item.id, adjustedCost)}
                   >
                     <span className="text-xl">{item.icon}</span>
                     <div className="flex-1 min-w-0">
                       <span className="text-xs font-display text-foreground">{item.name}</span>
                       <p className="text-[10px] font-mono text-muted-foreground">{item.description}</p>
                     </div>
-                    <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
-                      {item.cost}₽
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className={`text-sm font-mono ${affordable ? 'text-warning' : 'text-muted-foreground'}`}>
+                        {adjustedCost}₽
+                      </span>
+                      {cheaper && <span className="text-[8px] font-mono text-accent">▼ SALE</span>}
+                      {expensive && <span className="text-[8px] font-mono text-danger/60">▲</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Crafting Tab */}
+        {tab === 'craft' && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🔨</span>
+              <div>
+                <span className="text-xs font-display text-foreground">Crafting Station</span>
+                <p className="text-[10px] font-mono text-muted-foreground italic">Combine stash items into more valuable goods</p>
+              </div>
+            </div>
+            <div className="grid gap-2 max-h-[400px] overflow-y-auto">
+              {RECIPES.map(recipe => {
+                const available = canCraft(recipe, stash.items);
+                return (
+                  <div
+                    key={recipe.id}
+                    className={`flex items-center gap-3 p-3 rounded border transition-colors ${
+                      available ? 'border-accent/40 bg-accent/5 hover:bg-accent/10 cursor-pointer' : 'border-border/30 bg-secondary/10 opacity-50'
+                    }`}
+                    onClick={() => available && onCraft(recipe.id)}
+                  >
+                    <span className="text-2xl">{recipe.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-display text-foreground">{recipe.name}</span>
+                      <p className="text-[10px] font-mono text-muted-foreground">{recipe.description}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {recipe.ingredients.map((ing, i) => {
+                          const have = stash.items.filter(it => it.name === ing.name).length;
+                          return (
+                            <span key={i} className={`text-[9px] font-mono px-1 py-0.5 rounded border ${have >= ing.count ? 'border-accent/40 text-accent' : 'border-danger/30 text-danger/60'}`}>
+                              {ing.name} {have}/{ing.count}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-mono text-warning">{recipe.resultValue}₽</span>
+                      <p className="text-[8px] font-mono text-accent">{recipe.resultName}</p>
+                    </div>
                   </div>
                 );
               })}
