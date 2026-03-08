@@ -729,6 +729,14 @@ export function createGameState(mapId: MapId = 'objekt47', playerLevel: number =
   normalizeBossIdentityForMap(state, mapId);
   (state as any)._bossNets = [];
   (state as any)._playerNetSlowTimer = 0;
+  (state as any)._playerNoiseLevel = 0; // 0-1 noise meter for HUD
+  // Tag extraction points with difficulty multipliers
+  for (const ep of state.extractionPoints) {
+    // Harder exfils = longer timer = more reward
+    if (ep.timer >= 8) (ep as any)._xpMultiplier = 2.0;      // hardest
+    else if (ep.timer >= 5) (ep as any)._xpMultiplier = 1.5;  // medium
+    else (ep as any)._xpMultiplier = 1.0;                      // easy
+  }
 
   // === SPAWN VALIDATION — nudge enemies out of walls ===
   const spawnGrid = buildSpatialGrid(state.walls);
