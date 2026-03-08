@@ -314,7 +314,7 @@ export const LOOT_POOLS = {
       [randomValuable(), 0.5],
       [randomValuable(), 0.25],
       [createAmmo('9x18', 3 + Math.floor(Math.random() * 3)), 0.06],
-      [createGrenade(), 0.04],
+      [createGrenade(), 0.12],
       [createTNT(), 0.12],
     ]);
   },
