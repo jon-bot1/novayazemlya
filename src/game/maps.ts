@@ -1,5 +1,5 @@
 // Map registry — central place to define available maps
-export type MapId = 'novaya_zemlya' | 'fishing_village' | 'hospital';
+export type MapId = 'objekt47' | 'fishing_village' | 'hospital';
 
 export interface MapInfo {
   id: MapId;
@@ -12,7 +12,7 @@ export interface MapInfo {
 
 export const MAPS: MapInfo[] = [
   {
-    id: 'novaya_zemlya',
+    id: 'objekt47',
     name: 'Objekt 47',
     description: 'Military base on Novaya Zemlya. Hangars, offices, watchtowers. Heavy enemy presence.',
     icon: '🏭',

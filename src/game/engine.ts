@@ -37,7 +37,7 @@ function normalizeBossIdentityForMap(state: GameState, mapId: MapId) {
       (enemy as any)._hookAttack = true;
       (enemy as any)._hookRange = (enemy as any)._hookRange || 55;
       (enemy as any)._hookDamage = (enemy as any)._hookDamage || 60;
-    } else if (mapId === 'novaya_zemlya') {
+    } else if (mapId === 'objekt47') {
       (enemy as any)._bossId = 'osipovitj';
       (enemy as any)._bossTitle = 'COMMANDANT OSIPOVITJ';
     }
@@ -472,7 +472,7 @@ function generateEnemyLoot(enemy: Enemy) {
   return baseLoot;
 }
 
-export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
+export function createGameState(mapId: MapId = 'objekt47'): GameState {
   const map = mapId === 'fishing_village' ? generateFishingVillageMap() : mapId === 'hospital' ? generateHospitalMap() : generateMap();
   const player = mapId === 'fishing_village' ? createFishingVillagePlayer() : mapId === 'hospital' ? createHospitalPlayer() : createInitialPlayer();
   const state: GameState = {
@@ -509,7 +509,7 @@ export function createGameState(mapId: MapId = 'novaya_zemlya'): GameState {
     soundEvents: [],
     flashbangTimer: 0,
     backpackCapacity: 0,
-    mineFieldZone: mapId === 'novaya_zemlya' ? { x: 400, y: 1400, w: 350, h: 300 } : { x: -999, y: -999, w: 0, h: 0 },
+    mineFieldZone: mapId === 'objekt47' ? { x: 400, y: 1400, w: 350, h: 300 } : { x: -999, y: -999, w: 0, h: 0 },
     reinforcementTimer: 90 + Math.random() * 30,
     reinforcementsSpawned: 0,
     maxReinforcements: 6,

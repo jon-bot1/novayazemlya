@@ -1009,7 +1009,7 @@ type MapPalette = {
 };
 
 const MAP_PALETTES: Record<string, MapPalette> = {
-  novaya_zemlya: {
+  objekt47: {
     terrain: {
       grass: ['#3a4a2e', '#3e4e32'],
       dirt: ['#5a5040', '#5e5444'],
@@ -1058,12 +1058,12 @@ const MAP_PALETTES: Record<string, MapPalette> = {
 };
 
 function getMapPalette(state: GameState): MapPalette {
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
-  return MAP_PALETTES[mapId] || MAP_PALETTES.novaya_zemlya;
+  const mapId = (state as any)._mapId || 'objekt47';
+  return MAP_PALETTES[mapId] || MAP_PALETTES.objekt47;
 }
 
 // Legacy fallback
-const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.novaya_zemlya.terrain;
+const TERRAIN_COLORS: Record<string, [string, string]> = MAP_PALETTES.objekt47.terrain;
 
 // Cached ground canvas — rendered once, blitted each frame
 let _groundCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
@@ -1072,7 +1072,7 @@ let _groundMapH = 0;
 let _groundMapId = '';
 
 function ensureGroundCanvas(state: GameState) {
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  const mapId = (state as any)._mapId || 'objekt47';
   if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
   _groundMapW = state.mapWidth;
   _groundMapH = state.mapHeight;
@@ -1196,7 +1196,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   drawGroundTiles(ctx, cx, cy, w, h, state.mapWidth, state.mapHeight, state);
 
   // Map identification
-  const mapId = (state as any)._mapId || 'novaya_zemlya';
+  const mapId = (state as any)._mapId || 'objekt47';
 
   // ── HOSPITAL DEPARTMENT FLOOR OVERLAYS & WALL SIGNS ──
   if (mapId === 'hospital') {
@@ -1295,7 +1295,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // Zone labels — map-specific
   const ZONE_LABELS: Record<string, { x: number; y: number; label: string; sub: string; size: number }[]> = {
-    novaya_zemlya: [
+    objekt47: [
       { x: 1600, y: 1100, label: 'HANGAR', sub: 'Main Building', size: 22 },
       { x: 1300, y: 1000, label: 'HANGAR A', sub: 'West Hall', size: 14 },
       { x: 1300, y: 1400, label: 'HANGAR B', sub: 'South Hall', size: 12 },
@@ -1339,7 +1339,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       { x: 2000, y: 1250, label: 'FIRE ESCAPE', sub: 'East', size: 9 },
     ],
   };
-  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.novaya_zemlya;
+  const zoneLabels = ZONE_LABELS[mapId] || ZONE_LABELS.objekt47;
   const labelColor = mapId === 'hospital' ? '#a0a0a0' : '#c8c8b4';
   for (const z of zoneLabels) {
     if (!isOnScreen(z.x, z.y, cx, cy, w, h, 50)) continue;

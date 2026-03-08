@@ -116,7 +116,7 @@ const HOSPITAL_BONUS: ObjectiveTemplate[] = [
 // MAP → OBJECTIVE REGISTRY
 // ═══════════════════════════════════════
 const MAP_OBJECTIVES: Record<MapId, { main: ObjectiveTemplate[]; bonus: ObjectiveTemplate[] }> = {
-  novaya_zemlya: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
+  objekt47: { main: OBJEKT47_MAIN, bonus: OBJEKT47_BONUS },
   fishing_village: { main: VILLAGE_MAIN, bonus: VILLAGE_BONUS },
   hospital: { main: HOSPITAL_MAIN, bonus: HOSPITAL_BONUS },
 };
@@ -130,7 +130,7 @@ function shuffle<T>(arr: T[]): T[] {
   return result;
 }
 
-export function generateMissionObjectives(mapId: MapId = 'novaya_zemlya'): MissionObjective[] {
+export function generateMissionObjectives(mapId: MapId = 'objekt47'): MissionObjective[] {
   const { main: mainPool, bonus: bonusPool } = MAP_OBJECTIVES[mapId];
   const main = shuffle(mainPool)[0];
   const bonuses = shuffle(bonusPool).slice(0, 1 + Math.floor(Math.random() * 2)); // 1-2 bonus
