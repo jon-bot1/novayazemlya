@@ -650,8 +650,8 @@ export function generateMap() {
   // ══════════════════════════════════════
   // DOCUMENTS
   // ══════════════════════════════════════
-  const docZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B];
-  const docIds = ['doc_1', 'doc_2', 'doc_6', 'doc_4', 'doc_3', 'doc_5', 'doc_7'];
+  const docZones = [ZONE_HANGAR_A, ZONE_HANGAR_B, ZONE_OFFICES_TOP, ZONE_OFFICES_TOP, ZONE_OFFICES_BOT, ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_OFFICES_BOT, ZONE_STORAGE_B];
+  const docIds = ['doc_1', 'doc_2', 'doc_6', 'doc_4', 'doc_3', 'doc_5', 'doc_7', 'doc_sz_1', 'doc_sz_2'];
   const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
     const z = docZones[i];
     const p = randIn(z.x, z.y, z.w, z.h);

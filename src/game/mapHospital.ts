@@ -412,8 +412,8 @@ export function generateHospitalMap() {
   ];
 
   // ═══ DOCUMENTS (hospital-specific lore) ═══
-  const docZones = [ZONE_WARD_W, ZONE_LAB_E, ZONE_OFFICE_E, ZONE_BASEMENT, ZONE_COURTYARD, ZONE_LAB_E, ZONE_BASEMENT];
-  const docIds = ['doc_h1', 'doc_h2', 'doc_h3', 'doc_h4', 'doc_h5', 'doc_3', 'doc_4'];
+  const docZones = [ZONE_WARD_W, ZONE_LAB_E, ZONE_OFFICE_E, ZONE_BASEMENT, ZONE_COURTYARD, ZONE_LAB_E, ZONE_BASEMENT, ZONE_OFFICE_E, ZONE_WARD_W];
+  const docIds = ['doc_h1', 'doc_h2', 'doc_h3', 'doc_h4', 'doc_h5', 'doc_3', 'doc_4', 'doc_sz_3', 'doc_archangelsk'];
   const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
     const z = docZones[i % docZones.length];
     const p = randIn(z.x, z.y, z.w, z.h);

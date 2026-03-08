@@ -272,8 +272,8 @@ export function generateMiningSurfaceMap() {
     rLoot(ZONE_EAST_PERIMETER, 'barrel', 'common'),
   ];
 
-  const docZones = [ZONE_CREW, ZONE_MACHINE_HALL];
-  const docIds = ['doc_mine_1', 'doc_mine_2'];
+  const docZones = [ZONE_CREW, ZONE_MACHINE_HALL, ZONE_CREW];
+  const docIds = ['doc_mine_1', 'doc_mine_2', 'doc_sz_4'];
   const documentPickups: DocumentPickup[] = docIds.map((id, i) => {
     const z = docZones[i % docZones.length];
     const p = randIn(z.x, z.y, z.w, z.h);
