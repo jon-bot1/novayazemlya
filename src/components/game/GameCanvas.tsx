@@ -1314,7 +1314,7 @@ export const GameCanvas: React.FC = () => {
                 return updated;
               });
             }
-            setObjectives(generateMissionObjectives());
+            setObjectives(generateMissionObjectives(selectedMapId));
             setRerollCount(c => c + 1);
           }}
           rerollCount={rerollCount}
