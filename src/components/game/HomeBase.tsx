@@ -49,6 +49,7 @@ interface HomeBaseProps {
   onBuyUpgrade: (upgradeId: string) => void;
   onBuyTraderItem: (itemId: string) => void;
   onRerollObjectives: (cost: number) => void;
+  onMapChange: (mapId: MapId) => void;
   rerollCount: number;
 }
 
