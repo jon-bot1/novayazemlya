@@ -2423,7 +2423,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         // Phase 1+: faster fire rate, more speed
         if (enemy.bossPhase! >= 1) {
-          if (bossId === 'patient_zero') {
+          if (bossId === 'uzbek') {
             enemy.speed = 2.20; enemy.damage = 65; enemy.fireRate = 350;
           } else {
             enemy.fireRate = 350; enemy.speed = 1.49; enemy.damage = 35;
