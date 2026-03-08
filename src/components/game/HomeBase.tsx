@@ -690,6 +690,60 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           </div>
         )}
 
+        {/* Mastery Tab */}
+        {tab === 'mastery' && (() => {
+          const mastery = stash.weaponMastery || { ...EMPTY_MASTERY };
+          const types: WeaponMasteryType[] = ['rifle', 'pistol', 'sniper', 'shotgun', 'knife', 'grenade'];
+          return (
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-display text-accent uppercase tracking-wider">⚔️ Weapon Mastery</span>
+              <p className="text-[10px] font-mono text-muted-foreground">Kill enemies with different weapon types to gain mastery. Each level grants passive bonuses.</p>
+              {types.map(type => {
+                const data = mastery[type] || { kills: 0, level: 0 };
+                const info = MASTERY_INFO[type];
+                const bonus = getMasteryBonus(data.level);
+                const next = getNextMasteryThreshold(data.kills);
+                const progress = next ? data.kills / next : 1;
+                const rankName = MASTERY_RANK_NAMES[data.level] || 'Untrained';
+                return (
+                  <div key={type} className="p-3 rounded border border-border/50 bg-secondary/20">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{info.icon}</span>
+                        <span className="text-xs font-display text-foreground">{info.name}</span>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          data.level >= 4 ? 'bg-warning/20 text-warning border border-warning/30' :
+                          data.level >= 2 ? 'bg-accent/20 text-accent border border-accent/30' :
+                          'bg-secondary/40 text-muted-foreground border border-border/30'
+                        }`}>
+                          {rankName}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground">Lv.{data.level}/5</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground mb-1">
+                      <span>{data.kills} kills</span>
+                      <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent transition-all duration-500"
+                          style={{ width: `${Math.min(100, progress * 100)}%` }}
+                        />
+                      </div>
+                      <span>{next ? `${next}` : 'MAX'}</span>
+                    </div>
+                    {data.level > 0 && (
+                      <div className="text-[9px] font-mono text-accent/80 flex gap-3">
+                        {bonus.reloadReduction > 0 && <span>-{(bonus.reloadReduction * 100).toFixed(0)}% reload</span>}
+                        {bonus.damageBonus > 0 && <span>+{(bonus.damageBonus * 100).toFixed(0)}% damage</span>}
+                        {bonus.accuracyBonus > 0 && <span>+{(bonus.accuracyBonus * 100).toFixed(0)}% accuracy</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
       </div>
       </div>
