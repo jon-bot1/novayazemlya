@@ -53,7 +53,7 @@ interface HomeBaseProps {
   rerollCount: number;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, rerollCount }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, rerollCount }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('novaya_zemlya');
   const displayName = playerName === '__anonymous__' ? 'Top Secret Agent' : playerName;
