@@ -14,6 +14,7 @@ function getBossDeathMonologue(enemy: Enemy): string[] {
   const bossId = (enemy as any)._bossId;
   if (bossId === 'kravtsov') return [...KRAVTSOV_DEATH_MONOLOGUE];
   if (bossId === 'uzbek') return [...UZBEK_DEATH_MONOLOGUE];
+  if (bossId === 'nachalnik') return [...NACHALNIK_DEATH_MONOLOGUE];
   return [...BOSS_DEATH_MONOLOGUE];
 }
 
