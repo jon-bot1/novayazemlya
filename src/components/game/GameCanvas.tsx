@@ -620,6 +620,19 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </>
       )}
 
+      {/* Credits — always visible at bottom */}
+      <div className="border-t border-border/30 pt-4 mt-2">
+        <p className="text-[9px] font-mono text-muted-foreground/40 text-center leading-relaxed">
+          NOVAYA ZEMLYA is a browser-based tactical extraction shooter built as a passion project.
+        </p>
+        <p className="text-[9px] font-mono text-muted-foreground/30 text-center leading-relaxed mt-2">
+          Special thanks to <span className="text-muted-foreground/50">Battlestate Games</span> and their <span className="text-muted-foreground/50">Escape from Tarkov</span> — a massive inspiration for the extraction mechanics, loot systems, and the tension of knowing that every raid could be your last. Thank you for showing the world what a hardcore tactical shooter can be.
+        </p>
+        <p className="text-[9px] font-mono text-muted-foreground/20 text-center mt-2">
+          © 2025-2026 — Made with ☕ and paranoia
+        </p>
+      </div>
+
       {tab === 'updates' && (
         <>
           <div>
