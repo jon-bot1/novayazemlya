@@ -321,7 +321,7 @@ function OccultSection() {
         <div className="text-[10px] font-mono text-foreground/70 space-y-1">
           <div>⛏️ <strong>Holmström</strong> — Former mine director. Sealed the deep levels in 1964, but secretly a cult founder. Still alive at 78. Somewhere in the village.</div>
           <div>⛏️ <strong>"Bergsmannen"</strong> — A miner absorbed in 1961 whose voice is still heard in Tunnel 7. The cult's spiritual guide.</div>
-          <div>⛏️ <strong>Nils Stålhandske</strong> — VARG's father. The original absorbed. His compass readings are now part of Gruvrå's magnetic field.</div>
+          <div>⛏️ <strong>Nils Stålhandske</strong> — Survey engineer. The first known absorbed. His compass readings are now part of Gruvrå's magnetic field.</div>
         </div>
       </div>
 
