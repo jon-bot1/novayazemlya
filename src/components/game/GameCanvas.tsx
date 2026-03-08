@@ -1042,7 +1042,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: homebase
   if (gamePhase === 'homebase') {
     return (
-      <div className="relative w-screen h-screen overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
         <HomeBase
           playerName={playerName}
           stash={stash}
