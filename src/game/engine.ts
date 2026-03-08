@@ -2552,7 +2552,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else (enemy as any)._stuckTime = 0;
     }
     (enemy as any)._lastPos = { ...enemy.pos };
-    if ((enemy as any)._stuckTime > 1.2 && enemy.type !== 'turret' && enemy.state !== 'dead') {
+    if ((enemy as any)._stuckTime > 1.2 && enemy.type !== 'turret') {
       const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(8, enemy.speed * 1.5), 10);
       if (escapeStep) enemy.pos = escapeStep;
       else relocateEnemyToOpenArea(state, enemy);
