@@ -422,6 +422,10 @@ export function generateHospitalMap() {
     // Sandbags near entrance
     { pos: { x: BX + BW / 2 - 80, y: BY + BH + 20 }, w: 60, h: 16, type: 'sandbags' },
     { pos: { x: BX + BW / 2 + 30, y: BY + BH + 20 }, w: 60, h: 16, type: 'sandbags' },
+    // Reception area props — chairs in waiting room
+    { pos: { x: BX + BW / 2 - 160, y: BY + BH - 100 }, w: 30, h: 60, type: 'metal_shelf' },
+    { pos: { x: BX + BW / 2 + 140, y: BY + BH - 100 }, w: 30, h: 60, type: 'metal_shelf' },
+    { pos: { x: BX + BW / 2, y: BY + BH - 80 }, w: 50, h: 20, type: 'equipment_table' },
   ];
 
   // ═══ ALARM PANELS ═══
