@@ -4075,7 +4075,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
                 coverFound = { x: prop.pos.x, y: prop.pos.y };
               }
             }
-            (enemy as any)._coverPos = coverFound || { x: enemy.pos.x, y: enemy.pos.y };
+            // No valid cover nearby: abort cover mode so enemy doesn't freeze in place
+            if (!coverFound) {
+              (enemy as any)._seekCover = false;
+              (enemy as any)._coverPos = null;
+              (enemy as any)._coverTimer = 0;
+              (enemy as any)._coverDecided = false;
+            } else {
+              (enemy as any)._coverPos = coverFound;
+            }
           }
           const cp = (enemy as any)._coverPos;
           const dToCover = dist(enemy.pos, cp);
@@ -4919,12 +4927,26 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (!enemy.speechBubble && Math.random() < 0.15) {
               setSpeech(enemy, pickLine(HIT_LINES, enemy.type), 1.5);
             }
+            // Break passive timers/modes immediately when taking fire
+            delete (enemy as any)._reactionDelay;
+            delete (enemy as any)._pendingState;
+            (enemy as any)._reactionDelayDone = true;
+            (enemy as any)._seekCover = false;
+            (enemy as any)._coverPos = null;
+            (enemy as any)._coverTimer = 0;
+            (enemy as any)._coverDecided = false;
+            delete (enemy as any)._seekingCover;
+            delete (enemy as any)._healCoverTarget;
+            delete (enemy as any)._healingTimer;
+
             // When hit, elevated guards go to attack and expand their range
             if (enemy.elevated) {
               enemy.alertRange = Math.max(enemy.alertRange, 300);
               enemy.shootRange = Math.max(enemy.shootRange, 250);
+              enemy.state = 'attack';
+            } else {
+              enemy.state = 'chase';
             }
-            enemy.state = 'chase';
             enemy.awareness = 1.0; // getting shot = full awareness
             enemy.investigateTarget = { ...state.player.pos };
             // Boost observation after being hit — harder to lose
