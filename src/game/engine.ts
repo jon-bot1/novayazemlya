@@ -102,22 +102,26 @@ function setSpeech(enemy: Enemy, text: string | null, duration: number = 2.5) {
   enemy.speechBubbleTimer = duration;
 }
 
-// Cached spatial grid — rebuilt when walls change
+// Cached spatial/terrain grids — rebuild on map/state switch or geometry changes
 let _wallGrid: SpatialGrid | null = null;
 let _wallCount = -1;
+let _wallGridStateRef: GameState | null = null;
 let _terrainGrid: TerrainGrid | null = null;
+let _terrainGridStateRef: GameState | null = null;
 
 function getWallGrid(state: GameState): SpatialGrid {
-  if (!_wallGrid || state.walls.length !== _wallCount) {
+  if (!_wallGrid || _wallGridStateRef !== state || state.walls.length !== _wallCount) {
     _wallGrid = buildSpatialGrid(state.walls);
     _wallCount = state.walls.length;
+    _wallGridStateRef = state;
   }
   return _wallGrid;
 }
 
 function getTerrainGrid(state: GameState): TerrainGrid {
-  if (!_terrainGrid) {
+  if (!_terrainGrid || _terrainGridStateRef !== state) {
     _terrainGrid = buildTerrainGrid(state.terrainZones, state.mapWidth, state.mapHeight);
+    _terrainGridStateRef = state;
   }
   return _terrainGrid;
 }
