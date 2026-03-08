@@ -737,7 +737,7 @@ export const GameCanvas: React.FC = () => {
     };
     const onContextMenu = (e: Event) => { e.preventDefault(); };
     const onMouseUp = (e: MouseEvent) => {
-      if (isTouchDevice()) return;
+      if (skipMouse) return;
       if (e.button === 2) {
         // Right-click release = throw grenade with charged power
         const chargeStart = (stateRef.current as any)._grenadeChargeStart;
