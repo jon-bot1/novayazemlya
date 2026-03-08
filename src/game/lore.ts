@@ -348,6 +348,63 @@ God help us.
     hasCode: false,
     found: false,
   },
+  // === NACHALNIK (Fishing Village Boss) ===
+  {
+    id: 'doc_v1',
+    title: 'Personnel File: Viktor "Nachalnik" Dragunov',
+    author: 'MVD Coastal Division',
+    date: '14.09.1984',
+    classification: 'SECRET',
+    content: `PERSONNEL FILE — SECRET
+Subject: Viktor Semyonovich Dragunov
+Known as: "Nachalnik" (The Boss)
+Last known position: Fishing Village Pier Authority
+
+BACKGROUND:
+Dragunov served 8 years in the Soviet Navy, Black Sea Fleet. Dishonorably discharged in 1980 after an incident involving the disappearance of three crew members during a storm. Investigation inconclusive.
+
+After discharge, he established control over a small fishing village on the northern coast. Within two years, he had turned the legitimate fishing operation into a smuggling network — weapons, contraband, and occasionally people.
+
+DISTINGUISHING FEATURES:
+- Always carries a massive industrial fish hook, repurposed as a close-combat weapon. Hook is approximately 40cm long, sharpened to a razor edge.
+- Missing left ring finger (fishing accident, 1976)
+- Tattoo of an anchor on right forearm
+- Speaks with a deep voice, rarely shouts — his men fear his quiet commands more than any officer's screams
+
+KNOWN ASSOCIATES:
+- Two personal bodyguards, former navy men
+- Pack of trained dogs used for perimeter security
+- Network of "redneck" smugglers from nearby settlements
+
+WARNING:
+Dragunov is extremely dangerous in close quarters. Multiple reports of him using his hook to incapacitate opponents before they can draw weapons. He is known to charge directly at armed targets — do NOT let him close the distance.
+
+His men call him "Nachalnik" — The Boss. On the pier, his word is law.
+
+— MVD Coastal Division, File #847-V`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_v2',
+    title: 'Fisherman\'s Warning (scrawled note)',
+    author: 'Unknown fisherman',
+    date: '???',
+    classification: 'OPEN',
+    content: `Don't go near the pier at night.
+
+Nachalnik doesn't sleep. He sits on the dock with that hook, sharpening it on a stone. Scrape. Scrape. Scrape. You can hear it from the cabins.
+
+Last month, Petya tried to steal a boat. They found him on the beach next morning. The hook had gone clean through his shoulder. He was alive. Nachalnik wanted him alive. So everyone could see.
+
+The speedboat is the only way out. And Nachalnik has the keys.
+
+If you're reading this, you're already too close.
+
+— A friend`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
