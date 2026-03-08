@@ -1836,6 +1836,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           state.killCount++;
           if (enemy.type === 'dog') state.dogsKilled++;
           state.grenadeKills++;
+          addKillFeed(state, enemy.type, 'Mortar');
           addMessage(state, `💀 ${enemy.type.toUpperCase()} eliminated by mortar!`, 'kill');
           spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
         }
