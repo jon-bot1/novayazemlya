@@ -434,13 +434,15 @@ They told us this was a routine posting. Guard duty. Six months and home. What a
 
 [Sound of wind]
 
-Petrov disappeared last night. Just... gone. His bunk was still warm. Boot prints led to the south entrance, then stopped. Just stopped. In the middle of the snow. No tracks leading away.
+Petrov disappeared last night. Just... gone. His bunk was still warm. Boot prints led to the south entrance, then stopped. Just stopped. In the middle of the snow. No tracks leading away. But there were OTHER tracks — starting where his ended. Not boots. Bare feet. Enormous. And they led BACK toward the bunker. Toward the ventilation shaft on sublevel 3.
 
 The lieutenant says he deserted. But where would he go? There's nothing for 200 kilometers.
 
 [Voice cracks]
 
-I found his lighter by the ventilation shaft. The one his wife gave him. He'd never leave that behind.
+I found his lighter by the ventilation shaft. The one his wife gave him. He'd never leave that behind. The lighter was ice cold. Not winter cold — the metal burned my fingers with cold. And the flame... when I lit it, the flame burned blue. Not orange. Blue. Like the crystals in Lab 3.
+
+The chaplain held a prayer service for Petrov. Halfway through, every light in the barracks flickered — and the ventilation system breathed out a long, slow sigh. Not mechanical. Organic. Like an exhalation. And for one second, the barracks smelled of deep stone and ancient water.
 
 I'm keeping this tape hidden. If someone finds it... tell my family I love them. Tell them I tried.
 
