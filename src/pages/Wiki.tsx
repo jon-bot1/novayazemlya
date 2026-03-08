@@ -912,8 +912,8 @@ function UpgradesSection() {
     <>
       <H2>🏪 Upgrades & Trader</H2>
 
-      <H3>Safe House Upgrades</H3>
-      <P>Between raids, spend rubles on permanent upgrades at the Safe House:</P>
+      <H3>Permanent Upgrades (⬆ tab)</H3>
+      <P>Spend rubles on permanent upgrades. Cost scales with level: base × (currentLevel + 1).</P>
       <div className="space-y-1">
         {[
           { icon: '🔴', name: 'Red Dot Sight', effect: '+25% bullet speed', cost: '300₽', max: 1 },
@@ -928,6 +928,7 @@ function UpgradesSection() {
           { icon: '⚡', name: 'Quick Hands', effect: '-15% reload/level', cost: '400₽', max: 3 },
           { icon: '🤫', name: 'Silent Step', effect: '-10% noise/level', cost: '500₽', max: 3 },
           { icon: '💪', name: 'Iron Constitution', effect: '+15 max HP/level', cost: '600₽', max: 3 },
+          { icon: '🎒', name: 'Pack Mule', effect: '+6 slots/level', cost: '700₽', max: 2 },
           { icon: '🫁', name: 'Endurance Training', effect: '+20% stamina/level', cost: '450₽', max: 2 },
         ].map(u => (
           <div key={u.name} className="flex items-center justify-between text-[10px] font-mono text-foreground/70 border-b border-border/30 pb-0.5">
@@ -937,21 +938,256 @@ function UpgradesSection() {
         ))}
       </div>
 
-      <H3>Trader (Consumables)</H3>
-      <P>Buy consumables before deploying:</P>
+      <H3>Delyets' Shop (🏪 tab)</H3>
+      <P>Buy consumables, weapons, ammo, and weapon mods. Prices fluctuate daily (±20%) and are affected by your reputation discount.</P>
+
+      <div className="text-[9px] font-display text-accent uppercase tracking-wider mt-2 mb-1">Medical</div>
       <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
-        <div>💉 Emergency Injector — 350₽ (auto-revive once)</div>
-        <div>🩹 Bandage — 50₽</div>
-        <div>🏥 Medkit — 150₽</div>
-        <div>💉 Morphine — 400₽</div>
-        <div>💣 F-1 Grenade — 200₽</div>
-        <div>💫 Flashbang — 180₽</div>
-        <div>☁️ Gas Grenade — 500₽</div>
-        <div>🧨 TNT Charge — 350₽</div>
+        <div>💉 Emergency Injector — 350₽ (auto-revive to 75 HP once per raid)</div>
+        <div>🩹 Bandage — 50₽ (stops bleeding, heals 10 HP)</div>
+        <div>🏥 Medkit — 150₽ (heals 40 HP)</div>
+        <div>💉 Morphine — 400₽ (full restore + speed boost)</div>
       </div>
 
-      <H3>Stash</H3>
-      <P>Items extracted from raids go to your stash. Sell valuables to the trader for rubles. Stash persists between raids.</P>
+      <div className="text-[9px] font-display text-accent uppercase tracking-wider mt-2 mb-1">Throwables</div>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>💣 F-1 Grenade — 200₽ (200 dmg in 150px radius)</div>
+        <div>💫 Flashbang — 180₽ (stuns 3s)</div>
+        <div>☁️ Gas Grenade — 500₽ (converts one enemy for 20s)</div>
+        <div>🧨 TNT Charge — 350₽ (breach walls, massive dmg)</div>
+      </div>
+
+      <div className="text-[9px] font-display text-accent uppercase tracking-wider mt-2 mb-1">Ammo</div>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🔫 5.45x39 ×20 — 80₽</div>
+        <div>🔫 7.62x39 ×15 — 100₽</div>
+        <div>🔫 7.62x54R ×10 — 120₽ (Mosin/Ksp 58)</div>
+      </div>
+
+      <div className="text-[9px] font-display text-accent uppercase tracking-wider mt-2 mb-1">Weapons</div>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🗡️ Combat Knife — 350₽</div>
+        <div>🔫 AK-74 — 800₽</div>
+        <div>🔫 Mosin-Nagant — 600₽</div>
+        <div>🔫 TOZ-34 Shotgun — 500₽</div>
+      </div>
+
+      <div className="text-[9px] font-display text-accent uppercase tracking-wider mt-2 mb-1">Gear & Mods</div>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🦺 Body Armor — 300₽ (+30 armor)</div>
+        <div>⛑️ Helmet — 200₽ (+15 armor)</div>
+        <div>🥽 Tactical Goggles — 250₽ (-50% flashbang)</div>
+        <div>🎒 Tactical Backpack — 300₽ (+4 slots, 1 use)</div>
+        <div>📢 Propaganda Leaflet — 600₽ (converts enemy 60s)</div>
+        <div>🦴 Dog Food — 100₽ (neutralizes dog)</div>
+        <div>🔭 Red Dot Scope — 300₽ (weapon mod: +20% bullet speed)</div>
+        <div>🔇 Suppressor — 450₽ (weapon mod: -50% shot noise)</div>
+        <div>📎 Extended Magazine — 250₽ (weapon mod: +8 mag capacity)</div>
+      </div>
+
+      <H3>Weapon Modding (🔧)</H3>
+      <P>Access the weapon modding bench from the Safe House. Attach or detach mods on any weapon in your stash. 3 mod slots per weapon: Scope, Suppressor, Extended Magazine. Each slot accepts one mod.</P>
+
+      <H3>Crafting (🔨 tab)</H3>
+      <P>Combine stash items into higher-value goods at the crafting station:</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>📻 Transistor + Radio Parts + Battery → <span className="text-accent">Working Field Radio</span> (500₽)</div>
+        <div>🏥 Bandage ×2 + Medkit → <span className="text-accent">Advanced Medpack</span> (350₽, heals 60 HP)</div>
+        <div>💎 Gold Ring + Silver Chain → <span className="text-accent">Gold Jewelry Set</span> (600₽)</div>
+        <div>🔭 Binoculars + Camera Film → <span className="text-accent">Improvised Scope</span> (400₽)</div>
+        <div>🎒 Ration Pack + Compass + Lighter → <span className="text-accent">Survival Kit</span> (350₽)</div>
+        <div>📁 Dog Tags ×2 + Propaganda Poster → <span className="text-accent">Classified Dossier</span> (450₽)</div>
+        <div>🔌 Broken Phone + Battery Pack + Transistor → <span className="text-accent">Electronics Bundle</span> (450₽)</div>
+        <div>⛽ Fuel Canister ×2 + Vodka Bottle → <span className="text-accent">Fuel Reserve</span> (500₽)</div>
+      </div>
+    </>
+  );
+}
+
+function SafeHouseSection() {
+  return (
+    <>
+      <H2>🏠 Safe House</H2>
+      <P>The Safe House is your hub between raids. Access all management features from its tabbed interface.</P>
+
+      <H3>Safe House Tabs</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-2">
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">🎯 Mission</strong> — View current objectives (main + bonus). Reroll objectives up to 3 times (cost: free → 100₽ → 200₽ → 400₽). Also shows 3 rotating daily challenges.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">📦 Stash</strong> — View and sell extracted loot. Click items to sell. "Sell All" button for quick liquidation. Items show rarity colors.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">🔨 Craft</strong> — Combine stash items into higher-value goods. Recipes require specific items. See Upgrades & Trader section for full recipe list.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">⬆ Upgrades</strong> — Buy permanent upgrades with rubles. 14 upgrades available, each with multiple levels. Cost scales with level.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">🏪 Shop</strong> — Buy consumables, weapons, ammo, gear, and weapon mods from Delyets. Prices fluctuate daily (±20%) and are reduced by reputation discount.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-foreground">📄 Intel</strong> — Review all collected documents, codes, and cassette tapes. Documents grouped by location. CONTROL provides intel summaries based on your progress.
+        </div>
+      </div>
+
+      <H3>Map Selection</H3>
+      <P>Choose your deployment zone before each raid. Maps unlock based on extraction count:</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🏭 <strong>Objekt 47</strong> — Always available (starting map)</div>
+        <div>🏚️ <strong>Fishing Village</strong> — Requires 3 extractions</div>
+        <div>🏥 <strong>Hospital</strong> — Requires 6 extractions</div>
+        <div>⛏️ <strong>Gruvsamhället</strong> — Requires 10 extractions</div>
+      </div>
+      <P>Each map shows boss intel when selected, including HP, location, and special attacks.</P>
+
+      <H3>Deploy</H3>
+      <P>Press "DEPLOY" to enter the selected map. Your purchased shop items and upgrade effects are applied automatically. Locked maps cannot be deployed to.</P>
+
+      <H3>Inventory Management</H3>
+      <P>In-raid inventory (press [Tab] or [I]) shows a backpack-style grid. Click an item to select it, click again to drop. Drag items to the drop zone. Items worth 300₽+ or weapons require confirmation before dropping.</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>• Base slots: 12 (expandable with Tactical Backpack upgrade)</div>
+        <div>• Shows total weight, value, and fill percentage</div>
+        <div>• Items are color-coded by category (weapon, ammo, medical, valuable, etc.)</div>
+        <div>• In cover: "SAFE — manage gear" indicator appears</div>
+      </div>
+
+      <H3>Graphics Settings</H3>
+      <P>Accessible from the Safe House header:</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🎨 <strong>Quality:</strong> High (all effects) / Low (no weather, muzzle flash, tracers, blood, or detailed characters)</div>
+        <div>📏 <strong>Render Distance:</strong> Far (1.0×) / Normal (0.6×) / Near (0.35×) — affects how far offscreen enemies are processed</div>
+      </div>
+
+      <H3>Anonymous Mode</H3>
+      <P>Check "🕵️ Top Secret Agent" at the intro screen to play without registering a name. Nothing is saved to the leaderboard.</P>
+    </>
+  );
+}
+
+function ReputationSection() {
+  return (
+    <>
+      <H2>🎖️ Reputation System</H2>
+      <P>Your reputation with the trader Delyets increases with each successful extraction. Higher reputation = lower shop prices.</P>
+
+      <H3>Reputation Tiers</H3>
+      <div className="space-y-1">
+        {[
+          { icon: '❓', name: 'Unknown', req: '0 extractions', discount: '0%' },
+          { icon: '🔰', name: 'Rookie', req: '3 extractions', discount: '5%' },
+          { icon: '🎖️', name: 'Operative', req: '8 extractions', discount: '10%' },
+          { icon: '⭐', name: 'Veteran', req: '15 extractions', discount: '15%' },
+          { icon: '🏆', name: 'Elite', req: '25 extractions', discount: '20%' },
+          { icon: '👑', name: 'Legend', req: '40 extractions', discount: '25%' },
+        ].map(t => (
+          <div key={t.name} className="flex items-center justify-between text-[10px] font-mono text-foreground/70 border-b border-border/30 pb-0.5">
+            <span>{t.icon} {t.name} <span className="text-muted-foreground">({t.req})</span></span>
+            <span className="text-accent">{t.discount} discount</span>
+          </div>
+        ))}
+      </div>
+
+      <H3>Dynamic Pricing</H3>
+      <P>Shop prices fluctuate daily by ±20%. Combined with reputation discount, a Legend-tier agent can buy items for up to 45% off base price on a good day.</P>
+
+      <H3>XP & Leveling</H3>
+      <P>Earn XP from kills, loot extraction, and objective completion. Levels are displayed in the Safe House and HUD. XP thresholds increase per level (100, 250, 500, 800, 1200... up to 35,000 for max level).</P>
+    </>
+  );
+}
+
+function AchievementsSection() {
+  return (
+    <>
+      <H2>🏆 Achievements</H2>
+      <P>Achievements are earned during raids and shown on the extraction/death screen. Each category has Bronze 🥉, Silver 🥈, and Gold 🥇 tiers. Only the highest earned tier is displayed.</P>
+
+      <H3>Combat Achievements</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>🎯 <strong>Mosin Master</strong> — 10 / 25 / 40 kills with Mosin-Nagant</div>
+        <div>💣 <strong>Bombardier</strong> — 8 / 20 / 35 kills with grenades</div>
+        <div>🧨 <strong>Demolitionist</strong> — 5 / 12 / 25 kills with TNT charges</div>
+        <div>🔭 <strong>Sharpshooter</strong> — 8 / 20 / 35 kills at long range</div>
+        <div>💀 <strong>Headhunter</strong> — 10 / 25 / 40 headshot kills</div>
+        <div>🗡️ <strong>Up Close</strong> — 8 / 20 / 35 kills at close range</div>
+        <div>🪖 <strong>One Man Army</strong> — 25 / 40 / 60 kills in one raid</div>
+      </div>
+
+      <H3>Exploration Achievements</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>🦴 <strong>Scavenger</strong> — 8 / 15 / 25 bodies looted</div>
+        <div>📦 <strong>Treasure Hunter</strong> — 6 / 12 / 20 caches looted</div>
+        <div>🧱 <strong>Breacher</strong> — 2 / 5 / 8 walls breached with TNT</div>
+        <div>📜 <strong>Archivist</strong> — 4 / 7 / 10 documents collected</div>
+        <div>💻 <strong>Hackerman</strong> — 2 / 4 / 6 terminals hacked</div>
+        <div>🥾 <strong>Traveller</strong> — 1500 / 4000 / 8000m distance travelled</div>
+      </div>
+
+      <H3>Special Achievements (Gold only)</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div>🗺️ <strong>Tourist</strong> — Visit all 3 exfil points in one raid</div>
+        <div>👻 <strong>Ghost</strong> — Complete a raid without taking any damage</div>
+        <div>🐕 <strong>Good Boy</strong> — Extract without killing any dogs</div>
+      </div>
+
+      <H3>Daily Missions</H3>
+      <P>3 rotating daily challenges selected from a pool of 12. Reset every 24 hours. Complete them in any raid for bonus rubles and XP.</P>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>🗡️ Silent Operator — 3 knife kills (200₽ + 150 XP)</div>
+        <div>🎯 Sharpshooter — 3 headshot kills (200₽ + 150 XP)</div>
+        <div>💣 Demolition Man — 2 grenade kills (250₽ + 200 XP)</div>
+        <div>🔍 Body Looter — 4 bodies looted (150₽ + 100 XP)</div>
+        <div>📦 Cache Hunter — 6 containers looted (150₽ + 100 XP)</div>
+        <div>👻 Ghost — Extract without damage (400₽ + 300 XP)</div>
+        <div>☠️ Exterminator — 10 kills in one raid (300₽ + 250 XP)</div>
+        <div>🔫 Sniper Elite — 2 long-range kills (250₽ + 200 XP)</div>
+        <div>🧨 Breacher — 2 walls breached (300₽ + 200 XP)</div>
+        <div>📄 Intel Recovery — 2 documents collected (200₽ + 150 XP)</div>
+        <div>🦴 Dog Whisperer — Neutralize a dog with food (150₽ + 100 XP)</div>
+        <div>🔫 Old Faithful — 2 Mosin kills (250₽ + 200 XP)</div>
+      </div>
+    </>
+  );
+}
+
+function DayNightSection() {
+  return (
+    <>
+      <H2>🌙 Day/Night Cycle</H2>
+      <P>Each 5-minute raid progresses through a full day/night cycle, affecting visibility and gameplay.</P>
+
+      <H3>Time Phases</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-1">
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-accent">🌅 Dawn (0:00-1:00)</strong> — Dim lighting, fading from dark. Visibility gradually improves.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-accent">☀️ Day (1:00-3:00)</strong> — Full brightness. Best visibility. Standard enemy stats.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-accent">🌇 Dusk (3:00-4:00)</strong> — Darkness increases from 0% to 45%. Enemies get stronger.
+        </div>
+        <div className="border border-border rounded p-2 bg-card/50">
+          <strong className="text-destructive">🌙 Night (4:00-5:00)</strong> — Up to 70% darkness. Most dangerous but most rewarding.
+        </div>
+      </div>
+
+      <H3>Night Effects</H3>
+      <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
+        <div>💪 Enemy damage: up to <span className="text-destructive">+21%</span> at full darkness</div>
+        <div>👁️ Enemy alert range: <span className="text-accent">-25%</span> (harder to see you)</div>
+        <div>💰 Loot value: up to <span className="text-accent">+35%</span> at full darkness</div>
+      </div>
+      <P>Night rewards risk-takers: enemies hit harder but can't see as far, and loot is worth more.</P>
+
+      <H3>Flashlight</H3>
+      <P>Your flashlight activates automatically in darkness. Cone angle: 0.4 rad, range: 200px, intensity: 0.7. Note: the flashlight makes you visible to enemies!</P>
+
+      <H3>Hit Markers</H3>
+      <P>White crosshair flash on hit. Red X on kill. Yellow ★ on headshot. Damage numbers appear briefly at the hit location.</P>
     </>
   );
 }
@@ -1007,7 +1243,11 @@ export default function Wiki() {
           {section === 'items' && <ItemsSection />}
           {section === 'mechanics' && <MechanicsSection />}
           {section === 'stealth' && <StealthSection />}
+          {section === 'safehouse' && <SafeHouseSection />}
           {section === 'upgrades' && <UpgradesSection />}
+          {section === 'reputation' && <ReputationSection />}
+          {section === 'achievements' && <AchievementsSection />}
+          {section === 'daynight' && <DayNightSection />}
         </div>
       </div>
     </div>
