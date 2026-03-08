@@ -3971,39 +3971,91 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               spawnParticles(state, enemy.pos.x, enemy.pos.y, '#ffaa00', 5);
             }
           }
-          // === NACHALNIK FISH HOOK ATTACK — devastating close-range melee ===
-          if ((enemy as any)._hookAttack && distToPlayer < ((enemy as any)._hookRange || 55)) {
-            const hookCd = (enemy as any)._hookCooldown || 0;
-            if (hookCd <= 0) {
-              const hookDmg = (enemy as any)._hookDamage || 60;
-              const phase = enemy.bossPhase || 0;
-              const finalDmg = Math.round(hookDmg * (1 + phase * 0.3)); // stronger in later phases
-              state.player.hp -= Math.max(0, finalDmg - state.player.armor * 0.3);
-              state.player.bleedRate = Math.max(state.player.bleedRate, 3); // hook causes heavy bleeding
-              (enemy as any)._hookCooldown = 2.0 - phase * 0.3; // faster in later phases
-              addMessage(state, `🪝 ${getBossTitle(enemy)} HOOKS you for ${finalDmg} damage!`, 'damage');
-              enemy.speechBubble = phase >= 2 ? 'ПОПАЛСЯ НА КРЮК!!' : phase >= 1 ? 'КРЮК НАЙДЁТ ТЕБЯ!' : 'НА КРЮК!';
-              enemy.speechBubbleTimer = 2.0;
-              (state as any)._screenShake = 0.5;
-              spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cc2222', 8);
-              playHit();
+          // === NACHALNIK SPECIALS: one-use net, spin hook, close hook strike ===
+          if ((enemy as any)._hookAttack) {
+            const phase = enemy.bossPhase || 0;
+
+            // One-use fishing net cast: slows player, then boss runs to ambush
+            if (!(enemy as any)._netUsed && distToPlayer > 85 && distToPlayer < 240 && los) {
+              const netAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
+              (state as any)._netCast = {
+                from: { x: enemy.pos.x, y: enemy.pos.y },
+                to: { x: state.player.pos.x, y: state.player.pos.y },
+                timer: 0.7,
+                maxTimer: 0.7,
+                angle: netAngle,
+              };
+              (state as any)._playerNetSlowTimer = 2.8;
+              (enemy as any)._netUsed = true;
+              (enemy as any)._ambushTimer = 2.2;
+              enemy.speechBubble = 'СЕТЬ!';
+              enemy.speechBubbleTimer = 1.2;
+              addMessage(state, `🕸 ${getBossTitle(enemy)} casts a fishing net!`, 'warning');
+              spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cfc7a0', 14);
             }
+
+            // Spin attack (occasional)
+            if ((enemy as any)._spinAttackTimer > 0) {
+              (enemy as any)._spinAttackTimer -= dt;
+              enemy.angle += dt * 14;
+              (enemy as any)._spinHitCd = Math.max(0, ((enemy as any)._spinHitCd || 0) - dt);
+              if (distToPlayer < 80 && ((enemy as any)._spinHitCd || 0) <= 0) {
+                const spinDmg = 26 + phase * 8;
+                state.player.hp -= Math.max(0, spinDmg - state.player.armor * 0.25);
+                state.player.bleedRate = Math.max(state.player.bleedRate, 2.2);
+                (enemy as any)._spinHitCd = 0.35;
+                addMessage(state, `🌀 ${getBossTitle(enemy)} spin-slashes for ${spinDmg}!`, 'damage');
+                playHit();
+              }
+              if ((enemy as any)._spinAttackTimer <= 0) {
+                (enemy as any)._spinCooldown = 5 + Math.random() * 2;
+              }
+            } else {
+              (enemy as any)._spinCooldown = Math.max(0, ((enemy as any)._spinCooldown || 0) - dt);
+              if (((enemy as any)._spinCooldown || 0) <= 0 && distToPlayer < 95 && Math.random() < 0.0035) {
+                (enemy as any)._spinAttackTimer = 1.0;
+                (enemy as any)._spinHitCd = 0;
+                enemy.speechBubble = 'ВЕРТУШКА!';
+                enemy.speechBubbleTimer = 1.0;
+              }
+            }
+
+            // Close hook strike
+            if (distToPlayer < ((enemy as any)._hookRange || 55)) {
+              const hookCd = (enemy as any)._hookCooldown || 0;
+              if (hookCd <= 0) {
+                const hookDmg = (enemy as any)._hookDamage || 60;
+                const finalDmg = Math.round(hookDmg * (1 + phase * 0.3));
+                state.player.hp -= Math.max(0, finalDmg - state.player.armor * 0.3);
+                state.player.bleedRate = Math.max(state.player.bleedRate, 3);
+                (enemy as any)._hookCooldown = 2.0 - phase * 0.3;
+                addMessage(state, `🪝 ${getBossTitle(enemy)} hooks you for ${finalDmg} damage!`, 'damage');
+                enemy.speechBubble = phase >= 2 ? 'ПОПАЛСЯ НА КРЮК!!' : phase >= 1 ? 'КРЮК НАЙДЁТ ТЕБЯ!' : 'НА КРЮК!';
+                enemy.speechBubbleTimer = 2.0;
+                (state as any)._screenShake = 0.5;
+                spawnParticles(state, state.player.pos.x, state.player.pos.y, '#cc2222', 8);
+                playHit();
+              }
+            }
+
+            // Ambush sprint after net cast
+            if (((enemy as any)._ambushTimer || 0) > 0) {
+              (enemy as any)._ambushTimer -= dt;
+              const runAway = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
+              enemy.pos = tryMoveEnemy(state, enemy.pos, runAway.x * speed * 2.4, runAway.y * speed * 2.4, 12);
+            } else if (distToPlayer < enemy.shootRange * 0.6) {
+              const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
+              enemy.pos = tryMoveEnemy(state, enemy.pos, chargeDir.x * speed * 1.8, chargeDir.y * speed * 1.8, 12);
+            } else if (distToPlayer < enemy.shootRange * 0.5) {
+              const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
+              enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.5, retreatDir.y * speed * 1.5, 12);
+            } else if (distToPlayer > enemy.shootRange * 0.8) {
+              const strafeAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + Math.PI * 0.5 * (Math.sin(state.time * 0.5) > 0 ? 1 : -1);
+              enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(strafeAngle) * speed * 0.8, Math.sin(strafeAngle) * speed * 0.8, 12);
+            }
+
+            if ((enemy as any)._hookCooldown > 0) (enemy as any)._hookCooldown -= dt;
           }
-          // Nachalnik charges toward player instead of retreating when close
-          if ((enemy as any)._hookAttack && distToPlayer < enemy.shootRange * 0.6) {
-            const chargeDir = normalize({ x: state.player.pos.x - enemy.pos.x, y: state.player.pos.y - enemy.pos.y });
-            enemy.pos = tryMoveEnemy(state, enemy.pos, chargeDir.x * speed * 1.8, chargeDir.y * speed * 1.8, 12);
-          } else if (distToPlayer < enemy.shootRange * 0.5) {
-            const retreatDir = normalize({ x: enemy.pos.x - state.player.pos.x, y: enemy.pos.y - state.player.pos.y });
-            enemy.pos = tryMoveEnemy(state, enemy.pos, retreatDir.x * speed * 1.5, retreatDir.y * speed * 1.5, 12);
-          } else if (distToPlayer > enemy.shootRange * 0.8) {
-            // Strafe sideways to make harder target
-            const strafeAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x) + Math.PI * 0.5 * (Math.sin(state.time * 0.5) > 0 ? 1 : -1);
-            enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(strafeAngle) * speed * 0.8, Math.sin(strafeAngle) * speed * 0.8, 12);
-          }
-          // Update hook cooldown
-          if ((enemy as any)._hookCooldown > 0) (enemy as any)._hookCooldown -= dt;
-        }
         // Boss: spawn reinforcements in phase 1+
         if (enemy.type === 'boss' && (enemy.bossPhase || 0) >= 1 && (enemy.bossSpawnTimer || 0) <= 0) {
           enemy.bossSpawnTimer = 12 + Math.random() * 8;
