@@ -4328,7 +4328,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (killDist < 50) state.knifeDistanceKills++;
             
             if (!isCrit) {
-              addMessage(state, enemy.type === 'boss' ? '💀 COMMANDANT OSIPOVITJ IS DEAD!' : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
+              addMessage(state, enemy.type === 'boss' ? `💀 ${getBossTitle(enemy)} IS DEAD!` : `Eliminated: ${enemy.type.toUpperCase()}`, 'kill');
             }
             spawnParticles(state, enemy.pos.x, enemy.pos.y, '#884444', 10);
           } else {
