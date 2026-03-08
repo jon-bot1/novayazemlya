@@ -114,23 +114,24 @@ export function generateHospitalMap() {
     makeWall(BX + BW - T, BY + 900 + G, T, BH - 900 - G, DARK),
 
     // ═══ MAIN ENTRANCE — RECEPTION & WAITING ROOM ═══
-    // Reception desk (horizontal counter)
-    makeWall(BX + BW / 2 - 100, BY + BH - 140, 200, T, TILE),
-    // Waiting room side walls — shorter, leaving 80px gap to south outer wall
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, T, 120, TILE),  // west side
-    makeWall(BX + BW / 2 + 200, BY + BH - 200, T, 120, TILE),  // east side
-    // North wall of reception — 80px gap center for corridor, plus side doors
-    makeWall(BX + BW / 2 - 200, BY + BH - 200, 160, T, TILE),  // left part
-    makeWall(BX + BW / 2 + 40, BY + BH - 200, 160, T, TILE),   // right part (80px gap)
+    // Reception desk (horizontal counter — NOT a wall blocker, just decoration)
+    // Waiting room side walls — leave 80px gaps at both top AND bottom for passage
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, T, 160, TILE),  // west side
+    makeWall(BX + BW / 2 + 250, BY + BH - 250, T, 160, TILE),  // east side
+    // North wall of reception — two 80px gaps (left and center-right)
+    makeWall(BX + BW / 2 - 250, BY + BH - 250, 120, T, TILE),  // far left
+    makeWall(BX + BW / 2 - 50, BY + BH - 250, 100, T, TILE),   // center block
+    makeWall(BX + BW / 2 + 130, BY + BH - 250, 120, T, TILE),  // far right
+    // (gaps: x -130..-50 = 80px, x +50..+130 = 80px)
 
     // ═══ GROUND FLOOR CORRIDORS ═══
     // Main north-south corridor (center, 100px wide)
-    // North segment: from building top to cross-corridor
-    makeWall(BX + BW / 2 - 50, BY + T, T, 280, TILE),
-    makeWall(BX + BW / 2 + 50, BY + T, T, 280, TILE),
-    // South segment: from courtyard south to reception north wall
-    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 210, TILE),
-    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 210, TILE),
+    // North segment: from building top down to cross-corridor top (y=BY+300)
+    makeWall(BX + BW / 2 - 50, BY + T, T, 300 - T, TILE),
+    makeWall(BX + BW / 2 + 50, BY + T, T, 300 - T, TILE),
+    // South segment: from courtyard south (y=BY+1100) to reception north wall (y=BY+BH-250)
+    makeWall(BX + BW / 2 - 50, BY + 1100, T, BH - 1100 - 250, TILE),
+    makeWall(BX + BW / 2 + 50, BY + 1100, T, BH - 1100 - 250, TILE),
 
     // East-west corridor (y=300-400) — connects to N-S corridor via open intersection
     makeWall(BX + T, BY + 300, BW / 2 - 50 - T, T, TILE),
@@ -266,7 +267,10 @@ export function generateHospitalMap() {
     // ═══ BOSS 1 — Доктор Кравцов (The Experimenter) ═══
     // Found in the lab/east wing, surrounded by his "subjects"
     (() => {
-      const boss = makeEnemy(BX + BW - 280, BY + 500, 'boss');
+      const kravtsovZones = [ZONE_LAB_E, ZONE_OFFICE_E, ZONE_COURTYARD];
+      const kz = kravtsovZones[Math.floor(Math.random() * kravtsovZones.length)];
+      const kp = randIn(kz.x, kz.y, kz.w, kz.h);
+      const boss = makeEnemy(kp.x, kp.y, 'boss');
       (boss as any)._bossId = 'kravtsov';
       (boss as any)._bossTitle = 'ДОКТОР КРАВЦОВ';
       boss.hp = 400; boss.maxHp = 400;
@@ -282,10 +286,10 @@ export function generateHospitalMap() {
         createValuable('Mutagen Sample', 1200, '🧪'),
       ];
       (boss as any)._patrolWaypoints = [
-        { x: BX + BW - 330, y: BY + 430 },
-        { x: BX + BW - 180, y: BY + 430 },
-        { x: BX + BW - 180, y: BY + 580 },
-        { x: BX + BW - 330, y: BY + 580 },
+        { x: kp.x - 80, y: kp.y - 60 },
+        { x: kp.x + 80, y: kp.y - 60 },
+        { x: kp.x + 80, y: kp.y + 60 },
+        { x: kp.x - 80, y: kp.y + 60 },
       ];
       (boss as any)._waypointIdx = 0;
       boss.patrolTarget = (boss as any)._patrolWaypoints[0];
@@ -296,25 +300,28 @@ export function generateHospitalMap() {
     // ═══ BOSS 2 — Узбек (The Uzbek) ═══
     // Locked in the basement — fast, melee-focused, horrifying
     (() => {
-      const boss = makeEnemy(BX + 550, BY + 1650, 'boss');
+      const uzbekZones = [ZONE_BASEMENT, ZONE_WARD_W3, ZONE_CORRIDOR_S];
+      const uz = uzbekZones[Math.floor(Math.random() * uzbekZones.length)];
+      const up = randIn(uz.x, uz.y, uz.w, uz.h);
+      const boss = makeEnemy(up.x, up.y, 'boss');
       (boss as any)._bossId = 'uzbek';
       (boss as any)._bossTitle = 'УЗБЕК';
       boss.hp = 600; boss.maxHp = 600;
-      boss.speed = 1.60; // very fast — charges at you
-      boss.damage = 55;  // devastating melee-range hits
+      boss.speed = 1.60;
+      boss.damage = 55;
       boss.fireRate = 400;
       boss.alertRange = 250;
-      boss.shootRange = 40; // almost pure melee
+      boss.shootRange = 40;
       boss.loot = [
         createExtractionCode(),
         createValuable('Uzbek Blood Sample', 2000, '🩸'),
         createValuable('Old Dog Tags', 500, '💀'),
       ];
       (boss as any)._patrolWaypoints = [
-        { x: BX + 200, y: BY + 1550 },
-        { x: BX + 600, y: BY + 1650 },
-        { x: BX + 900, y: BY + 1700 },
-        { x: BX + 400, y: BY + 1700 },
+        { x: up.x - 120, y: up.y - 60 },
+        { x: up.x + 120, y: up.y + 40 },
+        { x: up.x + 60, y: up.y + 80 },
+        { x: up.x - 60, y: up.y - 40 },
       ];
       (boss as any)._waypointIdx = 0;
       boss.patrolTarget = (boss as any)._patrolWaypoints[0];
