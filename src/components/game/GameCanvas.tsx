@@ -128,6 +128,10 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         ▶ BEGIN OPERATION
       </button>
 
+      <a href="/wiki" className="block w-full text-center px-4 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-sm">
+        📖 FIELD MANUAL (Wiki)
+      </a>
+
       {/* Tabs */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-0 border-b border-border pb-1 sm:pb-0">
         <button
