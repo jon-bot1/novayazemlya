@@ -8,7 +8,7 @@ import { LORE_DOCUMENTS } from './lore';
 import { LOOT_POOLS, createFlashbang, createTNT, createGoggles, isSecondaryWeapon, WEAPON_TEMPLATES } from './items';
 import { playGunshot, playExplosion, playHit, playPickup, playFootstep, playRadio } from './audio';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, hasLOSGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
-import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine, AMBIENT_MESSAGES, IDLE_LINES_SWEDISH, ALERT_LINES_SWEDISH, DEATH_LINES_SWEDISH } from './dialogue';
+import { ALERT_LINES, LOST_LINES, INVESTIGATE_LINES, PANIC_LINES, BERSERK_LINES, FLEE_LINES, DEATH_LINES, BOSS_DEATH_MONOLOGUE, KRAVTSOV_DEATH_MONOLOGUE, UZBEK_DEATH_MONOLOGUE, NACHALNIK_DEATH_MONOLOGUE, GRUVRA_DEATH_MONOLOGUE, KRAVTSOV_TAUNTS, UZBEK_TAUNTS, NACHALNIK_TAUNTS, GRUVRA_TAUNTS, KRAVTSOV_PHASES, UZBEK_PHASES, NACHALNIK_PHASES, GRUVRA_PHASES, IDLE_LINES, HIT_LINES, pickLine, AMBIENT_MESSAGES, IDLE_LINES_SWEDISH, ALERT_LINES_SWEDISH, DEATH_LINES_SWEDISH, COMBAT_LINES } from './dialogue';
 import { hasBloodStains, hasMuzzleFlash, addHitMarker, getNightEnemyBuffs } from './graphics';
 
 // VFX helpers
@@ -2583,13 +2583,17 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
       enemy.speed = (enemy as any)._originalSpeed * 0.25; // 75% speed loss
     }
-    // Flee chance check (per second, not per frame)
+    // Flee chance check — uses _cowardice personality trait
     if (enemy.type !== 'turret' && enemy.type !== 'boss' && enemy.type !== 'sniper' && !(enemy as any)._isBodyguard) {
       if (!(enemy as any)._fleeCheckTimer) (enemy as any)._fleeCheckTimer = 1.0;
       (enemy as any)._fleeCheckTimer -= dt;
       if ((enemy as any)._fleeCheckTimer <= 0) {
         (enemy as any)._fleeCheckTimer = 1.0;
-        const fleeChance = hpRatio < 0.50 ? 0.15 : hpRatio < 0.75 ? 0.10 : 0;
+        const cowardice = (enemy as any)._cowardice ?? 0.3;
+        // Cowardly enemies flee earlier and more often
+        const fleeThresholdHigh = 0.50 + cowardice * 0.25; // scav(0.7): flee at 75% HP, soldier(0.2): 55%
+        const fleeThresholdLow = 0.30 + cowardice * 0.20;  // scav: 44%, soldier: 34%
+        const fleeChance = hpRatio < fleeThresholdLow ? (0.10 + cowardice * 0.25) : hpRatio < fleeThresholdHigh ? (0.05 + cowardice * 0.15) : 0;
         if (fleeChance > 0 && Math.random() < fleeChance && (enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress')) {
           // Flee! Run away from player
           const awayAngle = Math.atan2(enemy.pos.y - state.player.pos.y, enemy.pos.x - state.player.pos.x);
@@ -2598,7 +2602,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             y: Math.max(50, Math.min(state.mapHeight - 50, enemy.pos.y + Math.sin(awayAngle) * 300)),
           };
           enemy.state = 'investigate';
-          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * 0.5; // flee at half original speed
+          if ((enemy as any)._originalSpeed) enemy.speed = (enemy as any)._originalSpeed * (cowardice > 0.5 ? 0.7 : 0.5); // cowards run faster
           setSpeech(enemy, pickLine(FLEE_LINES, enemy.type), 2.0);
           addMessage(state, `💨 ${enemy.type.toUpperCase()} is fleeing!`, 'info');
         }
@@ -2959,14 +2963,19 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         : IDLE_LINES;
       setSpeech(enemy, pickLine(idlePool, enemy.type), 3.0);
     }
-    // === REDNECK CHASE CHATTER (Swedish on mining village) ===
-    if (enemy.type === 'redneck' && enemy.state === 'chase' && !enemy.speechBubble && Math.random() < 0.003) {
-      const mapId = (state as any)._mapId as string || 'objekt47';
-      const lines = mapId === 'mining_village'
-        ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!']
-        : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!'];
-      enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
-      enemy.speechBubbleTimer = 3;
+    // === COMBAT CHATTER — type-specific callouts during firefight ===
+    if ((enemy.state === 'chase' || enemy.state === 'attack' || enemy.state === 'flank' || enemy.state === 'suppress') && !enemy.speechBubble && enemy.type !== 'turret' && enemy.type !== 'dog' && enemy.type !== 'boss' && Math.random() < 0.0015) {
+      // Rednecks have map-specific combat lines
+      if (enemy.type === 'redneck') {
+        const mapId = (state as any)._mapId as string || 'objekt47';
+        const lines = mapId === 'mining_village'
+          ? ['Stick härifrån!', 'Jag skjuter!', 'Inkräktare!', 'Kom hit!', 'Du dör här!', 'FÖRSVINN!']
+          : ['Git off my land!', 'I\'ll blast ya!', 'Trespassin\'!', 'Yee-haw!', 'Come \'ere!', 'EAT LEAD!'];
+        enemy.speechBubble = lines[Math.floor(Math.random() * lines.length)];
+        enemy.speechBubbleTimer = 3;
+      } else {
+        setSpeech(enemy, pickLine(COMBAT_LINES, enemy.type), 2.5);
+      }
     }
 
     // Vision cone — NARROW for stealth gameplay (roguelike)
@@ -3859,7 +3868,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (!(enemy as any)._coverDecided) {
           (enemy as any)._coverDecided = true;
           // Soldiers and heavies may seek cover instead of rushing
-          if ((enemy.type === 'soldier' || enemy.type === 'heavy') && Math.random() < 0.3) {
+          // Enemies with _seekCoverChance personality trait may take cover
+          const coverChance = (enemy as any)._seekCoverChance ?? 0.3;
+          if (coverChance > 0 && Math.random() < coverChance) {
             (enemy as any)._seekCover = true;
             (enemy as any)._coverTimer = 30; // max 30s in cover
           }
@@ -4078,7 +4089,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               state.deathCause = `⚡ Electrocuted by Shocker`;
             }
           } else {
-            const spread = enemy.type === 'sniper' ? (Math.random() - 0.5) * 0.03 : enemy.type === 'turret' ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.15;
+            // Accuracy trait affects spread: high accuracy = tight spread, low = wild
+            const acc = (enemy as any)._accuracy ?? 0.7;
+            const baseSpread = enemy.type === 'sniper' ? 0.03 : enemy.type === 'turret' ? 0.1 : 0.25 - acc * 0.2; // 0.7 acc → 0.11, 0.5 acc → 0.15, 0.95 → 0.06
+            const spread = (Math.random() - 0.5) * baseSpread;
             const angle = enemy.angle + spread;
             const bSpeed = enemy.type === 'sniper' ? 15 : enemy.type === 'turret' ? 12 : 9;
             state.bullets.push({

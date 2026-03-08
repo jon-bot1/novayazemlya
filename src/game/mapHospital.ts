@@ -21,18 +21,32 @@ const DARK = '#4a4a4a';
 const makeWall = (x: number, y: number, w: number, h: number, color = CONCRETE): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
+  // HOSPITAL — claustrophobic, dark corridors: shockers dominate, soldiers are paranoid, scavs are terrified
   const stats: Record<string, any> = {
-    scav: { hp: 55, speed: 0.72, damage: 14, alertRange: 130, shootRange: 70, fireRate: 1400 },
-    soldier: { hp: 85, speed: 0.88, damage: 24, alertRange: 200, shootRange: 110, fireRate: 950 },
-    heavy: { hp: 200, speed: 0.40, damage: 35, alertRange: 180, shootRange: 100, fireRate: 1600 },
-    sniper: { hp: 75, speed: 0.30, damage: 70, alertRange: 350, shootRange: 200, fireRate: 5500 },
-    shocker: { hp: 80, speed: 1.20, damage: 50, alertRange: 160, shootRange: 35, fireRate: 600 },
-    boss: { hp: 500, speed: 1.00, damage: 40, alertRange: 300, shootRange: 160, fireRate: 550 },
-    turret: { hp: 180, speed: 0, damage: 20, alertRange: 200, shootRange: 110, fireRate: 1000 },
+    scav:    { hp: 55, speed: 0.75, damage: 14, alertRange: 120, shootRange: 65,  fireRate: 1350 },
+    soldier: { hp: 90, speed: 0.85, damage: 22, alertRange: 190, shootRange: 105, fireRate: 950 },
+    heavy:   { hp: 220, speed: 0.35, damage: 38, alertRange: 170, shootRange: 95,  fireRate: 1550 },
+    sniper:  { hp: 75, speed: 0.30, damage: 70, alertRange: 350, shootRange: 200, fireRate: 5500 },
+    shocker: { hp: 90, speed: 1.30, damage: 55, alertRange: 170, shootRange: 40,  fireRate: 550 },
+    boss:    { hp: 520, speed: 1.05, damage: 42, alertRange: 310, shootRange: 170, fireRate: 520 },
+    turret:  { hp: 180, speed: 0, damage: 20, alertRange: 200, shootRange: 110, fireRate: 1000 },
     redneck: { hp: 65, speed: 0.55, damage: 16, alertRange: 150, shootRange: 55, fireRate: 1200 },
-    dog: { hp: 28, speed: 1.80, damage: 20, alertRange: 200, shootRange: 24, fireRate: 900 },
+    dog:     { hp: 28, speed: 1.80, damage: 20, alertRange: 200, shootRange: 24, fireRate: 900 },
+  };
+  // Hospital personality: everyone is on edge, shockers are fearless maniacs, scavs are terrified
+  const personality: Record<string, any> = {
+    scav:    { _cowardice: 0.9, _accuracy: 0.5, _aggression: 0.1, _seekCoverChance: 0.25 },
+    soldier: { _cowardice: 0.3, _accuracy: 0.8, _aggression: 0.5, _seekCoverChance: 0.45 },
+    heavy:   { _cowardice: 0.0, _accuracy: 0.7, _aggression: 0.75, _seekCoverChance: 0.2 },
+    sniper:  { _cowardice: 0.5, _accuracy: 0.95, _aggression: 0.1, _seekCoverChance: 0.0 },
+    shocker: { _cowardice: 0.0, _accuracy: 0.55, _aggression: 1.0, _seekCoverChance: 0.0 },
+    boss:    { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
+    turret:  { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
+    redneck: { _cowardice: 0.4, _accuracy: 0.55, _aggression: 0.5, _seekCoverChance: 0.2 },
+    dog:     { _cowardice: 0.3, _accuracy: 1.0, _aggression: 0.9, _seekCoverChance: 0.0 },
   };
   const s = stats[type] || stats.scav;
+  const p = personality[type] || personality.scav;
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
@@ -49,17 +63,18 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     lastRadioCall: 0,
     radioGroup: Math.floor(y / 400),
     radioAlert: 0,
-    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
+    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'shocker' ? 'assault' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
     suppressTimer: 0,
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
     stunTimer: 0,
     awareness: 0,
-    awarenessDecay: 0.12,
+    awarenessDecay: type === 'shocker' ? 0.08 : type === 'scav' ? 0.20 : 0.12,
     elevated: false,
     friendly: false,
     friendlyTimer: 0,
   };
+  Object.assign(enemy, p);
   if (type === 'boss') { enemy.bossPhase = 0; enemy.bossChargeTimer = 0; enemy.bossSpawnTimer = 0; }
   if (type === 'redneck') { enemy.loot = [WEAPON_TEMPLATES.toz(), createDogFood()]; }
   return enemy;

@@ -27,17 +27,30 @@ const CONCRETE = '#888888';
 const makeWall = (x: number, y: number, w: number, h: number, color = STONE): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
+  // MINING VILLAGE — remote Swedish mine: hardy rednecks, tough scavs, environmental hazards
   const stats: Record<string, any> = {
-    scav: { hp: 45, speed: 0.68, damage: 10, alertRange: 160, shootRange: 80, fireRate: 1500 },
-    soldier: { hp: 70, speed: 0.85, damage: 18, alertRange: 240, shootRange: 120, fireRate: 1000 },
-    heavy: { hp: 160, speed: 0.42, damage: 30, alertRange: 210, shootRange: 110, fireRate: 1700 },
-    redneck: { hp: 70, speed: 0.60, damage: 18, alertRange: 190, shootRange: 65, fireRate: 1100 },
-    dog: { hp: 30, speed: 1.75, damage: 22, alertRange: 240, shootRange: 26, fireRate: 900 },
-    boss: { hp: 500, speed: 0.95, damage: 40, alertRange: 350, shootRange: 180, fireRate: 550 },
-    turret: { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },
-    shocker: { hp: 60, speed: 1.05, damage: 40, alertRange: 200, shootRange: 35, fireRate: 700 },
+    scav:    { hp: 48, speed: 0.70, damage: 11, alertRange: 145, shootRange: 78,  fireRate: 1450 },
+    soldier: { hp: 75, speed: 0.88, damage: 20, alertRange: 250, shootRange: 125, fireRate: 980 },
+    heavy:   { hp: 175, speed: 0.44, damage: 32, alertRange: 220, shootRange: 115, fireRate: 1650 },
+    redneck: { hp: 85, speed: 0.72, damage: 22, alertRange: 220, shootRange: 75,  fireRate: 950 },
+    dog:     { hp: 38, speed: 1.90, damage: 26, alertRange: 300, shootRange: 30,  fireRate: 800 },
+    boss:    { hp: 550, speed: 1.00, damage: 44, alertRange: 380, shootRange: 190, fireRate: 530 },
+    turret:  { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },
+    shocker: { hp: 65, speed: 1.10, damage: 42, alertRange: 200, shootRange: 36,  fireRate: 680 },
+  };
+  // Mining village personality: rednecks are brave & territorial, dogs are vicious
+  const personality: Record<string, any> = {
+    scav:    { _cowardice: 0.6, _accuracy: 0.5, _aggression: 0.3, _seekCoverChance: 0.15 },
+    soldier: { _cowardice: 0.25, _accuracy: 0.75, _aggression: 0.55, _seekCoverChance: 0.4 },
+    heavy:   { _cowardice: 0.0, _accuracy: 0.65, _aggression: 0.8, _seekCoverChance: 0.1 },
+    redneck: { _cowardice: 0.15, _accuracy: 0.65, _aggression: 0.8, _seekCoverChance: 0.05 },
+    dog:     { _cowardice: 0.1, _accuracy: 1.0, _aggression: 1.0, _seekCoverChance: 0.0 },
+    boss:    { _cowardice: 0.0, _accuracy: 0.8, _aggression: 1.0, _seekCoverChance: 0.0 },
+    turret:  { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
+    shocker: { _cowardice: 0.1, _accuracy: 0.5, _aggression: 0.95, _seekCoverChance: 0.0 },
   };
   const s = stats[type] || stats.scav;
+  const p = personality[type] || personality.scav;
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
@@ -54,17 +67,18 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     lastRadioCall: 0,
     radioGroup: Math.floor(x / 400),
     radioAlert: 0,
-    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
+    tacticalRole: type === 'heavy' ? 'suppressor' : type === 'redneck' ? 'assault' : type === 'soldier' ? (Math.random() < 0.5 ? 'flanker' : 'assault') : 'none',
     suppressTimer: 0,
     callForHelpTimer: 0,
     lastTacticalSwitch: 0,
     stunTimer: 0,
     awareness: 0,
-    awarenessDecay: 0.15,
+    awarenessDecay: type === 'redneck' ? 0.10 : type === 'dog' ? 0.08 : 0.15,
     elevated: false,
     friendly: false,
     friendlyTimer: 0,
   };
+  Object.assign(enemy, p);
   if (type === 'boss') {
     enemy.bossPhase = 0;
     enemy.bossChargeTimer = 0;

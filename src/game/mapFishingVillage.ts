@@ -21,18 +21,32 @@ const STONE = '#7a7a7a';
 const makeWall = (x: number, y: number, w: number, h: number, color = W): Wall => ({ x, y, w, h, color });
 
 const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: number): Enemy => {
+  // FISHING VILLAGE — rough coastal outpost: undisciplined, nervous scavs, redneck fishermen
   const stats: Record<string, any> = {
-    scav: { hp: 45, speed: 0.68, damage: 10, alertRange: 160, shootRange: 80, fireRate: 1500 },
-    soldier: { hp: 70, speed: 0.85, damage: 18, alertRange: 240, shootRange: 120, fireRate: 1000 },
-    heavy: { hp: 160, speed: 0.42, damage: 30, alertRange: 210, shootRange: 110, fireRate: 1700 },
-    sniper: { hp: 80, speed: 0.34, damage: 80, alertRange: 500, shootRange: 300, fireRate: 5500 },
-    redneck: { hp: 70, speed: 0.60, damage: 18, alertRange: 190, shootRange: 65, fireRate: 1100 },
-    dog: { hp: 30, speed: 1.75, damage: 22, alertRange: 240, shootRange: 26, fireRate: 900 },
-    boss: { hp: 400, speed: 1.05, damage: 35, alertRange: 350, shootRange: 180, fireRate: 600 },
-    turret: { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },
-    shocker: { hp: 60, speed: 1.05, damage: 40, alertRange: 200, shootRange: 35, fireRate: 700 },
+    scav:    { hp: 40, speed: 0.65, damage: 9, alertRange: 150, shootRange: 75,  fireRate: 1600 },
+    soldier: { hp: 65, speed: 0.82, damage: 16, alertRange: 220, shootRange: 110, fireRate: 1050 },
+    heavy:   { hp: 150, speed: 0.38, damage: 28, alertRange: 200, shootRange: 105, fireRate: 1800 },
+    sniper:  { hp: 80, speed: 0.34, damage: 80, alertRange: 500, shootRange: 300, fireRate: 5500 },
+    redneck: { hp: 75, speed: 0.68, damage: 20, alertRange: 200, shootRange: 70,  fireRate: 1050 },
+    dog:     { hp: 32, speed: 1.85, damage: 24, alertRange: 280, shootRange: 28,  fireRate: 850 },
+    boss:    { hp: 420, speed: 1.10, damage: 38, alertRange: 360, shootRange: 190, fireRate: 580 },
+    turret:  { hp: 180, speed: 0, damage: 20, alertRange: 240, shootRange: 125, fireRate: 1000 },
+    shocker: { hp: 55, speed: 1.00, damage: 38, alertRange: 190, shootRange: 32,  fireRate: 750 },
+  };
+  // Fishing village personality: rednecks are territorial, scavs are jumpy/cowardly
+  const personality: Record<string, any> = {
+    scav:    { _cowardice: 0.85, _accuracy: 0.45, _aggression: 0.15, _seekCoverChance: 0.1 },
+    soldier: { _cowardice: 0.35, _accuracy: 0.7, _aggression: 0.5, _seekCoverChance: 0.35 },
+    heavy:   { _cowardice: 0.05, _accuracy: 0.65, _aggression: 0.7, _seekCoverChance: 0.15 },
+    sniper:  { _cowardice: 0.5, _accuracy: 0.95, _aggression: 0.1, _seekCoverChance: 0.0 },
+    redneck: { _cowardice: 0.25, _accuracy: 0.6, _aggression: 0.7, _seekCoverChance: 0.05 },
+    dog:     { _cowardice: 0.2, _accuracy: 1.0, _aggression: 0.95, _seekCoverChance: 0.0 },
+    boss:    { _cowardice: 0.0, _accuracy: 0.75, _aggression: 1.0, _seekCoverChance: 0.0 },
+    turret:  { _cowardice: 0.0, _accuracy: 0.85, _aggression: 1.0, _seekCoverChance: 0.0 },
+    shocker: { _cowardice: 0.15, _accuracy: 0.5, _aggression: 0.9, _seekCoverChance: 0.0 },
   };
   const s = stats[type] || stats.scav;
+  const p = personality[type] || personality.scav;
   const enemy: Enemy = {
     id: `enemy_${enemyId++}`,
     pos: { x, y },
@@ -55,11 +69,12 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     lastTacticalSwitch: 0,
     stunTimer: 0,
     awareness: 0,
-    awarenessDecay: 0.15,
+    awarenessDecay: type === 'scav' ? 0.25 : type === 'redneck' ? 0.18 : 0.15,
     elevated: false,
     friendly: false,
     friendlyTimer: 0,
   };
+  Object.assign(enemy, p);
   if (type === 'boss') {
     enemy.bossPhase = 0;
     enemy.bossChargeTimer = 0;
