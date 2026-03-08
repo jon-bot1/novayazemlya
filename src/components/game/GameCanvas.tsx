@@ -1432,7 +1432,7 @@ export const GameCanvas: React.FC = () => {
         </div>
 
         <div className="hidden sm:block absolute bottom-2 left-3 text-[9px] text-muted-foreground/40 font-mono">
-          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · Tab bag · 1-3 weapons
+          WASD move · Shift sprint · Ctrl sneak · Q cover · E loot · R reload · H heal · G throw · MMB rock · Tab bag · 1-3 weapons
         </div>
         {/* Inventory Panel — toggled with Tab/I */}
         {showInventory && (
