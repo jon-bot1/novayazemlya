@@ -1056,6 +1056,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         { msg: '📻 Static crackles from a nearby radio...', type: 'info' },
         { msg: '🐦 Ravens scatter from a rooftop above.', type: 'info' },
         { msg: '⚡ A power line sparks in the wind.', type: 'warning' },
+        { msg: '🌌 The aurora borealis ripples overhead — greens bleeding into violet.', type: 'info' },
+        { msg: '☄️ A pale comet traces a line across the polar sky.', type: 'info' },
+        { msg: '🌌 The northern lights pulse — as if breathing. As if listening.', type: 'info' },
+        { msg: '📻 Your radio hisses... voices ride the aurora like a carrier wave.', type: 'warning' },
+        { msg: '🧭 Your compass needle drifts — drawn toward the lights above.', type: 'info' },
+        { msg: '🌙 The Arctic night stretches infinite. The sun will not return for months.', type: 'info' },
       ],
       fishing_village: [
         { msg: '🌊 Waves crash against the rocky shore.', type: 'info' },
@@ -1063,6 +1069,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         { msg: '🐦 Seagulls cry overhead.', type: 'info' },
         { msg: '⚓ Chains rattle on an abandoned dock.', type: 'info' },
         { msg: '💥 Something heavy falls in a warehouse nearby.', type: 'warning' },
+        { msg: '🎣 Far out on the black ice, a lantern flickers — fishermen, or ghosts.', type: 'info' },
+        { msg: '🌊 The Barents Sea groans beneath the ice — ancient, patient, cold.', type: 'info' },
+        { msg: '🌌 The aurora dances above the frozen coast, painting the ice in emerald.', type: 'info' },
+        { msg: '📻 Radio frequencies shimmer with the aurora — words in no known language.', type: 'warning' },
+        { msg: '🧊 Ice fishermen\'s holes dot the horizon. Their lanterns blink like fallen stars.', type: 'info' },
+        { msg: '☄️ A comet burns silently above the Barents. The old fishermen call it an omen.', type: 'info' },
+        { msg: '🌙 Polarnatt. The darkness here has weight — it presses down on everything.', type: 'info' },
       ],
       hospital: [
         { msg: '💡 Fluorescent lights flicker and buzz.', type: 'info' },
@@ -1070,6 +1083,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         { msg: '📞 A phone rings unanswered in the darkness.', type: 'info' },
         { msg: '🐀 Rats scurry across the floor.', type: 'info' },
         { msg: '⚡ The generator stutters — lights dim briefly.', type: 'warning' },
+        { msg: '🌌 Through the barred windows, the aurora writhes — colors that shouldn\'t exist.', type: 'info' },
+        { msg: '📻 The PA system crackles with aurora interference — a voice whispers coordinates.', type: 'warning' },
+        { msg: '🌙 Outside, the polar night swallows the world whole.', type: 'info' },
       ],
       mining_village: [
         { msg: '⛏️ Pickaxes echo from deep in the tunnels.', type: 'info' },
@@ -1077,6 +1093,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         { msg: '🪨 Pebbles rain down from above.', type: 'warning' },
         { msg: '📻 Chanting can be heard faintly below...', type: 'info' },
         { msg: '💥 A distant cave-in rumbles through the ground.', type: 'warning' },
+        { msg: '🌌 Above the pines, the aurora pulses in time with the mountain\'s heartbeat.', type: 'info' },
+        { msg: '🧭 Your father\'s compass spins — the aurora and the mountain pull in opposite directions.', type: 'info' },
+        { msg: '📻 Signals dance on aurora frequencies — someone is transmitting from below.', type: 'warning' },
+        { msg: '☄️ The comet hangs above Norrberget like a watchful eye.', type: 'info' },
+        { msg: '🌙 The polar night is absolute here. The mountain drinks what little light remains.', type: 'info' },
       ],
     };
     const pool = events[mapId] || events.objekt47;

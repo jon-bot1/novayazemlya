@@ -969,6 +969,125 @@ It knows my name.
     hasCode: false,
     found: false,
   },
+  // ═══ AURORA LORE — The Speaking Lights ═══
+  {
+    id: 'doc_aurora_1',
+    title: 'Field Report — Aurora Anomaly',
+    author: 'CONTROL, Task Force AURORA',
+    date: '19.12.1984',
+    classification: 'TOP SECRET',
+    content: `FIELD REPORT — AURORA ANOMALY
+NATO Task Force AURORA — Classification ULTRAVIOLET
+
+During Operation Polar Whisper (November 1984), SIGINT teams monitoring Soviet frequencies from Tromsø detected an anomaly in the aurora borealis. Standard auroral emissions produce electromagnetic noise in the VLF range. What we detected was structured.
+
+The aurora above the Substance Zero geological vein carries a signal. Not random interference — organized patterns. Repeating sequences. When graphed, the waveforms resemble neural firing patterns.
+
+We believe Substance Zero emits electromagnetic radiation that ionizes the upper atmosphere along the vein. The aurora borealis above these sites is not natural. It is the substance communicating with itself — across hundreds of kilometers, through the sky.
+
+The Soviets call it "Голос Сияния" — the Voice of the Aurora. Their scientists at Objekt 47 have built receivers that decode the signal. Commandant Osipovitj claims the aurora gives him orders.
+
+Ice fishermen on the Barents coast report hearing voices when the lights are strong — conversations in a language that sounds "almost Russian, but older." One fisherman, Grigoriy Petrovitch, recorded 14 hours of aurora transmissions on a cassette deck wired to a longwave antenna. He was found frozen on the ice the next morning, the tape still running. The recording contains what sounds like a lullaby.
+
+We recovered the tape. Analysis pending.
+
+WARNING: Do not attempt to decode aurora transmissions without Substance Zero countermeasures. Two SIGINT operators who monitored the signal for 6+ hours developed Stage 1 symptoms.
+
+The lights are beautiful. Do not listen to them.
+
+— CONTROL`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_aurora_2',
+    title: '📼 Cassette Tape — The Ice Fisherman',
+    author: 'Grigoriy Petrovitch (recovered recording)',
+    date: '02.01.1985',
+    classification: 'SECRET',
+    content: `[TAPE RECORDING — OUTDOOR, WIND AND ICE CRACKING]
+
+[Click]
+
+This is Grigoriy. Fisherman. Barents coast, near the village. Date is... second of January, I think. The nights are so long now I forget.
+
+I've been fishing through the ice for forty years. My father before me. His father before him. We know this sea. We know its moods.
+
+But the lights... the lights have changed.
+
+[Sound of wind]
+
+They used to dance. Green, sometimes white. Beautiful. Harmless. Now they... pulse. Like a heartbeat. And the colors — I've seen violet, deep red, colors that have no name. Colors the sky should not make.
+
+[Ice cracking in the distance]
+
+Last week, my radio picked up voices during a strong aurora. Not Russian. Not Norwegian. Something older. The words made my teeth ache. Yura, who fishes the next hole over, heard them too. He packed up and left. Smart man.
+
+I stayed. I built an antenna from copper wire and connected it to my recorder. I wanted proof.
+
+[Long pause]
+
+The lights spoke to me directly last night. Not through the radio. Through the ice. I felt the words vibrating through my boots, up through my bones. They said my name. They said "Гриша, иди к нам." Grisha, come to us.
+
+[Voice breaking]
+
+The compass doesn't work anymore. It spins. The fish have stopped biting — they've gone deep, deeper than my line can reach. Something down there is... pulling them.
+
+I should go home. But the lights are so beautiful tonight. The comet is out — that new one, the bright one the scientists talk about on the radio. It's directly above the village, like it's watching.
+
+I'll fish one more hour. One more.
+
+[Tape continues — 11 hours of wind and aurora hiss]
+
+[TAPE ENDS — RECORDER BATTERY DEPLETED]
+
+NOTE: Subject found frozen 200m from his fishing hole. Expression described as "peaceful." Compass in pocket — needle fused pointing straight down.`,
+    hasCode: false,
+    found: false,
+  },
+  {
+    id: 'doc_aurora_3',
+    title: 'Aurora Communications Protocol (Soviet)',
+    author: 'Dr. N. Volkov, Objekt 47 Signals Division',
+    date: '15.11.1984',
+    classification: 'TOP SECRET',
+    content: `AURORA COMMUNICATIONS PROTOCOL
+Classification: Особой Важности (Special Importance)
+Objekt 47 — Signals Division
+
+ABSTRACT:
+The electromagnetic emissions from Substance Zero ionize the mesosphere directly above geological vein sites, creating an artificial aurora. This aurora can be modulated to carry encoded signals — effectively using the northern lights as a communications medium.
+
+We have designated this system "СИЯНИЕ" (RADIANCE).
+
+OPERATIONAL PARAMETERS:
+- Range: Confirmed signal coherence across 1,400 km (Novaya Zemlya to Norrberget)
+- Bandwidth: Low — approximately 30 baud equivalent
+- Encryption: Inherent — only SZ-tuned receivers can decode
+- Interception risk: Minimal — signal appears as natural auroral noise to standard equipment
+
+ADVANTAGES:
+- Cannot be jammed by conventional means
+- No physical infrastructure required
+- Operates continuously during polar night (4+ months)
+- Signal strength increases with aurora intensity
+
+DISADVANTAGES:
+- Unreliable during geomagnetic storms
+- Operators report "secondary voices" on the channel — source unknown
+- Extended monitoring causes SZ exposure symptoms
+- The comet (designated C/1984-K2) appears to amplify the signal unpredictably
+
+COMMANDANT'S NOTE (handwritten):
+"The secondary voices are not interference. They are the mountain's thoughts, carried on light. I have learned to listen. I have learned to answer. The aurora is not our tool — we are its antenna."
+— A.P. Osipovitj
+
+DIRECTOR'S NOTE:
+Disregard Commandant's annotation. Schedule psychiatric evaluation.
+— Col. Karpov`,
+    hasCode: false,
+    found: false,
+  },
 ];
 
 export function getFoundCodes(documents: LoreDocument[]): string[] {
