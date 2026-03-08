@@ -172,15 +172,12 @@ export function generateFishingVillageMap() {
     makeWall(500, 1380, T, 320, STONE),
     // Dock east wall
     makeWall(860, 1380, T, 320, STONE),
-    // Dock south wall (end in water)
-    makeWall(500, 1700, 360, T, STONE),
+    // Dock south wall — 80px gap for south entrance from water
+    makeWall(500, 1700, 180, T, STONE),   // south-left
+    makeWall(760, 1700, 100, T, STONE),   // south-right (gap 680..760 = 80px)
     // Center divider wall — splits into two rooms, 80px gap for passage between rooms
     makeWall(680, 1390, T, 140, STONE),  // upper part
     makeWall(680, 1610, T, 90, STONE),   // lower part (gap 1530..1610 = 80px)
-    // South entrance from pier tip (80px gap in south wall)
-    // gap at x=680..760 in south wall
-    makeWall(500, 1700, 180, T, STONE),   // south-left (already above, replace)
-    makeWall(760, 1700, 100, T, STONE),   // south-right
 
     // Warehouse at dock (70px door gap on east wall)
     makeWall(320, 1250, 150, T, WD),
