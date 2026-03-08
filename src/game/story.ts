@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// OPERATION AURORA BOREALIS — The Overarching Story
+// OPERATION GRINDVAKT — The Overarching Story
 // ══════════════════════════════════════════════════════════════
 //
 // THE SUBSTANCE:
