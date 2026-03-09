@@ -1266,7 +1266,7 @@ export default function Wiki() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden" style={{ touchAction: 'auto', position: 'fixed', inset: 0 }}>
+    <div className="flex flex-col bg-background text-foreground overflow-hidden" style={{ touchAction: 'auto', position: 'fixed', inset: 0, height: '100dvh' }}>
       {/* Header */}
       <div className="border-b border-border bg-card flex-shrink-0 z-50">
         <div className="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
@@ -1301,7 +1301,7 @@ export default function Wiki() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-3 sm:p-6 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 p-3 sm:p-6 overflow-y-auto pb-20" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
           {section === 'lore' && <LoreSection />}
           {section === 'factions' && <FactionsSection />}
           {section === 'occult' && <OccultSection />}
