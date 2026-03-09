@@ -2910,7 +2910,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (movedSq < 0.04) (enemy as any)._stuckTime = ((enemy as any)._stuckTime || 0) + dt;
       else (enemy as any)._stuckTime = 0;
     }
-    (enemy as any)._lastPos = { ...enemy.pos };
+    // Reuse object to avoid GC pressure
+    if (!(enemy as any)._lastPos) (enemy as any)._lastPos = { x: 0, y: 0 };
+    (enemy as any)._lastPos.x = enemy.pos.x;
+    (enemy as any)._lastPos.y = enemy.pos.y;
     if ((enemy as any)._stuckTime > 1.2 && enemy.type !== 'turret') {
       const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(8, enemy.speed * 1.5), 10);
       if (escapeStep) enemy.pos = escapeStep;
