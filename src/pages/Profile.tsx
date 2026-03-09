@@ -183,7 +183,7 @@ const Profile: React.FC = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-background p-4 overflow-auto">
+    <div className="min-h-screen bg-background p-4 overflow-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' as any, position: 'fixed', inset: 0 }}>
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
 
         {/* Header */}
