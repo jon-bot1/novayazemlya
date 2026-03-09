@@ -2754,8 +2754,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.extractionProgress = Math.max(0, state.extractionProgress - dt * 2);
   }
 
-  // Clean up old sound events (older than 2 seconds)
-  state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 2);
+  // Clean up old sound events (older than 1s, or >20 keep only last 1s)
+  if (state.soundEvents.length > 10) {
+    state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
+  }
 
   // === REINFORCEMENT SPAWNING from forest paths ===
   state.reinforcementTimer -= dt;
