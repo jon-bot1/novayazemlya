@@ -475,7 +475,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           {(() => {
             const selMap = MAPS.find(m => m.id === selectedMap);
             const isTest3 = playerName.trim().toLowerCase() === 'test3';
-            const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+            const unlocked = isTest3 || isAdmin;
+            const mapLocked = !unlocked && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
             return (
               <div className={`mt-2 p-3 border border-border/40 rounded bg-background/30 ${mapLocked ? 'opacity-60' : ''}`}>
                 {mapLocked && (
