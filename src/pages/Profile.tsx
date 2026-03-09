@@ -393,7 +393,7 @@ const Profile: React.FC = () => {
               disabled={feedbackLoading}
               className="w-full px-4 py-3 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40"
             >
-              {feedbackLoading ? '...' : '▶ Skicka feedback'}
+              {feedbackLoading ? '...' : '▶ Submit Feedback'}
             </button>
             {feedbackMsg && <p className="text-xs font-mono text-safe">{feedbackMsg}</p>}
           </div>
