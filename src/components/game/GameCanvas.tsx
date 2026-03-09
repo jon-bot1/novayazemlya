@@ -904,8 +904,9 @@ export const GameCanvas: React.FC = () => {
   if (gamePhase === 'intro') {
     return (
       <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
-        <IntroScreen onStart={async (name) => {
+        <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
+          setPlayerSkin(skin);
           // Try loading from DB first
           const dbStash = await loadStashFromDb(name);
           if (dbStash) {
