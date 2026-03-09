@@ -994,7 +994,7 @@ export const GameCanvas: React.FC = () => {
               return updated;
             });
             setStarted(true);
-            setGamePhase('playing');
+            setGamePhase('deploying');
             setHudState(h => ({ ...h, gameOver: false, extracted: false }));
           }}
           onSellItem={(idx) => {
