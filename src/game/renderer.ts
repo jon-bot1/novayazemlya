@@ -1371,6 +1371,22 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
   ctx.drawImage(_groundCanvas as any, sx, sy, sw, sh, sx, sy, sw, sh);
 }
 
+// ── PLAYER SKIN SYSTEM ──
+export type PlayerSkin = 'default' | 'alpha' | 'admin';
+let _playerSkin: PlayerSkin = 'default';
+export function setPlayerSkin(skin: PlayerSkin) { _playerSkin = skin; }
+
+function getPlayerColors(): { body: string; outline: string; eye: string; hat: 'ushanka' | 'helmet' | 'beret' | 'bandana' | 'none'; hatColor: string } {
+  switch (_playerSkin) {
+    case 'admin':
+      return { body: '#2a2a2a', outline: '#c8a030', eye: '#ff4444', hat: 'helmet', hatColor: '#1a1a1a' };
+    case 'alpha':
+      return { body: '#4a5a6a', outline: '#2a3a4a', eye: '#88ccff', hat: 'beret', hatColor: '#3a4a5a' };
+    default:
+      return { body: '#6a8a4a', outline: '#4a6a2a', eye: '#1a2a1a', hat: 'beret', hatColor: '#5a3a2a' };
+  }
+}
+
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number) {
   _frameTime = state.time;
   _rdm = getRenderDistMultiplier();
@@ -4055,10 +4071,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
   (state as any)._prevPx = state.player.pos.x;
   (state as any)._prevPy = state.player.pos.y;
+  const pc = getPlayerColors();
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    '#6a8a4a', '#4a6a2a', '#1a2a1a', playerBlink,
-    'beret', '#5a3a2a', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
+    pc.body, pc.outline, pc.eye, playerBlink,
+    pc.hat, pc.hatColor, true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
   );
 
   // (player label removed)

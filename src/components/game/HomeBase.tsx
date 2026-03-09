@@ -61,9 +61,10 @@ interface HomeBaseProps {
   onCraft: (recipeId: string) => void;
   onReturnToMenu?: () => void;
   rerollCount: number;
+  isAdmin?: boolean;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount, isAdmin }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft' | 'mastery'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
@@ -440,7 +441,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {MAPS.map(m => {
               const isTest3 = playerName.trim().toLowerCase() === 'test3';
-              const locked = !isTest3 && m.unlockRequirement != null && stash.extractionCount < m.unlockRequirement;
+              const unlocked = isTest3 || isAdmin;
+              const locked = !unlocked && m.unlockRequirement != null && stash.extractionCount < m.unlockRequirement;
               return (
                 <button
                   key={m.id}
@@ -473,7 +475,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           {(() => {
             const selMap = MAPS.find(m => m.id === selectedMap);
             const isTest3 = playerName.trim().toLowerCase() === 'test3';
-            const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+            const unlocked = isTest3 || isAdmin;
+            const mapLocked = !unlocked && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
             return (
               <div className={`mt-2 p-3 border border-border/40 rounded bg-background/30 ${mapLocked ? 'opacity-60' : ''}`}>
                 {mapLocked && (
@@ -853,7 +856,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           {(() => {
             const selMap = MAPS.find(m => m.id === selectedMap);
             const isTest3 = playerName.trim().toLowerCase() === 'test3';
-            const mapLocked = !isTest3 && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
+            const unlocked = isTest3 || isAdmin;
+            const mapLocked = !unlocked && selMap?.unlockRequirement != null && stash.extractionCount < selMap.unlockRequirement;
             return (
               <button
                 disabled={mapLocked}
