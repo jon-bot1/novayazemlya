@@ -271,7 +271,7 @@ export const GameCanvas: React.FC = () => {
   const updateKeysRef = useRef<() => void>(() => {});
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
-  const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'playing'>('intro');
+  const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'deploying' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
   const [gfxSettings, setGfxSettings] = useState<GraphicsSettings>(() => ({ ...getSettings() }));
