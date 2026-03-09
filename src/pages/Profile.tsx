@@ -382,7 +382,7 @@ const Profile: React.FC = () => {
                 className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 rows={4}
                 maxLength={1000}
-                placeholder="Buggar, önskemål, tankar..."
+                placeholder="Bugs, suggestions, thoughts..."
                 value={comment}
                 onChange={e => setComment(e.target.value)}
               />
