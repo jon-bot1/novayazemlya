@@ -357,7 +357,7 @@ const Profile: React.FC = () => {
         {/* Feedback Tab */}
         {tab === 'feedback' && (
           <div className="border border-border rounded p-4 bg-card flex flex-col gap-3">
-            <p className="text-[10px] font-display text-accent uppercase tracking-wider">Berätta vad du tycker</p>
+            <p className="text-[10px] font-display text-accent uppercase tracking-wider">Tell us what you think</p>
 
             <div>
               <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Betyg</label>
