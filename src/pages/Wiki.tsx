@@ -1278,7 +1278,7 @@ export default function Wiki() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-mono text-muted-foreground">NOVAYA ZEMLYA — CLASSIFIED</span>
-            <WikiLogoutButton />
+            {user && <LogoutButton compact />}
           </div>
         </div>
       </div>
