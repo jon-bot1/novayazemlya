@@ -73,25 +73,49 @@ const createInitialRerollsByMap = (): Record<MapId, number> => ({
   mining_village: 0,
 });
 
-const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart }) => {
-  const [name, setName] = React.useState('');
-  const [anonymous, setAnonymous] = React.useState(false);
+const ADMIN_EMAIL = 'jonpetersvensson@gmail.com';
+
+const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void }> = ({ onStart }) => {
   const introIsMobile = useIsMobile();
   const [showHighscores, setShowHighscores] = React.useState(false);
-  
+  const [user, setUser] = React.useState<any>(null);
+  const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
+  const [loadingAuth, setLoadingAuth] = React.useState(true);
+
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+      setLoadingAuth(false);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoadingAuth(false);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  React.useEffect(() => {
+    if (!user) { setProfile(null); return; }
+    supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
+      if (data) setProfile(data);
+    });
+  }, [user]);
+
+  const isAdmin = user?.email === ADMIN_EMAIL;
+  const skin: PlayerSkin = isAdmin ? 'admin' : user ? 'alpha' : 'default';
+  const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
+
   const handleStart = React.useCallback(() => {
-    if (anonymous) {
-      onStart('__anonymous__');
-    } else if (name.trim().length > 0) {
-      onStart(name.trim().slice(0, 20));
+    if (user && callsign) {
+      onStart(callsign, skin);
+    } else {
+      onStart('__anonymous__', 'default');
     }
-  }, [name, anonymous, onStart]);
+  }, [user, callsign, skin, onStart]);
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (anonymous || name.trim().length > 0)) {
-        handleStart();
-      }
+      if (e.key === 'Enter') handleStart();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -105,36 +129,46 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         <p className="text-[10px] font-mono text-muted-foreground mt-1">TACTICAL EXTRACTION SHOOTER — 1985</p>
       </div>
 
-      <div>
-        <label className="text-xs font-display text-accent uppercase tracking-wider mb-2 block">Your Callsign</label>
-        <input
-          type="text"
-          maxLength={20}
-          className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          placeholder="Enter name..."
-          value={name}
-          onChange={e => setName(e.target.value)}
-          autoFocus={!anonymous && !introIsMobile}
-          disabled={anonymous}
-        />
-        <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={anonymous}
-            onChange={e => setAnonymous(e.target.checked)}
-            className="accent-accent w-3.5 h-3.5"
-          />
-          <span className="text-[11px] font-mono text-muted-foreground">🕵️ Play anonymously</span>
-        </label>
-      </div>
-
-      <button
-        className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg disabled:opacity-40"
-        onClick={handleStart}
-        disabled={!anonymous && name.trim().length === 0}
-      >
-        ▶ BEGIN OPERATION
-      </button>
+      {loadingAuth ? (
+        <p className="text-xs font-mono text-muted-foreground text-center">Checking credentials...</p>
+      ) : user ? (
+        <div className="flex flex-col gap-2">
+          <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
+            <p className="text-xs font-display text-accent uppercase tracking-wider">
+              {isAdmin ? '⭐ ADMIN' : '🛡️ ALPHA TESTER'}
+            </p>
+            <p className="text-sm font-display text-foreground mt-1">{callsign || '(no callsign set)'}</p>
+            <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
+          </div>
+          <button
+            className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
+            onClick={handleStart}
+            disabled={!callsign}
+          >
+            ▶ BEGIN OPERATION
+          </button>
+          {!callsign && (
+            <p className="text-[10px] font-mono text-destructive text-center">
+              Set a callsign in your <a href="/profile" className="underline">profile</a> first.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <button
+            className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
+            onClick={handleStart}
+          >
+            🕵️ PLAY ANONYMOUSLY
+          </button>
+          <a
+            href="/auth"
+            className="w-full block text-center px-6 py-3 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-sm"
+          >
+            🔐 LOG IN / REGISTER
+          </a>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <a href="/wiki" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
@@ -148,14 +182,13 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </button>
       </div>
 
-      <div className="flex gap-2">
-        <a href="/auth" className="flex-1 text-center px-3 py-2 border border-primary/40 text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/20 transition-colors text-[11px]">
-          🔐 Login
-        </a>
-        <a href="/profile" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
-          👤 Profil
-        </a>
-      </div>
+      {user && (
+        <div className="flex gap-2">
+          <a href="/profile" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
+            👤 Profil
+          </a>
+        </div>
+      )}
 
       {showHighscores && (
         <div className="border-t border-border pt-3">
