@@ -23,7 +23,7 @@ import { EMPTY_MASTERY, getMasteryLevel, type WeaponMasteryState, type WeaponMas
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { supabase } from '@/integrations/supabase/client';
-import { getGraphicsQuality, setGraphicsQuality, getRenderDistance, setRenderDistance, type GraphicsQuality, type RenderDistance } from '../../game/graphics';
+import { getSettings, getPreset, applyPreset, updateSetting, type GraphicsPreset, type GraphicsSettings, type RenderDistance } from '../../game/graphics';
 
 const TIME_LIMIT = 300; // 5 minutes
 const FIREFOX_WARNING_KEY = 'novaya_firefox_warning_dismissed';
