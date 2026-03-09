@@ -3,37 +3,32 @@
 // ── DAY/NIGHT SYSTEM ──
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 
-// Map game time (0-300s) to time-of-day cycle
 export function getTimeOfDay(gameTime: number): TimeOfDay {
-  // 0-60s = dawn, 60-180s = day, 180-240s = dusk, 240+ = night
   if (gameTime < 60) return 'dawn';
   if (gameTime < 180) return 'day';
   if (gameTime < 240) return 'dusk';
   return 'night';
 }
 
-// Returns darkness factor 0 (bright) to 1 (dark)
 export function getDarknessFactor(gameTime: number): number {
   const tod = getTimeOfDay(gameTime);
   switch (tod) {
-    case 'dawn': return 0.15 - (gameTime / 60) * 0.15; // fading from dim
+    case 'dawn': return 0.15 - (gameTime / 60) * 0.15;
     case 'day': return 0;
-    case 'dusk': return ((gameTime - 180) / 60) * 0.45; // 0 → 0.45
-    case 'night': return 0.45 + Math.min(0.25, (gameTime - 240) / 120 * 0.25); // 0.45 → 0.7
+    case 'dusk': return ((gameTime - 180) / 60) * 0.45;
+    case 'night': return 0.45 + Math.min(0.25, (gameTime - 240) / 120 * 0.25);
   }
 }
 
-// Enemy stat buffs at night
 export function getNightEnemyBuffs(gameTime: number): { damageMult: number; alertRangeMult: number; lootValueMult: number } {
   const darkness = getDarknessFactor(gameTime);
   return {
-    damageMult: 1 + darkness * 0.3,       // up to +21% damage
-    alertRangeMult: 1 - darkness * 0.25,   // shorter alert range (darker = harder to see)
-    lootValueMult: 1 + darkness * 0.5,     // up to +35% loot value at night
+    damageMult: 1 + darkness * 0.3,
+    alertRangeMult: 1 - darkness * 0.25,
+    lootValueMult: 1 + darkness * 0.5,
   };
 }
 
-// Flashlight cone parameters
 export function getFlashlightParams(): { coneAngle: number; range: number; intensity: number } {
   return { coneAngle: 0.4, range: 200, intensity: 0.7 };
 }
@@ -60,53 +55,111 @@ export function clearOldHitMarkers(currentTime: number) {
   _hitMarkers = _hitMarkers.filter(h => currentTime - h.time < 1.0);
 }
 
+// ── GRANULAR GRAPHICS SETTINGS ──
+
+export type GraphicsPreset = 'high' | 'medium' | 'low';
+// Keep old type for backward compat
 export type GraphicsQuality = 'high' | 'low';
 export type RenderDistance = 'far' | 'normal' | 'near';
 
-const STORAGE_KEY = 'novaya_graphics_quality';
-const RENDER_DIST_KEY = 'novaya_render_distance';
-
-let _quality: GraphicsQuality = 'high';
-let _renderDist: RenderDistance = 'far';
-
-export function getGraphicsQuality(): GraphicsQuality { return _quality; }
-export function setGraphicsQuality(q: GraphicsQuality) {
-  _quality = q;
-  try { localStorage.setItem(STORAGE_KEY, q); } catch { /* silent */ }
+export interface GraphicsSettings {
+  weather: boolean;       // snow, fog, aurora, comet
+  muzzleFlash: boolean;   // gun flash effects
+  tracers: boolean;       // bullet tracer lines
+  bloodStains: boolean;   // persistent blood decals
+  detailedChars: boolean; // detailed character rendering
+  renderDist: RenderDistance;
 }
-export function loadGraphicsQuality(): GraphicsQuality {
+
+const SETTINGS_KEY = 'novaya_gfx_settings';
+const PRESET_KEY = 'novaya_gfx_preset';
+
+// Preset definitions
+const PRESETS: Record<GraphicsPreset, GraphicsSettings> = {
+  high: { weather: true, muzzleFlash: true, tracers: true, bloodStains: true, detailedChars: true, renderDist: 'far' },
+  medium: { weather: true, muzzleFlash: true, tracers: false, bloodStains: true, detailedChars: false, renderDist: 'normal' },
+  low: { weather: false, muzzleFlash: false, tracers: false, bloodStains: false, detailedChars: false, renderDist: 'near' },
+};
+
+let _settings: GraphicsSettings = { ...PRESETS.high };
+let _preset: GraphicsPreset | 'custom' = 'high';
+
+function save() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'low' || stored === 'high') { _quality = stored; return stored; }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    localStorage.setItem(PRESET_KEY, _preset);
   } catch { /* silent */ }
-  return 'high';
 }
 
-export function getRenderDistance(): RenderDistance { return _renderDist; }
-export function setRenderDistance(d: RenderDistance) {
-  _renderDist = d;
-  try { localStorage.setItem(RENDER_DIST_KEY, d); } catch { /* silent */ }
+function detectPreset(s: GraphicsSettings): GraphicsPreset | 'custom' {
+  for (const key of ['high', 'medium', 'low'] as GraphicsPreset[]) {
+    const p = PRESETS[key];
+    if (s.weather === p.weather && s.muzzleFlash === p.muzzleFlash && s.tracers === p.tracers &&
+        s.bloodStains === p.bloodStains && s.detailedChars === p.detailedChars && s.renderDist === p.renderDist) {
+      return key;
+    }
+  }
+  return 'custom';
 }
-export function loadRenderDistance(): RenderDistance {
+
+// ── Public API ──
+
+export function getSettings(): Readonly<GraphicsSettings> { return _settings; }
+export function getPreset(): GraphicsPreset | 'custom' { return _preset; }
+export function getPresets(): Record<GraphicsPreset, GraphicsSettings> { return PRESETS; }
+
+export function applyPreset(preset: GraphicsPreset) {
+  _settings = { ...PRESETS[preset] };
+  _preset = preset;
+  save();
+}
+
+export function updateSetting<K extends keyof GraphicsSettings>(key: K, value: GraphicsSettings[K]) {
+  _settings[key] = value;
+  _preset = detectPreset(_settings);
+  save();
+}
+
+export function loadSettings(): GraphicsSettings {
   try {
-    const stored = localStorage.getItem(RENDER_DIST_KEY);
-    if (stored === 'far' || stored === 'normal' || stored === 'near') { _renderDist = stored; return stored; }
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      _settings = { ...PRESETS.high, ...parsed };
+      _preset = detectPreset(_settings);
+      return _settings;
+    }
+    // Migrate from old keys
+    const oldQ = localStorage.getItem('novaya_graphics_quality');
+    const oldD = localStorage.getItem('novaya_render_distance');
+    if (oldQ === 'low') {
+      _settings = { ...PRESETS.low };
+      if (oldD === 'far' || oldD === 'normal' || oldD === 'near') _settings.renderDist = oldD;
+    } else if (oldD) {
+      _settings = { ...PRESETS.high };
+      if (oldD === 'far' || oldD === 'normal' || oldD === 'near') _settings.renderDist = oldD;
+    }
+    _preset = detectPreset(_settings);
+    save();
   } catch { /* silent */ }
-  return 'far';
+  return _settings;
 }
 
-/** Returns a multiplier for isOnScreen margins: far=1.0, normal=0.6, near=0.35 */
+// ── Backward-compatible feature checks (used by engine.ts & renderer.ts) ──
+export function hasWeatherEffects(): boolean { return _settings.weather; }
+export function hasMuzzleFlash(): boolean { return _settings.muzzleFlash; }
+export function hasTracerLines(): boolean { return _settings.tracers; }
+export function hasBloodStains(): boolean { return _settings.bloodStains; }
+export function hasDetailedCharacters(): boolean { return _settings.detailedChars; }
+
+// Backward-compat wrappers
+export function getGraphicsQuality(): GraphicsQuality { return _preset === 'low' ? 'low' : 'high'; }
+export function setGraphicsQuality(q: GraphicsQuality) { applyPreset(q === 'low' ? 'low' : 'high'); }
+export function getRenderDistance(): RenderDistance { return _settings.renderDist; }
+export function setRenderDistance(d: RenderDistance) { updateSetting('renderDist', d); }
 export function getRenderDistMultiplier(): number {
-  return _renderDist === 'far' ? 1.0 : _renderDist === 'normal' ? 0.6 : 0.35;
+  return _settings.renderDist === 'far' ? 1.0 : _settings.renderDist === 'normal' ? 0.6 : 0.35;
 }
-
-// Feature checks
-export function hasWeatherEffects(): boolean { return _quality === 'high'; }
-export function hasMuzzleFlash(): boolean { return _quality === 'high'; }
-export function hasTracerLines(): boolean { return _quality === 'high'; }
-export function hasBloodStains(): boolean { return _quality === 'high'; }
-export function hasDetailedCharacters(): boolean { return _quality === 'high'; }
 
 // Initialize on load
-loadGraphicsQuality();
-loadRenderDistance();
+loadSettings();
