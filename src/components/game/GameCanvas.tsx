@@ -127,8 +127,8 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   }, [handleStart]);
 
   return (
-  <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
-    <div className="max-w-sm w-full mx-4 flex flex-col gap-4 p-6 sm:p-8 border border-border bg-card rounded">
+   <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' as any }}>
+    <div className="max-w-sm w-full mx-4 flex flex-col gap-4 p-6 sm:p-8 border border-border bg-card rounded my-4">
       <div className="text-center">
         <p className="text-[9px] font-mono text-accent/50 uppercase tracking-[0.3em] mb-2">☠ CLASSIFIED — NORDIC COMMAND ☠</p>
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
