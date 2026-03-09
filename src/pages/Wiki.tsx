@@ -1266,7 +1266,7 @@ export default function Wiki() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden" style={{ touchAction: 'auto', position: 'fixed', inset: 0 }}>
       {/* Header */}
       <div className="border-b border-border bg-card flex-shrink-0 z-50">
         <div className="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
@@ -1285,7 +1285,7 @@ export default function Wiki() {
 
       <div className="max-w-4xl mx-auto flex gap-0 flex-1 min-h-0 w-full">
         {/* Sidebar */}
-        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 overflow-y-auto">
+        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           {SECTIONS.map(s => (
             <button
               key={s.id}
@@ -1301,7 +1301,7 @@ export default function Wiki() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-6 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           {section === 'lore' && <LoreSection />}
           {section === 'factions' && <FactionsSection />}
           {section === 'occult' && <OccultSection />}
