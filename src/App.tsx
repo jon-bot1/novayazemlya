@@ -25,7 +25,7 @@ const App = () => (
           <Route path="/spectate" element={<Spectate />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/store" element={<Store />} />
+          {/* <Route path="/store" element={<Store />} /> */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
