@@ -3456,43 +3456,42 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     // === BODYGUARD HEALS BOSS — nearby bodyguards can patch up the boss ===
-    if ((enemy as any)._isBodyguard && !(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
+    // Cache boss ref once for this bodyguard's heal logic
+    if ((enemy as any)._isBodyguard) {
       const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-      if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
-        // Start heal — 1 second animation
-        (enemy as any)._bgHealTimer = 1.0;
-        enemy.state = 'idle';
-        enemy.speechBubble = 'ЛЕЧУ, КОМАНДИР!';
-        enemy.speechBubbleTimer = 1.5;
-        (enemy as any)._bgHealCooldown = 15 + Math.random() * 10; // 15-25s cooldown
-      }
-    }
-    // Process bodyguard healing
-    if ((enemy as any)._bgHealTimer > 0) {
-      (enemy as any)._bgHealTimer -= dt;
-      // Green particles during heal
-      if (Math.random() < 0.4) {
-        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-        if (boss) spawnParticles(state, boss.pos.x + (Math.random() - 0.5) * 10, boss.pos.y + (Math.random() - 0.5) * 10, '#44ff66', 1);
-      }
-      if ((enemy as any)._bgHealTimer <= 0) {
-        delete (enemy as any)._bgHealTimer;
-        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-        if (boss) {
-          const heal = 15 + Math.floor(Math.random() * 10); // 15-25 HP
-          boss.hp = Math.min(boss.maxHp, boss.hp + heal);
-          boss.speechBubble = 'ХОРОШО...';
-          boss.speechBubbleTimer = 1.5;
-          addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
-          spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
+      if (!(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
+        if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
+          (enemy as any)._bgHealTimer = 1.0;
+          enemy.state = 'idle';
+          enemy.speechBubble = 'ЛЕЧУ, КОМАНДИР!';
+          enemy.speechBubbleTimer = 1.5;
+          (enemy as any)._bgHealCooldown = 15 + Math.random() * 10;
         }
-        enemy.state = 'chase';
       }
-    }
-    // Bodyguard heal cooldown
-    if ((enemy as any)._bgHealCooldown > 0) {
-      (enemy as any)._bgHealCooldown -= dt;
-      if ((enemy as any)._bgHealCooldown <= 0) delete (enemy as any)._bgHealCooldown;
+      // Process bodyguard healing
+      if ((enemy as any)._bgHealTimer > 0) {
+        (enemy as any)._bgHealTimer -= dt;
+        if (Math.random() < 0.4 && boss) {
+          spawnParticles(state, boss.pos.x + (Math.random() - 0.5) * 10, boss.pos.y + (Math.random() - 0.5) * 10, '#44ff66', 1);
+        }
+        if ((enemy as any)._bgHealTimer <= 0) {
+          delete (enemy as any)._bgHealTimer;
+          if (boss) {
+            const heal = 15 + Math.floor(Math.random() * 10);
+            boss.hp = Math.min(boss.maxHp, boss.hp + heal);
+            boss.speechBubble = 'ХОРОШО...';
+            boss.speechBubbleTimer = 1.5;
+            addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
+            spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
+          }
+          enemy.state = 'chase';
+        }
+      }
+      // Bodyguard heal cooldown
+      if ((enemy as any)._bgHealCooldown > 0) {
+        (enemy as any)._bgHealCooldown -= dt;
+        if ((enemy as any)._bgHealCooldown <= 0) delete (enemy as any)._bgHealCooldown;
+      }
     }
 
     // Alarm boost — increases alert range and makes enemies aggressive
