@@ -1229,7 +1229,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   (state as any)._lastMoveX = moveX;
   (state as any)._lastMoveY = moveY;
   (state as any)._lastMovementMode = effectiveMode;
-  
+
+  // Pre-compute terrain multiplier for footsteps + noise meter (used in both branches)
+  const tg = getTerrainGrid(state);
+  const terrain = getTerrainFast(tg, state.player.pos.x, state.player.pos.y);
+  let terrainMult = 1.0;
+  if (terrain === 'concrete' || terrain === 'asphalt') terrainMult = 1.4;
+  else if (terrain === 'dirt') terrainMult = 0.8;
+  else if (terrain === 'forest') terrainMult = 0.6;
+
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
