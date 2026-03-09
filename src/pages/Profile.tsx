@@ -141,8 +141,8 @@ const Profile: React.FC = () => {
       comment: comment.trim() || null,
       player_name: profile?.display_name || null,
     });
-    if (error) setFeedbackMsg('Kunde inte skicka. Försök igen.');
-    else { setFeedbackMsg('Tack för din feedback!'); setComment(''); }
+    if (error) setFeedbackMsg('Failed to send. Try again.');
+    else { setFeedbackMsg('Thanks for your feedback!'); setComment(''); }
     setFeedbackLoading(false);
   };
 
