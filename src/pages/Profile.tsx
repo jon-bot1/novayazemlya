@@ -280,6 +280,35 @@ const Profile: React.FC = () => {
               <p className="text-[10px] font-display text-accent uppercase tracking-wider">E-post: <span className="text-foreground normal-case">{user?.email}</span></p>
 
               <div>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Smeknamn</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={20}
+                    className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder={profile?.display_name || 'Ditt smeknamn...'}
+                    value={newCallsign}
+                    onChange={e => setNewCallsign(e.target.value)}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!newCallsign.trim()) return;
+                      setAccountLoading(true); setCallsignMsg('');
+                      const { error } = await supabase.from('profiles').update({ display_name: newCallsign.trim() }).eq('id', user.id);
+                      if (error) setCallsignMsg('Kunde inte uppdatera.');
+                      else { setCallsignMsg('Callsign uppdaterat!'); setProfile(p => p ? { ...p, display_name: newCallsign.trim() } : p); setNewCallsign(''); }
+                      setAccountLoading(false);
+                    }}
+                    disabled={accountLoading || !newCallsign.trim()}
+                    className="px-4 py-2 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40"
+                  >
+                    Spara
+                  </button>
+                </div>
+                {callsignMsg && <p className="text-xs font-mono text-safe mt-1">{callsignMsg}</p>}
+              </div>
+
+              <div>
                 <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Byt e-post</label>
                 <div className="flex gap-2">
                   <input
