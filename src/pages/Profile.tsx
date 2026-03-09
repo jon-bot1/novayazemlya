@@ -280,7 +280,7 @@ const Profile: React.FC = () => {
               <p className="text-[10px] font-display text-accent uppercase tracking-wider">Email: <span className="text-foreground normal-case">{user?.email}</span></p>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Smeknamn</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Nickname</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
