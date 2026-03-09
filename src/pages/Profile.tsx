@@ -125,7 +125,7 @@ const Profile: React.FC = () => {
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) setAccountErr(error.message);
-    else { setAccountMsg('Lösenord uppdaterat!'); setNewPassword(''); }
+    else { setAccountMsg('Password updated!'); setNewPassword(''); }
     setAccountLoading(false);
   };
 
