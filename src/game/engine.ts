@@ -3596,8 +3596,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue; // skip normal AI
     }
 
-    // === BODY DISCOVERY — enemies react to dead allies nearby ===
-    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody) {
+    // === BODY DISCOVERY — enemies react to dead allies nearby (throttled: ~1% of frames) ===
+    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody && Math.random() < 0.03) {
       for (const dead of state.enemies) {
         if (dead.state !== 'dead' || dead === enemy) continue;
         if (distSq(enemy.pos, dead.pos) < 6400 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) { // 80²
