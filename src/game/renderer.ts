@@ -4071,10 +4071,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
   (state as any)._prevPx = state.player.pos.x;
   (state as any)._prevPy = state.player.pos.y;
+  const pc = getPlayerColors();
   drawCuteCharacter(
     ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    '#6a8a4a', '#4a6a2a', '#1a2a1a', playerBlink,
-    'beret', '#5a3a2a', true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
+    pc.body, pc.outline, pc.eye, playerBlink,
+    pc.hat, pc.hatColor, true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
   );
 
   // (player label removed)
