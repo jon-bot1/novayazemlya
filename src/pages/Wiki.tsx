@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { LogoutButton } from '@/components/game/LogoutButton';
 
 type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'recoil' | 'enemies' | 'bosses' | 'maps' | 'items' | 'mechanics' | 'stealth' | 'upgrades' | 'safehouse' | 'achievements' | 'reputation' | 'daynight';
 
