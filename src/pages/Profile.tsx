@@ -325,7 +325,7 @@ const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Byt lösenord</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Change Password</label>
                 <div className="flex gap-2">
                   <input
                     type="password"
