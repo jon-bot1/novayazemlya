@@ -349,7 +349,7 @@ const Profile: React.FC = () => {
               onClick={handleLogout}
               className="w-full px-4 py-3 border border-destructive/40 text-destructive font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-destructive/10 transition-colors"
             >
-              ⏻ Logga ut
+              ⏻ Log Out
             </button>
           </div>
         )}
