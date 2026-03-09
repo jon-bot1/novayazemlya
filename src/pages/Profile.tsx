@@ -116,7 +116,7 @@ const Profile: React.FC = () => {
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) setAccountErr(error.message);
-    else setAccountMsg('Bekräftelselänk skickad till ny e-post.');
+    else setAccountMsg('Confirmation link sent to new email.');
     setAccountLoading(false);
   };
 
