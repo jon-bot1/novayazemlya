@@ -1229,7 +1229,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   (state as any)._lastMoveX = moveX;
   (state as any)._lastMoveY = moveY;
   (state as any)._lastMovementMode = effectiveMode;
-  
+
+  // Pre-compute terrain multiplier for footsteps + noise meter (used in both branches)
+  const tg = getTerrainGrid(state);
+  const terrain = getTerrainFast(tg, state.player.pos.x, state.player.pos.y);
+  let terrainMult = 1.0;
+  if (terrain === 'concrete' || terrain === 'asphalt') terrainMult = 1.4;
+  else if (terrain === 'dirt') terrainMult = 0.8;
+  else if (terrain === 'forest') terrainMult = 0.6;
+
   if (moveLen > 0.1) {
     const speed = playerSpeed * dt * 60;
     const dir = normalize({ x: moveX, y: moveY });
@@ -1343,13 +1351,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Sound propagation — sprinting is VERY loud, walking moderate, sneak nearly silent
     const footstepRadius: Record<MovementMode, number> = { sneak: 20, walk: 60, sprint: 200 };
     const footstepChance: Record<MovementMode, number> = { sneak: 0.005, walk: 0.04, sprint: 0.2 };
-    // Terrain affects sound: gravel/concrete louder
-    let terrainMult = 1.0;
-    const tg = getTerrainGrid(state);
-    const terrain = getTerrainFast(tg, state.player.pos.x, state.player.pos.y);
-    if (terrain === 'concrete' || terrain === 'asphalt') terrainMult = 1.4;
-    else if (terrain === 'dirt') terrainMult = 0.8;
-    else if (terrain === 'forest') terrainMult = 0.6;
+    // terrainMult already computed above
     if (Math.random() < footstepChance[effectiveMode]) {
       let stepRadius = footstepRadius[effectiveMode] * terrainMult;
       const silentBonus = (state as any)._noiseReduction || 0;
@@ -1362,14 +1364,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   {
     const baseNoise: Record<MovementMode, number> = { sneak: 0.05, walk: 0.25, sprint: 0.75 };
     let noise = baseNoise[effectiveMode] || 0.25;
-    // Recalculate terrain multiplier for noise meter
-    const tgNoise = getTerrainGrid(state);
-    const terrainNoise = getTerrainFast(tgNoise, state.player.pos.x, state.player.pos.y);
-    let noiseTMult = 1.0;
-    if (terrainNoise === 'concrete' || terrainNoise === 'asphalt') noiseTMult = 1.4;
-    else if (terrainNoise === 'dirt') noiseTMult = 0.8;
-    else if (terrainNoise === 'forest') noiseTMult = 0.6;
-    noise *= noiseTMult;
+    // Reuse terrain multiplier from footstep calculation above (same position, same frame)
+    noise *= terrainMult;
     const silentBonusN = (state as any)._noiseReduction || 0;
     if (silentBonusN > 0) noise *= (1 - silentBonusN);
     if ((state as any)._playerHiding) noise = 0;
@@ -2758,8 +2754,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     state.extractionProgress = Math.max(0, state.extractionProgress - dt * 2);
   }
 
-  // Clean up old sound events (older than 2 seconds)
-  state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 2);
+  // Clean up old sound events (older than 1s, or >20 keep only last 1s)
+  if (state.soundEvents.length > 10) {
+    state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
+  }
 
   // === REINFORCEMENT SPAWNING from forest paths ===
   state.reinforcementTimer -= dt;
@@ -2804,9 +2802,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  if (state.soundEvents.length > 20) {
-    state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
-  }
+  // Sound cleanup already done above — skip redundant filter
 
   // Cap bullets to prevent lag from rapid-fire scenarios
   if (state.bullets.length > 150) {
@@ -2883,9 +2879,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.state === 'dead') continue;
 
     // Hard contact fail-safe: direct body contact always reveals player and forces aggro
-    const contactDist = dist(enemy.pos, state.player.pos);
+    const contactDistSq = distSq(enemy.pos, state.player.pos);
     const playerHiddenNow = !!(state as any)._playerHiding;
-    if (contactDist < 42) {
+    if (contactDistSq < 1764) { // 42²
       if (playerHiddenNow) {
         (state as any)._playerHiding = false;
         state.player.peeking = false;
@@ -2912,7 +2908,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (movedSq < 0.04) (enemy as any)._stuckTime = ((enemy as any)._stuckTime || 0) + dt;
       else (enemy as any)._stuckTime = 0;
     }
-    (enemy as any)._lastPos = { ...enemy.pos };
+    // Reuse object to avoid GC pressure
+    if (!(enemy as any)._lastPos) (enemy as any)._lastPos = { x: 0, y: 0 };
+    (enemy as any)._lastPos.x = enemy.pos.x;
+    (enemy as any)._lastPos.y = enemy.pos.y;
     if ((enemy as any)._stuckTime > 1.2 && enemy.type !== 'turret') {
       const escapeStep = findEnemyEscapeStep(state, enemy.pos, Math.max(8, enemy.speed * 1.5), 10);
       if (escapeStep) enemy.pos = escapeStep;
@@ -2946,16 +2945,14 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         }
         if (nearestHostile) {
           enemy.angle = Math.atan2(nearestHostile.pos.y - enemy.pos.y, nearestHostile.pos.x - enemy.pos.x);
-          const nearestDist = Math.sqrt(nearestDistSq);
-          if (nearestDist > 100) {
+          if (nearestDistSq > 10000) { // 100²
             // Move towards target
             const mv = normalize({ x: nearestHostile.pos.x - enemy.pos.x, y: nearestHostile.pos.y - enemy.pos.y });
             enemy.pos = tryMoveEnemy(state, enemy.pos, mv.x * enemy.speed * dt * 60, mv.y * enemy.speed * dt * 60, 10);
           }
-          // Shoot at hostile enemy
-          const now = performance.now();
-          if (now - enemy.lastShot > enemy.fireRate) {
-            enemy.lastShot = now;
+          // Shoot at hostile enemy — use state.time for consistency
+          if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
+            enemy.lastShot = state.time;
             const spread = (Math.random() - 0.5) * 0.15;
             state.bullets.push({
               pos: { ...enemy.pos },
@@ -3459,43 +3456,42 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
 
     // === BODYGUARD HEALS BOSS — nearby bodyguards can patch up the boss ===
-    if ((enemy as any)._isBodyguard && !(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
+    // Cache boss ref once for this bodyguard's heal logic
+    if ((enemy as any)._isBodyguard) {
       const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-      if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
-        // Start heal — 1 second animation
-        (enemy as any)._bgHealTimer = 1.0;
-        enemy.state = 'idle';
-        enemy.speechBubble = 'ЛЕЧУ, КОМАНДИР!';
-        enemy.speechBubbleTimer = 1.5;
-        (enemy as any)._bgHealCooldown = 15 + Math.random() * 10; // 15-25s cooldown
-      }
-    }
-    // Process bodyguard healing
-    if ((enemy as any)._bgHealTimer > 0) {
-      (enemy as any)._bgHealTimer -= dt;
-      // Green particles during heal
-      if (Math.random() < 0.4) {
-        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-        if (boss) spawnParticles(state, boss.pos.x + (Math.random() - 0.5) * 10, boss.pos.y + (Math.random() - 0.5) * 10, '#44ff66', 1);
-      }
-      if ((enemy as any)._bgHealTimer <= 0) {
-        delete (enemy as any)._bgHealTimer;
-        const boss = state.enemies.find(e => e.type === 'boss' && e.state !== 'dead');
-        if (boss) {
-          const heal = 15 + Math.floor(Math.random() * 10); // 15-25 HP
-          boss.hp = Math.min(boss.maxHp, boss.hp + heal);
-          boss.speechBubble = 'ХОРОШО...';
-          boss.speechBubbleTimer = 1.5;
-          addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
-          spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
+      if (!(enemy as any)._bgHealTimer && !(enemy as any)._bgHealCooldown) {
+        if (boss && boss.hp < boss.maxHp * 0.8 && distSq(enemy.pos, boss.pos) < 2500) { // 50²
+          (enemy as any)._bgHealTimer = 1.0;
+          enemy.state = 'idle';
+          enemy.speechBubble = 'ЛЕЧУ, КОМАНДИР!';
+          enemy.speechBubbleTimer = 1.5;
+          (enemy as any)._bgHealCooldown = 15 + Math.random() * 10;
         }
-        enemy.state = 'chase';
       }
-    }
-    // Bodyguard heal cooldown
-    if ((enemy as any)._bgHealCooldown > 0) {
-      (enemy as any)._bgHealCooldown -= dt;
-      if ((enemy as any)._bgHealCooldown <= 0) delete (enemy as any)._bgHealCooldown;
+      // Process bodyguard healing
+      if ((enemy as any)._bgHealTimer > 0) {
+        (enemy as any)._bgHealTimer -= dt;
+        if (Math.random() < 0.4 && boss) {
+          spawnParticles(state, boss.pos.x + (Math.random() - 0.5) * 10, boss.pos.y + (Math.random() - 0.5) * 10, '#44ff66', 1);
+        }
+        if ((enemy as any)._bgHealTimer <= 0) {
+          delete (enemy as any)._bgHealTimer;
+          if (boss) {
+            const heal = 15 + Math.floor(Math.random() * 10);
+            boss.hp = Math.min(boss.maxHp, boss.hp + heal);
+            boss.speechBubble = 'ХОРОШО...';
+            boss.speechBubbleTimer = 1.5;
+            addMessage(state, `🩹 Bodyguard heals ${getBossTitle(boss)} +${heal}HP!`, 'warning');
+            spawnParticles(state, boss.pos.x, boss.pos.y, '#44ff66', 6);
+          }
+          enemy.state = 'chase';
+        }
+      }
+      // Bodyguard heal cooldown
+      if ((enemy as any)._bgHealCooldown > 0) {
+        (enemy as any)._bgHealCooldown -= dt;
+        if ((enemy as any)._bgHealCooldown <= 0) delete (enemy as any)._bgHealCooldown;
+      }
     }
 
     // Alarm boost — increases alert range and makes enemies aggressive
@@ -3599,8 +3595,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       continue; // skip normal AI
     }
 
-    // === BODY DISCOVERY — enemies react to dead allies nearby ===
-    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody) {
+    // === BODY DISCOVERY — enemies react to dead allies nearby (throttled: ~1% of frames) ===
+    if ((enemy.state === 'idle' || enemy.state === 'patrol') && !(enemy as any)._discoveredBody && Math.random() < 0.03) {
       for (const dead of state.enemies) {
         if (dead.state !== 'dead' || dead === enemy) continue;
         if (distSq(enemy.pos, dead.pos) < 6400 && hasLineOfSight(state, enemy.pos, dead.pos, enemy.elevated)) { // 80²
