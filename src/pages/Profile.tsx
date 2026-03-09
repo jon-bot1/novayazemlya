@@ -377,7 +377,7 @@ const Profile: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Kommentar</label>
+              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Comment</label>
               <textarea
                 className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 rows={4}
