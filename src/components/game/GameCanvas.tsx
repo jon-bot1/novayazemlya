@@ -189,7 +189,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       {user && (
         <div className="flex gap-2">
           <a href="/profile" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
-            👤 Profil
+            👤 Profile
           </a>
         </div>
       )}
@@ -200,9 +200,14 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </div>
       )}
 
-      <p className="text-[9px] font-mono text-muted-foreground/30 text-center">
-        © 2025-2026 — Made with ☕ and paranoia
-      </p>
+      <div className="text-center">
+        <p className="text-[9px] font-mono text-muted-foreground/30">
+          © 2025-2026 — Made with ☕ and paranoia
+        </p>
+        <p className="text-[8px] font-mono text-muted-foreground/20 mt-1">
+          Special thanks to Battlestate Games (Escape from Tarkov) for the inspiration
+        </p>
+      </div>
     </div>
   </div>
   );

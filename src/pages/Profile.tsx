@@ -116,16 +116,16 @@ const Profile: React.FC = () => {
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) setAccountErr(error.message);
-    else setAccountMsg('Bekräftelselänk skickad till ny e-post.');
+    else setAccountMsg('Confirmation link sent to new email.');
     setAccountLoading(false);
   };
 
   const handleUpdatePassword = async () => {
-    if (newPassword.length < 6) { setAccountErr('Lösenordet måste vara minst 6 tecken.'); return; }
+    if (newPassword.length < 6) { setAccountErr('Password must be at least 6 characters.'); return; }
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) setAccountErr(error.message);
-    else { setAccountMsg('Lösenord uppdaterat!'); setNewPassword(''); }
+    else { setAccountMsg('Password updated!'); setNewPassword(''); }
     setAccountLoading(false);
   };
 
@@ -141,8 +141,8 @@ const Profile: React.FC = () => {
       comment: comment.trim() || null,
       player_name: profile?.display_name || null,
     });
-    if (error) setFeedbackMsg('Kunde inte skicka. Försök igen.');
-    else { setFeedbackMsg('Tack för din feedback!'); setComment(''); }
+    if (error) setFeedbackMsg('Failed to send. Try again.');
+    else { setFeedbackMsg('Thanks for your feedback!'); setComment(''); }
     setFeedbackLoading(false);
   };
 
@@ -197,13 +197,13 @@ const Profile: React.FC = () => {
               Level {progress?.level ?? 1} · {progress?.xp ?? 0} XP · {progress?.rubles ?? 0} ₽
             </p>
           </div>
-          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Tillbaka</a>
+          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Back</a>
         </div>
 
         {/* Tabs */}
         <div className="flex border-b border-border">
-          <button className={tabClass('stats')} onClick={() => setTab('stats')}>📊 Statistik</button>
-          <button className={tabClass('account')} onClick={() => setTab('account')}>⚙️ Konto</button>
+          <button className={tabClass('stats')} onClick={() => setTab('stats')}>📊 Stats</button>
+          <button className={tabClass('account')} onClick={() => setTab('account')}>⚙️ Account</button>
           <button className={tabClass('feedback')} onClick={() => setTab('feedback')}>💬 Feedback</button>
         </div>
 
@@ -247,9 +247,9 @@ const Profile: React.FC = () => {
 
             {/* Run history */}
             <div className="border border-border rounded p-3 bg-card">
-              <p className="text-[10px] font-display text-accent uppercase tracking-wider mb-2">Senaste Raids</p>
+              <p className="text-[10px] font-display text-accent uppercase tracking-wider mb-2">Recent Raids</p>
               {runs.length === 0 ? (
-                <p className="text-xs font-mono text-muted-foreground">Inga raids registrerade ännu.</p>
+                <p className="text-xs font-mono text-muted-foreground">No raids recorded yet.</p>
               ) : (
                 <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                   {runs.slice(0, 20).map(r => (
@@ -277,16 +277,16 @@ const Profile: React.FC = () => {
         {tab === 'account' && (
           <div className="flex flex-col gap-4">
             <div className="border border-border rounded p-4 bg-card flex flex-col gap-3">
-              <p className="text-[10px] font-display text-accent uppercase tracking-wider">E-post: <span className="text-foreground normal-case">{user?.email}</span></p>
+              <p className="text-[10px] font-display text-accent uppercase tracking-wider">Email: <span className="text-foreground normal-case">{user?.email}</span></p>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Smeknamn</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Nickname</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     maxLength={20}
                     className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder={profile?.display_name || 'Ditt smeknamn...'}
+                    placeholder={profile?.display_name || 'Your callsign...'}
                     value={newCallsign}
                     onChange={e => setNewCallsign(e.target.value)}
                   />
@@ -295,8 +295,8 @@ const Profile: React.FC = () => {
                       if (!newCallsign.trim()) return;
                       setAccountLoading(true); setCallsignMsg('');
                       const { error } = await supabase.from('profiles').update({ display_name: newCallsign.trim() }).eq('id', user.id);
-                      if (error) setCallsignMsg('Kunde inte uppdatera.');
-                      else { setCallsignMsg('Callsign uppdaterat!'); setProfile(p => p ? { ...p, display_name: newCallsign.trim() } : p); setNewCallsign(''); }
+                      if (error) setCallsignMsg('Failed to update.');
+                      else { setCallsignMsg('Callsign updated!'); setProfile(p => p ? { ...p, display_name: newCallsign.trim() } : p); setNewCallsign(''); }
                       setAccountLoading(false);
                     }}
                     disabled={accountLoading || !newCallsign.trim()}
@@ -309,7 +309,7 @@ const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Byt e-post</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Change Email</label>
                 <div className="flex gap-2">
                   <input
                     type="email"
@@ -319,13 +319,13 @@ const Profile: React.FC = () => {
                     onChange={e => setNewEmail(e.target.value)}
                   />
                   <button onClick={handleUpdateEmail} disabled={accountLoading || !newEmail} className="px-4 py-2 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40">
-                    Uppdatera
+                    Update
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Byt lösenord</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Change Password</label>
                 <div className="flex gap-2">
                   <input
                     type="password"
@@ -336,7 +336,7 @@ const Profile: React.FC = () => {
                     minLength={6}
                   />
                   <button onClick={handleUpdatePassword} disabled={accountLoading || !newPassword} className="px-4 py-2 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40">
-                    Uppdatera
+                    Update
                   </button>
                 </div>
               </div>
@@ -349,7 +349,7 @@ const Profile: React.FC = () => {
               onClick={handleLogout}
               className="w-full px-4 py-3 border border-destructive/40 text-destructive font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-destructive/10 transition-colors"
             >
-              ⏻ Logga ut
+              ⏻ Log Out
             </button>
           </div>
         )}
@@ -357,10 +357,10 @@ const Profile: React.FC = () => {
         {/* Feedback Tab */}
         {tab === 'feedback' && (
           <div className="border border-border rounded p-4 bg-card flex flex-col gap-3">
-            <p className="text-[10px] font-display text-accent uppercase tracking-wider">Berätta vad du tycker</p>
+            <p className="text-[10px] font-display text-accent uppercase tracking-wider">Tell us what you think</p>
 
             <div>
-              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Betyg</label>
+              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Rating</label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(v => (
                   <button
@@ -377,12 +377,12 @@ const Profile: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Kommentar</label>
+              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Comment</label>
               <textarea
                 className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 rows={4}
                 maxLength={1000}
-                placeholder="Buggar, önskemål, tankar..."
+                placeholder="Bugs, suggestions, thoughts..."
                 value={comment}
                 onChange={e => setComment(e.target.value)}
               />
@@ -393,7 +393,7 @@ const Profile: React.FC = () => {
               disabled={feedbackLoading}
               className="w-full px-4 py-3 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40"
             >
-              {feedbackLoading ? '...' : '▶ Skicka feedback'}
+              {feedbackLoading ? '...' : '▶ Submit Feedback'}
             </button>
             {feedbackMsg && <p className="text-xs font-mono text-safe">{feedbackMsg}</p>}
           </div>
