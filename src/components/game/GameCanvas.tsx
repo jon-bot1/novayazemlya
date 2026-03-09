@@ -1793,7 +1793,7 @@ export const GameCanvas: React.FC = () => {
         )}
 
         {/* Mode toggle — top-left corner */}
-        <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto flex gap-1">
+        <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto flex gap-1 items-start">
           <button
             className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
@@ -1802,26 +1802,67 @@ export const GameCanvas: React.FC = () => {
           </button>
           <button
             className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => {
-              const next: GraphicsQuality = getGraphicsQuality() === 'high' ? 'low' : 'high';
-              setGraphicsQuality(next);
-              setGfxQuality(next);
-            }}
+            onClick={() => setShowGfxPanel(p => !p)}
           >
-            GFX: {gfxQuality === 'high' ? '🔥' : '⚡'}
+            ⚙️ {gfxPreset === 'custom' ? 'CUSTOM' : gfxPreset.toUpperCase()}
           </button>
-          <button
-            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => {
-              const order: RenderDistance[] = ['far', 'normal', 'near'];
-              const idx = order.indexOf(renderDist);
-              const next = order[(idx + 1) % order.length];
-              setRenderDistance(next);
-              setRenderDist(next);
-            }}
-          >
-            🔭 {renderDist === 'far' ? 'FAR' : renderDist === 'normal' ? 'MED' : 'NEAR'}
-          </button>
+          {showGfxPanel && (
+            <div className="absolute top-8 left-0 bg-card/95 border border-border/60 rounded-md p-2 min-w-[180px] backdrop-blur-sm" onClick={e => e.stopPropagation()}>
+              <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider mb-1.5">Preset</div>
+              <div className="flex gap-1 mb-2">
+                {(['low', 'medium', 'high'] as GraphicsPreset[]).map(p => (
+                  <button
+                    key={p}
+                    className={`px-2 py-0.5 rounded text-[9px] font-mono border transition-colors ${gfxPreset === p ? 'bg-primary text-primary-foreground border-primary' : 'bg-card/60 border-border/40 text-muted-foreground hover:text-foreground'}`}
+                    onClick={() => { applyPreset(p); setGfxSettings({ ...getSettings() }); setGfxPreset(p); }}
+                  >
+                    {p.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-border/30 pt-1.5 space-y-1">
+                {([
+                  ['weather', '❄️ Weather / Aurora'],
+                  ['muzzleFlash', '🔥 Muzzle Flash'],
+                  ['tracers', '💫 Bullet Tracers'],
+                  ['bloodStains', '🩸 Blood Stains'],
+                  ['detailedChars', '👤 Detailed Characters'],
+                ] as [keyof GraphicsSettings, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-1.5 text-[9px] font-mono text-muted-foreground hover:text-foreground cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!gfxSettings[key]}
+                      onChange={() => {
+                        updateSetting(key, !gfxSettings[key]);
+                        setGfxSettings({ ...getSettings() });
+                        setGfxPreset(getPreset());
+                      }}
+                      className="w-3 h-3 accent-primary"
+                    />
+                    {label}
+                  </label>
+                ))}
+                <div className="mt-1">
+                  <div className="text-[9px] font-mono text-muted-foreground mb-0.5">🔭 Render Distance</div>
+                  <div className="flex gap-1">
+                    {(['near', 'normal', 'far'] as RenderDistance[]).map(d => (
+                      <button
+                        key={d}
+                        className={`px-1.5 py-0.5 rounded text-[8px] font-mono border transition-colors ${gfxSettings.renderDist === d ? 'bg-primary text-primary-foreground border-primary' : 'bg-card/60 border-border/40 text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => {
+                          updateSetting('renderDist', d);
+                          setGfxSettings({ ...getSettings() });
+                          setGfxPreset(getPreset());
+                        }}
+                      >
+                        {d === 'near' ? 'NEAR' : d === 'normal' ? 'MED' : 'FAR'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Inventory Panel */}
