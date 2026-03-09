@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createGameState, updateGame } from '../../game/engine';
-import { renderGame } from '../../game/renderer';
+import { renderGame, setPlayerSkin, type PlayerSkin } from '../../game/renderer';
 import { GameState, InputState, Item } from '../../game/types';
 import { MapId } from '../../game/maps';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
