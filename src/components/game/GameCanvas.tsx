@@ -73,14 +73,13 @@ const createInitialRerollsByMap = (): Record<MapId, number> => ({
   mining_village: 0,
 });
 
-const ADMIN_EMAIL = 'jonpetersvensson@gmail.com';
-
 const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void }> = ({ onStart }) => {
   const introIsMobile = useIsMobile();
   const [showHighscores, setShowHighscores] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
   const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -95,13 +94,18 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   }, []);
 
   React.useEffect(() => {
-    if (!user) { setProfile(null); return; }
+    if (!user) { setProfile(null); setIsAdmin(false); return; }
+    // Load profile and roles in parallel
     supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
       if (data) setProfile(data);
     });
+    supabase.rpc('get_my_roles').then(({ data }) => {
+      if (data && Array.isArray(data)) {
+        setIsAdmin(data.includes('admin'));
+      }
+    });
   }, [user]);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
   const skin: PlayerSkin = isAdmin ? 'admin' : user ? 'alpha' : 'default';
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
