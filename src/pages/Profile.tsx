@@ -336,7 +336,7 @@ const Profile: React.FC = () => {
                     minLength={6}
                   />
                   <button onClick={handleUpdatePassword} disabled={accountLoading || !newPassword} className="px-4 py-2 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40">
-                    Uppdatera
+                    Update
                   </button>
                 </div>
               </div>
