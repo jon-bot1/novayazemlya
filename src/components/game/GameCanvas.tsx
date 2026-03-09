@@ -908,6 +908,7 @@ export const GameCanvas: React.FC = () => {
         <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
           setPlayerSkin(skin);
+          setPlayerIsAdmin(skin === 'admin');
           // Try loading from DB first
           const dbStash = await loadStashFromDb(name);
           if (dbStash) {
