@@ -172,7 +172,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
             🔐 LOG IN / REGISTER
           </a>
           <button
-            className="w-full px-6 py-2 border border-border/40 text-muted-foreground font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-border transition-colors text-xs"
+            className="w-full px-6 py-2 border border-border text-muted-foreground font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-foreground/40 transition-colors text-xs"
             onClick={handleStart}
           >
             Play Anonymously
