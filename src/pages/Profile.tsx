@@ -360,7 +360,7 @@ const Profile: React.FC = () => {
             <p className="text-[10px] font-display text-accent uppercase tracking-wider">Tell us what you think</p>
 
             <div>
-              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Betyg</label>
+              <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Rating</label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(v => (
                   <button
