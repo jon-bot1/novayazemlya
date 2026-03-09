@@ -146,6 +146,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          bonus_rubles: number
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_rubles?: number
+          created_at?: string
+          display_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_rubles?: number
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tester_feedback: {
         Row: {
           comment: string | null
