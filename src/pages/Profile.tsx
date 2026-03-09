@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { LogoutButton } from '@/components/game/LogoutButton';
 
 interface ProfileData {
   display_name: string;
