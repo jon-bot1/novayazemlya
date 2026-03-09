@@ -319,7 +319,7 @@ const Profile: React.FC = () => {
                     onChange={e => setNewEmail(e.target.value)}
                   />
                   <button onClick={handleUpdateEmail} disabled={accountLoading || !newEmail} className="px-4 py-2 bg-primary text-primary-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-primary/80 disabled:opacity-40">
-                    Uppdatera
+                    Update
                   </button>
                 </div>
               </div>
