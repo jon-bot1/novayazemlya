@@ -80,9 +80,9 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
       {/* Left joystick — movement */}
       <VirtualJoystick onMove={handleMove} side="left" label="MOVE" size={isLandscape ? 100 : 116} />
 
-      {/* Right side — tap/drag to aim & shoot */}
+      {/* Full screen — tap/drag to aim & shoot (joystick + buttons have higher z-index) */}
       <div
-        className="absolute top-0 right-0 w-[55%] h-full touch-none pointer-events-auto"
+        className="absolute inset-0 touch-none pointer-events-auto"
         style={{ zIndex: 31 }}
         onPointerDown={(e) => {
           if ((e.target as HTMLElement).closest('button')) return;
@@ -188,7 +188,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
 
       {/* Helper text */}
       <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] text-muted-foreground/20 pointer-events-none pb-0.5">
-        Left stick: move · Right side: aim & shoot
+        Left stick: move · Tap anywhere: aim & shoot
       </div>
     </div>
   );
