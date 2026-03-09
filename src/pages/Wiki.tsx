@@ -1301,7 +1301,7 @@ export default function Wiki() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-3 sm:p-6 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 p-3 sm:p-6 overflow-y-auto pb-20" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
           {section === 'lore' && <LoreSection />}
           {section === 'factions' && <FactionsSection />}
           {section === 'occult' && <OccultSection />}
