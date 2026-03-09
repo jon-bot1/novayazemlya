@@ -1269,7 +1269,10 @@ export default function Wiki() {
             </button>
             <h1 className="text-lg font-display text-accent uppercase tracking-wider">📖 FIELD MANUAL</h1>
           </div>
-          <span className="text-[9px] font-mono text-muted-foreground">NOVAYA ZEMLYA — CLASSIFIED</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-mono text-muted-foreground">NOVAYA ZEMLYA — CLASSIFIED</span>
+            <WikiLogoutButton />
+          </div>
         </div>
       </div>
 

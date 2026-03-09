@@ -81,9 +81,12 @@ const Store: React.FC = () => {
           </p>
         )}
 
-        <a href="/" className="block text-center text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
-          ← Back to game
-        </a>
+        <div className="flex items-center justify-between">
+          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
+            ← Back to game
+          </a>
+          {user && <LogoutButton compact />}
+        </div>
       </div>
     </div>
   );
