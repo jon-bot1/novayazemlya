@@ -668,16 +668,16 @@ function EnemiesSection() {
       <H2>💀 Enemy Types</H2>
       <P>Each enemy has personality traits: cowardice, accuracy, aggression, and cover-seeking. These vary per map.</P>
 
-      <EnemyRow name="Scav (SCAV)" icon="🐀" hp="40-55" speed="Low" dmg="9-14" range="65-85"
+      <EnemyRow name="Scav" icon="🐀" hp="40-55" speed="Low" dmg="9-14" range="65-85"
         personality="Cowardly (70-90%). Low accuracy. Flees early at low HP. Panics easily."
         notes="The weakest enemy. Drops common loot. On Swedish map, some speak broken Swedish." />
-      <EnemyRow name="Soldier (SOLDIER)" icon="🔫" hp="65-90" speed="Medium" dmg="16-24" range="105-150"
+      <EnemyRow name="Soldier" icon="🔫" hp="65-90" speed="Medium" dmg="16-24" range="105-150"
         personality="Disciplined (20-35% cowardice). Good accuracy (70-85%). Takes cover (35-50%). Calls for backup."
         notes="The backbone of every garrison. Uses radio to alert allies. Can flank." />
-      <EnemyRow name="Heavy (HEAVY)" icon="🪖" hp="150-220" speed="Very Low" dmg="28-38" range="95-130"
+      <EnemyRow name="Heavy" icon="🪖" hp="150-220" speed="Very Low" dmg="28-38" range="95-130"
         personality="Fearless (0% cowardice). Suppressor role. Never flees. Slow turning."
         notes="Tank. Throws flashbangs. Takes a lot of ammo to bring down. Suppressive fire." />
-      <EnemyRow name="Shocker (SHOCKER)" icon="⚡" hp="55-90" speed="Very High" dmg="38-55" range="32-42 (melee)"
+      <EnemyRow name="Shocker" icon="⚡" hp="55-90" speed="Very High" dmg="38-55" range="32-42 (melee)"
         personality="Fearless (0-15% cowardice). Rushes straight at you. Melee electric damage."
         notes="Close-range terror. Causes bleeding. Strongest in the hospital. Stun-locks you." />
       <EnemyRow name="Sniper Tuman" icon="🎯" hp="75-90" speed="Very Low" dmg="70-85" range="200-330"
