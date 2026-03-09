@@ -201,7 +201,7 @@ function FactionsSection() {
 
       <div className="border border-border rounded p-3 mb-3 bg-card/50">
         <div className="text-sm font-display text-accent mb-1">🪝 NACHALNIK'S NETWORK — The Smugglers</div>
-        <P>Viktor "Nachalnik" Dragunov's black-market operation. Former Soviet Navy, now running a smuggling pipeline moving refined SZ-0 to the highest bidder — including Western intelligence agencies, rogue states, and private collectors.</P>
+        <P>"Nachalnik" — no one knows his real name. Former Soviet Navy, now running a black-market smuggling pipeline moving refined SZ-0 to the highest bidder — including Western intelligence agencies, rogue states, and private collectors.</P>
         <div className="text-[10px] font-mono text-foreground/70 space-y-0.5">
           <div><span className="text-accent">Units:</span> Rednecks, Scavs, Dogs, Smuggler guards</div>
           <div><span className="text-accent">Leaders:</span> Nachalnik (the Boss)</div>
