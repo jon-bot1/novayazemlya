@@ -249,7 +249,7 @@ const Profile: React.FC = () => {
             <div className="border border-border rounded p-3 bg-card">
               <p className="text-[10px] font-display text-accent uppercase tracking-wider mb-2">Senaste Raids</p>
               {runs.length === 0 ? (
-                <p className="text-xs font-mono text-muted-foreground">Inga raids registrerade ännu.</p>
+                <p className="text-xs font-mono text-muted-foreground">No raids recorded yet.</p>
               ) : (
                 <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                   {runs.slice(0, 20).map(r => (
