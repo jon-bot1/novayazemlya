@@ -35,6 +35,8 @@ const Profile: React.FC = () => {
   const [runs, setRuns] = useState<HighscoreEntry[]>([]);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newCallsign, setNewCallsign] = useState('');
+  const [callsignMsg, setCallsignMsg] = useState('');
 
   // Account management
   const [newEmail, setNewEmail] = useState('');
