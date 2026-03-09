@@ -1285,7 +1285,7 @@ export default function Wiki() {
 
       <div className="max-w-4xl mx-auto flex gap-0 flex-1 min-h-0 w-full">
         {/* Sidebar */}
-        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 overflow-y-auto">
+        <div className="w-40 sm:w-48 border-r border-border bg-card/50 p-2 flex-shrink-0 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           {SECTIONS.map(s => (
             <button
               key={s.id}
