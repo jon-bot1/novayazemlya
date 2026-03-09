@@ -165,18 +165,18 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <button
-            className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
-            onClick={handleStart}
-          >
-            🕵️ PLAY ANONYMOUSLY
-          </button>
           <a
             href="/auth"
-            className="w-full block text-center px-6 py-3 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-sm"
+            className="w-full block text-center px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
           >
             🔐 LOG IN / REGISTER
           </a>
+          <button
+            className="w-full px-6 py-2 border border-border/40 text-muted-foreground font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-border transition-colors text-xs"
+            onClick={handleStart}
+          >
+            Play Anonymously
+          </button>
         </div>
       )}
 
