@@ -928,6 +928,7 @@ export const GameCanvas: React.FC = () => {
         <HomeBase
           playerName={playerName}
           stash={stash}
+          isAdmin={playerIsAdmin}
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
             setSelectedMapId(mapId);
