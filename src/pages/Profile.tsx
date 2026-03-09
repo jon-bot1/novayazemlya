@@ -121,7 +121,7 @@ const Profile: React.FC = () => {
   };
 
   const handleUpdatePassword = async () => {
-    if (newPassword.length < 6) { setAccountErr('Lösenordet måste vara minst 6 tecken.'); return; }
+    if (newPassword.length < 6) { setAccountErr('Password must be at least 6 characters.'); return; }
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) setAccountErr(error.message);
