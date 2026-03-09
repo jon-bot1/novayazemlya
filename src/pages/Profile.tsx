@@ -286,7 +286,7 @@ const Profile: React.FC = () => {
                     type="text"
                     maxLength={20}
                     className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder={profile?.display_name || 'Ditt smeknamn...'}
+                    placeholder={profile?.display_name || 'Your callsign...'}
                     value={newCallsign}
                     onChange={e => setNewCallsign(e.target.value)}
                   />
