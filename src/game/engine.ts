@@ -2802,9 +2802,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  if (state.soundEvents.length > 20) {
-    state.soundEvents = state.soundEvents.filter(se => state.time - se.time < 1.0);
-  }
+  // Sound cleanup already done above — skip redundant filter
 
   // Cap bullets to prevent lag from rapid-fire scenarios
   if (state.bullets.length > 150) {
