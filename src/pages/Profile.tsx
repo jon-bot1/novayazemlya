@@ -247,7 +247,7 @@ const Profile: React.FC = () => {
 
             {/* Run history */}
             <div className="border border-border rounded p-3 bg-card">
-              <p className="text-[10px] font-display text-accent uppercase tracking-wider mb-2">Senaste Raids</p>
+              <p className="text-[10px] font-display text-accent uppercase tracking-wider mb-2">Recent Raids</p>
               {runs.length === 0 ? (
                 <p className="text-xs font-mono text-muted-foreground">No raids recorded yet.</p>
               ) : (
