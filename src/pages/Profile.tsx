@@ -202,8 +202,8 @@ const Profile: React.FC = () => {
 
         {/* Tabs */}
         <div className="flex border-b border-border">
-          <button className={tabClass('stats')} onClick={() => setTab('stats')}>📊 Statistik</button>
-          <button className={tabClass('account')} onClick={() => setTab('account')}>⚙️ Konto</button>
+          <button className={tabClass('stats')} onClick={() => setTab('stats')}>📊 Stats</button>
+          <button className={tabClass('account')} onClick={() => setTab('account')}>⚙️ Account</button>
           <button className={tabClass('feedback')} onClick={() => setTab('feedback')}>💬 Feedback</button>
         </div>
 
