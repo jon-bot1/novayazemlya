@@ -295,8 +295,8 @@ const Profile: React.FC = () => {
                       if (!newCallsign.trim()) return;
                       setAccountLoading(true); setCallsignMsg('');
                       const { error } = await supabase.from('profiles').update({ display_name: newCallsign.trim() }).eq('id', user.id);
-                      if (error) setCallsignMsg('Kunde inte uppdatera.');
-                      else { setCallsignMsg('Callsign uppdaterat!'); setProfile(p => p ? { ...p, display_name: newCallsign.trim() } : p); setNewCallsign(''); }
+                      if (error) setCallsignMsg('Failed to update.');
+                      else { setCallsignMsg('Callsign updated!'); setProfile(p => p ? { ...p, display_name: newCallsign.trim() } : p); setNewCallsign(''); }
                       setAccountLoading(false);
                     }}
                     disabled={accountLoading || !newCallsign.trim()}
