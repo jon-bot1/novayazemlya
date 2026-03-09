@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { LogoutButton } from '@/components/game/LogoutButton';
 
 const PACKAGES = [
   { id: 'bonus_500', label: '500 Bonus Rubles', rubles: 500, price: '€4.99 / $4.99 / 50 SEK', popular: false },
@@ -80,9 +81,12 @@ const Store: React.FC = () => {
           </p>
         )}
 
-        <a href="/" className="block text-center text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
-          ← Back to game
-        </a>
+        <div className="flex items-center justify-between">
+          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
+            ← Back to game
+          </a>
+          {user && <LogoutButton compact />}
+        </div>
       </div>
     </div>
   );

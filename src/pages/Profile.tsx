@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { LogoutButton } from '@/components/game/LogoutButton';
 
 interface ProfileData {
   display_name: string;
@@ -129,10 +130,6 @@ const Profile: React.FC = () => {
     setAccountLoading(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
 
   const handleFeedback = async () => {
     setFeedbackLoading(true); setFeedbackMsg('');
@@ -345,12 +342,7 @@ const Profile: React.FC = () => {
               {accountMsg && <p className="text-xs font-mono text-safe">{accountMsg}</p>}
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-3 border border-destructive/40 text-destructive font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-destructive/10 transition-colors"
-            >
-              ⏻ Log Out
-            </button>
+            <LogoutButton />
           </div>
         )}
 
