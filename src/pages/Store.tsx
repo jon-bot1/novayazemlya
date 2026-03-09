@@ -43,7 +43,7 @@ const Store: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' as any }}>
       <div className="max-w-lg w-full flex flex-col gap-6 p-6 border border-border bg-card rounded">
         <div className="text-center">
           <h1 className="text-2xl font-display text-accent tracking-wider">SUPPLY DROP</h1>
