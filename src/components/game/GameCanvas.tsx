@@ -148,6 +148,15 @@ const IntroScreen: React.FC<{ onStart: (name: string) => void }> = ({ onStart })
         </button>
       </div>
 
+      <div className="flex gap-2">
+        <a href="/auth" className="flex-1 text-center px-3 py-2 border border-primary/40 text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/20 transition-colors text-[11px]">
+          🔐 Login
+        </a>
+        <a href="/store" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
+          💰 Store
+        </a>
+      </div>
+
       {showHighscores && (
         <div className="border-t border-border pt-3">
           <HighscoreList />
