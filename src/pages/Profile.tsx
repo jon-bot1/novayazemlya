@@ -130,10 +130,6 @@ const Profile: React.FC = () => {
     setAccountLoading(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
 
   const handleFeedback = async () => {
     setFeedbackLoading(true); setFeedbackMsg('');
