@@ -2881,9 +2881,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (enemy.state === 'dead') continue;
 
     // Hard contact fail-safe: direct body contact always reveals player and forces aggro
-    const contactDist = dist(enemy.pos, state.player.pos);
+    const contactDistSq = distSq(enemy.pos, state.player.pos);
     const playerHiddenNow = !!(state as any)._playerHiding;
-    if (contactDist < 42) {
+    if (contactDistSq < 1764) { // 42²
       if (playerHiddenNow) {
         (state as any)._playerHiding = false;
         state.player.peeking = false;
