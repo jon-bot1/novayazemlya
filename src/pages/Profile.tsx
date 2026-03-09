@@ -277,7 +277,7 @@ const Profile: React.FC = () => {
         {tab === 'account' && (
           <div className="flex flex-col gap-4">
             <div className="border border-border rounded p-4 bg-card flex flex-col gap-3">
-              <p className="text-[10px] font-display text-accent uppercase tracking-wider">E-post: <span className="text-foreground normal-case">{user?.email}</span></p>
+              <p className="text-[10px] font-display text-accent uppercase tracking-wider">Email: <span className="text-foreground normal-case">{user?.email}</span></p>
 
               <div>
                 <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Callsign / Smeknamn</label>
