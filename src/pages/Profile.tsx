@@ -309,7 +309,7 @@ const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Byt e-post</label>
+                <label className="text-xs font-display text-muted-foreground uppercase tracking-wider mb-1 block">Change Email</label>
                 <div className="flex gap-2">
                   <input
                     type="email"
