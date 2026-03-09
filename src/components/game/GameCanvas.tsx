@@ -200,9 +200,14 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </div>
       )}
 
-      <p className="text-[9px] font-mono text-muted-foreground/30 text-center">
-        © 2025-2026 — Made with ☕ and paranoia
-      </p>
+      <div className="text-center">
+        <p className="text-[9px] font-mono text-muted-foreground/30">
+          © 2025-2026 — Made with ☕ and paranoia
+        </p>
+        <p className="text-[8px] font-mono text-muted-foreground/20 mt-1">
+          Special thanks to Battlestate Games (Escape from Tarkov) for the inspiration
+        </p>
+      </div>
     </div>
   </div>
   );
