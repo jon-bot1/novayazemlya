@@ -197,7 +197,7 @@ const Profile: React.FC = () => {
               Level {progress?.level ?? 1} · {progress?.xp ?? 0} XP · {progress?.rubles ?? 0} ₽
             </p>
           </div>
-          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Tillbaka</a>
+          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Back</a>
         </div>
 
         {/* Tabs */}
