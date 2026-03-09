@@ -1256,7 +1256,14 @@ function DayNightSection() {
 
 export default function Wiki() {
   const [section, setSection] = useState<WikiSection>('lore');
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
