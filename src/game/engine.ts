@@ -1351,13 +1351,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     // Sound propagation — sprinting is VERY loud, walking moderate, sneak nearly silent
     const footstepRadius: Record<MovementMode, number> = { sneak: 20, walk: 60, sprint: 200 };
     const footstepChance: Record<MovementMode, number> = { sneak: 0.005, walk: 0.04, sprint: 0.2 };
-    // Terrain affects sound: gravel/concrete louder
-    let terrainMult = 1.0;
-    const tg = getTerrainGrid(state);
-    const terrain = getTerrainFast(tg, state.player.pos.x, state.player.pos.y);
-    if (terrain === 'concrete' || terrain === 'asphalt') terrainMult = 1.4;
-    else if (terrain === 'dirt') terrainMult = 0.8;
-    else if (terrain === 'forest') terrainMult = 0.6;
+    // terrainMult already computed above
     if (Math.random() < footstepChance[effectiveMode]) {
       let stepRadius = footstepRadius[effectiveMode] * terrainMult;
       const silentBonus = (state as any)._noiseReduction || 0;
