@@ -188,7 +188,7 @@ export const MobileControls: React.FC<MobileControlsProps> = ({
 
       {/* Helper text */}
       <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] text-muted-foreground/20 pointer-events-none pb-0.5">
-        Left stick: move · Right side: aim & shoot
+        Left stick: move · Tap anywhere: aim & shoot
       </div>
     </div>
   );
