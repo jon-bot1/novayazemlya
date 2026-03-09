@@ -2952,10 +2952,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const mv = normalize({ x: nearestHostile.pos.x - enemy.pos.x, y: nearestHostile.pos.y - enemy.pos.y });
             enemy.pos = tryMoveEnemy(state, enemy.pos, mv.x * enemy.speed * dt * 60, mv.y * enemy.speed * dt * 60, 10);
           }
-          // Shoot at hostile enemy
-          const now = performance.now();
-          if (now - enemy.lastShot > enemy.fireRate) {
-            enemy.lastShot = now;
+          // Shoot at hostile enemy — use state.time for consistency
+          if (state.time - enemy.lastShot > enemy.fireRate / 1000) {
+            enemy.lastShot = state.time;
             const spread = (Math.random() - 0.5) * 0.15;
             state.bullets.push({
               pos: { ...enemy.pos },
