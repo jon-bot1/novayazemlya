@@ -956,7 +956,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: intro
   if (gamePhase === 'intro') {
     return (
-      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background animate-in fade-in duration-500">
         <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
           setPlayerSkin(skin);
