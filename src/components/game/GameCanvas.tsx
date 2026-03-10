@@ -232,6 +232,9 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       )}
 
       <div className="text-center">
+        <p className="text-[9px] font-mono text-accent/40 tracking-wider mb-1">
+          novaya-zemlya.com
+        </p>
         <p className="text-[9px] font-mono text-muted-foreground/30">
           © 2025-2026 — Made with ☕ and paranoia
         </p>
