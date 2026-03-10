@@ -43,6 +43,7 @@ const Auth: React.FC = () => {
     if (error) {
       setError(error.message);
     } else {
+      localStorage.setItem('nz_last_email', email);
       setMessage('Check your email for a verification link.');
     }
     setLoading(false);
