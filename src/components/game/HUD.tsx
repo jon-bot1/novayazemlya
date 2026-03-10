@@ -515,6 +515,25 @@ export const HUD: React.FC<HUDProps> = ({
       {/* ═══════ GAME OVER / EXTRACTED ═══════ */}
       {(gameOver || extracted) && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto animate-in fade-in duration-500">
+          {/* Extraction celebration particles */}
+          {extracted && !gameOver && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{
+                    left: `${10 + Math.random() * 80}%`,
+                    top: `${Math.random() * 100}%`,
+                    backgroundColor: ['hsl(var(--accent))', 'hsl(var(--loot))', 'hsl(var(--warning))', 'hsl(var(--safe))'][i % 4],
+                    animationDelay: `${Math.random() * 2}s`,
+                    animationDuration: `${1 + Math.random() * 2}s`,
+                    opacity: 0.6 + Math.random() * 0.4,
+                  }}
+                />
+              ))}
+            </div>
+          )}
           <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-700">
             <h1 className={`text-3xl font-display tracking-wider ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
               {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
