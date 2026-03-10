@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Item } from '../../game/types';
 import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
@@ -9,6 +9,7 @@ import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
 import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
 import { WeaponMasteryState, EMPTY_MASTERY, MASTERY_INFO, MASTERY_RANK_NAMES, MASTERY_THRESHOLDS, getNextMasteryThreshold, getMasteryBonus, type WeaponMasteryType } from '../../game/weaponMastery';
+import { checkAndUpdateStreak, getStreakBonus } from '../../game/loginStreak';
 
 export interface StashState {
   items: Item[];
