@@ -740,3 +740,86 @@ export function stopAmbient() {
   _ambientActive = false;
   _ambientMapId = null;
 }
+
+// ═══════ EXTRACTION CELEBRATION SOUND ═══════
+export function playExtractionSuccess() {
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+  const master = getMaster(ctx);
+  
+  // Triumphant ascending notes
+  const notes = [440, 554, 659, 880];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + i * 0.15);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now + i * 0.15);
+    gain.gain.linearRampToValueAtTime(0.08, now + i * 0.15 + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.5);
+    osc.connect(gain).connect(master);
+    osc.start(now + i * 0.15);
+    osc.stop(now + i * 0.15 + 0.6);
+  });
+}
+
+// ═══════ AMBIENT MENU WIND ═══════
+let _menuAmbientNodes: { sources: OscillatorNode[]; gains: GainNode[] } | null = null;
+
+export function startMenuAmbient() {
+  if (_menuAmbientNodes) return;
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+  const master = getMaster(ctx);
+  const sources: OscillatorNode[] = [];
+  const gains: GainNode[] = [];
+
+  // Wind noise via detuned oscillators
+  for (let i = 0; i < 3; i++) {
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(40 + i * 15, now);
+    // Slow random-ish LFO for volume
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(0.1 + i * 0.07, now);
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.setValueAtTime(0.003, now);
+    lfo.connect(lfoGain);
+    
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.004, now + 3);
+    lfoGain.connect(gain.gain);
+    
+    // Low-pass filter for wind character
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(200 + i * 50, now);
+    filter.Q.setValueAtTime(1, now);
+    
+    osc.connect(filter).connect(gain).connect(master);
+    osc.start(now);
+    lfo.start(now);
+    sources.push(osc, lfo as any);
+    gains.push(gain);
+  }
+  
+  _menuAmbientNodes = { sources, gains };
+}
+
+export function stopMenuAmbient() {
+  if (!_menuAmbientNodes) return;
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+  for (const g of _menuAmbientNodes.gains) {
+    try { g.gain.linearRampToValueAtTime(0, now + 1); } catch { /* */ }
+  }
+  const nodes = _menuAmbientNodes;
+  setTimeout(() => {
+    for (const s of nodes.sources) {
+      try { s.stop(); } catch { /* */ }
+    }
+  }, 1200);
+  _menuAmbientNodes = null;
+}
