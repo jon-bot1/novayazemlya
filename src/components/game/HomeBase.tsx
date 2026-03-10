@@ -104,8 +104,15 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
   const dailyMissions = getDailyMissions();
-  const repTier = getRepTier(stash.extractionCount);
-  const nextRep = getNextRepTier(stash.extractionCount);
+  const mastery = stash.weaponMastery || { ...EMPTY_MASTERY };
+
+  // Badge counts for tabs
+  const availableUpgrades = UPGRADES.filter(u => canBuyUpgrade(stash.upgrades, u.id, stash.rubles)).length;
+  const affordableShopItems = TRADER_ITEMS.filter(item => stash.rubles >= getAdjustedPrice(item.cost, item.id, stash.extractionCount)).length;
+  const craftableRecipes = RECIPES.filter(r => canCraft(r, stash.items)).length;
+  const sellableItems = stash.items.length;
+  const masteryLevels = (['rifle', 'pistol', 'sniper', 'shotgun', 'knife', 'grenade'] as WeaponMasteryType[])
+    .reduce((sum, type) => sum + (mastery[type]?.level || 0), 0);
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
