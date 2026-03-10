@@ -676,6 +676,9 @@ export const HUD: React.FC<HUDProps> = ({
                   🔁 REVENGE RUN
                 </button>
               )}
+              <button className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-1 animate-in fade-in" style={{ animationDelay: '1600ms', animationFillMode: 'backwards' }} onClick={() => window.location.reload()}>
+                📋 MAIN MENU
+              </button>
             </div>
             <HighscoreList currentName={playerName} />
             <FeedbackWidget playerName={playerName} />
