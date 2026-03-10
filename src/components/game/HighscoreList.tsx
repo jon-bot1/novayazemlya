@@ -160,17 +160,67 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
     return { icon: '☠', color: 'text-danger' };
   };
 
+  const displayScores = tab === 'weekly' ? weeklyScores : scores;
+
   return (
     <div className="mt-4 border-t border-border pt-3 space-y-4">
+      {/* Tab switcher */}
+      <div className="flex gap-1 justify-center">
+        <button
+          className={`px-3 py-1 text-[10px] font-display uppercase tracking-wider rounded transition-colors ${tab === 'alltime' ? 'bg-accent/20 text-accent border border-accent/40' : 'text-muted-foreground border border-border/30 hover:text-foreground'}`}
+          onClick={() => setTab('alltime')}
+        >
+          🏆 All Time
+        </button>
+        <button
+          className={`px-3 py-1 text-[10px] font-display uppercase tracking-wider rounded transition-colors ${tab === 'weekly' ? 'bg-accent/20 text-accent border border-accent/40' : 'text-muted-foreground border border-border/30 hover:text-foreground'}`}
+          onClick={() => setTab('weekly')}
+        >
+          📅 This Week
+        </button>
+      </div>
+
+      {/* Player profile dialog */}
+      <Dialog open={!!selectedPlayer} onOpenChange={(open) => { if (!open) setSelectedPlayer(null); }}>
+        <DialogContent className="max-w-xs bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-accent tracking-wider">👤 {selectedPlayer?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedPlayer && (
+            <div className="space-y-2 text-sm font-mono">
+              <div className="flex justify-between"><span className="text-muted-foreground">Total Raids:</span><span className="text-foreground">{selectedPlayer.totalRaids}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Total Kills:</span><span className="text-foreground">{selectedPlayer.totalKills}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Best Score:</span><span className="text-accent">{selectedPlayer.bestScore}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Avg Time:</span><span className="text-foreground">{formatTime(selectedPlayer.avgTime)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Success Rate:</span><span className={selectedPlayer.successRate > 50 ? 'text-accent' : 'text-warning'}>{selectedPlayer.successRate}%</span></div>
+              {selectedPlayer.achievements.length > 0 && (
+                <div className="border-t border-border pt-2">
+                  <span className="text-[10px] text-accent uppercase">Achievements Earned:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {ACHIEVEMENTS.filter(a => selectedPlayer.achievements.includes(a.id)).map(a => (
+                      <span key={a.id} className="text-[10px] px-1.5 py-0.5 rounded border" style={{ borderColor: `${a.tier === 'gold' ? '#ffd700' : a.tier === 'silver' ? '#c0c0c0' : '#cd7f32'}66` }}>
+                        {a.icon}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Highscores */}
-      {scores.length > 0 && (
+      {displayScores.length > 0 && (
         <div>
-          <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">🏆 Highscores</h3>
+          <h3 className="text-xs font-display text-accent uppercase tracking-wider mb-2 text-center">
+            {tab === 'weekly' ? '📅 This Week' : '🏆 Highscores'}
+          </h3>
           <div className="space-y-0.5">
             <div className="grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3rem_1.5rem] gap-1 text-[9px] font-mono text-muted-foreground uppercase px-1">
               <span>#</span><span>Name</span><span>Kills</span><span>Time</span><span>Score</span><span></span>
             </div>
-            {scores.map((s, i) => {
+            {displayScores.map((s, i) => {
               const isMe = currentName && s.player_name === currentName;
               const rl = resultLabel(s.result);
               const earnedIds = s.achievements ? s.achievements.split(',').filter(Boolean) : [];
