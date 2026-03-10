@@ -193,6 +193,33 @@ export const HUD: React.FC<HUDProps> = ({
     }
   }, [gameOver, extracted, playerName, hasExtractionCode, killCount, time, player.inventory, achievementStats]);
 
+  // ═══════ TUTORIAL SYSTEM ═══════
+  const [tutorialStep, setTutorialStep] = React.useState(0);
+  const [tutorialDismissed, setTutorialDismissed] = React.useState(false);
+  const tutorialActive = isFirstRaid && !tutorialDismissed && !gameOver && !extracted;
+
+  const TUTORIAL_STEPS = React.useMemo(() => [
+    { trigger: () => time < 3, icon: '🚶', title: 'MOVE', desc: mobileMode ? 'Use the left joystick to move' : 'Use WASD to move around', key: mobileMode ? '🕹️' : 'WASD' },
+    { trigger: () => time >= 3 && killCount === 0, icon: '🔫', title: 'AIM & SHOOT', desc: mobileMode ? 'Tap anywhere on screen to aim and shoot' : 'Point your mouse and click to shoot', key: mobileMode ? '👆 TAP' : 'MOUSE' },
+    { trigger: () => killCount >= 1 && player.inventory.length < 2, icon: '🔍', title: 'LOOT', desc: mobileMode ? 'Walk over bodies and tap 🔍 to loot' : 'Walk near containers/bodies and press E to loot', key: mobileMode ? '🔍' : 'E' },
+    { trigger: () => player.inventory.length >= 2 && player.hp > 80, icon: '🛡️', title: 'TAKE COVER', desc: mobileMode ? 'Tap 🛡️ near walls to take cover' : 'Press Q or Space near walls to take cover', key: mobileMode ? '🛡️' : 'Q' },
+    { trigger: () => player.hp <= 80 && player.hp > 0, icon: '💊', title: 'HEAL', desc: mobileMode ? 'Tap 💊 to use medical supplies' : 'Press H to heal when you have medical items', key: mobileMode ? '💊' : 'H' },
+    { trigger: () => (player.inventory.length >= 3 || killCount >= 3) && time > 15, icon: '🚁', title: 'EXTRACT', desc: 'Find a green extraction point on the map and stand in it to escape with your loot!', key: '🗺️' },
+  ], [mobileMode]);
+
+  React.useEffect(() => {
+    if (!tutorialActive) return;
+    // Auto-advance through steps
+    for (let i = TUTORIAL_STEPS.length - 1; i >= 0; i--) {
+      if (TUTORIAL_STEPS[i].trigger()) {
+        if (i > tutorialStep) setTutorialStep(i);
+        break;
+      }
+    }
+  }, [time, killCount, player.inventory.length, player.hp, tutorialActive]);
+
+  const currentTutorial = tutorialActive ? TUTORIAL_STEPS[tutorialStep] : null;
+
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const staminaPercent = Math.min(100, (player.stamina / player.maxStamina) * 100);
   const timeRemaining = timeLimit ? Math.max(0, timeLimit - time) : null;
