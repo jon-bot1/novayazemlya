@@ -102,6 +102,20 @@ export function getHighestTierAchievements(stats: AchievementStats): Achievement
   return Array.from(groups.values());
 }
 
+function getDeathTip(cause: string): string {
+  const c = cause.toLowerCase();
+  if (c.includes('mine')) return 'Watch for disturbed ground patches. Crouch and move slowly in mined areas.';
+  if (c.includes('sniper')) return 'Use cover and crouch. Avoid open areas. Smoke grenades can block sniper lines of sight.';
+  if (c.includes('grenade') && !c.includes('own')) return 'When you hear a grenade bounce, sprint away immediately. Stay mobile in firefights.';
+  if (c.includes('own grenade') || c.includes('own tnt') || c.includes('own mortar')) return 'Keep distance from your own explosives! Move away immediately after throwing.';
+  if (c.includes('bled out')) return 'Always carry bandages. Use them immediately when bleeding — even mid-combat.';
+  if (c.includes('shot by')) return 'Use cover (Q) and peek to reduce exposure. Crouch to reduce noise and detection range.';
+  if (c.includes('electrocuted') || c.includes('shocker')) return 'Shockers are deadly at close range. Engage from a distance or use grenades.';
+  if (c.includes('time ran out')) return 'Plan your route to extraction early. Check the compass for exfil direction.';
+  if (c.includes('boss') || c.includes('commandant') || c.includes('nachalnik')) return 'Bosses hit hard. Kite them around obstacles and use explosives for burst damage.';
+  return 'Stay in cover, manage your stamina, and always know where the nearest exfil is.';
+}
+
 interface HUDProps {
   player: Player;
   killCount: number;
