@@ -6,7 +6,7 @@ type Mode = 'login' | 'register' | 'forgot';
 
 const Auth: React.FC = () => {
   const [mode, setMode] = useState<Mode>('login');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('nz_last_email') || '');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
