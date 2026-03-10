@@ -147,6 +147,22 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               <span>{xpInfo.current}/{xpInfo.needed}</span>
             </div>
           </div>
+          {/* Login Streak */}
+          {streakData && streakData.current > 0 && playerName !== '__anonymous__' && (
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <span className="text-[10px] font-mono text-foreground/70">
+                🔥 {streakData.current} day streak
+              </span>
+              {streakData.isNew && streakData.bonus > 0 && (
+                <span className="text-[10px] font-mono text-warning animate-in fade-in slide-in-from-bottom-1 duration-500">
+                  +{streakData.bonus}₽ bonus!
+                </span>
+              )}
+              {streakData.current >= 7 && (
+                <span className="text-[9px] font-mono text-accent">🏆 VETERAN</span>
+              )}
+            </div>
+          )}
           {onReturnToMenu && (
             <button
               onClick={onReturnToMenu}
