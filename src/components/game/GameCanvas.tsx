@@ -436,7 +436,21 @@ export const GameCanvas: React.FC = () => {
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
   const [showFirefoxWarning, setShowFirefoxWarning] = useState(false);
+  const [showControlOverlay, setShowControlOverlay] = useState(false);
+  const controlOverlayDismissed = useRef(false);
   const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
+
+  useEffect(() => {
+    if (gamePhase === 'deploying' && !controlOverlayDismissed.current) {
+      setShowControlOverlay(true);
+    }
+  }, [gamePhase]);
+
+  const dismissControls = useCallback(() => {
+    setShowControlOverlay(false);
+    controlOverlayDismissed.current = true;
+    setGamePhase('playing');
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
