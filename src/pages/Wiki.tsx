@@ -1169,23 +1169,23 @@ function AchievementsSection() {
 
       <H3>Combat Achievements</H3>
       <div className="text-[10px] font-mono text-foreground/70 space-y-1">
-        <div>🎯 <strong>Mosin Master</strong> — 10 / 25 / 40 kills with Mosin-Nagant</div>
-        <div>💣 <strong>Bombardier</strong> — 8 / 20 / 35 kills with grenades</div>
-        <div>🧨 <strong>Demolitionist</strong> — 5 / 12 / 25 kills with TNT charges</div>
-        <div>🔭 <strong>Sharpshooter</strong> — 8 / 20 / 35 kills at long range</div>
-        <div>💀 <strong>Headhunter</strong> — 10 / 25 / 40 headshot kills</div>
-        <div>🗡️ <strong>Up Close</strong> — 8 / 20 / 35 kills at close range</div>
-        <div>🪖 <strong>One Man Army</strong> — 25 / 40 / 60 kills in one raid</div>
+        <div>🎯 <strong>Mosin Master</strong> — 15 / 35 / 50 kills with Mosin-Nagant</div>
+        <div>💣 <strong>Bombardier</strong> — 12 / 28 / 45 kills with grenades</div>
+        <div>🧨 <strong>Demolitionist</strong> — 8 / 18 / 30 kills with TNT charges</div>
+        <div>🔭 <strong>Sharpshooter</strong> — 12 / 28 / 45 kills at long range</div>
+        <div>💀 <strong>Headhunter</strong> — 15 / 35 / 55 headshot kills</div>
+        <div>🗡️ <strong>Up Close</strong> — 12 / 28 / 45 kills at close range</div>
+        <div>🪖 <strong>One Man Army</strong> — 30 / 50 / 75 kills in one raid</div>
       </div>
 
       <H3>Exploration Achievements</H3>
       <div className="text-[10px] font-mono text-foreground/70 space-y-1">
-        <div>🦴 <strong>Scavenger</strong> — 8 / 15 / 25 bodies looted</div>
-        <div>📦 <strong>Treasure Hunter</strong> — 6 / 12 / 20 caches looted</div>
-        <div>🧱 <strong>Breacher</strong> — 2 / 5 / 8 walls breached with TNT</div>
-        <div>📜 <strong>Archivist</strong> — 4 / 7 / 10 documents collected</div>
-        <div>💻 <strong>Hackerman</strong> — 2 / 4 / 6 terminals hacked</div>
-        <div>🥾 <strong>Traveller</strong> — 1500 / 4000 / 8000m distance travelled</div>
+        <div>🦴 <strong>Scavenger</strong> — 12 / 22 / 35 bodies looted</div>
+        <div>📦 <strong>Treasure Hunter</strong> — 10 / 18 / 28 caches looted</div>
+        <div>🧱 <strong>Breacher</strong> — 3 / 6 / 10 walls breached with TNT</div>
+        <div>📜 <strong>Archivist</strong> — 5 / 9 / 14 documents collected</div>
+        <div>💻 <strong>Hackerman</strong> — 3 / 6 / 9 terminals hacked</div>
+        <div>🥾 <strong>Traveller</strong> — 2500 / 6000 / 12000m distance travelled</div>
       </div>
 
       <H3>Special Achievements (Gold only)</H3>
