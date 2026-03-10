@@ -118,7 +118,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user]);
 
-  const skin: PlayerSkin = isAdmin ? 'admin' : user ? 'alpha' : 'default';
+  const skin: PlayerSkin = effectiveAdmin ? 'admin' : user ? 'alpha' : 'default';
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
