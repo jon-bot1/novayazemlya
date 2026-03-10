@@ -163,7 +163,7 @@ interface HUDProps {
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, onRevengeRun, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, onRevengeRun, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight, isFirstRaid
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
