@@ -48,10 +48,23 @@ interface HighscoreListProps {
   currentName?: string;
 }
 
+interface PlayerProfile {
+  name: string;
+  totalKills: number;
+  totalRaids: number;
+  bestScore: number;
+  avgTime: number;
+  successRate: number;
+  achievements: string[];
+}
+
 export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => {
   const [scores, setScores] = useState<HighscoreEntry[]>([]);
+  const [weeklyScores, setWeeklyScores] = useState<HighscoreEntry[]>([]);
   const [decorated, setDecorated] = useState<HighscoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'alltime' | 'weekly'>('alltime');
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
 
   const loadScores = async () => {
     try {
@@ -73,9 +86,49 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
             .sort((a, b) => achievementWeight(b.achievements || '') - achievementWeight(a.achievements || ''))
             .slice(0, 5)
         );
+
+        // Weekly: filter to this week (Monday-Sunday)
+        const now = new Date();
+        const day = now.getDay();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((day + 6) % 7));
+        monday.setHours(0, 0, 0, 0);
+        const weeklyEntries = entries.filter(s => new Date(s.created_at) >= monday);
+        setWeeklyScores([...weeklyEntries].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5));
       }
     } catch {}
     setLoading(false);
+  };
+
+  const loadPlayerProfile = async (name: string) => {
+    try {
+      const { data } = await (supabase as any)
+        .from('highscores')
+        .select('*')
+        .eq('player_name', name)
+        .neq('result', 'abandoned')
+        .limit(100);
+      if (data && data.length > 0) {
+        const entries = data as HighscoreEntry[];
+        const totalKills = entries.reduce((s, e) => s + e.kills, 0);
+        const bestScore = Math.max(...entries.map(e => calculateScore(e.kills, Number(e.time_seconds), e.result, e.achievements || '')));
+        const avgTime = entries.reduce((s, e) => s + Number(e.time_seconds), 0) / entries.length;
+        const successes = entries.filter(e => e.result === 'success').length;
+        const allAchs = new Set<string>();
+        entries.forEach(e => {
+          if (e.achievements) e.achievements.split(',').filter(Boolean).forEach(a => allAchs.add(a));
+        });
+        setSelectedPlayer({
+          name,
+          totalKills,
+          totalRaids: entries.length,
+          bestScore,
+          avgTime,
+          successRate: Math.round((successes / entries.length) * 100),
+          achievements: Array.from(allAchs),
+        });
+      }
+    } catch {}
   };
 
   useEffect(() => {
