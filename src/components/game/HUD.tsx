@@ -127,6 +127,7 @@ interface HUDProps {
   exfilRevealed?: string;
   achievementStats?: AchievementStats;
   onReturnToBase?: () => void;
+  onRevengeRun?: () => void;
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
   isMobile?: boolean;
