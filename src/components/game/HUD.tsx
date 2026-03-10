@@ -5,6 +5,7 @@ import { FeedbackWidget } from './FeedbackWidget';
 import { HighscoreList, submitHighscore, calculateScore } from './HighscoreList';
 import { MissionObjective } from '../../game/objectives';
 import { UPGRADES, UpgradeState, getUpgradeLevel } from '../../game/upgrades';
+import { playExtractionSuccess } from '../../game/audio';
 
 interface AchievementStats {
   mosinKills: number;
@@ -66,19 +67,19 @@ function tierAchievements(
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
-  ...tierAchievements('mosin', 'Mosin Master', '🎯', 'kills with Mosin-Nagant', 'mosinKills', [10, 25, 40]),
-  ...tierAchievements('nade', 'Bombardier', '💣', 'kills with grenades', 'grenadeKills', [8, 20, 35]),
-  ...tierAchievements('tnt', 'Demolitionist', '🧨', 'kills with TNT charges', 'tntKills', [5, 12, 25]),
-  ...tierAchievements('longshot', 'Sharpshooter', '🔭', 'kills at long range', 'longShots', [8, 20, 35]),
-  ...tierAchievements('headshot', 'Headhunter', '💀', 'headshot kills', 'headshotKills', [10, 25, 40]),
-  ...tierAchievements('close', 'Up Close', '🗡️', 'kills at close range', 'knifeDistanceKills', [8, 20, 35]),
-  ...tierAchievements('kills', 'One Man Army', '🪖', 'kills in a single raid', 'killCount', [25, 40, 60]),
-  ...tierAchievements('bodies', 'Scavenger', '🦴', 'bodies looted', 'bodiesLooted', [8, 15, 25]),
-  ...tierAchievements('caches', 'Treasure Hunter', '📦', 'caches looted', 'cachesLooted', [6, 12, 20]),
-  ...tierAchievements('breach', 'Breacher', '🧱', 'walls breached with TNT', 'wallsBreached', [2, 5, 8]),
-  ...tierAchievements('docs', 'Archivist', '📜', 'documents collected', 'documentsCollected', [4, 7, 10]),
-  ...tierAchievements('hacks', 'Hackerman', '💻', 'terminals hacked', 'terminalsHacked', [2, 4, 6]),
-  ...tierAchievements('travel', 'Traveller', '🥾', 'm distance travelled', 'distanceTravelled', [1500, 4000, 8000]),
+  ...tierAchievements('mosin', 'Mosin Master', '🎯', 'kills with Mosin-Nagant', 'mosinKills', [15, 35, 50]),
+  ...tierAchievements('nade', 'Bombardier', '💣', 'kills with grenades', 'grenadeKills', [12, 28, 45]),
+  ...tierAchievements('tnt', 'Demolitionist', '🧨', 'kills with TNT charges', 'tntKills', [8, 18, 30]),
+  ...tierAchievements('longshot', 'Sharpshooter', '🔭', 'kills at long range', 'longShots', [12, 28, 45]),
+  ...tierAchievements('headshot', 'Headhunter', '💀', 'headshot kills', 'headshotKills', [15, 35, 55]),
+  ...tierAchievements('close', 'Up Close', '🗡️', 'kills at close range', 'knifeDistanceKills', [12, 28, 45]),
+  ...tierAchievements('kills', 'One Man Army', '🪖', 'kills in a single raid', 'killCount', [30, 50, 75]),
+  ...tierAchievements('bodies', 'Scavenger', '🦴', 'bodies looted', 'bodiesLooted', [12, 22, 35]),
+  ...tierAchievements('caches', 'Treasure Hunter', '📦', 'caches looted', 'cachesLooted', [10, 18, 28]),
+  ...tierAchievements('breach', 'Breacher', '🧱', 'walls breached with TNT', 'wallsBreached', [3, 6, 10]),
+  ...tierAchievements('docs', 'Archivist', '📜', 'documents collected', 'documentsCollected', [5, 9, 14]),
+  ...tierAchievements('hacks', 'Hackerman', '💻', 'terminals hacked', 'terminalsHacked', [3, 6, 9]),
+  ...tierAchievements('travel', 'Traveller', '🥾', 'm distance travelled', 'distanceTravelled', [2500, 6000, 12000]),
   { id: 'tourist', name: 'Tourist 🗺️', icon: '🗺️', desc: 'Visit all 3 exfil points in one raid', tier: 'gold', check: s => s.exfilsVisited >= 3 },
   { id: 'nohit', name: 'Ghost 👻', icon: '👻', desc: 'Complete a raid without taking damage', tier: 'gold', check: s => s.noHitsTaken && s.killCount > 0 },
   { id: 'goodboy', name: 'Good Boy 🐕', icon: '🐕', desc: 'Extract without killing any dogs', tier: 'gold', check: s => s.totalDogsOnMap > 0 && s.dogsKilled === 0 },
@@ -100,6 +101,20 @@ export function getHighestTierAchievements(stats: AchievementStats): Achievement
     }
   }
   return Array.from(groups.values());
+}
+
+function getDeathTip(cause: string): string {
+  const c = cause.toLowerCase();
+  if (c.includes('mine')) return 'Watch for disturbed ground patches. Crouch and move slowly in mined areas.';
+  if (c.includes('sniper')) return 'Use cover and crouch. Avoid open areas. Smoke grenades can block sniper lines of sight.';
+  if (c.includes('grenade') && !c.includes('own')) return 'When you hear a grenade bounce, sprint away immediately. Stay mobile in firefights.';
+  if (c.includes('own grenade') || c.includes('own tnt') || c.includes('own mortar')) return 'Keep distance from your own explosives! Move away immediately after throwing.';
+  if (c.includes('bled out')) return 'Always carry bandages. Use them immediately when bleeding — even mid-combat.';
+  if (c.includes('shot by')) return 'Use cover (Q) and peek to reduce exposure. Crouch to reduce noise and detection range.';
+  if (c.includes('electrocuted') || c.includes('shocker')) return 'Shockers are deadly at close range. Engage from a distance or use grenades.';
+  if (c.includes('time ran out')) return 'Plan your route to extraction early. Check the compass for exfil direction.';
+  if (c.includes('boss') || c.includes('commandant') || c.includes('nachalnik')) return 'Bosses hit hard. Kite them around obstacles and use explosives for burst damage.';
+  return 'Stay in cover, manage your stamina, and always know where the nearest exfil is.';
 }
 
 interface HUDProps {
@@ -127,6 +142,7 @@ interface HUDProps {
   exfilRevealed?: string;
   achievementStats?: AchievementStats;
   onReturnToBase?: () => void;
+  onRevengeRun?: () => void;
   objectives?: MissionObjective[];
   activeUpgrades?: UpgradeState;
   isMobile?: boolean;
@@ -146,12 +162,19 @@ interface HUDProps {
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, onRevengeRun, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
   const bottomCenterOffset = mobileMode ? 'bottom-28' : 'bottom-24';
   const scoreSubmittedRef = React.useRef(false);
+
+  // Play extraction celebration sound
+  React.useEffect(() => {
+    if (extracted && !gameOver) {
+      playExtractionSuccess();
+    }
+  }, [extracted, gameOver]);
 
   React.useEffect(() => {
     if ((gameOver || extracted) && playerName && playerName.trim().toLowerCase() !== 'test123' && playerName.trim().toLowerCase() !== 'test3' && !scoreSubmittedRef.current) {
@@ -492,6 +515,25 @@ export const HUD: React.FC<HUDProps> = ({
       {/* ═══════ GAME OVER / EXTRACTED ═══════ */}
       {(gameOver || extracted) && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/85 pointer-events-auto animate-in fade-in duration-500">
+          {/* Extraction celebration particles */}
+          {extracted && !gameOver && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{
+                    left: `${10 + Math.random() * 80}%`,
+                    top: `${Math.random() * 100}%`,
+                    backgroundColor: ['hsl(var(--accent))', 'hsl(var(--loot))', 'hsl(var(--warning))', 'hsl(var(--safe))'][i % 4],
+                    animationDelay: `${Math.random() * 2}s`,
+                    animationDuration: `${1 + Math.random() * 2}s`,
+                    opacity: 0.6 + Math.random() * 0.4,
+                  }}
+                />
+              ))}
+            </div>
+          )}
           <div className="flex flex-col items-center gap-4 p-8 border border-border bg-card rounded max-w-sm w-full mx-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-700">
             <h1 className={`text-3xl font-display tracking-wider ${gameOver ? 'text-danger' : hasExtractionCode ? 'text-loot' : 'text-warning'}`}>
               {gameOver ? '☠ KIA' : hasExtractionCode ? '🚁 MISSION COMPLETE' : '⚠ EXTRACTED'}
@@ -636,19 +678,21 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
-              {onReturnToBase && (
-                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2 animate-in fade-in" style={{ animationDelay: '1400ms', animationFillMode: 'backwards' }} onClick={onReturnToBase}>
-                  🏠 RETURN TO BASE
-                </button>
+              {/* Death tips */}
+              {gameOver && deathCause && (
+                <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1050ms', animationFillMode: 'backwards' }}>
+                  <span className="text-xs font-mono text-warning">💡 TIP:</span>
+                  <p className="text-[10px] font-mono text-muted-foreground mt-1 leading-relaxed">
+                    {getDeathTip(deathCause)}
+                  </p>
+                </div>
               )}
-              <button className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-2" onClick={() => window.location.reload()}>
-                📋 MAIN MENU
-              </button>
-              {/* Achievements display disabled — code preserved
+
+              {/* Achievements — re-enabled */}
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
-                  <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1500ms', animationFillMode: 'backwards' }}>
+                  <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1150ms', animationFillMode: 'backwards' }}>
                     <span className="text-xs font-mono text-accent">🏅 ACHIEVEMENTS:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {earned.map(a => (
@@ -662,7 +706,20 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 ) : null;
               })()}
-              */}
+
+              {onReturnToBase && (
+                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2 animate-in fade-in" style={{ animationDelay: '1400ms', animationFillMode: 'backwards' }} onClick={onReturnToBase}>
+                  🏠 RETURN TO BASE
+                </button>
+              )}
+              {gameOver && onRevengeRun && (
+                <button className="w-full px-6 py-2.5 bg-destructive/20 text-destructive font-display uppercase tracking-wider rounded-sm border border-destructive/40 hover:bg-destructive/30 transition-colors mt-1 animate-in fade-in" style={{ animationDelay: '1500ms', animationFillMode: 'backwards' }} onClick={onRevengeRun}>
+                  🔁 REVENGE RUN
+                </button>
+              )}
+              <button className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-1 animate-in fade-in" style={{ animationDelay: '1600ms', animationFillMode: 'backwards' }} onClick={() => window.location.reload()}>
+                📋 MAIN MENU
+              </button>
             </div>
             <HighscoreList currentName={playerName} />
             <FeedbackWidget playerName={playerName} />

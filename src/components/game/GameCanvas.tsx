@@ -19,7 +19,7 @@ import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion }
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
 import { hapticShoot, hapticDamage, hapticKill } from '../../game/haptics';
-import { startAmbient, stopAmbient } from '../../game/audio';
+import { startAmbient, stopAmbient, startMenuAmbient, stopMenuAmbient } from '../../game/audio';
 import { EMPTY_MASTERY, getMasteryLevel, type WeaponMasteryState, type WeaponMasteryType } from '../../game/weaponMastery';
 import { getDailyMissions, loadDailyProgress, saveDailyProgress, checkDailyCompletion } from '../../game/dailyMissions';
 import { RECIPES, canCraft, craft } from '../../game/crafting';
@@ -93,6 +93,12 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   const effectiveAdmin = isAdmin && !adminIncognito;
 
+  // Ambient wind on menu
+  React.useEffect(() => {
+    startMenuAmbient();
+    return () => stopMenuAmbient();
+  }, []);
+
   React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
@@ -160,7 +166,14 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       </div>
 
       {loadingAuth ? (
-        <p className="text-xs font-mono text-muted-foreground text-center">Checking credentials...</p>
+        <div className="flex flex-col gap-3 w-full animate-pulse">
+          <div className="border border-border/30 rounded p-3 bg-muted/20">
+            <div className="h-3 w-24 bg-muted/40 rounded mx-auto mb-2" />
+            <div className="h-4 w-32 bg-muted/40 rounded mx-auto mb-1" />
+            <div className="h-2 w-40 bg-muted/30 rounded mx-auto" />
+          </div>
+          <div className="h-12 w-full bg-muted/30 rounded" />
+        </div>
       ) : user ? (
         <div className="flex flex-col gap-2">
            <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
@@ -956,7 +969,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: intro
   if (gamePhase === 'intro') {
     return (
-      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background animate-in fade-in duration-500">
         <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
           setPlayerSkin(skin);
@@ -976,7 +989,7 @@ export const GameCanvas: React.FC = () => {
   // Phase: homebase
   if (gamePhase === 'homebase') {
     return (
-      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background">
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-background animate-in fade-in slide-in-from-bottom-2 duration-500">
         <HomeBase
           playerName={playerName}
           stash={stash}
@@ -1308,6 +1321,17 @@ export const GameCanvas: React.FC = () => {
             rerollsByMapRef.current[selectedMapId] = 0;
             setObjectives(nextObjectives);
             setRerollCount(0);
+          }}
+          onRevengeRun={() => {
+            setStarted(false);
+            // Reroll objectives for fresh raid on same map
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            rerollsByMapRef.current[selectedMapId] = 0;
+            setObjectives(nextObjectives);
+            setRerollCount(0);
+            // Go straight to deploying on same map
+            setGamePhase('deploying');
           }}
         />
 
