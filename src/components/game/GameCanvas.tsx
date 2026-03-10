@@ -237,11 +237,11 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       )}
 
       <div className="flex gap-2">
-        <a href="/wiki" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent-foreground font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
+        <a href="/wiki" className="flex-1 text-center px-3 py-2 border border-accent/40 text-accent font-display uppercase tracking-widest rounded-sm hover:bg-accent/10 transition-colors text-[11px]">
           📖 Wiki
         </a>
         <button
-          className={`flex-1 px-3 py-2 border font-display uppercase tracking-widest rounded-sm transition-colors text-[11px] ${showHighscores ? 'border-accent text-accent-foreground bg-accent/10' : 'border-border/40 text-foreground/70 hover:text-foreground hover:border-border'}`}
+          className={`flex-1 px-3 py-2 border font-display uppercase tracking-widest rounded-sm transition-colors text-[11px] ${showHighscores ? 'border-accent text-accent bg-accent/10' : 'border-border/40 text-muted-foreground hover:text-foreground hover:border-border'}`}
           onClick={() => setShowHighscores(v => !v)}
         >
           🏆 Highscores
@@ -264,13 +264,13 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       )}
 
       <div className="text-center">
-        <p className="text-[9px] font-mono text-accent/40 tracking-wider mb-1">
+        <p className="text-[9px] font-mono text-accent/60 tracking-wider mb-1">
           novaya-zemlya.com
         </p>
-        <p className="text-[9px] font-mono text-muted-foreground/30">
+        <p className="text-[9px] font-mono text-muted-foreground/50">
           © 2025-2026 — Made with ☕ and paranoia
         </p>
-        <p className="text-[8px] font-mono text-muted-foreground/20 mt-1">
+        <p className="text-[8px] font-mono text-muted-foreground/40 mt-1">
           Special thanks to Battlestate Games (Escape from Tarkov) for the inspiration
         </p>
       </div>
