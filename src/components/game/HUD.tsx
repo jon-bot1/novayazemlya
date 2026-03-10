@@ -158,6 +158,7 @@ interface HUDProps {
   objectivePositions?: { x: number; y: number }[];
   mapWidth?: number;
   mapHeight?: number;
+  isFirstRaid?: boolean;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
