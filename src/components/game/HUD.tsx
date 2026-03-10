@@ -5,6 +5,7 @@ import { FeedbackWidget } from './FeedbackWidget';
 import { HighscoreList, submitHighscore, calculateScore } from './HighscoreList';
 import { MissionObjective } from '../../game/objectives';
 import { UPGRADES, UpgradeState, getUpgradeLevel } from '../../game/upgrades';
+import { playExtractionSuccess } from '../../game/audio';
 
 interface AchievementStats {
   mosinKills: number;
