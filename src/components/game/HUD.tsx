@@ -530,9 +530,36 @@ export const HUD: React.FC<HUDProps> = ({
         })}
       </div>
 
+      {/* ═══════ TUTORIAL PROMPT ═══════ */}
+      {currentTutorial && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-auto animate-in slide-in-from-top-2 fade-in duration-500">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded border border-accent/50 bg-card/90 backdrop-blur-sm shadow-lg max-w-sm">
+            <span className="text-2xl">{currentTutorial.icon}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-display text-accent tracking-wider">{currentTutorial.title}</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 bg-accent/20 text-accent border border-accent/30 rounded">{currentTutorial.key}</span>
+              </div>
+              <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{currentTutorial.desc}</p>
+            </div>
+            <button
+              className="text-[9px] font-mono text-muted-foreground/50 hover:text-foreground transition-colors px-1"
+              onClick={() => setTutorialDismissed(true)}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex justify-center mt-1 gap-1">
+            {TUTORIAL_STEPS.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i <= tutorialStep ? 'bg-accent' : 'bg-muted-foreground/20'}`} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ═══════ EXTRACTION PROGRESS ═══════ */}
       {extractionProgress > 0 && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
           <span className="text-xs text-loot font-display animate-pulse tracking-wider">EXTRACTING</span>
           <div className="w-40 h-2 bg-background/60 rounded-sm overflow-hidden border border-loot/30">
             <div className="h-full bg-loot transition-all duration-100" style={{ width: `${(extractionProgress / 5) * 100}%` }} />
