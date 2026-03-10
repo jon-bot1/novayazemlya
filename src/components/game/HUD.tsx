@@ -169,6 +169,13 @@ export const HUD: React.FC<HUDProps> = ({
   const bottomCenterOffset = mobileMode ? 'bottom-28' : 'bottom-24';
   const scoreSubmittedRef = React.useRef(false);
 
+  // Play extraction celebration sound
+  React.useEffect(() => {
+    if (extracted && !gameOver) {
+      playExtractionSuccess();
+    }
+  }, [extracted, gameOver]);
+
   React.useEffect(() => {
     if ((gameOver || extracted) && playerName && playerName.trim().toLowerCase() !== 'test123' && playerName.trim().toLowerCase() !== 'test3' && !scoreSubmittedRef.current) {
       scoreSubmittedRef.current = true;
