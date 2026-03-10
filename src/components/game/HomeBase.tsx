@@ -104,6 +104,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const level = getLevelForXp(stash.xp);
   const xpInfo = getXpForNextLevel(stash.xp);
   const dailyMissions = getDailyMissions();
+  const repTier = getRepTier(stash.extractionCount);
+  const nextRep = getNextRepTier(stash.extractionCount);
   const mastery = stash.weaponMastery || { ...EMPTY_MASTERY };
 
   // Badge counts for tabs
