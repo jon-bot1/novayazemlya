@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ACHIEVEMENTS, TIER_LABEL, type Achievement, type AchievementTier } from './HUD';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Score algorithm: result bonus + kill points + time bonus + achievement tiebreaker
 export function calculateScore(kills: number, timeSeconds: number, result: string, achievements: string): number {
