@@ -160,7 +160,14 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       </div>
 
       {loadingAuth ? (
-        <p className="text-xs font-mono text-muted-foreground text-center">Checking credentials...</p>
+        <div className="flex flex-col gap-3 w-full animate-pulse">
+          <div className="border border-border/30 rounded p-3 bg-muted/20">
+            <div className="h-3 w-24 bg-muted/40 rounded mx-auto mb-2" />
+            <div className="h-4 w-32 bg-muted/40 rounded mx-auto mb-1" />
+            <div className="h-2 w-40 bg-muted/30 rounded mx-auto" />
+          </div>
+          <div className="h-12 w-full bg-muted/30 rounded" />
+        </div>
       ) : user ? (
         <div className="flex flex-col gap-2">
            <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
