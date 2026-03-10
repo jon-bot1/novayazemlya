@@ -155,6 +155,16 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </p>
       </div>
 
+      {introIsMobile && (
+        <div className="w-full px-3 py-1.5 bg-accent/10 border border-accent/30 rounded-sm">
+          <p className="text-[9px] font-mono text-accent text-center tracking-wider leading-relaxed">
+            📱 MOBILE DETECTED — BEST EXPERIENCE ON DESKTOP
+            <br />
+            <span className="text-accent/60">Controls and UI are not fully optimized for mobile yet</span>
+          </p>
+        </div>
+      )}
+
       <div className="text-center">
         <p className="text-[9px] font-mono text-accent/50 uppercase tracking-[0.3em] mb-2">☠ CLASSIFIED — NORDIC COMMAND ☠</p>
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
