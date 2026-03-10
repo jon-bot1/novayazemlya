@@ -1309,6 +1309,17 @@ export const GameCanvas: React.FC = () => {
             setObjectives(nextObjectives);
             setRerollCount(0);
           }}
+          onRevengeRun={() => {
+            setStarted(false);
+            // Reroll objectives for fresh raid on same map
+            const nextObjectives = generateMissionObjectives(selectedMapId);
+            objectivesByMapRef.current[selectedMapId] = nextObjectives;
+            rerollsByMapRef.current[selectedMapId] = 0;
+            setObjectives(nextObjectives);
+            setRerollCount(0);
+            // Go straight to deploying on same map
+            setGamePhase('deploying');
+          }}
         />
 
         <LootPopup notifications={lootNotifications} />
