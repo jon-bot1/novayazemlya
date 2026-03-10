@@ -93,6 +93,12 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   const effectiveAdmin = isAdmin && !adminIncognito;
 
+  // Ambient wind on menu
+  React.useEffect(() => {
+    startMenuAmbient();
+    return () => stopMenuAmbient();
+  }, []);
+
   React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
