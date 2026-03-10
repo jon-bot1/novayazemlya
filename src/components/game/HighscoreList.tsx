@@ -240,7 +240,7 @@ export const HighscoreList: React.FC<HighscoreListProps> = ({ currentName }) => 
                 <div key={s.id}>
                   <div className={`grid grid-cols-[1.2rem_1fr_2.5rem_2.5rem_3rem_1.5rem] gap-1 text-[11px] font-mono px-1 py-0.5 rounded ${isMe ? 'bg-accent/10 text-accent' : 'text-foreground/80'}`}>
                     <span className="text-muted-foreground">{i + 1}</span>
-                    <span className="truncate">{s.player_name}</span>
+                    <span className="truncate cursor-pointer hover:text-accent hover:underline transition-colors" onClick={() => loadPlayerProfile(s.player_name)}>{s.player_name}</span>
                     <span>{s.kills}</span>
                     <span>{formatTime(Number(s.time_seconds))}</span>
                     <span className="text-accent">{s.score ?? 0}</span>
