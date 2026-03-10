@@ -101,6 +101,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_login_date: string
+          longest_streak: number
+          player_name: string
+          total_bonus_earned: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_login_date?: string
+          longest_streak?: number
+          player_name: string
+          total_bonus_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_login_date?: string
+          longest_streak?: number
+          player_name?: string
+          total_bonus_earned?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_progress: {
         Row: {
           created_at: string
