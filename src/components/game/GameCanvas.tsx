@@ -436,7 +436,21 @@ export const GameCanvas: React.FC = () => {
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
   const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
   const [showFirefoxWarning, setShowFirefoxWarning] = useState(false);
+  const [showControlOverlay, setShowControlOverlay] = useState(false);
+  const controlOverlayDismissed = useRef(false);
   const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
+
+  useEffect(() => {
+    if (gamePhase === 'deploying' && !controlOverlayDismissed.current) {
+      setShowControlOverlay(true);
+    }
+  }, [gamePhase]);
+
+  const dismissControls = useCallback(() => {
+    setShowControlOverlay(false);
+    controlOverlayDismissed.current = true;
+    setGamePhase('playing');
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1272,7 +1286,54 @@ export const GameCanvas: React.FC = () => {
             </div>
           </div>
         )}
-        
+
+        {/* Control overlay — shown during deploying phase */}
+        {showControlOverlay && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm pointer-events-auto animate-in fade-in duration-300"
+            onKeyDown={dismissControls}
+          >
+            <div className="max-w-md w-full mx-4 p-6 border border-border bg-card rounded animate-in slide-in-from-bottom-4 duration-500">
+              <h2 className="text-xl font-display text-accent text-center tracking-wider mb-4">📋 FIELD MANUAL</h2>
+              {isMobile ? (
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">🕹️ Left Stick</span><br/>Move</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">👆 Tap Screen</span><br/>Aim & Shoot</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">🔍 Button</span><br/>Interact / Loot</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">💊 Button</span><br/>Heal</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">💣 Button</span><br/>Throw Grenade</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">🛡️ Button</span><br/>Take Cover</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">🎒 Button</span><br/>Inventory</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">🔄 Button</span><br/>Reload</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-muted-foreground">
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">WASD</span> — Move</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">Mouse</span> — Aim & Shoot</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">E</span> — Interact / Loot</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">H</span> — Heal</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">G</span> — Throw Grenade</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">Q / Space</span> — Take Cover</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">Shift</span> — Sprint</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">Ctrl</span> — Sneak</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">R</span> — Reload</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">Tab</span> — Inventory</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">1-3</span> — Switch Weapon</div>
+                  <div className="border border-border/30 rounded p-2"><span className="text-foreground">T</span> — Place TNT</div>
+                </div>
+              )}
+              <button
+                className="w-full mt-4 px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors"
+                onClick={dismissControls}
+              >
+                ▶ CONTINUE
+              </button>
+              <p className="text-[8px] font-mono text-muted-foreground/40 text-center mt-2">
+                Click Continue to start the raid
+              </p>
+            </div>
+          </div>
+        )}
+
         <HUD
           player={hudState.player}
           killCount={hudState.killCount}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Item } from '../../game/types';
 import { UPGRADES, TRADER_ITEMS, UpgradeState, getUpgradeLevel, getUpgradeCost, canBuyUpgrade, getLevelForXp, getXpForNextLevel } from '../../game/upgrades';
 import { MissionObjective } from '../../game/objectives';
@@ -9,6 +9,7 @@ import { RECIPES, canCraft, craft } from '../../game/crafting';
 import { getRepTier, getNextRepTier, getAdjustedPrice } from '../../game/reputation';
 import { getItemRarity, RARITY_BG, RARITY_GLOW, RARITY_LABEL, RARITY_COLORS } from '../../game/rarity';
 import { WeaponMasteryState, EMPTY_MASTERY, MASTERY_INFO, MASTERY_RANK_NAMES, MASTERY_THRESHOLDS, getNextMasteryThreshold, getMasteryBonus, type WeaponMasteryType } from '../../game/weaponMastery';
+import { checkAndUpdateStreak, getStreakBonus } from '../../game/loginStreak';
 
 export interface StashState {
   items: Item[];
@@ -73,6 +74,16 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [endingPhase, setEndingPhase] = useState<'choice' | 'narrative' | 'epilogue'>('choice');
   const [completedEndingId, setCompletedEndingId] = useState<string | null>(hasCompletedEnding);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
+  const [streakData, setStreakData] = useState<{ current: number; bonus: number; isNew: boolean } | null>(null);
+
+  // Check login streak on mount
+  useEffect(() => {
+    if (playerName && playerName !== '__anonymous__') {
+      checkAndUpdateStreak(playerName).then(data => {
+        setStreakData({ current: data.current_streak, bonus: data.todayBonus, isNew: data.isNewDay });
+      });
+    }
+  }, [playerName]);
   // Restore found docs from localStorage on mount (or unlock all for test3)
   React.useEffect(() => {
     if (playerName.trim().toLowerCase() === 'test3') {
@@ -136,6 +147,22 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               <span>{xpInfo.current}/{xpInfo.needed}</span>
             </div>
           </div>
+          {/* Login Streak */}
+          {streakData && streakData.current > 0 && playerName !== '__anonymous__' && (
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <span className="text-[10px] font-mono text-foreground/70">
+                🔥 {streakData.current} day streak
+              </span>
+              {streakData.isNew && streakData.bonus > 0 && (
+                <span className="text-[10px] font-mono text-warning animate-in fade-in slide-in-from-bottom-1 duration-500">
+                  +{streakData.bonus}₽ bonus!
+                </span>
+              )}
+              {streakData.current >= 7 && (
+                <span className="text-[9px] font-mono text-accent">🏆 VETERAN</span>
+              )}
+            </div>
+          )}
           {onReturnToMenu && (
             <button
               onClick={onReturnToMenu}
