@@ -74,6 +74,16 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [endingPhase, setEndingPhase] = useState<'choice' | 'narrative' | 'epilogue'>('choice');
   const [completedEndingId, setCompletedEndingId] = useState<string | null>(hasCompletedEnding);
   const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
+  const [streakData, setStreakData] = useState<{ current: number; bonus: number; isNew: boolean } | null>(null);
+
+  // Check login streak on mount
+  useEffect(() => {
+    if (playerName && playerName !== '__anonymous__') {
+      checkAndUpdateStreak(playerName).then(data => {
+        setStreakData({ current: data.current_streak, bonus: data.todayBonus, isNew: data.isNewDay });
+      });
+    }
+  }, [playerName]);
   // Restore found docs from localStorage on mount (or unlock all for test3)
   React.useEffect(() => {
     if (playerName.trim().toLowerCase() === 'test3') {
