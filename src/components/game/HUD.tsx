@@ -637,19 +637,21 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 </div>
               )}
-              {onReturnToBase && (
-                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2 animate-in fade-in" style={{ animationDelay: '1400ms', animationFillMode: 'backwards' }} onClick={onReturnToBase}>
-                  🏠 RETURN TO BASE
-                </button>
+              {/* Death tips */}
+              {gameOver && deathCause && (
+                <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1050ms', animationFillMode: 'backwards' }}>
+                  <span className="text-xs font-mono text-warning">💡 TIP:</span>
+                  <p className="text-[10px] font-mono text-muted-foreground mt-1 leading-relaxed">
+                    {getDeathTip(deathCause)}
+                  </p>
+                </div>
               )}
-              <button className="w-full px-6 py-2.5 bg-card text-foreground font-display uppercase tracking-wider rounded-sm border border-border hover:bg-muted transition-colors mt-2" onClick={() => window.location.reload()}>
-                📋 MAIN MENU
-              </button>
-              {/* Achievements display disabled — code preserved
+
+              {/* Achievements — re-enabled */}
               {achievementStats && (() => {
                 const earned = getHighestTierAchievements(achievementStats);
                 return earned.length > 0 ? (
-                  <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1500ms', animationFillMode: 'backwards' }}>
+                  <div className="mt-2 border-t border-border pt-2 animate-in fade-in" style={{ animationDelay: '1150ms', animationFillMode: 'backwards' }}>
                     <span className="text-xs font-mono text-accent">🏅 ACHIEVEMENTS:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {earned.map(a => (
@@ -663,7 +665,17 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                 ) : null;
               })()}
-              */}
+
+              {onReturnToBase && (
+                <button className="w-full px-6 py-2.5 bg-primary text-primary-foreground font-display uppercase tracking-wider rounded-sm hover:bg-primary/80 transition-colors mt-2 animate-in fade-in" style={{ animationDelay: '1400ms', animationFillMode: 'backwards' }} onClick={onReturnToBase}>
+                  🏠 RETURN TO BASE
+                </button>
+              )}
+              {gameOver && onRevengeRun && (
+                <button className="w-full px-6 py-2.5 bg-destructive/20 text-destructive font-display uppercase tracking-wider rounded-sm border border-destructive/40 hover:bg-destructive/30 transition-colors mt-1 animate-in fade-in" style={{ animationDelay: '1500ms', animationFillMode: 'backwards' }} onClick={onRevengeRun}>
+                  🔁 REVENGE RUN
+                </button>
+              )}
             </div>
             <HighscoreList currentName={playerName} />
             <FeedbackWidget playerName={playerName} />
