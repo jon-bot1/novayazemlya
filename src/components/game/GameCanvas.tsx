@@ -154,12 +154,25 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         <p className="text-xs font-mono text-muted-foreground text-center">Checking credentials...</p>
       ) : user ? (
         <div className="flex flex-col gap-2">
-          <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
+           <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
             <p className="text-xs font-display text-accent uppercase tracking-wider">
-              {isAdmin ? '⭐ ADMIN' : '🛡️ ALPHA TESTER'}
+              {isAdmin ? (
+                <button
+                  onClick={toggleIncognito}
+                  className="hover:opacity-70 transition-opacity cursor-pointer"
+                  title={adminIncognito ? 'Playing as regular user — click to switch back to Admin' : 'Click to play as regular user'}
+                >
+                  {adminIncognito ? '🛡️ ALPHA TESTER (incognito)' : '⭐ ADMIN'}
+                </button>
+              ) : '🛡️ ALPHA TESTER'}
             </p>
             <p className="text-sm font-display text-foreground mt-1">{callsign || '(no callsign set)'}</p>
             <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
+            {isAdmin && (
+              <p className="text-[8px] font-mono text-muted-foreground/60 mt-1">
+                {adminIncognito ? 'Tap badge to return to admin mode' : 'Tap badge to play as regular user'}
+              </p>
+            )}
           </div>
           <button
             className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
