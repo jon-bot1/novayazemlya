@@ -25,6 +25,7 @@ const Auth: React.FC = () => {
     setLoading(true); setError(''); setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
+    else localStorage.setItem('nz_last_email', email);
     setLoading(false);
   };
 
