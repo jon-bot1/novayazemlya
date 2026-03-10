@@ -106,6 +106,15 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const dailyMissions = getDailyMissions();
   const repTier = getRepTier(stash.extractionCount);
   const nextRep = getNextRepTier(stash.extractionCount);
+  const mastery = stash.weaponMastery || { ...EMPTY_MASTERY };
+
+  // Badge counts for tabs
+  const availableUpgrades = UPGRADES.filter(u => canBuyUpgrade(stash.upgrades, u.id, stash.rubles)).length;
+  const affordableShopItems = TRADER_ITEMS.filter(item => stash.rubles >= getAdjustedPrice(item.cost, item.id, stash.extractionCount)).length;
+  const craftableRecipes = RECIPES.filter(r => canCraft(r, stash.items)).length;
+  const sellableItems = stash.items.length;
+  const masteryLevels = (['rifle', 'pistol', 'sniper', 'shotgun', 'knife', 'grenade'] as WeaponMasteryType[])
+    .reduce((sum, type) => sum + (mastery[type]?.level || 0), 0);
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
@@ -176,20 +185,25 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         {/* Tabs */}
         <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' as any }}>
           {([
-            { key: 'mission', label: '🎯 Mission' },
-            { key: 'stash', label: '📦 Stash' },
-            { key: 'craft', label: '🔨 Craft' },
-            { key: 'trader', label: '⬆ Upgrades' },
-            { key: 'shop', label: '🏪 Shop' },
-            { key: 'mastery', label: '⚔️ Mastery' },
-            { key: 'intel', label: `📄 Archive${foundDocs.length > 0 ? ` (${foundDocs.length})` : ''}` },
+            { key: 'mission', label: '🎯 Mission', badge: 0 },
+            { key: 'stash', label: '📦 Stash', badge: sellableItems },
+            { key: 'craft', label: '🔨 Craft', badge: craftableRecipes },
+            { key: 'trader', label: '⬆ Upgrades', badge: availableUpgrades },
+            { key: 'shop', label: '🏪 Shop', badge: affordableShopItems },
+            { key: 'mastery', label: '⚔️ Mastery', badge: masteryLevels },
+            { key: 'intel', label: `📄 Archive`, badge: foundDocs.length },
           ] as const).map(t => (
             <button
               key={t.key}
-              className={`px-3 sm:px-3 py-2.5 sm:py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors whitespace-nowrap min-w-[4.5rem] ${tab === t.key ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-muted-foreground hover:text-foreground active:bg-muted/20'}`}
+              className={`relative px-3 sm:px-3 py-2.5 sm:py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors whitespace-nowrap min-w-[4.5rem] ${tab === t.key ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-muted-foreground hover:text-foreground active:bg-muted/20'}`}
               onClick={() => setTab(t.key)}
             >
               {t.label}
+              {t.badge > 0 && (
+                <span className="absolute -top-1 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-accent text-accent-foreground text-[8px] font-mono font-bold leading-none px-1">
+                  {t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
