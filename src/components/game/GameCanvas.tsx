@@ -147,11 +147,11 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
    <div className="absolute inset-0 flex items-center justify-center bg-background z-50 overflow-y-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' as any }}>
     <div className="max-w-sm w-full mx-4 flex flex-col gap-4 p-6 sm:p-8 border border-border bg-card rounded my-4">
       <div className="w-full px-3 py-1.5 bg-destructive/10 border border-destructive/30 rounded-sm mb-1">
-        <p className="text-[9px] font-mono text-destructive text-center tracking-wider leading-relaxed">
+        <p className="text-[10px] font-mono text-destructive-foreground text-center tracking-wider leading-relaxed">
           <span className="animate-pulse inline-block mr-1">▌</span>
-          SYSTEM STATUS: <span className="text-destructive font-bold">ALPHA</span> // BUGS ACTIVE // FEATURES INCOMPLETE
+          SYSTEM STATUS: <span className="text-destructive-foreground font-bold">ALPHA</span> // BUGS ACTIVE // FEATURES INCOMPLETE
           <br />
-          <span className="text-destructive/60">PROCEED WITH CAUTION — REPORT ISSUES VIA FEEDBACK</span>
+          <span className="text-destructive-foreground/80">PROCEED WITH CAUTION — REPORT ISSUES VIA FEEDBACK</span>
         </p>
       </div>
 
