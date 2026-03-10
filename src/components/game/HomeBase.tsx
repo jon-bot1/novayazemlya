@@ -121,11 +121,17 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           <div className="mt-2 mx-auto max-w-xs">
             <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground">
               <span>XP</span>
-              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden relative">
                 <div
-                  className="h-full bg-accent transition-all duration-500"
-                  style={{ width: `${Math.min(100, xpInfo.progress * 100)}%` }}
+                  className="h-full bg-accent transition-all duration-1000 ease-out"
+                  style={{ 
+                    width: `${Math.min(100, xpInfo.progress * 100)}%`,
+                    boxShadow: xpInfo.progress > 0.9 ? '0 0 8px hsl(var(--accent)), 0 0 16px hsl(var(--accent) / 0.5)' : 'none',
+                  }}
                 />
+                {xpInfo.progress > 0.9 && (
+                  <div className="absolute inset-0 bg-accent/20 animate-pulse rounded-full" />
+                )}
               </div>
               <span>{xpInfo.current}/{xpInfo.needed}</span>
             </div>
