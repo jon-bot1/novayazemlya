@@ -158,11 +158,12 @@ interface HUDProps {
   objectivePositions?: { x: number; y: number }[];
   mapWidth?: number;
   mapHeight?: number;
+  isFirstRaid?: boolean;
 }
 
 export const HUD: React.FC<HUDProps> = ({ 
   player, killCount, messages, extractionProgress, time, 
-  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, onRevengeRun, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight
+  gameOver, extracted, documentsFound, totalDocuments, codesFound, hasExtractionCode, movementMode, inCover, peeking, coverType, canHide, isHiding, onViewDocuments, timeLimit, playerName, deathCause, exfilRevealed, achievementStats, onReturnToBase, onRevengeRun, objectives, activeUpgrades, isMobile: isMobileProp, mapId, noiseLevel, weather, shotsFired, shotsHit, damageDealt, damageTaken, enemyPositions, extractionPositions, objectivePositions, mapWidth, mapHeight, isFirstRaid
 }) => {
   const mobileMode = !!isMobileProp;
   const bottomOffset = mobileMode ? 'bottom-28' : 'bottom-12';
@@ -191,6 +192,33 @@ export const HUD: React.FC<HUDProps> = ({
       submitHighscore(playerName, killCount, time, result, lootValue, earned.join(','));
     }
   }, [gameOver, extracted, playerName, hasExtractionCode, killCount, time, player.inventory, achievementStats]);
+
+  // ═══════ TUTORIAL SYSTEM ═══════
+  const [tutorialStep, setTutorialStep] = React.useState(0);
+  const [tutorialDismissed, setTutorialDismissed] = React.useState(false);
+  const tutorialActive = isFirstRaid && !tutorialDismissed && !gameOver && !extracted;
+
+  const TUTORIAL_STEPS = React.useMemo(() => [
+    { trigger: () => time < 3, icon: '🚶', title: 'MOVE', desc: mobileMode ? 'Use the left joystick to move' : 'Use WASD to move around', key: mobileMode ? '🕹️' : 'WASD' },
+    { trigger: () => time >= 3 && killCount === 0, icon: '🔫', title: 'AIM & SHOOT', desc: mobileMode ? 'Tap anywhere on screen to aim and shoot' : 'Point your mouse and click to shoot', key: mobileMode ? '👆 TAP' : 'MOUSE' },
+    { trigger: () => killCount >= 1 && player.inventory.length < 2, icon: '🔍', title: 'LOOT', desc: mobileMode ? 'Walk over bodies and tap 🔍 to loot' : 'Walk near containers/bodies and press E to loot', key: mobileMode ? '🔍' : 'E' },
+    { trigger: () => player.inventory.length >= 2 && player.hp > 80, icon: '🛡️', title: 'TAKE COVER', desc: mobileMode ? 'Tap 🛡️ near walls to take cover' : 'Press Q or Space near walls to take cover', key: mobileMode ? '🛡️' : 'Q' },
+    { trigger: () => player.hp <= 80 && player.hp > 0, icon: '💊', title: 'HEAL', desc: mobileMode ? 'Tap 💊 to use medical supplies' : 'Press H to heal when you have medical items', key: mobileMode ? '💊' : 'H' },
+    { trigger: () => (player.inventory.length >= 3 || killCount >= 3) && time > 15, icon: '🚁', title: 'EXTRACT', desc: 'Find a green extraction point on the map and stand in it to escape with your loot!', key: '🗺️' },
+  ], [mobileMode]);
+
+  React.useEffect(() => {
+    if (!tutorialActive) return;
+    // Auto-advance through steps
+    for (let i = TUTORIAL_STEPS.length - 1; i >= 0; i--) {
+      if (TUTORIAL_STEPS[i].trigger()) {
+        if (i > tutorialStep) setTutorialStep(i);
+        break;
+      }
+    }
+  }, [time, killCount, player.inventory.length, player.hp, tutorialActive]);
+
+  const currentTutorial = tutorialActive ? TUTORIAL_STEPS[tutorialStep] : null;
 
   const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
   const staminaPercent = Math.min(100, (player.stamina / player.maxStamina) * 100);
@@ -502,9 +530,36 @@ export const HUD: React.FC<HUDProps> = ({
         })}
       </div>
 
+      {/* ═══════ TUTORIAL PROMPT ═══════ */}
+      {currentTutorial && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-auto animate-in slide-in-from-top-2 fade-in duration-500">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded border border-accent/50 bg-card/90 backdrop-blur-sm shadow-lg max-w-sm">
+            <span className="text-2xl">{currentTutorial.icon}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-display text-accent tracking-wider">{currentTutorial.title}</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 bg-accent/20 text-accent border border-accent/30 rounded">{currentTutorial.key}</span>
+              </div>
+              <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{currentTutorial.desc}</p>
+            </div>
+            <button
+              className="text-[9px] font-mono text-muted-foreground/50 hover:text-foreground transition-colors px-1"
+              onClick={() => setTutorialDismissed(true)}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex justify-center mt-1 gap-1">
+            {TUTORIAL_STEPS.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i <= tutorialStep ? 'bg-accent' : 'bg-muted-foreground/20'}`} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ═══════ EXTRACTION PROGRESS ═══════ */}
       {extractionProgress > 0 && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
           <span className="text-xs text-loot font-display animate-pulse tracking-wider">EXTRACTING</span>
           <div className="w-40 h-2 bg-background/60 rounded-sm overflow-hidden border border-loot/30">
             <div className="h-full bg-loot transition-all duration-100" style={{ width: `${(extractionProgress / 5) * 100}%` }} />
