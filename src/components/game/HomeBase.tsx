@@ -141,7 +141,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none">
+        <div className="flex gap-0 border-b border-border overflow-x-auto scrollbar-none" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' as any }}>
           {([
             { key: 'mission', label: '🎯 Mission' },
             { key: 'stash', label: '📦 Stash' },
@@ -153,7 +153,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
           ] as const).map(t => (
             <button
               key={t.key}
-              className={`px-3 py-2 text-xs font-display uppercase tracking-wider transition-colors ${tab === t.key ? 'text-accent border-b-2 border-accent' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-3 sm:px-3 py-2.5 sm:py-2 text-[11px] sm:text-xs font-display uppercase tracking-wider transition-colors whitespace-nowrap min-w-[4.5rem] ${tab === t.key ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-muted-foreground hover:text-foreground active:bg-muted/20'}`}
               onClick={() => setTab(t.key)}
             >
               {t.label}
