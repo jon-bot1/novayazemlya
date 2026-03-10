@@ -6,7 +6,7 @@ type Mode = 'login' | 'register' | 'forgot';
 
 const Auth: React.FC = () => {
   const [mode, setMode] = useState<Mode>('login');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('nz_last_email') || '');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,7 @@ const Auth: React.FC = () => {
     setLoading(true); setError(''); setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
+    else localStorage.setItem('nz_last_email', email);
     setLoading(false);
   };
 
@@ -42,6 +43,7 @@ const Auth: React.FC = () => {
     if (error) {
       setError(error.message);
     } else {
+      localStorage.setItem('nz_last_email', email);
       setMessage('Check your email for a verification link.');
     }
     setLoading(false);
