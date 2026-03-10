@@ -81,6 +81,17 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [adminIncognito, setAdminIncognito] = React.useState(() => localStorage.getItem('adminIncognito') === 'true');
+
+  const toggleIncognito = React.useCallback(() => {
+    setAdminIncognito(prev => {
+      const next = !prev;
+      localStorage.setItem('adminIncognito', String(next));
+      return next;
+    });
+  }, []);
+
+  const effectiveAdmin = isAdmin && !adminIncognito;
 
   React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
