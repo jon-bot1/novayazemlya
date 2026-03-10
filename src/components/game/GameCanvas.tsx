@@ -1373,6 +1373,7 @@ export const GameCanvas: React.FC = () => {
           objectivePositions={hudState.objectivePositions}
           mapWidth={hudState.mapWidth}
           mapHeight={hudState.mapHeight}
+          isFirstRaid={stash.raidCount <= 1}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
