@@ -1235,22 +1235,6 @@ export const GameCanvas: React.FC = () => {
     );
   }
 
-  // Control overlay for deploying phase
-  const [showControlOverlay, setShowControlOverlay] = useState(false);
-  const controlOverlayDismissed = useRef(false);
-
-  useEffect(() => {
-    if (gamePhase === 'deploying' && !controlOverlayDismissed.current) {
-      setShowControlOverlay(true);
-    }
-  }, [gamePhase]);
-
-  const dismissControls = useCallback(() => {
-    setShowControlOverlay(false);
-    controlOverlayDismissed.current = true;
-    setGamePhase('playing');
-  }, []);
-
   // Phase: playing
   const equippedWeaponRefs = new Set<Item>(
     [hudState.player.primaryWeapon, hudState.player.sidearm].filter((w): w is Item => Boolean(w))
