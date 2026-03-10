@@ -166,10 +166,10 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       )}
 
       <div className="text-center">
-        <p className="text-[9px] font-mono text-accent/50 uppercase tracking-[0.3em] mb-2">☠ CLASSIFIED — NORDIC COMMAND ☠</p>
+        <p className="text-[9px] font-mono text-accent uppercase tracking-[0.3em] mb-2">☠ CLASSIFIED — NORDIC COMMAND ☠</p>
         <h1 className="text-3xl font-display text-accent text-glow-green tracking-wider">NOVAYA ZEMLYA</h1>
         <p className="text-[10px] font-mono text-muted-foreground mt-1">OCCULT COLD WAR EXTRACTION SHOOTER</p>
-        <p className="text-[9px] font-mono text-foreground/50 mt-1 italic leading-relaxed max-w-[280px] mx-auto">
+        <p className="text-[9px] font-mono text-foreground/80 mt-1 italic leading-relaxed max-w-[280px] mx-auto">
           Arctic Circle, 1985. Something ancient stirs beneath the permafrost. 
           Your mission: infiltrate, survive, extract.
         </p>
