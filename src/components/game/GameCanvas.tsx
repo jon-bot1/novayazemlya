@@ -264,13 +264,13 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
       )}
 
       <div className="text-center">
-        <p className="text-[9px] font-mono text-accent/80 tracking-wider mb-1">
+        <p className="text-[9px] font-mono text-accent tracking-wider mb-1">
           novaya-zemlya.com
         </p>
-        <p className="text-[9px] font-mono text-muted-foreground/70">
+        <p className="text-[9px] font-mono text-foreground/80">
           © 2025-2026 — Made with ☕ and paranoia
         </p>
-        <p className="text-[8px] font-mono text-muted-foreground/60 mt-1">
+        <p className="text-[8px] font-mono text-foreground/70 mt-1">
           Special thanks to Battlestate Games (Escape from Tarkov) for the inspiration
         </p>
       </div>
