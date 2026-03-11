@@ -197,11 +197,11 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
           <button
             className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
             onClick={handleStart}
-            disabled={!callsign}
+            disabled={adminMode !== 'incognito' && !callsign}
           >
             ▶ BEGIN OPERATION
           </button>
-          {!callsign && (
+          {adminMode !== 'incognito' && !callsign && (
             <p className="text-[10px] font-mono text-destructive text-center">
               Set a callsign in your <a href="/profile" className="underline">profile</a> first.
             </p>
