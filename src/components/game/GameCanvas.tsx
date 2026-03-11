@@ -122,12 +122,15 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
-    if (user && callsign) {
+    if (isAdmin && adminMode === 'incognito') {
+      // Incognito: play as anonymous, nothing logged
+      onStart('__anonymous__', 'default');
+    } else if (user && callsign) {
       onStart(callsign, skin);
     } else {
       onStart('__anonymous__', 'default');
     }
-  }, [user, callsign, skin, onStart]);
+  }, [user, callsign, skin, onStart, isAdmin, adminMode]);
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
