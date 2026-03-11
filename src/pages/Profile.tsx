@@ -40,6 +40,8 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [newCallsign, setNewCallsign] = useState('');
   const [callsignMsg, setCallsignMsg] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
 
   // Account management
   const [newEmail, setNewEmail] = useState('');
