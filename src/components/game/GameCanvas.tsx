@@ -15,6 +15,8 @@ import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
 import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 import { LogoutButton } from './LogoutButton';
+import { AdminModeBadge } from './AdminModeBadge';
+import { useAdminMode, type AdminMode } from '@/hooks/useAdminMode';
 import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
