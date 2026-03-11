@@ -1259,10 +1259,19 @@ function DayNightSection() {
 export default function Wiki() {
   const [section, setSection] = useState<WikiSection>('lore');
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.rpc('get_my_roles').then(({ data }) => {
+          if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+        });
+      }
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
