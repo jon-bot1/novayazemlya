@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { LogoutButton } from '@/components/game/LogoutButton';
+import { AdminModeBadge } from '@/components/game/AdminModeBadge';
+import { useAdminMode } from '@/hooks/useAdminMode';
 
 interface ProfileData {
   display_name: string;

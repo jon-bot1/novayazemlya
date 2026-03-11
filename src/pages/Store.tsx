@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { LogoutButton } from '@/components/game/LogoutButton';
+import { AdminModeBadge } from '@/components/game/AdminModeBadge';
+import { useAdminMode } from '@/hooks/useAdminMode';
 
 const PACKAGES = [
   { id: 'bonus_500', label: '500 Bonus Rubles', rubles: 500, price: '€4.99 / $4.99 / 50 SEK', popular: false },
