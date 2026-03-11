@@ -124,6 +124,18 @@ const Auth: React.FC = () => {
             </div>
           )}
 
+          {mode === 'login' && (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+                className="accent-primary w-3.5 h-3.5"
+              />
+              <span className="text-[10px] font-mono text-muted-foreground">Remember me</span>
+            </label>
+          )}
+
           {error && <p className="text-xs font-mono text-destructive">{error}</p>}
           {message && <p className="text-xs font-mono text-safe">{message}</p>}
 
