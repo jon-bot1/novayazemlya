@@ -25,8 +25,18 @@ const Auth: React.FC = () => {
     e.preventDefault();
     setLoading(true); setError(''); setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
-    else localStorage.setItem('nz_last_email', email);
+    if (error) {
+      setError(error.message);
+    } else {
+      localStorage.setItem('nz_last_email', email);
+      if (rememberMe) {
+        localStorage.setItem('nz_remember', 'true');
+        localStorage.setItem('nz_saved_pw', password);
+      } else {
+        localStorage.removeItem('nz_remember');
+        localStorage.removeItem('nz_saved_pw');
+      }
+    }
     setLoading(false);
   };
 
