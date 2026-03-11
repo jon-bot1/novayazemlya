@@ -14,6 +14,8 @@ const PACKAGES = [
 const Store: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
   const navigate = useNavigate();
 
   useEffect(() => {
