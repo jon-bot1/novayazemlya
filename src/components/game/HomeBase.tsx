@@ -118,7 +118,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
 
   return (
     <div className="absolute inset-0 flex flex-col bg-background z-50">
-      <div className="flex-1 overflow-y-auto flex items-start sm:items-center justify-center py-2">
+      <div className="flex-1 overflow-y-auto flex items-start justify-center py-2">
       <div className="max-w-2xl w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-3 sm:p-6 border border-border bg-card rounded">
         {/* Header */}
         <div className="text-center border-b border-border pb-4">
