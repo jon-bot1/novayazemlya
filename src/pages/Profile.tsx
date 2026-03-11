@@ -74,6 +74,9 @@ const Profile: React.FC = () => {
         return;
       }
       setUser(session.user);
+      supabase.rpc('get_my_roles').then(({ data }) => {
+        if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+      });
     });
 
     return () => subscription.unsubscribe();
