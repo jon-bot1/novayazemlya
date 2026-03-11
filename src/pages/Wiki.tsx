@@ -1288,6 +1288,7 @@ export default function Wiki() {
             <h1 className="text-lg font-display text-accent uppercase tracking-wider">📖 FIELD MANUAL</h1>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && <AdminModeBadge mode={adminMode} onCycle={cycleMode} compact />}
             <span className="text-[9px] font-mono text-muted-foreground">NOVAYA ZEMLYA — CLASSIFIED</span>
             {user && <LogoutButton compact />}
           </div>
