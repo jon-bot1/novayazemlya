@@ -6,8 +6,9 @@ type Mode = 'login' | 'register' | 'forgot';
 
 const Auth: React.FC = () => {
   const [mode, setMode] = useState<Mode>('login');
+  const [rememberMe, setRememberMe] = useState(() => localStorage.getItem('nz_remember') === 'true');
   const [email, setEmail] = useState(() => localStorage.getItem('nz_last_email') || '');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(() => rememberMe ? (localStorage.getItem('nz_saved_pw') || '') : '');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -24,8 +25,18 @@ const Auth: React.FC = () => {
     e.preventDefault();
     setLoading(true); setError(''); setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
-    else localStorage.setItem('nz_last_email', email);
+    if (error) {
+      setError(error.message);
+    } else {
+      localStorage.setItem('nz_last_email', email);
+      if (rememberMe) {
+        localStorage.setItem('nz_remember', 'true');
+        localStorage.setItem('nz_saved_pw', password);
+      } else {
+        localStorage.removeItem('nz_remember');
+        localStorage.removeItem('nz_saved_pw');
+      }
+    }
     setLoading(false);
   };
 
@@ -111,6 +122,18 @@ const Auth: React.FC = () => {
                 minLength={6}
               />
             </div>
+          )}
+
+          {mode === 'login' && (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+                className="accent-primary w-3.5 h-3.5"
+              />
+              <span className="text-[10px] font-mono text-muted-foreground">Remember me</span>
+            </label>
           )}
 
           {error && <p className="text-xs font-mono text-destructive">{error}</p>}
