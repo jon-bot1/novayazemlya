@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { LogoutButton } from '@/components/game/LogoutButton';
+import { AdminModeBadge } from '@/components/game/AdminModeBadge';
+import { useAdminMode } from '@/hooks/useAdminMode';
 
 interface ProfileData {
   display_name: string;
@@ -38,6 +40,8 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [newCallsign, setNewCallsign] = useState('');
   const [callsignMsg, setCallsignMsg] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
 
   // Account management
   const [newEmail, setNewEmail] = useState('');
@@ -70,6 +74,9 @@ const Profile: React.FC = () => {
         return;
       }
       setUser(session.user);
+      supabase.rpc('get_my_roles').then(({ data }) => {
+        if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+      });
     });
 
     return () => subscription.unsubscribe();
@@ -194,7 +201,10 @@ const Profile: React.FC = () => {
               Level {progress?.level ?? 1} · {progress?.xp ?? 0} XP · {progress?.rubles ?? 0} ₽
             </p>
           </div>
-          <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+          <div className="flex items-center gap-2">
+            {isAdmin && <AdminModeBadge mode={adminMode} onCycle={cycleMode} compact />}
+            <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+          </div>
         </div>
 
         {/* Tabs */}

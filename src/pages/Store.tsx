@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { LogoutButton } from '@/components/game/LogoutButton';
+import { AdminModeBadge } from '@/components/game/AdminModeBadge';
+import { useAdminMode } from '@/hooks/useAdminMode';
 
 const PACKAGES = [
   { id: 'bonus_500', label: '500 Bonus Rubles', rubles: 500, price: '€4.99 / $4.99 / 50 SEK', popular: false },
@@ -12,12 +14,19 @@ const PACKAGES = [
 const Store: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) {
+        supabase.rpc('get_my_roles').then(({ data }) => {
+          if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+        });
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
@@ -85,7 +94,10 @@ const Store: React.FC = () => {
           <a href="/" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
             ← Back to game
           </a>
-          {user && <LogoutButton compact />}
+          <div className="flex items-center gap-2">
+            {isAdmin && <AdminModeBadge mode={adminMode} onCycle={cycleMode} compact />}
+            {user && <LogoutButton compact />}
+          </div>
         </div>
       </div>
     </div>

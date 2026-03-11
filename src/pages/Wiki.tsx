@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { LogoutButton } from '@/components/game/LogoutButton';
+import { AdminModeBadge } from '@/components/game/AdminModeBadge';
+import { useAdminMode } from '@/hooks/useAdminMode';
 
 type WikiSection = 'lore' | 'factions' | 'occult' | 'world' | 'controls' | 'weapons' | 'recoil' | 'enemies' | 'bosses' | 'maps' | 'items' | 'mechanics' | 'stealth' | 'upgrades' | 'safehouse' | 'achievements' | 'reputation' | 'daynight';
 
@@ -1257,10 +1259,19 @@ function DayNightSection() {
 export default function Wiki() {
   const [section, setSection] = useState<WikiSection>('lore');
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { mode: adminMode, cycleMode } = useAdminMode();
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.rpc('get_my_roles').then(({ data }) => {
+          if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+        });
+      }
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
@@ -1277,6 +1288,7 @@ export default function Wiki() {
             <h1 className="text-lg font-display text-accent uppercase tracking-wider">📖 FIELD MANUAL</h1>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && <AdminModeBadge mode={adminMode} onCycle={cycleMode} compact />}
             <span className="text-[9px] font-mono text-muted-foreground">NOVAYA ZEMLYA — CLASSIFIED</span>
             {user && <LogoutButton compact />}
           </div>

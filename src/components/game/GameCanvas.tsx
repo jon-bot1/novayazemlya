@@ -15,6 +15,8 @@ import { IntelPanel } from './IntelPanel';
 import { LootPopup, LootNotification } from './LootPopup';
 import { HomeBase, StashState, loadStash, saveStash } from './HomeBase';
 import { LogoutButton } from './LogoutButton';
+import { AdminModeBadge } from './AdminModeBadge';
+import { useAdminMode, type AdminMode } from '@/hooks/useAdminMode';
 import { generateMissionObjectives, MissionObjective, checkObjectiveCompletion } from '../../game/objectives';
 import { getUpgradeLevel, getUpgradeCost, UPGRADES, TRADER_ITEMS, getLevelForXp } from '../../game/upgrades';
 import { createMedical, createGrenade, createFlashbang, createGasGrenade, createTNT, createAmmo, createArmor, createHelmet, createGoggles, createBackpack, WEAPON_TEMPLATES, createScope, createSuppressor, createExtMagazine } from '../../game/items';
@@ -81,17 +83,9 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
   const [isAdmin, setIsAdmin] = React.useState(false);
-  const [adminIncognito, setAdminIncognito] = React.useState(() => localStorage.getItem('adminIncognito') === 'true');
+  const { mode: adminMode, cycleMode } = useAdminMode();
 
-  const toggleIncognito = React.useCallback(() => {
-    setAdminIncognito(prev => {
-      const next = !prev;
-      localStorage.setItem('adminIncognito', String(next));
-      return next;
-    });
-  }, []);
-
-  const effectiveAdmin = isAdmin && !adminIncognito;
+  const effectiveAdmin = isAdmin && adminMode === 'admin';
 
   // Ambient wind on menu
   React.useEffect(() => {
@@ -128,12 +122,15 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
-    if (user && callsign) {
+    if (isAdmin && adminMode === 'incognito') {
+      // Incognito: play as anonymous, nothing logged
+      onStart('__anonymous__', 'default');
+    } else if (user && callsign) {
       onStart(callsign, skin);
     } else {
       onStart('__anonymous__', 'default');
     }
-  }, [user, callsign, skin, onStart]);
+  }, [user, callsign, skin, onStart, isAdmin, adminMode]);
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -186,34 +183,25 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </div>
       ) : user ? (
         <div className="flex flex-col gap-2">
-           <div className="border border-accent/30 rounded p-3 bg-accent/5 text-center">
-            <p className="text-xs font-display text-accent uppercase tracking-wider">
-              {isAdmin ? (
-                <button
-                  onClick={toggleIncognito}
-                  className="hover:opacity-70 transition-opacity cursor-pointer"
-                  title={adminIncognito ? 'Playing as regular user — click to switch back to Admin' : 'Click to play as regular user'}
-                >
-                  {adminIncognito ? '🛡️ ALPHA TESTER (incognito)' : '⭐ ADMIN'}
-                </button>
-              ) : '🛡️ ALPHA TESTER'}
-            </p>
-            <p className="text-sm font-display text-foreground mt-1">{callsign || '(no callsign set)'}</p>
-            <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
-            {isAdmin && (
-              <p className="text-[8px] font-mono text-muted-foreground/60 mt-1">
-                {adminIncognito ? 'Tap badge to return to admin mode' : 'Tap badge to play as regular user'}
-              </p>
-            )}
-          </div>
+           {isAdmin ? (
+             <AdminModeBadge mode={adminMode} onCycle={cycleMode} />
+           ) : (
+             <div className="border border-primary/30 rounded p-2 text-center">
+               <p className="text-xs font-display text-primary uppercase tracking-wider">🛡️ ALPHA TESTER</p>
+             </div>
+           )}
+           <div className="text-center">
+             <p className="text-sm font-display text-foreground">{callsign || '(no callsign set)'}</p>
+             <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
+           </div>
           <button
             className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
             onClick={handleStart}
-            disabled={!callsign}
+            disabled={adminMode !== 'incognito' && !callsign}
           >
             ▶ BEGIN OPERATION
           </button>
-          {!callsign && (
+          {adminMode !== 'incognito' && !callsign && (
             <p className="text-[10px] font-mono text-destructive text-center">
               Set a callsign in your <a href="/profile" className="underline">profile</a> first.
             </p>
