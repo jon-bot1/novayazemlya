@@ -22,6 +22,11 @@ const Store: React.FC = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) {
+        supabase.rpc('get_my_roles').then(({ data }) => {
+          if (data && Array.isArray(data)) setIsAdmin(data.includes('admin'));
+        });
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
