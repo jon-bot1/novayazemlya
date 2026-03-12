@@ -73,7 +73,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   const [chosenEnding, setChosenEnding] = useState<GameEnding | null>(null);
   const [endingPhase, setEndingPhase] = useState<'choice' | 'narrative' | 'epilogue'>('choice');
   const [completedEndingId, setCompletedEndingId] = useState<string | null>(hasCompletedEnding);
-  const [dailyProgress, setDailyProgress] = useState(loadDailyProgress);
+  
   const [streakData, setStreakData] = useState<{ current: number; bonus: number; isNew: boolean } | null>(null);
 
   // Check login streak on mount
