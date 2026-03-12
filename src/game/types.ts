@@ -374,4 +374,5 @@ export interface InputState {
   throwKnife: boolean; // throw knife for silent ranged kill (F key)
   chokehold: boolean; // hold E behind enemy for silent chokehold
   throwRock: boolean; // throw distraction rock (middle mouse / C key)
+  useAbility: boolean; // class ability (Z key)
 }
