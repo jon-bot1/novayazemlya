@@ -139,7 +139,9 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user]);
 
-  const activeSkin: PlayerSkin = effectiveAdmin ? 'admin' : (isAdmin && adminMode === 'incognito') ? 'anonymous' : user ? selectedSkin : 'anonymous';
+  // Enforce role-locked skins: validate selectedSkin is in availableSkins
+  const validatedSkin = availableSkins.find(s => s.id === selectedSkin) ? selectedSkin : 'anonymous';
+  const activeSkin: PlayerSkin = effectiveAdmin ? 'admin' : (isAdmin && adminMode === 'incognito') ? 'anonymous' : user ? validatedSkin : 'anonymous';
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
