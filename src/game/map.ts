@@ -425,7 +425,7 @@ export function generateMap() {
   // === OUTDOOR OFFICERS — 1-3 total ===
   const pureOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
   const allOfficerZones = [...pureOutsideZones, ZONE_YARD_W, ZONE_YARD_E, ZONE_YARD_N];
-  const numOfficers = 2 + Math.floor(Math.random() * 2); // 2-3
+  const numOfficers = 1 + Math.floor(Math.random() * 2); // 1-2
   for (let i = 0; i < numOfficers; i++) {
     // First 2 officers always spawn outside walls
     const zone = i < 2
