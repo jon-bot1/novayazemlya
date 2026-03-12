@@ -122,6 +122,20 @@ const Profile: React.FC = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // Auto-verify donation after returning from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('donation') === 'success' && user) {
+      supabase.functions.invoke('verify-donation').then(({ data }) => {
+        if (data?.is_donator) {
+          setProfile(p => p ? { ...p, is_donator: true } : p);
+        }
+      });
+      // Clean URL
+      window.history.replaceState({}, '', '/profile');
+    }
+  }, [user]);
+
   const handleUpdateEmail = async () => {
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
     const { error } = await supabase.auth.updateUser({ email: newEmail });
