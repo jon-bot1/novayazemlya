@@ -1107,6 +1107,7 @@ export const GameCanvas: React.FC = () => {
         <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
           setPlayerSkin(skin);
+          setPlayerSkinId(skin);
           setPlayerIsAdmin(skin === 'admin');
           // Check donator status
           const { data: { session } } = await supabase.auth.getSession();
