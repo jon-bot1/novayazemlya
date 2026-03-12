@@ -102,12 +102,12 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user, isAdmin]);
 
-  // Ensure selected skin is valid
+  // Load saved skin and validate against available skins
   React.useEffect(() => {
-    if (!availableSkins.find(s => s.id === selectedSkin)) {
-      setSelectedSkin(availableSkins[0]?.id || 'anonymous');
-    }
-  }, [availableSkins, selectedSkin]);
+    const saved = localStorage.getItem('nz_selected_skin') as PlayerSkin | null;
+    const validSkin = saved && availableSkins.find(s => s.id === saved) ? saved : (availableSkins.find(s => s.access === 'registered')?.id || availableSkins[0]?.id || 'anonymous');
+    if (selectedSkin !== validSkin) setSelectedSkin(validSkin);
+  }, [availableSkins]);
 
   // Ambient wind on menu
   React.useEffect(() => {
