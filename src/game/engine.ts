@@ -1027,7 +1027,20 @@ function relocateEnemyToOpenArea(state: GameState, enemy: Enemy): boolean {
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
   if (state.gameOver || state.extracted) return state;
 
+  // Pause support — if paused flag is set, skip update (timer, AI, etc.)
+  if ((state as any)._paused) return state;
+
   state.time += dt;
+
+  // === GROUND LOOT TIMEOUT — uninspected weapon drops disappear after 90s ===
+  for (let li = state.lootContainers.length - 1; li >= 0; li--) {
+    const lc = state.lootContainers[li];
+    if (lc.type === 'weapon_drop' && !lc.looted && (lc as any)._spawnTime !== undefined) {
+      if (state.time - (lc as any)._spawnTime > 90) {
+        state.lootContainers.splice(li, 1);
+      }
+    }
+  }
 
   // === ELEVATOR BLACKOUT FADE ===
   if ((state as any)._elevatorFade > 0) {
