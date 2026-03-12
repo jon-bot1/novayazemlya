@@ -122,7 +122,11 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
       <div className="max-w-2xl w-full mx-2 sm:mx-4 flex flex-col gap-3 sm:gap-4 p-3 sm:p-6 border border-border bg-card rounded">
         {/* Header */}
         <div className="text-center border-b border-border pb-4">
-          <h1 className="text-2xl font-display text-accent text-glow-green tracking-wider">🏠 SAFE HOUSE</h1>
+          <div className="flex items-center justify-between mb-1">
+            <a href="/profile" className="text-[9px] font-mono text-accent hover:text-foreground transition-colors">👤 Profile</a>
+            <h1 className="text-2xl font-display text-accent text-glow-green tracking-wider">🏠 SAFE HOUSE</h1>
+            {onReturnToMenu && <button onClick={onReturnToMenu} className="text-[9px] font-mono text-muted-foreground hover:text-foreground transition-colors">← Menu</button>}
+          </div>
           <p className="text-xs font-mono text-muted-foreground mt-1">
             Agent <span className="text-foreground">{displayName}</span> — <span className="text-warning">{stash.rubles}₽</span>
           </p>

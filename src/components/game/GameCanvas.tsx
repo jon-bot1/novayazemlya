@@ -1327,6 +1327,21 @@ export const GameCanvas: React.FC = () => {
       <div className="relative w-full h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
+        {/* Pause overlay */}
+        {gamePaused && !showControlOverlay && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/70 backdrop-blur-sm pointer-events-auto">
+            <div className="text-center">
+              <h2 className="text-3xl font-display text-accent tracking-wider mb-4">⏸ PAUSED</h2>
+              <button
+                className="px-8 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors"
+                onClick={() => { setGamePaused(false); gamePausedRef.current = false; }}
+              >
+                ▶ RESUME
+              </button>
+            </div>
+          </div>
+        )}
+
         {showFirefoxWarning && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
             <div className="max-w-md rounded border border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur">

@@ -353,6 +353,26 @@ const Profile: React.FC = () => {
             </div>
 
             <LogoutButton />
+
+            {/* Donation */}
+            <div className="border border-accent/30 rounded p-4 bg-accent/5 flex flex-col gap-2 items-center">
+              <p className="text-[10px] font-display text-accent uppercase tracking-wider">☕ Support Development</p>
+              <p className="text-[9px] font-mono text-muted-foreground text-center">
+                Enjoy the game? Buy the developer a coffee!<br/>
+                Donators unlock the exclusive <span className="text-accent font-bold">Vanguard</span> outfit.
+              </p>
+              <a
+                href="https://www.paypal.com/paypalme/jonpetersvensson/5"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-2.5 bg-accent text-accent-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-accent/80 transition-colors"
+              >
+                💛 Donate €5 via PayPal
+              </a>
+              <p className="text-[8px] font-mono text-muted-foreground/50">
+                After donating, send a screenshot to get your account upgraded.
+              </p>
+            </div>
           </div>
         )}
 
