@@ -263,7 +263,8 @@ function spawnWeaponDrop(state: GameState, item: Item, sourcePos: Vec2) {
     items: [item],
     looted: false,
     type: 'weapon_drop',
-  });
+    _spawnTime: state.time,
+  } as any);
 }
 
 // Helper: pick up a weapon_drop — equip or swap
