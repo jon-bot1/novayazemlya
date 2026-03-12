@@ -311,6 +311,22 @@ function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer)
   }
 
   if (currentInSlot.name === item.name) {
+    // Allow picking up same weapon if current magazine is empty — get full mag
+    const currentAmmo = (currentInSlot as any)._loadedAmmo;
+    const equippedAmmo = state.player.equippedWeapon === currentInSlot ? state.player.currentAmmo : currentAmmo;
+    if (equippedAmmo !== undefined && equippedAmmo <= 0) {
+      // Swap to get a full magazine
+      const oldIdx = state.player.inventory.indexOf(currentInSlot);
+      if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+      setSlotWeapon(item);
+      state.player.inventory.push(item);
+      if (slot !== 'melee' && item.ammoType) setWeaponAmmo(state, item);
+      lc.items = [currentInSlot];
+      lc.looted = false;
+      addMessage(state, `🔫 Swapped ${item.name} for full magazine!`, 'info');
+      playPickup();
+      return;
+    }
     addMessage(state, `Already have ${item.name}`, 'info');
     return;
   }
