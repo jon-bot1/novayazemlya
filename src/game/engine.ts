@@ -571,8 +571,14 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
   
   return angleDiff <= arc;
-}
+  }
 
+  // Stamp _deathTime on freshly dead enemies (centralized)
+  for (const enemy of state.enemies) {
+    if (enemy.state === 'dead' && (enemy as any)._deathTime === undefined) {
+      (enemy as any)._deathTime = state.time;
+    }
+  }
 
 function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
   if (!deadGuard.elevated) return;
