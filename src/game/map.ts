@@ -555,12 +555,12 @@ export function generateMap() {
     return false;
   });
   const keycardPool = outsideZoneGuards.length > 0 ? outsideZoneGuards : outsideGuards;
-  // Shuffle and pick 1-2
+  // Shuffle and always pick exactly 2
   for (let i = keycardPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [keycardPool[i], keycardPool[j]] = [keycardPool[j], keycardPool[i]];
   }
-  const keycardCount = 1 + Math.floor(Math.random() * 2); // 1 or 2
+  const keycardCount = 2; // always 2 access cards on outside enemies
   for (let k = 0; k < Math.min(keycardCount, keycardPool.length); k++) {
     const guard = keycardPool[k];
     guard.loot.push(createKeycard());

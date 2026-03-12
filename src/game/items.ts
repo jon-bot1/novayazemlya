@@ -373,6 +373,7 @@ export const LOOT_POOLS = {
       [createScope(), 0.06],
       [createSuppressor(), 0.04],
       [createExtMagazine(), 0.05],
+      [createKeycard(), 0.06],
     ]);
   },
   medical: (): Item[] => {
