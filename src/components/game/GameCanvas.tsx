@@ -1485,6 +1485,23 @@ export const GameCanvas: React.FC = () => {
         <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto flex gap-1 items-start">
           <button
             className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => { setGamePaused(p => { gamePausedRef.current = !p; return !p; }); }}
+          >
+            {gamePaused ? '▶' : '⏸'}
+          </button>
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => {
+              setMusicEnabled(prev => {
+                if (prev) { stopAmbient(); } else { startAmbient(selectedMapId); }
+                return !prev;
+              });
+            }}
+          >
+            {musicEnabled ? '🔊' : '🔇'}
+          </button>
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}
           >
             {isMobile ? 'Desktop' : 'Mobil'}
