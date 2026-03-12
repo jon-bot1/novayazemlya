@@ -935,7 +935,7 @@ export const GameCanvas: React.FC = () => {
           damageDealt: Math.round((state as any)._damageDealt || 0),
           damageTaken: Math.round((state as any)._damageTaken || 0),
           enemyPositions: state.enemies
-            .filter(e => e.state !== 'dead' && (e.state === 'chase' || e.state === 'attack' || e.state === 'suppress' || e.state === 'flank' || Math.hypot(e.pos.x - state.player.pos.x, e.pos.y - state.player.pos.y) < 300))
+            .filter(e => e.state !== 'dead' && ((state as any)._spotterActive || (state as any)._seeEnemyTypes || e.state === 'chase' || e.state === 'attack' || e.state === 'suppress' || e.state === 'flank' || Math.hypot(e.pos.x - state.player.pos.x, e.pos.y - state.player.pos.y) < 300))
             .map(e => ({ x: e.pos.x, y: e.pos.y, type: e.type, state: e.state })),
           extractionPositions: state.extractionPoints.map(ep => ({ x: ep.pos.x, y: ep.pos.y, name: ep.name, active: ep.active })),
           objectivePositions: state.lootContainers.filter(lc => !lc.looted && lc.type === 'archive').map(lc => ({ x: lc.pos.x, y: lc.pos.y })),
