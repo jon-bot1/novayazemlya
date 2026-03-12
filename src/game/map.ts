@@ -173,12 +173,14 @@ export function generateMap() {
     // Left wall — door gap at HY+400 to HY+470
     makeWall(HX, HY, T, 400, WD),
     makeWall(HX, HY + 470, T, HH - 470, WD),
-    // Right wall — solid with extension bump-out
-    makeWall(HX + HW - T, HY, T, 300, WD),
-    makeWall(HX + HW - T, HY + 400, T, HH - 400, WD),
-    // Right-side extension (bump-out room, 100x100)
+    // Right wall — door gap at HY+500 to HY+580 (80px entrance on east side)
+    makeWall(HX + HW - T, HY, T, 200, WD),
+    makeWall(HX + HW - T, HY + 280, T, 20, WD),
+    makeWall(HX + HW - T, HY + 400, T, 100, WD),
+    makeWall(HX + HW - T, HY + 580, T, HH - 580, WD),
+    // Right-side extension (bump-out room, 100x100) — door gap on south side (80px)
     makeWall(HX + HW - T, HY + 300, 100, T, WD),      // extension top
-    makeWall(HX + HW - T, HY + 400, 100, T, WD),      // extension bottom
+    makeWall(HX + HW - T, HY + 400, 20, T, WD),       // extension bottom left (gap 20-100 = 80px door)
     makeWall(HX + HW + 100 - T - T, HY + 300, T, 100, WD), // extension right wall
     // Bottom-left extension (loading bay, 80x120)
     makeWall(HX - 80, HY + HH - 120, T, 120, WD),     // extension left wall
