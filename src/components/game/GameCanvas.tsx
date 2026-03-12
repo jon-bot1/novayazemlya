@@ -92,6 +92,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   // Skin selection
   const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
+  const [inspectedSkin, setInspectedSkin] = React.useState<PlayerSkin | null>(null);
 
   // Determine which skins are SELECTABLE vs VISIBLE
   const showAdminSkins = isAdmin && adminMode === 'admin';
@@ -241,19 +242,29 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
                   {visibleSkins.map(s => {
                     const isUnlocked = availableSkins.some(a => a.id === s.id);
                     const classDef = getClassDef(s.id);
+                    const isInspected = inspectedSkin === s.id;
+                    const isActive = activeSkin === s.id;
                     return (
                       <button
                         key={s.id}
                         className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
-                          !isUnlocked
-                            ? 'border-border/20 bg-secondary/5 text-muted-foreground/30 cursor-not-allowed opacity-50'
-                            : activeSkin === s.id
+                          isActive
                             ? 'border-accent bg-accent/15 text-foreground'
+                            : isInspected && !isUnlocked
+                            ? 'border-accent/40 bg-accent/5 text-muted-foreground/60'
+                            : !isUnlocked
+                            ? 'border-border/20 bg-secondary/5 text-muted-foreground/40 opacity-60 hover:opacity-80 hover:border-border/40'
                             : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
                         }`}
-                        onClick={() => isUnlocked && setSelectedSkin(s.id)}
-                        title={isUnlocked ? s.description : UNLOCK_HINTS[s.access] || ''}
-                        disabled={!isUnlocked}
+                        onClick={() => {
+                          if (isUnlocked) {
+                            setSelectedSkin(s.id);
+                            setInspectedSkin(null);
+                          } else {
+                            setInspectedSkin(isInspected ? null : s.id);
+                          }
+                        }}
+                        title={isUnlocked ? s.description : `Click to view ${classDef.className} info`}
                       >
                         <span className="text-lg">{isUnlocked ? s.icon : '🔒'}</span>
                         <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
@@ -267,20 +278,28 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
                     );
                   })}
                 </div>
-                {/* Selected class details */}
+                {/* Class details — show inspected locked class or active class */}
                 {(() => {
-                  const selClass = getClassDef(activeSkin);
+                  const showSkinId = inspectedSkin || activeSkin;
+                  const showClass = getClassDef(showSkinId);
+                  const showSkinDef = PLAYER_SKINS.find(s => s.id === showSkinId);
+                  const isLocked = inspectedSkin && !availableSkins.some(a => a.id === inspectedSkin);
                   return (
-                    <div className="mt-2 p-1.5 bg-secondary/20 rounded border border-border/20">
+                    <div className={`mt-2 p-1.5 rounded border ${isLocked ? 'bg-accent/5 border-accent/20' : 'bg-secondary/20 border-border/20'}`}>
                       <p className="text-[8px] font-display text-foreground/80 text-center uppercase tracking-wider">
-                        {selClass.className} — {PLAYER_SKINS.find(s => s.id === activeSkin)?.name}
+                        {isLocked && '🔒 '}{showClass.className} — {showSkinDef?.name}
                       </p>
-                      {selClass.passiveDescription.map((line, i) => (
+                      {showClass.passiveDescription.map((line, i) => (
                         <p key={i} className="text-[7px] font-mono text-accent/70 text-center">{line}</p>
                       ))}
-                      {selClass.ability.id !== 'none' && (
+                      {showClass.ability.id !== 'none' && (
                         <p className="text-[7px] font-mono text-muted-foreground/60 text-center mt-0.5">
-                          [Z] {selClass.ability.icon} {selClass.ability.name}: {selClass.ability.description}
+                          [Z] {showClass.ability.icon} {showClass.ability.name}: {showClass.ability.description}
+                        </p>
+                      )}
+                      {isLocked && showSkinDef && (
+                        <p className="text-[7px] font-mono text-destructive/60 text-center mt-1 italic">
+                          {UNLOCK_HINTS[showSkinDef.access] || 'Locked'}
                         </p>
                       )}
                     </div>
