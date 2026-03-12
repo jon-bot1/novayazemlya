@@ -3,6 +3,7 @@ import { createGameState, updateGame } from '../../game/engine';
 import { renderGame, setPlayerSkin, PLAYER_SKINS, type PlayerSkin } from '../../game/renderer';
 import { GameState, InputState, Item } from '../../game/types';
 import { MapId } from '../../game/maps';
+import { getClassDef, CLASS_DEFS, DONATOR_PERKS, UNLOCK_HINTS } from '../../game/classes';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
 import { MobileControls } from './MobileControls';
 import { useIsMobile } from '@/hooks/use-mobile';
