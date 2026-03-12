@@ -56,6 +56,7 @@ const Profile: React.FC = () => {
   const [comment, setComment] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [donationLoading, setDonationLoading] = useState(false);
 
   // Tab
   const [tab, setTab] = useState<'stats' | 'account' | 'feedback'>('stats');
