@@ -3815,6 +3815,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       else if (distToPlayer < 60) visibilityFactor *= 0.2; // very close = slight suspicion
       else visibilityFactor *= 0.02; // practically invisible
     }
+    // Ghost Mode ability — completely invisible
+    if ((state as any)._ghostMode) visibilityFactor *= 0;
     // Behind enemy = harder, but no longer near-impossible
     if (isBehind) visibilityFactor *= 0.35;
     // Distance falloff — closer = faster detection
