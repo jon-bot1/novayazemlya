@@ -4168,7 +4168,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (enemy as any)._enemyGrenadeTimer -= dt;
       // Throw much more often when player is in cover
       const throwInterval = state.player.inCover ? 3 + Math.random() * 2 : 8 + Math.random() * 6;
-      if ((enemy as any)._enemyGrenadeTimer <= 0 && (enemy as any)._grenadeSupply > 0) {
+      // Smart grenade AI: don't throw if blast radius would kill self
+      const grenadeRadius = 100;
+      const safeThrowDist = grenadeRadius + 30; // need to be outside blast + margin
+      if ((enemy as any)._enemyGrenadeTimer <= 0 && (enemy as any)._grenadeSupply > 0 && distToPlayer > safeThrowDist) {
         (enemy as any)._grenadeSupply--;
         (enemy as any)._enemyGrenadeTimer = throwInterval;
         const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -4178,7 +4181,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pos: { x: enemy.pos.x, y: enemy.pos.y },
           vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
           timer: 1.8,
-          radius: 100,
+          radius: grenadeRadius,
           damage: 60,
           fromPlayer: false,
           sourceId: enemy.id,
