@@ -192,9 +192,9 @@ export function generateMap() {
     makeWall(HX + T, HY + 500, 300, T),
     makeWall(HX + 380, HY + 500, 120, T),
 
-    // Hangar internal east wall — gap at y=200-300 for corridor
-    makeWall(HX + 500, HY + T, T, 188),
-    makeWall(HX + 500, HY + 312, T, 188),
+    // Hangar internal east wall — wider gap at y=180-320 for corridor (140px gap)
+    makeWall(HX + 500, HY + T, T, 168),
+    makeWall(HX + 500, HY + 332, T, 168),
 
     // Corridor walls
     makeWall(HX + 500, HY + 200, 200, T),
