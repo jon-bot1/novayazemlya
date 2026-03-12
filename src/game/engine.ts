@@ -1055,7 +1055,13 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     }
   }
 
-  // === ELEVATOR BLACKOUT FADE ===
+  // Stamp _deathTime on freshly dead enemies (centralized — catches all death sources)
+  for (const enemy of state.enemies) {
+    if (enemy.state === 'dead' && (enemy as any)._deathTime === undefined) {
+      (enemy as any)._deathTime = state.time;
+    }
+  }
+
   if ((state as any)._elevatorFade > 0) {
     (state as any)._elevatorFade -= dt;
     // Swap map at midpoint (when fully black)
