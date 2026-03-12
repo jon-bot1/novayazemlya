@@ -431,6 +431,7 @@ export const GameCanvas: React.FC = () => {
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [playerIsAdmin, setPlayerIsAdmin] = useState(false);
+  const [playerIsDonator, setPlayerIsDonator] = useState(false);
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'deploying' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
