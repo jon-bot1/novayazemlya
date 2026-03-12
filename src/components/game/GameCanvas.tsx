@@ -1050,6 +1050,12 @@ export const GameCanvas: React.FC = () => {
           setPlayerName(name);
           setPlayerSkin(skin);
           setPlayerIsAdmin(skin === 'admin');
+          // Check donator status
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { data: prof } = await supabase.from('profiles').select('is_donator').eq('id', session.user.id).single();
+            setPlayerIsDonator(prof?.is_donator === true);
+          }
           // Try loading from DB first
           const dbStash = await loadStashFromDb(name);
           if (dbStash) {
