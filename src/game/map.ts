@@ -316,8 +316,7 @@ export function generateMap() {
   const allOutsideZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_N, ZONE_OUTSIDE_NE];
 
   const enemies: Enemy[] = [
-    // Inside base — minimal garrison (stealth-focused)
-    rz(ZONE_HANGAR_A, 'scav'),
+    // Inside base — reduced garrison (-20%)
     rz(ZONE_CORRIDOR, 'soldier'),
     rz(ZONE_STORAGE_A, 'soldier'),
     rz(ZONE_STORAGE_B, 'heavy'),
@@ -350,30 +349,27 @@ export function generateMap() {
       return boss;
     })(),
 
-    // === OUTDOOR ENEMIES — reduced ===
+    // === OUTDOOR ENEMIES — reduced (-15%) ===
     // Gate guards (just one)
     rz(ZONE_GATE, 'soldier'),
     // Yard patrols — fewer
     rz(ZONE_YARD_W, 'scav'),
     rz(ZONE_YARD_E, 'soldier'),
-    rz(ZONE_YARD_N, 'soldier'),
     // Watchtower turrets (elevated, fixed)
     makeEnemy(350, 330, 'turret', Math.PI * 0.75),
     makeEnemy(2880, 330, 'turret', Math.PI * 0.5),
 
-    // === WALL GUARDS — fewer (40% chance each) ===
-    ...(Math.random() < 0.4 ? [makeEnemy(800, 320, 'soldier', Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.4 ? [makeEnemy(2400, 320, 'soldier', Math.PI * 0.5)] : []),
-    ...(Math.random() < 0.4 ? [makeEnemy(340, 800, 'soldier', Math.PI)] : []),
-    ...(Math.random() < 0.4 ? [makeEnemy(2880, 800, 'soldier', 0)] : []),
-    ...(Math.random() < 0.4 ? [makeEnemy(1000, 1830, 'soldier', -Math.PI * 0.5)] : []),
+    // === WALL GUARDS — fewer (30% chance each) ===
+    ...(Math.random() < 0.3 ? [makeEnemy(800, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.3 ? [makeEnemy(2400, 320, 'soldier', Math.PI * 0.5)] : []),
+    ...(Math.random() < 0.3 ? [makeEnemy(340, 800, 'soldier', Math.PI)] : []),
+    ...(Math.random() < 0.3 ? [makeEnemy(2880, 800, 'soldier', 0)] : []),
 
     // === OUTSIDE PATROL GUARDS — reduced ===
     rz(ZONE_OUTSIDE_SW, 'soldier'),
     rz(ZONE_OUTSIDE_SE, 'scav'),
     rz(ZONE_OUTSIDE_S, 'soldier'),
     rz(ZONE_OUTSIDE_N, 'soldier'),
-    rz(ZONE_OUTSIDE_N, 'heavy'),
     rz(ZONE_OUTSIDE_NE, 'soldier'),
 
     // === SNIPER ===
@@ -385,33 +381,26 @@ export function generateMap() {
       return sniper;
     })(),
 
-    // === SHOCKERS — just 1-2 ===
+    // === SHOCKERS — just 1 ===
     rz(pick([...allInsideZones, ...allOutsideZones.slice(0, 3)]), 'shocker'),
-    ...(Math.random() < 0.4 ? [rz(pick(allInsideZones), 'shocker')] : []),
 
-    // === REDNECKS WITH DOGS — 1-2 ===
+    // === REDNECK WITH DOG — 1 ===
     ...(() => {
       const redneckZones = [ZONE_OUTSIDE_SW, ZONE_OUTSIDE_SE, ZONE_OUTSIDE_S, ZONE_OUTSIDE_NW, ZONE_OUTSIDE_NE];
-      const count = 1 + Math.floor(Math.random() * 2); // 1-2
-      const result: Enemy[] = [];
-      for (let i = 0; i < count; i++) {
-        const zone = redneckZones[Math.floor(Math.random() * redneckZones.length)];
-        const redneck = rz(zone, 'redneck');
-        result.push(redneck);
-        const dog = makeEnemy(redneck.pos.x + (Math.random() - 0.5) * 40, redneck.pos.y + (Math.random() - 0.5) * 40, 'dog');
-        dog.ownerId = redneck.id;
-        dog.radioGroup = redneck.radioGroup;
-        const dogNames = ['Бобик', 'Рекс', 'Мухтар', 'Шарик', 'Тузик', 'Полкан', 'Дружок', 'Барсик', 'Жучка', 'Лайка', 'Найда', 'Стрелка', 'Пуля', 'Вулкан', 'Гром'];
-        (dog as any)._dogName = dogNames[Math.floor(Math.random() * dogNames.length)];
-        result.push(dog);
-      }
-      return result;
+      const zone = redneckZones[Math.floor(Math.random() * redneckZones.length)];
+      const redneck = rz(zone, 'redneck');
+      const dog = makeEnemy(redneck.pos.x + (Math.random() - 0.5) * 40, redneck.pos.y + (Math.random() - 0.5) * 40, 'dog');
+      dog.ownerId = redneck.id;
+      dog.radioGroup = redneck.radioGroup;
+      const dogNames = ['Бобик', 'Рекс', 'Мухтар', 'Шарик', 'Тузик', 'Полкан', 'Дружок', 'Барсик', 'Жучка', 'Лайка', 'Найда', 'Стрелка', 'Пуля', 'Вулкан', 'Гром'];
+      (dog as any)._dogName = dogNames[Math.floor(Math.random() * dogNames.length)];
+      return [redneck, dog];
     })(),
 
-    // === ORDO BOREALIS CULTISTS — 2-3, lurking in dark corners of the base ===
+    // === ORDO BOREALIS CULTISTS — 1-2, lurking in dark corners ===
     ...(() => {
       const cultZones = [ZONE_STORAGE_A, ZONE_STORAGE_B, ZONE_HANGAR_B, ZONE_OFFICES_BOT];
-      const count = 2 + Math.floor(Math.random() * 2); // 2-3
+      const count = 1 + Math.floor(Math.random() * 2); // 1-2
       const result: Enemy[] = [];
       for (let i = 0; i < count; i++) {
         const zone = cultZones[Math.floor(Math.random() * cultZones.length)];
@@ -422,8 +411,8 @@ export function generateMap() {
       return result;
     })(),
 
-    // === SVARTA SOLEN OPERATIVE — rare spawn (30% chance), elite tactical ===
-    ...(Math.random() < 0.3 ? [(() => {
+    // === SVARTA SOLEN OPERATIVE — rare spawn (25% chance) ===
+    ...(Math.random() < 0.25 ? [(() => {
       const op = rz(pick(allOutsideZones), 'svarta_sol');
       (op as any)._cultFaction = 'svarta_sol';
       return op;
