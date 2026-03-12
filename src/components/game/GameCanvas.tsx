@@ -88,10 +88,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const effectiveAdmin = isAdmin && adminMode === 'admin';
 
   // Skin selection
-  const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>(() => {
-    const saved = localStorage.getItem('nz_selected_skin');
-    return (saved as PlayerSkin) || 'operative';
-  });
+  const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
 
   // Determine which skins are available
   const availableSkins = React.useMemo(() => {
@@ -105,12 +102,12 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user, isAdmin]);
 
-  // Ensure selected skin is valid
+  // Load saved skin and validate against available skins
   React.useEffect(() => {
-    if (!availableSkins.find(s => s.id === selectedSkin)) {
-      setSelectedSkin(availableSkins[0]?.id || 'anonymous');
-    }
-  }, [availableSkins, selectedSkin]);
+    const saved = localStorage.getItem('nz_selected_skin') as PlayerSkin | null;
+    const validSkin = saved && availableSkins.find(s => s.id === saved) ? saved : (availableSkins.find(s => s.access === 'registered')?.id || availableSkins[0]?.id || 'anonymous');
+    if (selectedSkin !== validSkin) setSelectedSkin(validSkin);
+  }, [availableSkins]);
 
   // Ambient wind on menu
   React.useEffect(() => {
@@ -142,7 +139,9 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user]);
 
-  const activeSkin: PlayerSkin = effectiveAdmin ? 'admin' : (isAdmin && adminMode === 'incognito') ? 'anonymous' : user ? selectedSkin : 'anonymous';
+  // Enforce role-locked skins: validate selectedSkin is in availableSkins
+  const validatedSkin = availableSkins.find(s => s.id === selectedSkin) ? selectedSkin : 'anonymous';
+  const activeSkin: PlayerSkin = effectiveAdmin ? 'admin' : (isAdmin && adminMode === 'incognito') ? 'anonymous' : user ? validatedSkin : 'anonymous';
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
