@@ -436,7 +436,16 @@ const Profile: React.FC = () => {
             <p className="text-[10px] font-display text-accent uppercase tracking-wider">☕ Support Development</p>
             <p className="text-[9px] font-mono text-muted-foreground text-center">
               Enjoy the game? Buy the developer a coffee!<br/>
-              Donators unlock the exclusive <span className="text-accent font-bold">Vanguard</span> outfit.
+              Donators unlock <span className="text-accent font-bold">permanent perks</span> across all classes:
+            </p>
+            <div className="w-full grid grid-cols-2 gap-1 my-1">
+              <span className="text-[8px] font-mono text-accent/70 text-center">🎒 +8 inventory slots</span>
+              <span className="text-[8px] font-mono text-accent/70 text-center">💰 +10% loot value</span>
+              <span className="text-[8px] font-mono text-accent/70 text-center">🔥 2× login streak bonus</span>
+              <span className="text-[8px] font-mono text-accent/70 text-center">🏷️ 15% trader discount</span>
+            </div>
+            <p className="text-[8px] font-mono text-muted-foreground/60 text-center">
+              + exclusive <span className="text-accent">Vanguard</span> class skin
             </p>
             <button
               onClick={async () => {
