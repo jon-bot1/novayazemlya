@@ -1038,6 +1038,67 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
+  // ═══════ CLASS ABILITY SYSTEM ═══════
+  if (state.abilityCooldown > 0) state.abilityCooldown = Math.max(0, state.abilityCooldown - dt);
+  if (state.abilityActive && state.abilityTimer > 0) {
+    state.abilityTimer -= dt;
+    if (state.abilityTimer <= 0) {
+      state.abilityActive = false;
+      state.abilityTimer = 0;
+      const aid = state.abilityId as AbilityId;
+      if (aid === 'ghost_mode') addMessage(state, '👻 Ghost Mode ended.', 'info');
+      else if (aid === 'adrenaline_rush') addMessage(state, '💥 Adrenaline fading...', 'info');
+      else if (aid === 'spotter') addMessage(state, '👁️ Spotter scan complete.', 'info');
+    }
+  }
+  if (input.useAbility && state.abilityId !== 'none' && state.abilityCooldown <= 0 && !state.abilityActive) {
+    const aid = state.abilityId as AbilityId;
+    let activated = false;
+    if (aid === 'adrenaline_rush') {
+      state.abilityActive = true; state.abilityTimer = 5;
+      addMessage(state, '💥 ADRENALINE RUSH — free sprint for 5s!', 'intel'); activated = true;
+    } else if (aid === 'spotter') {
+      state.abilityActive = true; state.abilityTimer = 8;
+      addMessage(state, '👁️ SPOTTER — all enemies revealed for 8s!', 'intel'); activated = true;
+    } else if (aid === 'ghost_mode') {
+      state.abilityActive = true; state.abilityTimer = 5;
+      addMessage(state, '👻 GHOST MODE — invisible for 5s!', 'intel'); activated = true;
+    } else if (aid === 'resupply_drop') {
+      const ammoType = state.player.ammoType || '5.45x39';
+      state.player.ammoReserves[ammoType] = (state.player.ammoReserves[ammoType] || 0) + 30;
+      state.player.currentAmmo = Math.min(state.player.maxAmmo, state.player.currentAmmo + state.player.maxAmmo);
+      addMessage(state, '📦 RESUPPLY DROP — ammo restocked!', 'intel'); activated = true;
+    } else if (aid === 'airstrike') {
+      const aimPos = { x: state.player.pos.x + Math.cos(state.player.angle) * 200, y: state.player.pos.y + Math.sin(state.player.angle) * 200 };
+      let hits = 0;
+      for (const enemy of state.enemies) {
+        if (enemy.state === 'dead') continue;
+        const dx = enemy.pos.x - aimPos.x, dy = enemy.pos.y - aimPos.y;
+        if (dx * dx + dy * dy < 200 * 200) { enemy.hp -= 150; hits++; if (enemy.hp <= 0) { enemy.state = 'dead'; state.killCount++; } }
+      }
+      addMessage(state, `💣 ARTILLERY STRIKE — ${hits} targets hit!`, 'intel');
+      for (let i = 0; i < 30; i++) {
+        const angle = Math.random() * Math.PI * 2, speed = 50 + Math.random() * 150;
+        state.particles.push({ pos: { x: aimPos.x + (Math.random() - 0.5) * 100, y: aimPos.y + (Math.random() - 0.5) * 100 }, vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, life: 0.5 + Math.random() * 0.5, maxLife: 1, color: Math.random() > 0.5 ? '#ff6600' : '#ffaa00', size: 3 + Math.random() * 4 });
+      }
+      activated = true;
+    }
+    if (activated) {
+      const cds: Record<string, number> = { adrenaline_rush: 60, spotter: 90, ghost_mode: 120, resupply_drop: 90, airstrike: 180 };
+      state.abilityCooldown = cds[aid] || 60;
+    }
+    input.useAbility = false;
+  }
+  if (state.abilityActive) {
+    const aid = state.abilityId as AbilityId;
+    if (aid === 'adrenaline_rush') state.player.stamina = state.player.maxStamina;
+    (state as any)._ghostMode = aid === 'ghost_mode';
+    (state as any)._spotterActive = aid === 'spotter';
+  } else {
+    (state as any)._ghostMode = false;
+    (state as any)._spotterActive = false;
+  }
+
   // === GROUND LOOT TIMEOUT — unlooted items disappear over time ===
   for (let li = state.lootContainers.length - 1; li >= 0; li--) {
     const lc = state.lootContainers[li];
