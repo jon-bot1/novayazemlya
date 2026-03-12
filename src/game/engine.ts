@@ -3281,7 +3281,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           } else if (reaction < fleeFullChance + retreatChance + berserkChance) {
             // Berserk — adrenaline surge, fight harder
             if (!(enemy as any)._berserkTimer) {
-              (enemy as any)._berserkTimer = 6 + Math.random() * 4;
+              (enemy as any)._berserkTimer = 4 + Math.random() * 8; // 4-12s randomized
               if (!(enemy as any)._originalSpeed) (enemy as any)._originalSpeed = enemy.speed;
               enemy.speed = ((enemy as any)._originalSpeed || enemy.speed) * 1.5;
               enemy.damage *= 1.3;

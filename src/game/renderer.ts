@@ -3091,24 +3091,33 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
       ctx.font = '14px sans-serif';
     } else if ((enemy as any)._panicTimer > 0) {
-      // PANIC — yellow/orange flashing aura + screaming icon
+      // PANIC — highly visible marker above enemy
       const panicPulse = 0.5 + Math.sin(state.time * 14) * 0.5;
       ctx.save();
+      // Large flashing aura
       ctx.beginPath();
-      ctx.arc(enemy.pos.x, enemy.pos.y, R + 10, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, ${Math.floor(200 + panicPulse * 55)}, 0, ${0.15 + panicPulse * 0.2})`;
+      ctx.arc(enemy.pos.x, enemy.pos.y, R + 12, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, ${Math.floor(200 + panicPulse * 55)}, 0, ${0.15 + panicPulse * 0.25})`;
       ctx.fill();
-      ctx.strokeStyle = `rgba(255, 180, 0, ${panicPulse * 0.7})`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(255, 180, 0, ${0.4 + panicPulse * 0.6})`;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.restore();
-      ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 12);
+      // Large panic icon above head
+      ctx.fillText('😱', enemy.pos.x, enemy.pos.y - R - 14);
+      // "PANIC" text label below enemy
+      ctx.save();
+      ctx.font = 'bold 8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = `rgba(255, ${Math.floor(160 + panicPulse * 95)}, 0, ${0.7 + panicPulse * 0.3})`;
+      ctx.fillText('⚠ PANIC', enemy.pos.x, enemy.pos.y + R + 14);
+      ctx.restore();
       // Exclamation marks flying chaotically
       for (let pi = 0; pi < 3; pi++) {
         const pa = state.time * 8 + pi * (Math.PI * 2 / 3);
-        const px = enemy.pos.x + Math.cos(pa) * 18;
-        const py = enemy.pos.y - R - 14 + Math.sin(pa * 1.3) * 7;
-        ctx.font = '8px sans-serif';
+        const px = enemy.pos.x + Math.cos(pa) * 20;
+        const py = enemy.pos.y - R - 16 + Math.sin(pa * 1.3) * 8;
+        ctx.font = '9px sans-serif';
         ctx.fillStyle = `rgba(255, ${Math.floor(100 + panicPulse * 155)}, 0, ${panicPulse})`;
         ctx.fillText('!', px, py);
       }
