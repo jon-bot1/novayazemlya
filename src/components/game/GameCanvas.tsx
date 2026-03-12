@@ -499,6 +499,7 @@ export const GameCanvas: React.FC = () => {
   useEffect(() => {
     if (gamePhase === 'deploying' && !controlOverlayDismissed.current) {
       setShowControlOverlay(true);
+      showControlOverlayRef.current = true;
     }
   }, [gamePhase]);
 
