@@ -3392,7 +3392,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.speechBubble = 'КИНЬ ГРАНАТУ!';
             enemy.speechBubbleTimer = 2.5;
             const thrower = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
-            if (thrower && dist(thrower.pos, state.player.pos) < 300) {
+            if (thrower && dist(thrower.pos, state.player.pos) < 300 && dist(thrower.pos, state.player.pos) > 110) {
               const gAngle = Math.atan2(state.player.pos.y - thrower.pos.y, state.player.pos.x - thrower.pos.x);
               state.grenades.push({
                 pos: { ...thrower.pos }, vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },

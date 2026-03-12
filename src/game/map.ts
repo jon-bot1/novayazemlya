@@ -196,9 +196,9 @@ export function generateMap() {
     makeWall(HX + 500, HY + T, T, 168),
     makeWall(HX + 500, HY + 332, T, 168),
 
-    // Corridor walls
-    makeWall(HX + 500, HY + 200, 200, T),
-    makeWall(HX + 500, HY + 300, 200, T),
+    // Corridor walls — wider (140px gap)
+    makeWall(HX + 500, HY + 180, 200, T),
+    makeWall(HX + 500, HY + 320, 200, T),
 
     // Office block
     makeWall(HX + 700, HY + T, T, 188),
