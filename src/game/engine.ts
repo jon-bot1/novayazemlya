@@ -847,6 +847,10 @@ export function createGameState(mapId: MapId = 'objekt47', playerLevel: number =
     laserTarget: null,
     fearTimer: 0,
     fearSourcePos: null,
+    abilityId: 'none',
+    abilityCooldown: 0,
+    abilityActive: false,
+    abilityTimer: 0,
   };
   // Store map ID for renderer atmosphere differentiation
   (state as any)._mapId = mapId;

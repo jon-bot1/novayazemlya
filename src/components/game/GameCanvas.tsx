@@ -51,6 +51,7 @@ const createDefaultInputState = (): InputState => ({
   throwKnife: false,
   chokehold: false,
   throwRock: false,
+  useAbility: false,
 });
 
 const safeCreateGameState = (mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState => {
