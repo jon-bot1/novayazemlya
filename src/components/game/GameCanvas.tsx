@@ -93,18 +93,26 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   // Skin selection
   const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
 
-  // Determine which skins are available — respects admin mode
+  // Determine which skins are SELECTABLE vs VISIBLE
+  const showAdminSkins = isAdmin && adminMode === 'admin';
   const availableSkins = React.useMemo(() => {
     if (!user) return PLAYER_SKINS.filter(s => s.access === 'all');
-    // In normal mode, admin sees only registered skins (no admin/donator preview)
-    const showAdminSkins = isAdmin && adminMode === 'admin';
     return PLAYER_SKINS.filter(s => {
       if (s.access === 'all' || s.access === 'registered') return true;
       if (s.access === 'admin' && showAdminSkins) return true;
-      if (s.access === 'donator' && showAdminSkins) return true;
+      if (s.access === 'donator' && (isDonator || showAdminSkins)) return true;
       return false;
     });
-  }, [user, isAdmin, adminMode]);
+  }, [user, isAdmin, adminMode, isDonator, showAdminSkins]);
+
+  // ALL skins visible in selector (locked ones shown too, except admin for non-admins)
+  const visibleSkins = React.useMemo(() => {
+    return PLAYER_SKINS.filter(s => {
+      // Admin skin: only visible to admins
+      if (s.access === 'admin') return showAdminSkins;
+      return true;
+    });
+  }, [showAdminSkins]);
 
   // Load saved skin and validate against available skins
   React.useEffect(() => {
