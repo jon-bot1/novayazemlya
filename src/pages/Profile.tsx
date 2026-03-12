@@ -8,6 +8,7 @@ import { useAdminMode } from '@/hooks/useAdminMode';
 interface ProfileData {
   display_name: string;
   bonus_rubles: number;
+  is_donator: boolean;
 }
 
 interface HighscoreEntry {
