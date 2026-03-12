@@ -1204,6 +1204,25 @@ export const GameCanvas: React.FC = () => {
               st.player.maxStamina *= (1 + enduranceLvl * 0.20);
               st.player.stamina = st.player.maxStamina;
             }
+            // ── CLASS PASSIVE BONUSES ──
+            const classDef = getClassDef(playerSkinId);
+            const cp = classDef.passive;
+            if (cp.fireRateBonus) st.player.fireRate *= (1 - cp.fireRateBonus);
+            if (cp.speedBonus) st.player.speed *= (1 + cp.speedBonus);
+            if (cp.noiseReduction) (st as any)._noiseReduction = ((st as any)._noiseReduction || 0) + cp.noiseReduction;
+            if (cp.sneakSpeedBonus) (st as any)._sneakSpeedBonus = cp.sneakSpeedBonus;
+            if (cp.detectionReduction) (st as any)._detectionReduction = cp.detectionReduction;
+            if (cp.critChanceBonus) (st as any)._critChanceBonus = ((st as any)._critChanceBonus || 0) + cp.critChanceBonus;
+            if (cp.maxHpBonus) { st.player.maxHp += cp.maxHpBonus; st.player.hp = st.player.maxHp; }
+            if (cp.xpMultiplier) (st as any)._xpMultiplier = 1 + cp.xpMultiplier;
+            if (cp.seeEnemyTypes) (st as any)._seeEnemyTypes = true;
+            // Set class ability on game state
+            st.abilityId = classDef.ability.id;
+            st.abilityCooldown = 0;
+            st.abilityActive = false;
+            st.abilityTimer = 0;
+            // Donator loot value bonus
+            if (playerIsDonator) (st as any)._lootValueBonus = 0.10;
             // ── Apply weapon mods from stash items ──
             // Auto-attach mods to equipped weapons
             for (const item of stash.items) {
