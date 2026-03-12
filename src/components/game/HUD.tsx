@@ -508,6 +508,25 @@ export const HUD: React.FC<HUDProps> = ({
             ))}
           </div>
         )}
+        {/* Class Ability indicator */}
+        {abilityName && abilityName !== 'None' && (
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-[10px]">{abilityIcon}</span>
+            {abilityActive ? (
+              <span className="text-[9px] font-mono text-accent animate-pulse">
+                ACTIVE {Math.ceil(abilityTimer || 0)}s
+              </span>
+            ) : (abilityCooldown || 0) > 0 ? (
+              <span className="text-[9px] font-mono text-muted-foreground/50">
+                [Z] {Math.ceil(abilityCooldown || 0)}s
+              </span>
+            ) : (
+              <span className="text-[9px] font-mono text-accent/70">
+                [Z] READY
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ═══════ BOTTOM-CENTER: Messages ═══════ */}
