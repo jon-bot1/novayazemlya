@@ -164,21 +164,23 @@ export function generateMap() {
 
     // === HANGAR BUILDING (offset by HX, HY) ===
     // Outer walls with door gaps — non-rectangular shape with extensions
-    // Top wall — door gap at HX+500 to HX+580 (80px)
-    makeWall(HX, HY, 500, T, WD),
+    // Top wall — wider door gap at HX+480 to HX+580 (100px)
+    makeWall(HX, HY, 480, T, WD),
     makeWall(HX + 580, HY, HW - 580, T, WD),
-    // Bottom wall — door gap at HX+300 to HX+380
-    makeWall(HX, HY + HH - T, 300, T, WD),
+    // Bottom wall — wider door gap at HX+280 to HX+380 (100px)
+    makeWall(HX, HY + HH - T, 280, T, WD),
     makeWall(HX + 380, HY + HH - T, HW - 380, T, WD),
-    // Left wall — door gap at HY+400 to HY+470
-    makeWall(HX, HY, T, 400, WD),
-    makeWall(HX, HY + 470, T, HH - 470, WD),
-    // Right wall — solid with extension bump-out
-    makeWall(HX + HW - T, HY, T, 300, WD),
-    makeWall(HX + HW - T, HY + 400, T, HH - 400, WD),
-    // Right-side extension (bump-out room, 100x100)
+    // Left wall — wider door gap at HY+380 to HY+480 (100px)
+    makeWall(HX, HY, T, 380, WD),
+    makeWall(HX, HY + 480, T, HH - 480, WD),
+    // Right wall — door gap at HY+500 to HY+580 (80px entrance on east side)
+    makeWall(HX + HW - T, HY, T, 200, WD),
+    makeWall(HX + HW - T, HY + 280, T, 20, WD),
+    makeWall(HX + HW - T, HY + 400, T, 100, WD),
+    makeWall(HX + HW - T, HY + 580, T, HH - 580, WD),
+    // Right-side extension (bump-out room, 100x100) — door gap on south side (80px)
     makeWall(HX + HW - T, HY + 300, 100, T, WD),      // extension top
-    makeWall(HX + HW - T, HY + 400, 100, T, WD),      // extension bottom
+    makeWall(HX + HW - T, HY + 400, 20, T, WD),       // extension bottom left (gap 20-100 = 80px door)
     makeWall(HX + HW + 100 - T - T, HY + 300, T, 100, WD), // extension right wall
     // Bottom-left extension (loading bay, 80x120)
     makeWall(HX - 80, HY + HH - 120, T, 120, WD),     // extension left wall
@@ -190,13 +192,13 @@ export function generateMap() {
     makeWall(HX + T, HY + 500, 300, T),
     makeWall(HX + 380, HY + 500, 120, T),
 
-    // Hangar internal east wall — gap at y=200-300 for corridor
-    makeWall(HX + 500, HY + T, T, 188),
-    makeWall(HX + 500, HY + 312, T, 188),
+    // Hangar internal east wall — wider gap at y=180-320 for corridor (140px gap)
+    makeWall(HX + 500, HY + T, T, 168),
+    makeWall(HX + 500, HY + 332, T, 168),
 
-    // Corridor walls
-    makeWall(HX + 500, HY + 200, 200, T),
-    makeWall(HX + 500, HY + 300, 200, T),
+    // Corridor walls — wider (140px gap)
+    makeWall(HX + 500, HY + 180, 200, T),
+    makeWall(HX + 500, HY + 320, 200, T),
 
     // Office block
     makeWall(HX + 700, HY + T, T, 188),

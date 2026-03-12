@@ -489,17 +489,23 @@ export const GameCanvas: React.FC = () => {
   const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
   const [showFirefoxWarning, setShowFirefoxWarning] = useState(false);
   const [showControlOverlay, setShowControlOverlay] = useState(false);
+  const [gamePaused, setGamePaused] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(true);
   const controlOverlayDismissed = useRef(false);
+  const gamePausedRef = useRef(false);
+  const showControlOverlayRef = useRef(false);
   const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
 
   useEffect(() => {
     if (gamePhase === 'deploying' && !controlOverlayDismissed.current) {
       setShowControlOverlay(true);
+      showControlOverlayRef.current = true;
     }
   }, [gamePhase]);
 
   const dismissControls = useCallback(() => {
     setShowControlOverlay(false);
+    showControlOverlayRef.current = false;
     controlOverlayDismissed.current = true;
     setGamePhase('playing');
   }, []);
@@ -757,10 +763,13 @@ export const GameCanvas: React.FC = () => {
       const prevHp = currentState.player.hp;
       const prevKills = currentState.killCount;
       let state = currentState;
-      try {
-        state = updateGame(currentState, inputRef.current, dt, cssW, cssH) || currentState;
-      } catch (error) {
-        console.error('Game loop update failed:', error);
+      // Skip game update when field manual is shown or game is paused
+      if (!showControlOverlayRef.current && !gamePausedRef.current) {
+        try {
+          state = updateGame(currentState, inputRef.current, dt, cssW, cssH) || currentState;
+        } catch (error) {
+          console.error('Game loop update failed:', error);
+        }
       }
       stateRef.current = state;
       inputRef.current.interact = false;
@@ -1318,6 +1327,21 @@ export const GameCanvas: React.FC = () => {
       <div className="relative w-full h-full">
         <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
+        {/* Pause overlay */}
+        {gamePaused && !showControlOverlay && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/70 backdrop-blur-sm pointer-events-auto">
+            <div className="text-center">
+              <h2 className="text-3xl font-display text-accent tracking-wider mb-4">⏸ PAUSED</h2>
+              <button
+                className="px-8 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors"
+                onClick={() => { setGamePaused(false); gamePausedRef.current = false; }}
+              >
+                ▶ RESUME
+              </button>
+            </div>
+          </div>
+        )}
+
         {showFirefoxWarning && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
             <div className="max-w-md rounded border border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur">
@@ -1474,6 +1498,23 @@ export const GameCanvas: React.FC = () => {
 
         {/* Mode toggle — top-left corner */}
         <div className="absolute top-[max(0.5rem,env(safe-area-inset-top))] left-2 z-50 pointer-events-auto flex gap-1 items-start">
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => { setGamePaused(p => { gamePausedRef.current = !p; return !p; }); }}
+          >
+            {gamePaused ? '▶' : '⏸'}
+          </button>
+          <button
+            className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => {
+              setMusicEnabled(prev => {
+                if (prev) { stopAmbient(); } else { startAmbient(selectedMapId); }
+                return !prev;
+              });
+            }}
+          >
+            {musicEnabled ? '🔊' : '🔇'}
+          </button>
           <button
             className="px-2 py-1 rounded text-[9px] font-mono bg-card/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMobileOverride(prev => prev === null ? !autoMobile : !prev)}

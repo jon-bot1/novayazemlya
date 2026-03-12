@@ -263,7 +263,8 @@ function spawnWeaponDrop(state: GameState, item: Item, sourcePos: Vec2) {
     items: [item],
     looted: false,
     type: 'weapon_drop',
-  });
+    _spawnTime: state.time,
+  } as any);
 }
 
 // Helper: pick up a weapon_drop — equip or swap
@@ -311,6 +312,22 @@ function pickupWeaponDrop(state: GameState, lc: import('./types').LootContainer)
   }
 
   if (currentInSlot.name === item.name) {
+    // Allow picking up same weapon if current magazine is empty — get full mag
+    const currentAmmo = (currentInSlot as any)._loadedAmmo;
+    const equippedAmmo = state.player.equippedWeapon === currentInSlot ? state.player.currentAmmo : currentAmmo;
+    if (equippedAmmo !== undefined && equippedAmmo <= 0) {
+      // Swap to get a full magazine
+      const oldIdx = state.player.inventory.indexOf(currentInSlot);
+      if (oldIdx >= 0) state.player.inventory.splice(oldIdx, 1);
+      setSlotWeapon(item);
+      state.player.inventory.push(item);
+      if (slot !== 'melee' && item.ammoType) setWeaponAmmo(state, item);
+      lc.items = [currentInSlot];
+      lc.looted = false;
+      addMessage(state, `🔫 Swapped ${item.name} for full magazine!`, 'info');
+      playPickup();
+      return;
+    }
     addMessage(state, `Already have ${item.name}`, 'info');
     return;
   }
@@ -1011,7 +1028,20 @@ function relocateEnemyToOpenArea(state: GameState, enemy: Enemy): boolean {
 export function updateGame(state: GameState, input: InputState, dt: number, canvasW: number, canvasH: number): GameState {
   if (state.gameOver || state.extracted) return state;
 
+  // Pause support — if paused flag is set, skip update (timer, AI, etc.)
+  if ((state as any)._paused) return state;
+
   state.time += dt;
+
+  // === GROUND LOOT TIMEOUT — uninspected weapon drops disappear after 90s ===
+  for (let li = state.lootContainers.length - 1; li >= 0; li--) {
+    const lc = state.lootContainers[li];
+    if (lc.type === 'weapon_drop' && !lc.looted && (lc as any)._spawnTime !== undefined) {
+      if (state.time - (lc as any)._spawnTime > 90) {
+        state.lootContainers.splice(li, 1);
+      }
+    }
+  }
 
   // === ELEVATOR BLACKOUT FADE ===
   if ((state as any)._elevatorFade > 0) {
@@ -1824,9 +1854,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const ammoAvail = ammoType ? (state.player.ammoReserves[ammoType] || 0) : 0;
       if (ammoAvail > 0) {
         state.player.reloading = true;
-        let reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
-                           wpn.name?.toLowerCase().includes('toz') ? 2.5 :
-                           wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
+        const wpnNameLower = (wpn.name || '').toLowerCase();
+        let reloadTime = wpnNameLower.includes('mosin') ? 3.2 :       // bolt-action, stripper clip
+                         wpnNameLower.includes('toz') ? 2.8 :          // break-action shotgun
+                         wpnNameLower.includes('ksp 58') ? 3.5 :       // belt-fed MG
+                         wpnNameLower.includes('ak 4') ? 2.2 :         // G3 battle rifle, heavy mag
+                         wpnNameLower.includes('akm') ? 1.8 :          // AKM standard mag change
+                         wpnNameLower.includes('ak-74') ? 1.6 :        // AK-74, practiced swap
+                         wpnNameLower.includes('ppsh') ? 2.5 :         // drum magazine, heavy
+                         wpnNameLower.includes('kpist') ? 1.4 :        // SMG, fast mag change
+                         wpnNameLower.includes('makarov') ? 1.2 :      // pistol, fast
+                         wpnNameLower.includes('nagant') ? 2.0 :       // revolver, individual rounds
+                         1.5;                                           // default
         // Quick Hands upgrade — reduce reload time
         const reloadBonus = (state as any)._reloadSpeedBonus || 0;
         if (reloadBonus > 0) reloadTime *= (1 - reloadBonus);
@@ -3353,7 +3392,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.speechBubble = 'КИНЬ ГРАНАТУ!';
             enemy.speechBubbleTimer = 2.5;
             const thrower = nearbyAllies.find(e => e.type === 'soldier' || e.type === 'heavy');
-            if (thrower && dist(thrower.pos, state.player.pos) < 300) {
+            if (thrower && dist(thrower.pos, state.player.pos) < 300 && dist(thrower.pos, state.player.pos) > 110) {
               const gAngle = Math.atan2(state.player.pos.y - thrower.pos.y, state.player.pos.x - thrower.pos.x);
               state.grenades.push({
                 pos: { ...thrower.pos }, vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
@@ -4143,7 +4182,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       (enemy as any)._enemyGrenadeTimer -= dt;
       // Throw much more often when player is in cover
       const throwInterval = state.player.inCover ? 3 + Math.random() * 2 : 8 + Math.random() * 6;
-      if ((enemy as any)._enemyGrenadeTimer <= 0 && (enemy as any)._grenadeSupply > 0) {
+      // Smart grenade AI: don't throw if blast radius would kill self
+      const grenadeRadius = 100;
+      const safeThrowDist = grenadeRadius + 30; // need to be outside blast + margin
+      if ((enemy as any)._enemyGrenadeTimer <= 0 && (enemy as any)._grenadeSupply > 0 && distToPlayer > safeThrowDist) {
         (enemy as any)._grenadeSupply--;
         (enemy as any)._enemyGrenadeTimer = throwInterval;
         const gAngle = Math.atan2(state.player.pos.y - enemy.pos.y, state.player.pos.x - enemy.pos.x);
@@ -4153,7 +4195,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           pos: { x: enemy.pos.x, y: enemy.pos.y },
           vel: { x: Math.cos(gAngle) * 3.5, y: Math.sin(gAngle) * 3.5 },
           timer: 1.8,
-          radius: 100,
+          radius: grenadeRadius,
           damage: 60,
           fromPlayer: false,
           sourceId: enemy.id,
@@ -4774,7 +4816,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // If cover was aborted (no cp), fall through to normal chase below
         }
 
-        const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
+        // Only chase directly toward player with LOS — otherwise use last known position
+        const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || enemy.patrolTarget);
         const dir = normalize({ x: chaseTarget.x - enemy.pos.x, y: chaseTarget.y - enemy.pos.y });
         // Gradual turning while chasing
         const chaseTargetAngle = Math.atan2(dir.y, dir.x);
