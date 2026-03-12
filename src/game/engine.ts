@@ -1,5 +1,6 @@
 import { GameState, InputState, Vec2, GameMessage, Particle, Enemy, Bullet, SoundEvent, MovementMode, TacticalRole, PlacedTNT, Item, PendingWeapon } from './types';
 import { generateMap, createInitialPlayer } from './map';
+import { AbilityId } from './classes';
 import { generateFishingVillageMap, createFishingVillagePlayer } from './mapFishingVillage';
 import { generateHospitalMap, createHospitalPlayer } from './mapHospital';
 import { generateMiningVillageMap, createMiningVillagePlayer, generateMineUndergroundMap, generateMiningSurfaceMap } from './mapMiningVillage';
