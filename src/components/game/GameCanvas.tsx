@@ -92,6 +92,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   // Skin selection
   const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
+  const [inspectedSkin, setInspectedSkin] = React.useState<PlayerSkin | null>(null);
 
   // Determine which skins are SELECTABLE vs VISIBLE
   const showAdminSkins = isAdmin && adminMode === 'admin';
