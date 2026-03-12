@@ -367,7 +367,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
               })()}
             </div>
 
-
+            <div className="flex items-center justify-between">
               <span className="text-xs font-display text-accent uppercase tracking-wider">Mission Briefing</span>
               {(() => {
                 const maxRerolls = 3;
