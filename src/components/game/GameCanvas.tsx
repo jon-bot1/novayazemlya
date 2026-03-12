@@ -233,32 +233,74 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
               <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
             </div>
 
-            {/* Skin Selector */}
+            {/* Skin / Class Selector */}
             {adminMode !== 'incognito' && (
               <div className="border border-border/50 rounded p-2 bg-secondary/10">
-                <p className="text-[9px] font-display text-accent uppercase tracking-wider text-center mb-1.5">🎨 Choose Outfit</p>
+                <p className="text-[9px] font-display text-accent uppercase tracking-wider text-center mb-1.5">🎖️ Choose Class</p>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {availableSkins.map(s => (
-                    <button
-                      key={s.id}
-                      className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
-                        activeSkin === s.id
-                          ? 'border-accent bg-accent/15 text-foreground'
-                          : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
-                      }`}
-                      onClick={() => setSelectedSkin(s.id)}
-                      title={s.description}
-                    >
-                      <span className="text-lg">{s.icon}</span>
-                      <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
-                      {s.access === 'admin' && <span className="text-[7px] font-mono text-warning">ADMIN</span>}
-                      {s.access === 'donator' && <span className="text-[7px] font-mono text-accent">DONATOR</span>}
-                    </button>
-                  ))}
+                  {visibleSkins.map(s => {
+                    const isUnlocked = availableSkins.some(a => a.id === s.id);
+                    const classDef = getClassDef(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
+                          !isUnlocked
+                            ? 'border-border/20 bg-secondary/5 text-muted-foreground/30 cursor-not-allowed opacity-50'
+                            : activeSkin === s.id
+                            ? 'border-accent bg-accent/15 text-foreground'
+                            : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
+                        }`}
+                        onClick={() => isUnlocked && setSelectedSkin(s.id)}
+                        title={isUnlocked ? s.description : UNLOCK_HINTS[s.access] || ''}
+                        disabled={!isUnlocked}
+                      >
+                        <span className="text-lg">{isUnlocked ? s.icon : '🔒'}</span>
+                        <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
+                        <span className="text-[7px] font-mono text-muted-foreground/60">{classDef.className}</span>
+                        {!isUnlocked && (
+                          <span className="text-[6px] font-mono text-muted-foreground/40 leading-tight">
+                            {s.access === 'donator' ? '💎 Donate' : s.access === 'registered' ? '🔐 Register' : ''}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="text-[8px] font-mono text-muted-foreground/60 text-center mt-1">
-                  {PLAYER_SKINS.find(s => s.id === activeSkin)?.description}
-                </p>
+                {/* Selected class details */}
+                {(() => {
+                  const selClass = getClassDef(activeSkin);
+                  return (
+                    <div className="mt-2 p-1.5 bg-secondary/20 rounded border border-border/20">
+                      <p className="text-[8px] font-display text-foreground/80 text-center uppercase tracking-wider">
+                        {selClass.className} — {PLAYER_SKINS.find(s => s.id === activeSkin)?.name}
+                      </p>
+                      {selClass.passiveDescription.map((line, i) => (
+                        <p key={i} className="text-[7px] font-mono text-accent/70 text-center">{line}</p>
+                      ))}
+                      {selClass.ability.id !== 'none' && (
+                        <p className="text-[7px] font-mono text-muted-foreground/60 text-center mt-0.5">
+                          [Z] {selClass.ability.icon} {selClass.ability.name}: {selClass.ability.description}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+                {/* Donator perks info */}
+                {!isDonator && !showAdminSkins && user && (
+                  <div className="mt-1.5 p-1.5 bg-accent/5 rounded border border-accent/20">
+                    <p className="text-[7px] font-display text-accent/60 text-center uppercase tracking-wider mb-0.5">💎 Donator Perks (all classes)</p>
+                    {DONATOR_PERKS.map((p, i) => (
+                      <p key={i} className="text-[6px] font-mono text-muted-foreground/50 text-center">{p.icon} {p.label}</p>
+                    ))}
+                    <a href="/profile" className="block text-[7px] font-mono text-accent/50 text-center mt-0.5 hover:text-accent underline">
+                      Donate €5 →
+                    </a>
+                  </div>
+                )}
+                {isDonator && (
+                  <p className="text-[7px] font-mono text-accent/50 text-center mt-1">💎 Donator perks active</p>
+                )}
               </div>
             )}
 
