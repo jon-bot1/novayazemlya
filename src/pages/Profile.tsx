@@ -200,6 +200,11 @@ const Profile: React.FC = () => {
             <p className="text-[10px] font-mono text-muted-foreground">
               Level {progress?.level ?? 1} · {progress?.xp ?? 0} XP · {progress?.rubles ?? 0} ₽
             </p>
+            {user?.created_at && (
+              <p className="text-[9px] font-mono text-muted-foreground/60">
+                Registered {new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {isAdmin && <AdminModeBadge mode={adminMode} onCycle={cycleMode} compact />}
