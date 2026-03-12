@@ -1137,6 +1137,8 @@ export const GameCanvas: React.FC = () => {
             if (ironBodyLvl > 0) { st.player.maxHp += ironBodyLvl * 15; st.player.hp = st.player.maxHp; }
             // Pack Mule — extra backpack space
             st.backpackCapacity += getUpgradeLevel(ups, 'big_backpack') * 6;
+            // Donator bonus: +8 inventory slots
+            if (playerIsDonator) st.backpackCapacity += 8;
             // Endurance — more stamina
             const enduranceLvl = getUpgradeLevel(ups, 'endurance');
             if (enduranceLvl > 0) {
