@@ -1537,6 +1537,11 @@ export const GameCanvas: React.FC = () => {
           mapWidth={hudState.mapWidth}
           mapHeight={hudState.mapHeight}
           isFirstRaid={stash.raidCount <= 1}
+          abilityIcon={getClassDef(playerSkinId).ability.icon}
+          abilityName={getClassDef(playerSkinId).ability.name}
+          abilityCooldown={stateRef.current?.abilityCooldown || 0}
+          abilityActive={stateRef.current?.abilityActive || false}
+          abilityTimer={stateRef.current?.abilityTimer || 0}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');
