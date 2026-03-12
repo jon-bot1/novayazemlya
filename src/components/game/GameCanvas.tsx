@@ -1036,7 +1036,8 @@ export const GameCanvas: React.FC = () => {
       const exfilMultiplier = activeExfil ? ((activeExfil as any)._xpMultiplier || 1.0) : 1.0;
       const extractionXp = Math.round(50 * exfilMultiplier);
       const lootXp = Math.floor(lootValue / 50);
-      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier);
+      const classXpMult = (state as any)._xpMultiplier || 1.0;
+      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier * classXpMult);
 
       // ── Daily mission rewards ──
       const dailyMissions = getDailyMissions();
