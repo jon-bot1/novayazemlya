@@ -1020,7 +1020,8 @@ export const GameCanvas: React.FC = () => {
       extractedRef.current = true;
       const state = stateRef.current;
       const lootItems = state.player.inventory.filter(i => i.category !== 'weapon');
-      const lootValue = lootItems.reduce((s, i) => s + i.value, 0);
+      const lootValueBonus = (state as any)._lootValueBonus || 0;
+      const lootValue = Math.round(lootItems.reduce((s, i) => s + i.value, 0) * (1 + lootValueBonus));
 
       // Check objective completion
       const completedObjectives = checkObjectiveCompletion(objectives, buildObjectivePayload(state));
