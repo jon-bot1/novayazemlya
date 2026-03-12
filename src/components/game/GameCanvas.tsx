@@ -88,10 +88,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const effectiveAdmin = isAdmin && adminMode === 'admin';
 
   // Skin selection
-  const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>(() => {
-    const saved = localStorage.getItem('nz_selected_skin');
-    return (saved as PlayerSkin) || 'operative';
-  });
+  const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
 
   // Determine which skins are available
   const availableSkins = React.useMemo(() => {
