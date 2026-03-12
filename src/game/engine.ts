@@ -1840,9 +1840,18 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const ammoAvail = ammoType ? (state.player.ammoReserves[ammoType] || 0) : 0;
       if (ammoAvail > 0) {
         state.player.reloading = true;
-        let reloadTime = wpn.name?.toLowerCase().includes('mosin') ? 3.0 :
-                           wpn.name?.toLowerCase().includes('toz') ? 2.5 :
-                           wpn.name?.toLowerCase().includes('ppsh') ? 2.0 : 1.5;
+        const wpnNameLower = (wpn.name || '').toLowerCase();
+        let reloadTime = wpnNameLower.includes('mosin') ? 3.2 :       // bolt-action, stripper clip
+                         wpnNameLower.includes('toz') ? 2.8 :          // break-action shotgun
+                         wpnNameLower.includes('ksp 58') ? 3.5 :       // belt-fed MG
+                         wpnNameLower.includes('ak 4') ? 2.2 :         // G3 battle rifle, heavy mag
+                         wpnNameLower.includes('akm') ? 1.8 :          // AKM standard mag change
+                         wpnNameLower.includes('ak-74') ? 1.6 :        // AK-74, practiced swap
+                         wpnNameLower.includes('ppsh') ? 2.5 :         // drum magazine, heavy
+                         wpnNameLower.includes('kpist') ? 1.4 :        // SMG, fast mag change
+                         wpnNameLower.includes('makarov') ? 1.2 :      // pistol, fast
+                         wpnNameLower.includes('nagant') ? 2.0 :       // revolver, individual rounds
+                         1.5;                                           // default
         // Quick Hands upgrade — reduce reload time
         const reloadBonus = (state as any)._reloadSpeedBonus || 0;
         if (reloadBonus > 0) reloadTime *= (1 - reloadBonus);
