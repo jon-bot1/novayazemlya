@@ -559,6 +559,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'q' || k === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (k === 'r') inputRef.current.reload = true;
       if (k === 'f') inputRef.current.throwKnife = true;
+      if (k === 'z') inputRef.current.useAbility = true;
       if (k === '1') inputRef.current.switchWeapon = 1;
       if (k === '2') inputRef.current.switchWeapon = 2;
       if (k === '3') inputRef.current.switchWeapon = 3;
