@@ -87,6 +87,31 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   const effectiveAdmin = isAdmin && adminMode === 'admin';
 
+  // Skin selection
+  const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>(() => {
+    const saved = localStorage.getItem('nz_selected_skin');
+    return (saved as PlayerSkin) || 'operative';
+  });
+
+  // Determine which skins are available
+  const availableSkins = React.useMemo(() => {
+    if (!user) return PLAYER_SKINS.filter(s => s.access === 'all');
+    return PLAYER_SKINS.filter(s => {
+      if (s.access === 'all' || s.access === 'registered') return true;
+      if (s.access === 'admin' && isAdmin) return true;
+      // donator: TODO — check donator status. For now only admins can preview it.
+      if (s.access === 'donator' && isAdmin) return true;
+      return false;
+    });
+  }, [user, isAdmin]);
+
+  // Ensure selected skin is valid
+  React.useEffect(() => {
+    if (!availableSkins.find(s => s.id === selectedSkin)) {
+      setSelectedSkin(availableSkins[0]?.id || 'anonymous');
+    }
+  }, [availableSkins, selectedSkin]);
+
   // Ambient wind on menu
   React.useEffect(() => {
     startMenuAmbient();
@@ -107,7 +132,6 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   React.useEffect(() => {
     if (!user) { setProfile(null); setIsAdmin(false); return; }
-    // Load profile and roles in parallel
     supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
       if (data) setProfile(data);
     });
@@ -118,19 +142,19 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
     });
   }, [user]);
 
-  const skin: PlayerSkin = effectiveAdmin ? 'admin' : user ? 'alpha' : 'default';
+  const activeSkin: PlayerSkin = effectiveAdmin ? 'admin' : (isAdmin && adminMode === 'incognito') ? 'anonymous' : user ? selectedSkin : 'anonymous';
   const callsign = profile?.display_name || user?.user_metadata?.display_name || '';
 
   const handleStart = React.useCallback(() => {
+    localStorage.setItem('nz_selected_skin', selectedSkin);
     if (isAdmin && adminMode === 'incognito') {
-      // Incognito: play as anonymous, nothing logged
-      onStart('__anonymous__', 'default');
+      onStart('__anonymous__', 'anonymous');
     } else if (user && callsign) {
-      onStart(callsign, skin);
+      onStart(callsign, activeSkin);
     } else {
-      onStart('__anonymous__', 'default');
+      onStart('__anonymous__', 'anonymous');
     }
-  }, [user, callsign, skin, onStart, isAdmin, adminMode]);
+  }, [user, callsign, activeSkin, selectedSkin, onStart, isAdmin, adminMode]);
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
