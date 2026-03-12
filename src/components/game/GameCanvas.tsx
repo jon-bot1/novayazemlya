@@ -763,10 +763,13 @@ export const GameCanvas: React.FC = () => {
       const prevHp = currentState.player.hp;
       const prevKills = currentState.killCount;
       let state = currentState;
-      try {
-        state = updateGame(currentState, inputRef.current, dt, cssW, cssH) || currentState;
-      } catch (error) {
-        console.error('Game loop update failed:', error);
+      // Skip game update when field manual is shown or game is paused
+      if (!showControlOverlayRef.current && !gamePausedRef.current) {
+        try {
+          state = updateGame(currentState, inputRef.current, dt, cssW, cssH) || currentState;
+        } catch (error) {
+          console.error('Game loop update failed:', error);
+        }
       }
       stateRef.current = state;
       inputRef.current.interact = false;
