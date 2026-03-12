@@ -90,10 +90,10 @@ const Profile: React.FC = () => {
     // Load profile
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('display_name, bonus_rubles')
+      .select('display_name, bonus_rubles, is_donator')
       .eq('id', user.id)
       .single();
-    if (profileData) setProfile(profileData);
+    if (profileData) setProfile(profileData as ProfileData);
 
     const callsign = profileData?.display_name || '';
 
