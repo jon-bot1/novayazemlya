@@ -81,7 +81,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   useEffect(() => {
     if (playerName && playerName !== '__anonymous__') {
       checkAndUpdateStreak(playerName).then(data => {
-        setStreakData({ current: data.current_streak, bonus: data.todayBonus, isNew: data.isNewDay });
+        const bonus = isDonator ? data.todayBonus * 2 : data.todayBonus;
+        setStreakData({ current: data.current_streak, bonus, isNew: data.isNewDay });
       });
     }
   }, [playerName]);
