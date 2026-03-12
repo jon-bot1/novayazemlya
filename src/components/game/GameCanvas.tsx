@@ -207,17 +207,47 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
         </div>
       ) : user ? (
         <div className="flex flex-col gap-2">
-           {isAdmin ? (
-             <AdminModeBadge mode={adminMode} onCycle={cycleMode} />
-           ) : (
-             <div className="border border-primary/30 rounded p-2 text-center">
-               <p className="text-xs font-display text-primary uppercase tracking-wider">🛡️ ALPHA TESTER</p>
-             </div>
-           )}
-           <div className="text-center">
-             <p className="text-sm font-display text-foreground">{callsign || '(no callsign set)'}</p>
-             <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
-           </div>
+            {isAdmin ? (
+              <AdminModeBadge mode={adminMode} onCycle={cycleMode} />
+            ) : (
+              <div className="border border-primary/30 rounded p-2 text-center">
+                <p className="text-xs font-display text-primary uppercase tracking-wider">🛡️ ALPHA TESTER</p>
+              </div>
+            )}
+            <div className="text-center">
+              <p className="text-sm font-display text-foreground">{callsign || '(no callsign set)'}</p>
+              <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
+            </div>
+
+            {/* Skin Selector */}
+            {adminMode !== 'incognito' && (
+              <div className="border border-border/50 rounded p-2 bg-secondary/10">
+                <p className="text-[9px] font-display text-accent uppercase tracking-wider text-center mb-1.5">🎨 Choose Outfit</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {availableSkins.map(s => (
+                    <button
+                      key={s.id}
+                      className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
+                        activeSkin === s.id
+                          ? 'border-accent bg-accent/15 text-foreground'
+                          : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
+                      }`}
+                      onClick={() => setSelectedSkin(s.id)}
+                      title={s.description}
+                    >
+                      <span className="text-lg">{s.icon}</span>
+                      <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
+                      {s.access === 'admin' && <span className="text-[7px] font-mono text-warning">ADMIN</span>}
+                      {s.access === 'donator' && <span className="text-[7px] font-mono text-accent">DONATOR</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[8px] font-mono text-muted-foreground/60 text-center mt-1">
+                  {PLAYER_SKINS.find(s => s.id === activeSkin)?.description}
+                </p>
+              </div>
+            )}
+
           <button
             className="w-full px-6 py-3 bg-primary text-primary-foreground font-display uppercase tracking-widest rounded-sm hover:bg-primary/80 transition-colors text-lg"
             onClick={handleStart}
