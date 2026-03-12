@@ -540,7 +540,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             </div>
             <div className="grid gap-1.5 max-h-[400px] overflow-y-auto">
               {TRADER_ITEMS.map(item => {
-                const adjustedCost = getAdjustedPrice(item.cost, item.id, stash.extractionCount);
+                const adjustedCost = Math.floor(getAdjustedPrice(item.cost, item.id, stash.extractionCount) * donatorDiscount);
                 const affordable = stash.rubles >= adjustedCost;
                 const cheaper = adjustedCost < item.cost;
                 const expensive = adjustedCost > item.cost;
