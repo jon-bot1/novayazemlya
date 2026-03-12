@@ -489,7 +489,11 @@ export const GameCanvas: React.FC = () => {
   const [lootNotifications, setLootNotifications] = useState<LootNotification[]>([]);
   const [showFirefoxWarning, setShowFirefoxWarning] = useState(false);
   const [showControlOverlay, setShowControlOverlay] = useState(false);
+  const [gamePaused, setGamePaused] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(true);
   const controlOverlayDismissed = useRef(false);
+  const gamePausedRef = useRef(false);
+  const showControlOverlayRef = useRef(false);
   const lastInventoryCountRef = useRef<number>(stateRef.current.player.inventory.length);
 
   useEffect(() => {
