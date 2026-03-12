@@ -4802,7 +4802,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           // If cover was aborted (no cp), fall through to normal chase below
         }
 
-        const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || state.player.pos);
+        // Only chase directly toward player with LOS — otherwise use last known position
+        const chaseTarget = los ? state.player.pos : (enemy.investigateTarget || enemy.patrolTarget);
         const dir = normalize({ x: chaseTarget.x - enemy.pos.x, y: chaseTarget.y - enemy.pos.y });
         // Gradual turning while chasing
         const chaseTargetAngle = Math.atan2(dir.y, dir.x);
