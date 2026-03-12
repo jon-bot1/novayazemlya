@@ -3789,7 +3789,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
     const isBehind = angleDiff > visionConfig.frontArc;
 
-    const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost;
+    const effectiveRange = (isBehind ? enemy.alertRange * visionConfig.rearRange : enemy.alertRange) * alarmBoost * (1 - ((state as any)._detectionReduction || 0));
     const proximityRange = Math.max(70, enemy.alertRange * 0.4);
     const forcedContactRange = 38;
     const closeProximity = !playerIsHiding && distToPlayer < proximityRange;
