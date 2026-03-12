@@ -337,6 +337,11 @@ export interface GameState {
   // Kravtsov fear mechanic
   fearTimer: number; // seconds of fear remaining (forced flee, can't shoot)
   fearSourcePos: Vec2 | null; // position to flee FROM
+  // Class ability system
+  abilityId: string; // current class ability id
+  abilityCooldown: number; // seconds remaining on cooldown
+  abilityActive: boolean; // whether ability is currently active
+  abilityTimer: number; // seconds remaining on active ability
 }
 
 export interface SoundEvent {
