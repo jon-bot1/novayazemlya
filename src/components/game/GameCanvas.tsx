@@ -505,6 +505,7 @@ export const GameCanvas: React.FC = () => {
 
   const dismissControls = useCallback(() => {
     setShowControlOverlay(false);
+    showControlOverlayRef.current = false;
     controlOverlayDismissed.current = true;
     setGamePhase('playing');
   }, []);
