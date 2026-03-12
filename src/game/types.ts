@@ -337,6 +337,11 @@ export interface GameState {
   // Kravtsov fear mechanic
   fearTimer: number; // seconds of fear remaining (forced flee, can't shoot)
   fearSourcePos: Vec2 | null; // position to flee FROM
+  // Class ability system
+  abilityId: string; // current class ability id
+  abilityCooldown: number; // seconds remaining on cooldown
+  abilityActive: boolean; // whether ability is currently active
+  abilityTimer: number; // seconds remaining on active ability
 }
 
 export interface SoundEvent {
@@ -374,4 +379,5 @@ export interface InputState {
   throwKnife: boolean; // throw knife for silent ranged kill (F key)
   chokehold: boolean; // hold E behind enemy for silent chokehold
   throwRock: boolean; // throw distraction rock (middle mouse / C key)
+  useAbility: boolean; // class ability (Z key)
 }

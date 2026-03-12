@@ -11,7 +11,7 @@ describe('Patrol movement trace', () => {
       heal: false, throwGrenade: false, cycleThrowable: false,
       movementMode: 'walk', moveTarget: null, takeCover: false,
       useTNT: false, useSpecial: false, reload: false,
-      throwKnife: false, chokehold: false, throwRock: false,
+      throwKnife: false, chokehold: false, throwRock: false, useAbility: false,
     };
 
     // Pick an enemy that's not inside a wall

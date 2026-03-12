@@ -3,6 +3,7 @@ import { createGameState, updateGame } from '../../game/engine';
 import { renderGame, setPlayerSkin, PLAYER_SKINS, type PlayerSkin } from '../../game/renderer';
 import { GameState, InputState, Item } from '../../game/types';
 import { MapId } from '../../game/maps';
+import { getClassDef, CLASS_DEFS, DONATOR_PERKS, UNLOCK_HINTS } from '../../game/classes';
 import { LORE_DOCUMENTS, LoreDocument } from '../../game/lore';
 import { MobileControls } from './MobileControls';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -51,6 +52,7 @@ const createDefaultInputState = (): InputState => ({
   throwKnife: false,
   chokehold: false,
   throwRock: false,
+  useAbility: false,
 });
 
 const safeCreateGameState = (mapId: MapId = 'objekt47', playerLevel: number = 1, extractionCount: number = 0): GameState => {
@@ -81,6 +83,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const [showHighscores, setShowHighscores] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
   const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
+  const [isDonator, setIsDonator] = React.useState(false);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const { mode: adminMode, cycleMode } = useAdminMode();
@@ -90,18 +93,26 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   // Skin selection
   const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
 
-  // Determine which skins are available — respects admin mode
+  // Determine which skins are SELECTABLE vs VISIBLE
+  const showAdminSkins = isAdmin && adminMode === 'admin';
   const availableSkins = React.useMemo(() => {
     if (!user) return PLAYER_SKINS.filter(s => s.access === 'all');
-    // In normal mode, admin sees only registered skins (no admin/donator preview)
-    const showAdminSkins = isAdmin && adminMode === 'admin';
     return PLAYER_SKINS.filter(s => {
       if (s.access === 'all' || s.access === 'registered') return true;
       if (s.access === 'admin' && showAdminSkins) return true;
-      if (s.access === 'donator' && showAdminSkins) return true;
+      if (s.access === 'donator' && (isDonator || showAdminSkins)) return true;
       return false;
     });
-  }, [user, isAdmin, adminMode]);
+  }, [user, isAdmin, adminMode, isDonator, showAdminSkins]);
+
+  // ALL skins visible in selector (locked ones shown too, except admin for non-admins)
+  const visibleSkins = React.useMemo(() => {
+    return PLAYER_SKINS.filter(s => {
+      // Admin skin: only visible to admins
+      if (s.access === 'admin') return showAdminSkins;
+      return true;
+    });
+  }, [showAdminSkins]);
 
   // Load saved skin and validate against available skins
   React.useEffect(() => {
@@ -130,8 +141,11 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   React.useEffect(() => {
     if (!user) { setProfile(null); setIsAdmin(false); return; }
-    supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
-      if (data) setProfile(data);
+    supabase.from('profiles').select('display_name, is_donator').eq('id', user.id).single().then(({ data }) => {
+      if (data) {
+        setProfile({ display_name: data.display_name });
+        setIsDonator(data.is_donator === true);
+      }
     });
     supabase.rpc('get_my_roles').then(({ data }) => {
       if (data && Array.isArray(data)) {
@@ -219,32 +233,74 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
               <p className="text-[9px] font-mono text-muted-foreground">{user.email}</p>
             </div>
 
-            {/* Skin Selector */}
+            {/* Skin / Class Selector */}
             {adminMode !== 'incognito' && (
               <div className="border border-border/50 rounded p-2 bg-secondary/10">
-                <p className="text-[9px] font-display text-accent uppercase tracking-wider text-center mb-1.5">🎨 Choose Outfit</p>
+                <p className="text-[9px] font-display text-accent uppercase tracking-wider text-center mb-1.5">🎖️ Choose Class</p>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {availableSkins.map(s => (
-                    <button
-                      key={s.id}
-                      className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
-                        activeSkin === s.id
-                          ? 'border-accent bg-accent/15 text-foreground'
-                          : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
-                      }`}
-                      onClick={() => setSelectedSkin(s.id)}
-                      title={s.description}
-                    >
-                      <span className="text-lg">{s.icon}</span>
-                      <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
-                      {s.access === 'admin' && <span className="text-[7px] font-mono text-warning">ADMIN</span>}
-                      {s.access === 'donator' && <span className="text-[7px] font-mono text-accent">DONATOR</span>}
-                    </button>
-                  ))}
+                  {visibleSkins.map(s => {
+                    const isUnlocked = availableSkins.some(a => a.id === s.id);
+                    const classDef = getClassDef(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
+                          !isUnlocked
+                            ? 'border-border/20 bg-secondary/5 text-muted-foreground/30 cursor-not-allowed opacity-50'
+                            : activeSkin === s.id
+                            ? 'border-accent bg-accent/15 text-foreground'
+                            : 'border-border/30 bg-secondary/20 text-muted-foreground hover:border-foreground/30 hover:text-foreground'
+                        }`}
+                        onClick={() => isUnlocked && setSelectedSkin(s.id)}
+                        title={isUnlocked ? s.description : UNLOCK_HINTS[s.access] || ''}
+                        disabled={!isUnlocked}
+                      >
+                        <span className="text-lg">{isUnlocked ? s.icon : '🔒'}</span>
+                        <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
+                        <span className="text-[7px] font-mono text-muted-foreground/60">{classDef.className}</span>
+                        {!isUnlocked && (
+                          <span className="text-[6px] font-mono text-muted-foreground/40 leading-tight">
+                            {s.access === 'donator' ? '💎 Donate' : s.access === 'registered' ? '🔐 Register' : ''}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="text-[8px] font-mono text-muted-foreground/60 text-center mt-1">
-                  {PLAYER_SKINS.find(s => s.id === activeSkin)?.description}
-                </p>
+                {/* Selected class details */}
+                {(() => {
+                  const selClass = getClassDef(activeSkin);
+                  return (
+                    <div className="mt-2 p-1.5 bg-secondary/20 rounded border border-border/20">
+                      <p className="text-[8px] font-display text-foreground/80 text-center uppercase tracking-wider">
+                        {selClass.className} — {PLAYER_SKINS.find(s => s.id === activeSkin)?.name}
+                      </p>
+                      {selClass.passiveDescription.map((line, i) => (
+                        <p key={i} className="text-[7px] font-mono text-accent/70 text-center">{line}</p>
+                      ))}
+                      {selClass.ability.id !== 'none' && (
+                        <p className="text-[7px] font-mono text-muted-foreground/60 text-center mt-0.5">
+                          [Z] {selClass.ability.icon} {selClass.ability.name}: {selClass.ability.description}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+                {/* Donator perks info */}
+                {!isDonator && !showAdminSkins && user && (
+                  <div className="mt-1.5 p-1.5 bg-accent/5 rounded border border-accent/20">
+                    <p className="text-[7px] font-display text-accent/60 text-center uppercase tracking-wider mb-0.5">💎 Donator Perks (all classes)</p>
+                    {DONATOR_PERKS.map((p, i) => (
+                      <p key={i} className="text-[6px] font-mono text-muted-foreground/50 text-center">{p.icon} {p.label}</p>
+                    ))}
+                    <a href="/profile" className="block text-[7px] font-mono text-accent/50 text-center mt-0.5 hover:text-accent underline">
+                      Donate €5 →
+                    </a>
+                  </div>
+                )}
+                {isDonator && (
+                  <p className="text-[7px] font-mono text-accent/50 text-center mt-1">💎 Donator perks active</p>
+                )}
               </div>
             )}
 
@@ -432,6 +488,7 @@ export const GameCanvas: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [playerIsAdmin, setPlayerIsAdmin] = useState(false);
   const [playerIsDonator, setPlayerIsDonator] = useState(false);
+  const [playerSkinId, setPlayerSkinId] = useState<PlayerSkin>('anonymous');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'deploying' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
@@ -557,6 +614,7 @@ export const GameCanvas: React.FC = () => {
       if (k === 'q' || k === ' ') { e.preventDefault(); inputRef.current.takeCover = true; }
       if (k === 'r') inputRef.current.reload = true;
       if (k === 'f') inputRef.current.throwKnife = true;
+      if (k === 'z') inputRef.current.useAbility = true;
       if (k === '1') inputRef.current.switchWeapon = 1;
       if (k === '2') inputRef.current.switchWeapon = 2;
       if (k === '3') inputRef.current.switchWeapon = 3;
@@ -877,7 +935,7 @@ export const GameCanvas: React.FC = () => {
           damageDealt: Math.round((state as any)._damageDealt || 0),
           damageTaken: Math.round((state as any)._damageTaken || 0),
           enemyPositions: state.enemies
-            .filter(e => e.state !== 'dead' && (e.state === 'chase' || e.state === 'attack' || e.state === 'suppress' || e.state === 'flank' || Math.hypot(e.pos.x - state.player.pos.x, e.pos.y - state.player.pos.y) < 300))
+            .filter(e => e.state !== 'dead' && ((state as any)._spotterActive || (state as any)._seeEnemyTypes || e.state === 'chase' || e.state === 'attack' || e.state === 'suppress' || e.state === 'flank' || Math.hypot(e.pos.x - state.player.pos.x, e.pos.y - state.player.pos.y) < 300))
             .map(e => ({ x: e.pos.x, y: e.pos.y, type: e.type, state: e.state })),
           extractionPositions: state.extractionPoints.map(ep => ({ x: ep.pos.x, y: ep.pos.y, name: ep.name, active: ep.active })),
           objectivePositions: state.lootContainers.filter(lc => !lc.looted && lc.type === 'archive').map(lc => ({ x: lc.pos.x, y: lc.pos.y })),
@@ -962,7 +1020,8 @@ export const GameCanvas: React.FC = () => {
       extractedRef.current = true;
       const state = stateRef.current;
       const lootItems = state.player.inventory.filter(i => i.category !== 'weapon');
-      const lootValue = lootItems.reduce((s, i) => s + i.value, 0);
+      const lootValueBonus = (state as any)._lootValueBonus || 0;
+      const lootValue = Math.round(lootItems.reduce((s, i) => s + i.value, 0) * (1 + lootValueBonus));
 
       // Check objective completion
       const completedObjectives = checkObjectiveCompletion(objectives, buildObjectivePayload(state));
@@ -977,7 +1036,8 @@ export const GameCanvas: React.FC = () => {
       const exfilMultiplier = activeExfil ? ((activeExfil as any)._xpMultiplier || 1.0) : 1.0;
       const extractionXp = Math.round(50 * exfilMultiplier);
       const lootXp = Math.floor(lootValue / 50);
-      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier);
+      const classXpMult = (state as any)._xpMultiplier || 1.0;
+      const totalXp = Math.round((killXp + extractionXp + lootXp + objectiveXp) * exfilMultiplier * classXpMult);
 
       // ── Daily mission rewards ──
       const dailyMissions = getDailyMissions();
@@ -1049,6 +1109,7 @@ export const GameCanvas: React.FC = () => {
         <IntroScreen onStart={async (name, skin) => {
           setPlayerName(name);
           setPlayerSkin(skin);
+          setPlayerSkinId(skin);
           setPlayerIsAdmin(skin === 'admin');
           // Check donator status
           const { data: { session } } = await supabase.auth.getSession();
@@ -1076,6 +1137,7 @@ export const GameCanvas: React.FC = () => {
           playerName={playerName}
           stash={stash}
           isAdmin={playerIsAdmin}
+          isDonator={playerIsDonator}
           objectives={objectives}
           onDeploy={(mapId: MapId) => {
             setSelectedMapId(mapId);
@@ -1145,6 +1207,25 @@ export const GameCanvas: React.FC = () => {
               st.player.maxStamina *= (1 + enduranceLvl * 0.20);
               st.player.stamina = st.player.maxStamina;
             }
+            // ── CLASS PASSIVE BONUSES ──
+            const classDef = getClassDef(playerSkinId);
+            const cp = classDef.passive;
+            if (cp.fireRateBonus) st.player.fireRate *= (1 - cp.fireRateBonus);
+            if (cp.speedBonus) st.player.speed *= (1 + cp.speedBonus);
+            if (cp.noiseReduction) (st as any)._noiseReduction = ((st as any)._noiseReduction || 0) + cp.noiseReduction;
+            if (cp.sneakSpeedBonus) (st as any)._sneakSpeedBonus = cp.sneakSpeedBonus;
+            if (cp.detectionReduction) (st as any)._detectionReduction = cp.detectionReduction;
+            if (cp.critChanceBonus) (st as any)._critChanceBonus = ((st as any)._critChanceBonus || 0) + cp.critChanceBonus;
+            if (cp.maxHpBonus) { st.player.maxHp += cp.maxHpBonus; st.player.hp = st.player.maxHp; }
+            if (cp.xpMultiplier) (st as any)._xpMultiplier = 1 + cp.xpMultiplier;
+            if (cp.seeEnemyTypes) (st as any)._seeEnemyTypes = true;
+            // Set class ability on game state
+            st.abilityId = classDef.ability.id;
+            st.abilityCooldown = 0;
+            st.abilityActive = false;
+            st.abilityTimer = 0;
+            // Donator loot value bonus
+            if (playerIsDonator) (st as any)._lootValueBonus = 0.10;
             // ── Apply weapon mods from stash items ──
             // Auto-attach mods to equipped weapons
             for (const item of stash.items) {
@@ -1459,6 +1540,11 @@ export const GameCanvas: React.FC = () => {
           mapWidth={hudState.mapWidth}
           mapHeight={hudState.mapHeight}
           isFirstRaid={stash.raidCount <= 1}
+          abilityIcon={getClassDef(playerSkinId).ability.icon}
+          abilityName={getClassDef(playerSkinId).ability.name}
+          abilityCooldown={stateRef.current?.abilityCooldown || 0}
+          abilityActive={stateRef.current?.abilityActive || false}
+          abilityTimer={stateRef.current?.abilityTimer || 0}
           onReturnToBase={() => {
             setStarted(false);
             setGamePhase('homebase');

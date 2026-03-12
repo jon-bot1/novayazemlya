@@ -49,7 +49,7 @@ describe('Fishing Village Enemy Debug', () => {
       heal: false, throwGrenade: false, cycleThrowable: false,
       movementMode: 'walk', moveTarget: null, takeCover: false,
       useTNT: false, useSpecial: false, reload: false,
-      throwKnife: false, chokehold: false, throwRock: false,
+      throwKnife: false, chokehold: false, throwRock: false, useAbility: false,
     };
 
     // Record initial positions

@@ -22,6 +22,7 @@ const idleInput: InputState = {
   throwKnife: false,
   chokehold: false,
   throwRock: false,
+  useAbility: false,
 };
 
 describe('Enemy activation regression', () => {

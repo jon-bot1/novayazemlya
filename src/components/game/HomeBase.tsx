@@ -63,9 +63,10 @@ interface HomeBaseProps {
   onReturnToMenu?: () => void;
   rerollCount: number;
   isAdmin?: boolean;
+  isDonator?: boolean;
 }
 
-export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount, isAdmin }) => {
+export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objectives, onDeploy, onSellItem, onSellAll, onBuyUpgrade, onBuyTraderItem, onRerollObjectives, onMapChange, onCraft, onReturnToMenu, rerollCount, isAdmin, isDonator }) => {
   const [tab, setTab] = useState<'stash' | 'trader' | 'shop' | 'mission' | 'intel' | 'craft' | 'mastery'>('mission');
   const [selectedMap, setSelectedMap] = useState<MapId>('objekt47');
   const [readingDoc, setReadingDoc] = useState<LoreDocument | null>(null);
@@ -80,7 +81,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
   useEffect(() => {
     if (playerName && playerName !== '__anonymous__') {
       checkAndUpdateStreak(playerName).then(data => {
-        setStreakData({ current: data.current_streak, bonus: data.todayBonus, isNew: data.isNewDay });
+        const bonus = isDonator ? data.todayBonus * 2 : data.todayBonus;
+        setStreakData({ current: data.current_streak, bonus, isNew: data.isNewDay });
       });
     }
   }, [playerName]);
@@ -110,7 +112,8 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
 
   // Badge counts for tabs
   const availableUpgrades = UPGRADES.filter(u => canBuyUpgrade(stash.upgrades, u.id, stash.rubles)).length;
-  const affordableShopItems = TRADER_ITEMS.filter(item => stash.rubles >= getAdjustedPrice(item.cost, item.id, stash.extractionCount)).length;
+  const donatorDiscount = isDonator ? 0.85 : 1; // 15% off for donators
+  const affordableShopItems = TRADER_ITEMS.filter(item => stash.rubles >= Math.floor(getAdjustedPrice(item.cost, item.id, stash.extractionCount) * donatorDiscount)).length;
   const craftableRecipes = RECIPES.filter(r => canCraft(r, stash.items)).length;
   const sellableItems = stash.items.length;
   const masteryLevels = (['rifle', 'pistol', 'sniper', 'shotgun', 'knife', 'grenade'] as WeaponMasteryType[])
@@ -538,7 +541,7 @@ export const HomeBase: React.FC<HomeBaseProps> = ({ playerName, stash, objective
             </div>
             <div className="grid gap-1.5 max-h-[400px] overflow-y-auto">
               {TRADER_ITEMS.map(item => {
-                const adjustedCost = getAdjustedPrice(item.cost, item.id, stash.extractionCount);
+                const adjustedCost = Math.floor(getAdjustedPrice(item.cost, item.id, stash.extractionCount) * donatorDiscount);
                 const affordable = stash.rubles >= adjustedCost;
                 const cheaper = adjustedCost < item.cost;
                 const expensive = adjustedCost > item.cost;
