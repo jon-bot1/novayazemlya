@@ -5706,11 +5706,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               const berserkChance = hpPct < 0.3 ? 0.15 : hpPct < 0.5 ? 0.08 : 0.02;
               const roll = Math.random();
               if (roll < panicChance) {
-                (enemy as any)._panicTimer = 3 + Math.random() * 3;
+                (enemy as any)._panicTimer = 2 + Math.random() * 5; // 2-7s randomized
                 setSpeech(enemy, pickLine(PANIC_LINES, enemy.type), 2.5);
                 addMessage(state, `😱 ${enemy.type.toUpperCase()} PANICS!`, 'warning');
               } else if (roll < panicChance + berserkChance) {
-                (enemy as any)._berserkTimer = 10;
+                (enemy as any)._berserkTimer = 4 + Math.random() * 8; // 4-12s randomized
                 (enemy as any)._preBerserkMaxHp = enemy.maxHp;
                 enemy.maxHp *= 2;
                 enemy.hp = Math.min(enemy.hp + enemy.maxHp * 0.3, enemy.maxHp);
