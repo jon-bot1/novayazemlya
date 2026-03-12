@@ -90,17 +90,18 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   // Skin selection
   const [selectedSkin, setSelectedSkin] = React.useState<PlayerSkin>('anonymous');
 
-  // Determine which skins are available
+  // Determine which skins are available — respects admin mode
   const availableSkins = React.useMemo(() => {
     if (!user) return PLAYER_SKINS.filter(s => s.access === 'all');
+    // In normal mode, admin sees only registered skins (no admin/donator preview)
+    const showAdminSkins = isAdmin && adminMode === 'admin';
     return PLAYER_SKINS.filter(s => {
       if (s.access === 'all' || s.access === 'registered') return true;
-      if (s.access === 'admin' && isAdmin) return true;
-      // donator: TODO — check donator status. For now only admins can preview it.
-      if (s.access === 'donator' && isAdmin) return true;
+      if (s.access === 'admin' && showAdminSkins) return true;
+      if (s.access === 'donator' && showAdminSkins) return true;
       return false;
     });
-  }, [user, isAdmin]);
+  }, [user, isAdmin, adminMode]);
 
   // Load saved skin and validate against available skins
   React.useEffect(() => {
