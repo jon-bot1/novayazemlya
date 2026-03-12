@@ -571,7 +571,7 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
   if (isBodyguard) arc = Math.PI * 0.75; // much wider arc for elite bodyguards
   
   return angleDiff <= arc;
-}
+  }
 
 
 function sendReinforcementToPlatform(state: GameState, deadGuard: Enemy) {
@@ -1033,17 +1033,35 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
 
   state.time += dt;
 
-  // === GROUND LOOT TIMEOUT — uninspected weapon drops disappear after 90s ===
+  // === GROUND LOOT TIMEOUT — unlooted items disappear over time ===
   for (let li = state.lootContainers.length - 1; li >= 0; li--) {
     const lc = state.lootContainers[li];
-    if (lc.type === 'weapon_drop' && !lc.looted && (lc as any)._spawnTime !== undefined) {
-      if (state.time - (lc as any)._spawnTime > 90) {
-        state.lootContainers.splice(li, 1);
-      }
+    if (lc.looted) continue;
+    // Weapon drops: 90s, regular containers: 180s
+    const timeout = lc.type === 'weapon_drop' ? 90 : 180;
+    const spawnT = (lc as any)._spawnTime ?? 0; // map-spawned containers use time 0
+    if (state.time - spawnT > timeout) {
+      state.lootContainers.splice(li, 1);
     }
   }
 
-  // === ELEVATOR BLACKOUT FADE ===
+  // === DEAD ENEMY BODY TIMEOUT — unlooted bodies disappear after 120s ===
+  for (const enemy of state.enemies) {
+    if (enemy.state !== 'dead' || enemy.looted) continue;
+    if ((enemy as any)._deathTime === undefined) continue;
+    if (state.time - (enemy as any)._deathTime > 120) {
+      enemy.looted = true; // mark as looted so it fades/disappears
+      enemy.loot = []; // clear loot
+    }
+  }
+
+  // Stamp _deathTime on freshly dead enemies (centralized — catches all death sources)
+  for (const enemy of state.enemies) {
+    if (enemy.state === 'dead' && (enemy as any)._deathTime === undefined) {
+      (enemy as any)._deathTime = state.time;
+    }
+  }
+
   if ((state as any)._elevatorFade > 0) {
     (state as any)._elevatorFade -= dt;
     // Swap map at midpoint (when fully black)
