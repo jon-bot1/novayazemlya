@@ -83,6 +83,7 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
   const [showHighscores, setShowHighscores] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
   const [profile, setProfile] = React.useState<{ display_name: string } | null>(null);
+  const [isDonator, setIsDonator] = React.useState(false);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const { mode: adminMode, cycleMode } = useAdminMode();
