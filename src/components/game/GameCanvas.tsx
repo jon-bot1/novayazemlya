@@ -431,6 +431,7 @@ export const GameCanvas: React.FC = () => {
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [playerIsAdmin, setPlayerIsAdmin] = useState(false);
+  const [playerIsDonator, setPlayerIsDonator] = useState(false);
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'deploying' | 'playing'>('intro');
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
@@ -1049,6 +1050,12 @@ export const GameCanvas: React.FC = () => {
           setPlayerName(name);
           setPlayerSkin(skin);
           setPlayerIsAdmin(skin === 'admin');
+          // Check donator status
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { data: prof } = await supabase.from('profiles').select('is_donator').eq('id', session.user.id).single();
+            setPlayerIsDonator(prof?.is_donator === true);
+          }
           // Try loading from DB first
           const dbStash = await loadStashFromDb(name);
           if (dbStash) {
@@ -1130,6 +1137,8 @@ export const GameCanvas: React.FC = () => {
             if (ironBodyLvl > 0) { st.player.maxHp += ironBodyLvl * 15; st.player.hp = st.player.maxHp; }
             // Pack Mule — extra backpack space
             st.backpackCapacity += getUpgradeLevel(ups, 'big_backpack') * 6;
+            // Donator bonus: +8 inventory slots
+            if (playerIsDonator) st.backpackCapacity += 8;
             // Endurance — more stamina
             const enduranceLvl = getUpgradeLevel(ups, 'endurance');
             if (enduranceLvl > 0) {
