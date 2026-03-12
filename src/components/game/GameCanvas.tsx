@@ -133,8 +133,11 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
 
   React.useEffect(() => {
     if (!user) { setProfile(null); setIsAdmin(false); return; }
-    supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
-      if (data) setProfile(data);
+    supabase.from('profiles').select('display_name, is_donator').eq('id', user.id).single().then(({ data }) => {
+      if (data) {
+        setProfile({ display_name: data.display_name });
+        setIsDonator(data.is_donator === true);
+      }
     });
     supabase.rpc('get_my_roles').then(({ data }) => {
       if (data && Array.isArray(data)) {
