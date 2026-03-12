@@ -2,3 +2,9 @@ project_id = "dkcbuzjwvbpltarnlhwe"
 
 [functions.cleanup-sessions]
 verify_jwt = false
+
+[functions.create-donation]
+verify_jwt = false
+
+[functions.verify-donation]
+verify_jwt = false

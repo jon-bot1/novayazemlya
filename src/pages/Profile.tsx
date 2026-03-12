@@ -8,6 +8,7 @@ import { useAdminMode } from '@/hooks/useAdminMode';
 interface ProfileData {
   display_name: string;
   bonus_rubles: number;
+  is_donator: boolean;
 }
 
 interface HighscoreEntry {
@@ -55,6 +56,7 @@ const Profile: React.FC = () => {
   const [comment, setComment] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [donationLoading, setDonationLoading] = useState(false);
 
   // Tab
   const [tab, setTab] = useState<'stats' | 'account' | 'feedback'>('stats');
@@ -89,10 +91,10 @@ const Profile: React.FC = () => {
     // Load profile
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('display_name, bonus_rubles')
+      .select('display_name, bonus_rubles, is_donator')
       .eq('id', user.id)
       .single();
-    if (profileData) setProfile(profileData);
+    if (profileData) setProfile(profileData as ProfileData);
 
     const callsign = profileData?.display_name || '';
 
@@ -119,6 +121,20 @@ const Profile: React.FC = () => {
   }, [user]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Auto-verify donation after returning from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('donation') === 'success' && user) {
+      supabase.functions.invoke('verify-donation').then(({ data }) => {
+        if (data?.is_donator) {
+          setProfile(p => p ? { ...p, is_donator: true } : p);
+        }
+      });
+      // Clean URL
+      window.history.replaceState({}, '', '/profile');
+    }
+  }, [user]);
 
   const handleUpdateEmail = async () => {
     setAccountLoading(true); setAccountErr(''); setAccountMsg('');
@@ -408,24 +424,39 @@ const Profile: React.FC = () => {
         )}
 
         {/* Donation — always visible */}
-        <div className="border border-accent/30 rounded p-4 bg-accent/5 flex flex-col gap-2 items-center">
-          <p className="text-[10px] font-display text-accent uppercase tracking-wider">☕ Support Development</p>
-          <p className="text-[9px] font-mono text-muted-foreground text-center">
-            Enjoy the game? Buy the developer a coffee!<br/>
-            Donators unlock the exclusive <span className="text-accent font-bold">Vanguard</span> outfit.
-          </p>
-          <a
-            href="https://www.paypal.com/paypalme/jonpetersvensson/5"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-2.5 bg-accent text-accent-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-accent/80 transition-colors"
-          >
-            💛 Donate €5 via PayPal
-          </a>
-          <p className="text-[8px] font-mono text-muted-foreground/50">
-            After donating, send a screenshot to get your account upgraded.
-          </p>
-        </div>
+        {profile?.is_donator ? (
+          <div className="border border-accent/30 rounded p-4 bg-accent/5 flex flex-col gap-2 items-center">
+            <p className="text-[10px] font-display text-accent uppercase tracking-wider">🎖️ Vanguard Donator</p>
+            <p className="text-[9px] font-mono text-muted-foreground text-center">
+              Tack för ditt stöd! Du har låst upp det exklusiva <span className="text-accent font-bold">Vanguard</span>-skinnet.
+            </p>
+          </div>
+        ) : (
+          <div className="border border-accent/30 rounded p-4 bg-accent/5 flex flex-col gap-2 items-center">
+            <p className="text-[10px] font-display text-accent uppercase tracking-wider">☕ Support Development</p>
+            <p className="text-[9px] font-mono text-muted-foreground text-center">
+              Enjoy the game? Buy the developer a coffee!<br/>
+              Donators unlock the exclusive <span className="text-accent font-bold">Vanguard</span> outfit.
+            </p>
+            <button
+              onClick={async () => {
+                setDonationLoading(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke('create-donation');
+                  if (error) throw error;
+                  if (data?.url) window.open(data.url, '_blank');
+                } catch (e) {
+                  console.error('Donation error:', e);
+                }
+                setDonationLoading(false);
+              }}
+              disabled={donationLoading}
+              className="px-6 py-2.5 bg-accent text-accent-foreground font-display uppercase tracking-wider text-[11px] rounded-sm hover:bg-accent/80 transition-colors disabled:opacity-40"
+            >
+              {donationLoading ? '...' : '💛 Donate €5'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
