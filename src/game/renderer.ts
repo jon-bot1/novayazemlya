@@ -1372,16 +1372,41 @@ function drawGroundTiles(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 }
 
 // ── PLAYER SKIN SYSTEM ──
-export type PlayerSkin = 'default' | 'alpha' | 'admin';
-let _playerSkin: PlayerSkin = 'default';
+export type PlayerSkin = 'anonymous' | 'operative' | 'arctic' | 'shadow' | 'admin' | 'donator';
+
+export interface SkinInfo {
+  id: PlayerSkin;
+  name: string;
+  icon: string;
+  description: string;
+  access: 'all' | 'registered' | 'admin' | 'donator';
+}
+
+export const PLAYER_SKINS: SkinInfo[] = [
+  { id: 'anonymous', name: 'Conscript', icon: '👤', description: 'Standard issue. No questions asked.', access: 'all' },
+  { id: 'operative', name: 'Operative', icon: '🎖️', description: 'NORDVAKT field operative — green beret, woodland camo.', access: 'registered' },
+  { id: 'arctic', name: 'Arctic Fox', icon: '🦊', description: 'Winter warfare specialist — white camo, fur ushanka.', access: 'registered' },
+  { id: 'shadow', name: 'Shadow', icon: '🌑', description: 'Night ops specialist — dark gear, bandana.', access: 'registered' },
+  { id: 'admin', name: 'Командир', icon: '⭐', description: 'Gold-trimmed command gear. Only for NORDVAKT high command.', access: 'admin' },
+  { id: 'donator', name: 'Vanguard', icon: '💎', description: 'Diamond-class operative — blue elite gear.', access: 'donator' },
+];
+
+let _playerSkin: PlayerSkin = 'anonymous';
 export function setPlayerSkin(skin: PlayerSkin) { _playerSkin = skin; }
 
 function getPlayerColors(): { body: string; outline: string; eye: string; hat: 'ushanka' | 'helmet' | 'beret' | 'bandana' | 'none'; hatColor: string } {
   switch (_playerSkin) {
     case 'admin':
       return { body: '#2a2a2a', outline: '#c8a030', eye: '#ff4444', hat: 'helmet', hatColor: '#1a1a1a' };
-    case 'alpha':
-      return { body: '#4a5a6a', outline: '#2a3a4a', eye: '#88ccff', hat: 'beret', hatColor: '#3a4a5a' };
+    case 'donator':
+      return { body: '#2a3a5a', outline: '#4a7acc', eye: '#66ccff', hat: 'beret', hatColor: '#1a2a4a' };
+    case 'operative':
+      return { body: '#4a6a3a', outline: '#3a5a2a', eye: '#2a3a1a', hat: 'beret', hatColor: '#5a3a2a' };
+    case 'arctic':
+      return { body: '#c8c8cc', outline: '#9a9aa0', eye: '#4a6a8a', hat: 'ushanka', hatColor: '#b0a898' };
+    case 'shadow':
+      return { body: '#2a2a30', outline: '#1a1a20', eye: '#cc4444', hat: 'bandana', hatColor: '#1a1a1a' };
+    case 'anonymous':
     default:
       return { body: '#6a8a4a', outline: '#4a6a2a', eye: '#1a2a1a', hat: 'beret', hatColor: '#5a3a2a' };
   }
