@@ -780,6 +780,7 @@ export const GameCanvas: React.FC = () => {
     };
 
     const onWheel = (e: WheelEvent) => {
+      if (gamePhaseRef.current !== 'playing') return; // allow normal scroll in menus
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
       if (e.ctrlKey) {
