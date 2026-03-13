@@ -576,6 +576,8 @@ export const GameCanvas: React.FC = () => {
   const [playerIsDonator, setPlayerIsDonator] = useState(false);
   const [playerSkinId, setPlayerSkinId] = useState<PlayerSkin>('anonymous');
   const [gamePhase, setGamePhase] = useState<'intro' | 'homebase' | 'deploying' | 'playing'>('intro');
+  const gamePhaseRef = useRef(gamePhase);
+  gamePhaseRef.current = gamePhase;
   const [stash, setStash] = useState<StashState>(loadStash);
   const [selectedMapId, setSelectedMapId] = useState<MapId>('objekt47');
   const [gfxSettings, setGfxSettings] = useState<GraphicsSettings>(() => ({ ...getSettings() }));
@@ -778,6 +780,7 @@ export const GameCanvas: React.FC = () => {
     };
 
     const onWheel = (e: WheelEvent) => {
+      if (gamePhaseRef.current !== 'playing') return; // allow normal scroll in menus
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
       if (e.ctrlKey) {
