@@ -344,6 +344,76 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
           >
             🔐 LOG IN / REGISTER
           </a>
+
+          {/* Read-only class showcase for anonymous visitors */}
+          <div className="border border-border/50 rounded p-2 bg-secondary/10">
+            <p className="text-[9px] font-display text-muted-foreground uppercase tracking-wider text-center mb-1.5">🎖️ Classes — Register to unlock</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {visibleSkins.map(s => {
+                const classDef = getClassDef(s.id);
+                const isBase = s.id === 'anonymous';
+                const isInspected = inspectedSkin === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    className={`flex flex-col items-center gap-0.5 p-2 rounded border transition-colors text-center ${
+                      isBase
+                        ? 'border-accent bg-accent/15 text-foreground'
+                        : isInspected
+                        ? 'border-accent/40 bg-accent/5 text-muted-foreground/60'
+                        : 'border-border/20 bg-secondary/5 text-muted-foreground/40 opacity-60 hover:opacity-80 hover:border-border/40'
+                    }`}
+                    onClick={() => setInspectedSkin(isInspected ? null : s.id)}
+                    title={`Click to view ${classDef.className} info`}
+                  >
+                    <span className="text-lg">{isBase ? s.icon : '🔒'}</span>
+                    <span className="text-[8px] font-display uppercase tracking-wider leading-tight">{s.name}</span>
+                    <span className="text-[7px] font-mono text-muted-foreground/60">{classDef.className}</span>
+                    {!isBase && (
+                      <span className="text-[6px] font-mono text-muted-foreground/40 leading-tight">
+                        {s.access === 'donator' ? '💎 Donate' : '🔐 Register'}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Class details for inspected skin */}
+            {(() => {
+              const showSkinId = inspectedSkin || 'anonymous';
+              const showClass = getClassDef(showSkinId);
+              const showSkinDef = PLAYER_SKINS.find(s => s.id === showSkinId);
+              const isLocked = showSkinId !== 'anonymous';
+              return (
+                <div className={`mt-2 p-1.5 rounded border ${isLocked ? 'bg-accent/5 border-accent/20' : 'bg-secondary/20 border-border/20'}`}>
+                  <p className="text-[8px] font-display text-foreground/80 text-center uppercase tracking-wider">
+                    {isLocked && '🔒 '}{showClass.className} — {showSkinDef?.name}
+                  </p>
+                  {showClass.passiveDescription.map((line, i) => (
+                    <p key={i} className="text-[7px] font-mono text-accent/70 text-center">{line}</p>
+                  ))}
+                  {showClass.ability.id !== 'none' && (
+                    <p className="text-[7px] font-mono text-muted-foreground/60 text-center mt-0.5">
+                      [Z] {showClass.ability.icon} {showClass.ability.name}: {showClass.ability.description}
+                    </p>
+                  )}
+                  {isLocked && showSkinDef && (
+                    <p className="text-[7px] font-mono text-destructive/60 text-center mt-1 italic">
+                      {UNLOCK_HINTS[showSkinDef.access] || 'Create an account to unlock'}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+            {/* Donator perks teaser */}
+            <div className="mt-1.5 p-1.5 bg-accent/5 rounded border border-accent/20">
+              <p className="text-[7px] font-display text-accent/60 text-center uppercase tracking-wider mb-0.5">💎 Donator Perks (all classes)</p>
+              {DONATOR_PERKS.map((p, i) => (
+                <p key={i} className="text-[6px] font-mono text-muted-foreground/50 text-center">{p.icon} {p.label}</p>
+              ))}
+            </div>
+          </div>
+
           <button
             className="w-full px-6 py-2.5 border border-foreground/30 text-foreground/60 font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-foreground/50 transition-colors text-xs"
             onClick={handleStart}
