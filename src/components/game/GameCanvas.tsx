@@ -344,6 +344,12 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
           >
             🔐 LOG IN / REGISTER
           </a>
+          <button
+            className="w-full px-6 py-2.5 border border-foreground/30 text-foreground/60 font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-foreground/50 transition-colors text-xs"
+            onClick={handleStart}
+          >
+            Play Anonymously
+          </button>
 
           {/* Read-only class showcase for anonymous visitors */}
           <div className="border border-border/50 rounded p-2 bg-secondary/10">
@@ -378,7 +384,6 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
                 );
               })}
             </div>
-            {/* Class details for inspected skin */}
             {(() => {
               const showSkinId = inspectedSkin || 'anonymous';
               const showClass = getClassDef(showSkinId);
@@ -405,7 +410,6 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
                 </div>
               );
             })()}
-            {/* Donator perks teaser */}
             <div className="mt-1.5 p-1.5 bg-accent/5 rounded border border-accent/20">
               <p className="text-[7px] font-display text-accent/60 text-center uppercase tracking-wider mb-0.5">💎 Donator Perks (all classes)</p>
               {DONATOR_PERKS.map((p, i) => (
@@ -413,13 +417,6 @@ const IntroScreen: React.FC<{ onStart: (name: string, skin: PlayerSkin) => void 
               ))}
             </div>
           </div>
-
-          <button
-            className="w-full px-6 py-2.5 border border-foreground/30 text-foreground/60 font-display uppercase tracking-widest rounded-sm hover:text-foreground hover:border-foreground/50 transition-colors text-xs"
-            onClick={handleStart}
-          >
-            Play Anonymously
-          </button>
         </div>
       )}
 
