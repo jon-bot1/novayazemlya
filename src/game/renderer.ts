@@ -3146,7 +3146,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
-        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize);
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time);
       } else if (useLOD) {
         drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
       } else {
