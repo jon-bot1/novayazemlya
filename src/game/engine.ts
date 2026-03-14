@@ -4116,7 +4116,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
             if ((sameGroup || closeEnough) && (ally.state === 'idle' || ally.state === 'patrol')) {
               ally.state = 'investigate';
-              ally.investigateTarget = { ...state.player.pos };
+              ally.investigateTarget = approximatePos(state.player.pos);
               ally.radioAlert = 1.2;
             }
           }
