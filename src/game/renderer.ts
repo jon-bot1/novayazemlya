@@ -3,6 +3,14 @@ import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier, getDarknessFactor, getTimeOfDay, getFlashlightParams, getHitMarkers, clearOldHitMarkers } from './graphics';
 import spriteConscriptUrl from '../assets/sprite-conscript.png';
+import spriteSoldierUrl from '../assets/sprite-soldier.png';
+import spriteScavUrl from '../assets/sprite-scav.png';
+import spriteHeavyUrl from '../assets/sprite-heavy.png';
+import spriteShockerUrl from '../assets/sprite-shocker.png';
+import spriteRedneckUrl from '../assets/sprite-redneck.png';
+import spriteCultistUrl from '../assets/sprite-cultist.png';
+import spriteMinerUrl from '../assets/sprite-miner.png';
+import spriteSvartaSolUrl from '../assets/sprite-svarta-sol.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
@@ -1473,11 +1481,24 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
   return null;
 }
 
-// Pre-load conscript sprite
+// Pre-load all sprites
 (function preloadSprites() {
-  const img = new Image();
-  img.src = spriteConscriptUrl;
-  _spriteCache['anonymous'] = img;
+  const entries: [string, string][] = [
+    ['anonymous', spriteConscriptUrl],
+    ['soldier', spriteSoldierUrl],
+    ['scav', spriteScavUrl],
+    ['heavy', spriteHeavyUrl],
+    ['shocker', spriteShockerUrl],
+    ['redneck', spriteRedneckUrl],
+    ['cultist', spriteCultistUrl],
+    ['miner_cult', spriteMinerUrl],
+    ['svarta_sol', spriteSvartaSolUrl],
+  ];
+  for (const [id, url] of entries) {
+    const img = new Image();
+    img.src = url;
+    _spriteCache[id] = img;
+  }
 })();
 
 /** Draw a sprite rotated to face `angle`. The sprite's default facing is to the right (angle=0).
@@ -3065,9 +3086,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
-      if (useLOD) {
+      // Try sprite first (skip for sleepers/bodyguards/officers — they use procedural)
+      const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
+      const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
+      if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize);
+      } else if (useLOD) {
         drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
       } else {
+        const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
         drawCuteCharacter(
           ctx, enemy.pos.x, enemy.pos.y, enemy.angle,
           cfg.body, cfg.outline, cfg.eye, isBlinking,
