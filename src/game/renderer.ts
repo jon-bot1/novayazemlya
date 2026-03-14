@@ -1173,6 +1173,37 @@ function ensureGroundCanvas(state: GameState) {
       const hash = (tx * 7 + ty * 13) % 100;
       const hash2 = (tx * 11 + ty * 3) % 100;
       
+      // === LARGE-SCALE NOISE — breaks up flat tiled look ===
+      // Perlin-like large patches using overlapping ellipses
+      const lHash = ((tx * 3 + ty * 17) % 157);
+      if (lHash < 40) {
+        // Darken patch — organic soil/shadow variation
+        gctx.fillStyle = terrain === 'water' ? 'rgba(0,10,20,0.06)' : 'rgba(0,0,0,0.04)';
+        gctx.beginPath();
+        gctx.ellipse(
+          tx + tileSize * 0.5 + (lHash % 20) - 10,
+          ty + tileSize * 0.5 + (lHash % 15) - 7,
+          tileSize * 0.6 + (lHash % 10),
+          tileSize * 0.4 + (lHash % 8),
+          lHash * 0.1,
+          0, Math.PI * 2
+        );
+        gctx.fill();
+      } else if (lHash > 120) {
+        // Lighten patch — sun-bleached / worn areas
+        gctx.fillStyle = terrain === 'water' ? 'rgba(60,100,120,0.04)' : 'rgba(255,255,255,0.025)';
+        gctx.beginPath();
+        gctx.ellipse(
+          tx + tileSize * 0.3 + (lHash % 18),
+          ty + tileSize * 0.4 + (lHash % 14),
+          tileSize * 0.5 + (lHash % 12),
+          tileSize * 0.35 + (lHash % 6),
+          lHash * 0.15,
+          0, Math.PI * 2
+        );
+        gctx.fill();
+      }
+      
       // === GRASS & FOREST — varied grass tufts, fallen leaves, undergrowth ===
       if (terrain === 'grass' || terrain === 'forest') {
         // Grass blades — more dense and varied
