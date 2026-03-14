@@ -52,8 +52,12 @@ export function addHitMarker(x: number, y: number, time: number, isKill: boolean
 
 export function getHitMarkers(): HitMarker[] { return _hitMarkers; }
 export function clearOldHitMarkers(currentTime: number) {
-  _hitMarkers = _hitMarkers.filter(h => currentTime - h.time < 1.0);
+  _hitMarkers = _hitMarkers.filter(h => {
+    const age = currentTime - h.time;
+    return age >= 0 && age < 1.0;
+  });
 }
+export function clearAllHitMarkers() { _hitMarkers = []; }
 
 // ── GRANULAR GRAPHICS SETTINGS ──
 
