@@ -210,7 +210,8 @@ export function generateMap() {
     makeWall(HX + 700, HY + 180, 130, T, WL),
     makeWall(HX + 830, HY + T, T, 120, WL),
     makeWall(HX + 830, HY + 160, T, 32, WL),
-    makeWall(HX + 960, HY + T, T, 180, WL),
+    makeWall(HX + 960, HY + T, T, 80, WL),
+    makeWall(HX + 960, HY + T + 180, T, 0, WL),  // gap from y+92 to y+180 (100px door)
     makeWall(HX + 830, HY + 180, 80, T, WL),
     makeWall(HX + 960, HY + 180, HW - 960 - T, T, WL),
     makeWall(HX + 830, HY + 340, T, 60, WL),
