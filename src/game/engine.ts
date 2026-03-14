@@ -1706,7 +1706,10 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   if (state.speedBoostTimer > 0) {
     state.speedBoostTimer = Math.max(0, state.speedBoostTimer - dt);
   }
-
+  // Decay reload complete flash
+  if ((state as any)._reloadCompleteFlash > 0) {
+    (state as any)._reloadCompleteFlash = Math.max(0, (state as any)._reloadCompleteFlash - dt * 2);
+  }
 
 
   // === USE SPECIAL ITEM (X key) ===
