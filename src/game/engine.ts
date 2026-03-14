@@ -4024,15 +4024,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
-              // Directly activate — no reaction delay (was causing infinite freeze loop)
-              ally.state = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-              ally.awareness = Math.max(ally.awareness, 0.8);
+              // Radio gives approximate position — investigate, not chase
+              ally.state = 'investigate';
+              ally.investigateTarget = approximatePos(state.player.pos);
+              ally.awareness = Math.max(ally.awareness, 0.6);
               assignTacticalRole(state, ally);
               ally.radioAlert = 1.5;
             } else if (ally.state === 'chase' || ally.state === 'flank') {
-              // Update known player position for already-chasing allies
-              ally.investigateTarget = { ...state.player.pos };
+              // Already chasing — give approximate update, not exact
+              ally.investigateTarget = approximatePos(state.player.pos, 50);
             }
           }
         }
