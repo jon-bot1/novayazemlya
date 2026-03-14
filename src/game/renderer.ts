@@ -4217,12 +4217,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
   (state as any)._prevPx = state.player.pos.x;
   (state as any)._prevPy = state.player.pos.y;
-  const pc = getPlayerColors();
-  drawCuteCharacter(
-    ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    pc.body, pc.outline, pc.eye, playerBlink,
-    pc.hat, pc.hatColor, true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
-  );
+  // Try sprite rendering first, fall back to procedural
+  const playerSprite = _spriteCache[_playerSkin];
+  const playerSize = state.player.inCover && !state.player.peeking ? R - 2 : R + 2;
+  if (playerSprite && playerSprite.complete && playerSprite.naturalWidth > 0 && hasDetailedCharacters()) {
+    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize);
+  } else {
+    const pc = getPlayerColors();
+    drawCuteCharacter(
+      ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
+      pc.body, pc.outline, pc.eye, playerBlink,
+      pc.hat, pc.hatColor, true, playerSize, playerMoving
+    );
+  }
 
   // (player label removed)
 
