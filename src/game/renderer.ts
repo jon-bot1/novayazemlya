@@ -1590,12 +1590,14 @@ function drawSpriteCharacter(
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
   ctx.restore();
 
-  // ── WEAPON BARREL ── drawn on top, pointing at aim angle
+  // ── WEAPON BARREL ── drawn on top, pointing at aim angle, offset to right side
   ctx.save();
   ctx.rotate(angle);
   const barrelLen = size * 0.9;
   const barrelW = size * 0.14;
   const barrelStart = size * 0.25;
+  const lateralOffset = size * 0.3; // shift weapon to the right side of the body
+  ctx.translate(0, -lateralOffset);
   // Gun body
   ctx.fillStyle = '#4a4a44';
   ctx.fillRect(barrelStart, -barrelW / 2, barrelLen, barrelW);
