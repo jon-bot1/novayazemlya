@@ -1498,10 +1498,9 @@ function drawSpriteCharacter(
   ctx.ellipse(2, size * 0.7, size * 0.5, size * 0.12, 0, 0, Math.PI * 2);
   ctx.fill();
   
-  // Rotate to face angle. Sprite faces right (angle=0), but the image
-  // is top-down with gun pointing bottom-right, so we add an offset.
-  // The sprite's natural facing direction needs calibration:
-  ctx.rotate(angle + Math.PI * 0.15); // slight offset to align gun barrel with aim direction
+  // Rotate to face angle. The sprite's natural facing is downward (gun pointing down = Math.PI/2).
+  // Subtract that so angle=0 → facing right.
+  ctx.rotate(angle - Math.PI / 2);
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
   ctx.restore();
 }
