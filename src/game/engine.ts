@@ -3661,7 +3661,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (ally.state === 'dead') continue;
             if (ally.state !== 'chase' && ally.state !== 'attack') {
               ally.state = 'investigate';
-              ally.investigateTarget = { ...state.player.pos };
+              ally.investigateTarget = approximatePos(state.player.pos, 120);
               ally.radioAlert = 2;
             }
           }
