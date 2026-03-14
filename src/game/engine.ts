@@ -3994,16 +3994,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 5 + Math.random() * 3;
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
-        // Alert all allies in group + nearby — directly set state, no reaction delay
+        // Alert all allies in group + nearby — radio gives approximate position only
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
-            ally.state = 'chase';
-            ally.investigateTarget = { ...state.player.pos };
-            ally.awareness = Math.max(ally.awareness, 0.9);
+            ally.state = 'investigate';
+            ally.investigateTarget = approximatePos(state.player.pos);
+            ally.awareness = Math.max(ally.awareness, 0.7);
             assignTacticalRole(state, ally);
             ally.radioAlert = 2;
           }
