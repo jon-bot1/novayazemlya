@@ -263,7 +263,6 @@ export const HUD: React.FC<HUDProps> = ({
           )}
           {player.bleedRate > 0 && <span className="text-[10px] text-danger animate-pulse font-mono">🩸BLEED</span>}
           {player.reloading && <span className="text-[10px] text-warning animate-pulse font-mono">⟳RELOAD</span>}
-          {!player.reloading && (player as any)._reloadJustDone && <span className="text-[10px] text-green-400 font-mono animate-in fade-in">✓READY</span>}
         </div>
 
         {/* Top-center: Timer */}
