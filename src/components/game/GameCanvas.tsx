@@ -1660,10 +1660,7 @@ export const GameCanvas: React.FC = () => {
             rerollsByMapRef.current[selectedMapId] = 0;
             setObjectives(nextObjectives);
             setRerollCount(0);
-            // Reset game state and go straight to deploying on same map
-            setStarted(true);
-            setGamePhase('deploying');
-            setHudState(h => ({ ...h, gameOver: false, extracted: false }));
+            startRaid(selectedMapId);
           }}
         />
 
