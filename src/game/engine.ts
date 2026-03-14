@@ -1908,6 +1908,8 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         // Safety clamp — never exceed magazine size
         state.player.currentAmmo = Math.min(state.player.currentAmmo, magSize);
         addMessage(state, `🔄 Reloaded! ${state.player.currentAmmo}/${magSize}`, 'info');
+        // Visual flash for reload complete
+        (state as any)._reloadCompleteFlash = 0.8;
       }
     }
     // Can't shoot while reloading
