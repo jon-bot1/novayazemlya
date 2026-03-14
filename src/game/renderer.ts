@@ -4307,7 +4307,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerSprite = _spriteCache[_playerSkin];
   const playerSize = state.player.inCover && !state.player.peeking ? R - 2 : R + 2;
   if (playerSprite && playerSprite.complete && playerSprite.naturalWidth > 0 && hasDetailedCharacters()) {
-    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize, 'player', state.time);
+    const playerSprinting = (state as any)._movementMode === 'sprint';
+    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize, 'player', state.time, playerSprinting);
   } else {
     const pc = getPlayerColors();
     drawCuteCharacter(
