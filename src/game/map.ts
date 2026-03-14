@@ -35,7 +35,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     boss:    { hp: 600, speed: 1.15, damage: 42, alertRange: 420, shootRange: 210, fireRate: 500 },
     sniper:  { hp: 90, speed: 0.36, damage: 85, alertRange: 550, shootRange: 330, fireRate: 5500 },
     shocker: { hp: 75, speed: 1.15, damage: 48, alertRange: 240, shootRange: 42, fireRate: 600 },
-    redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 210, shootRange: 70, fireRate: 1000 },
+    redneck: { hp: 80, speed: 0.63, damage: 20, alertRange: 210, shootRange: 110, fireRate: 1200 },
     dog:     { hp: 35, speed: 1.80, damage: 25, alertRange: 260, shootRange: 28, fireRate: 900 },
     cultist: { hp: 65, speed: 0.85, damage: 18, alertRange: 200, shootRange: 100, fireRate: 1200 },
     miner_cult: { hp: 90, speed: 0.70, damage: 22, alertRange: 180, shootRange: 80, fireRate: 1100 },

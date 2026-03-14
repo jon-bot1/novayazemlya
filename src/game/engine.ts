@@ -572,6 +572,7 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     boss: Math.PI * 0.77,
     sniper: Math.PI * 0.165,
     shocker: Math.PI * 0.55,
+    redneck: Math.PI * 0.55, // wide arc — shotgun
     cultist: Math.PI * 0.44,
     miner_cult: Math.PI * 0.385,
     svarta_sol: Math.PI * 0.55,
@@ -5099,10 +5100,36 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (state.player.hp <= 0) {
               state.deathCause = `⚡ Electrocuted by Shocker`;
             }
+          } else if (enemy.type === 'redneck') {
+            // Buckshot — fire multiple pellets in a cone (shotgun)
+            const pelletCount = 5;
+            const coneAngle = 0.5;
+            const baseAngle = enemy.angle;
+            const acc = (enemy as any)._accuracy ?? 0.55;
+            for (let p = 0; p < pelletCount; p++) {
+              const pelletSpread = (Math.random() - 0.5) * coneAngle + (Math.random() - 0.5) * (0.25 - acc * 0.2);
+              const a = baseAngle + pelletSpread;
+              const pelletSpeed = 7 * (0.85 + Math.random() * 0.3);
+              state.bullets.push({
+                pos: { x: enemy.pos.x + Math.cos(a) * 14, y: enemy.pos.y + Math.sin(a) * 14 },
+                vel: { x: Math.cos(a) * pelletSpeed, y: Math.sin(a) * pelletSpeed },
+                damage: enemy.damage,
+                damageType: 'bullet',
+                fromPlayer: false,
+                life: 30, // short range shotgun
+                elevated: enemy.elevated,
+                sourceId: enemy.id,
+                sourceType: enemy.type,
+              });
+            }
+            enemy.lastShot = state.time;
+            spawnParticles(state, enemy.pos.x + Math.cos(baseAngle) * 16, enemy.pos.y + Math.sin(baseAngle) * 16, '#ff8844', 5);
+            state.soundEvents.push({ pos: { ...enemy.pos }, radius: 250, time: state.time });
+            playGunshot('rifle');
           } else {
             // Accuracy trait affects spread: high accuracy = tight spread, low = wild
             const acc = (enemy as any)._accuracy ?? 0.7;
-            const baseSpread = enemy.type === 'sniper' ? 0.03 : enemy.type === 'turret' ? 0.1 : 0.25 - acc * 0.2; // 0.7 acc → 0.11, 0.5 acc → 0.15, 0.95 → 0.06
+            const baseSpread = enemy.type === 'sniper' ? 0.03 : enemy.type === 'turret' ? 0.1 : 0.25 - acc * 0.2;
             const spread = (Math.random() - 0.5) * baseSpread;
             const angle = enemy.angle + spread;
             const bSpeed = enemy.type === 'sniper' ? 15 : enemy.type === 'turret' ? 12 : 9;

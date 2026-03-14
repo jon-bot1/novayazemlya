@@ -30,7 +30,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     shocker: { hp: 90, speed: 1.30, damage: 55, alertRange: 170, shootRange: 40,  fireRate: 550 },
     boss:    { hp: 520, speed: 1.05, damage: 42, alertRange: 310, shootRange: 170, fireRate: 520 },
     turret:  { hp: 180, speed: 0, damage: 20, alertRange: 200, shootRange: 110, fireRate: 1000 },
-    redneck: { hp: 65, speed: 0.55, damage: 16, alertRange: 150, shootRange: 55, fireRate: 1200 },
+    redneck: { hp: 65, speed: 0.55, damage: 16, alertRange: 150, shootRange: 90, fireRate: 1400 },
     dog:     { hp: 28, speed: 1.80, damage: 20, alertRange: 200, shootRange: 24, fireRate: 900 },
   };
   // Hospital personality: everyone is on edge, shockers are fearless maniacs, scavs are terrified

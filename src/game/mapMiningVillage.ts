@@ -36,7 +36,7 @@ const makeEnemy = (x: number, y: number, type: Enemy['type'], fixedAngle?: numbe
     scav:    { hp: 48, speed: 0.70, damage: 11, alertRange: 145, shootRange: 78,  fireRate: 1450 },
     soldier: { hp: 75, speed: 0.88, damage: 20, alertRange: 250, shootRange: 125, fireRate: 980 },
     heavy:   { hp: 175, speed: 0.44, damage: 32, alertRange: 220, shootRange: 115, fireRate: 1650 },
-    redneck: { hp: 85, speed: 0.72, damage: 22, alertRange: 220, shootRange: 75,  fireRate: 950 },
+    redneck: { hp: 85, speed: 0.72, damage: 22, alertRange: 220, shootRange: 110, fireRate: 1100 },
     dog:     { hp: 38, speed: 1.90, damage: 26, alertRange: 300, shootRange: 30,  fireRate: 800 },
     boss:    { hp: 550, speed: 1.00, damage: 44, alertRange: 380, shootRange: 190, fireRate: 530 },
     turret:  { hp: 200, speed: 0, damage: 22, alertRange: 250, shootRange: 130, fireRate: 950 },

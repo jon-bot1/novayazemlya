@@ -3472,36 +3472,35 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.restore();
     }
 
-    // Awareness bar — shows detection progress (stealth meter above enemy)
-    if (enemy.awareness > 0.02 && enemy.awareness < 1.0) {
-      const aBarW = 32;
-      const aBarH = 4;
-      // Place awareness bar above the HP bar with clear separation
-      const hasHpBar = enemy.hp < enemy.maxHp && enemy.type !== 'boss';
-      const aBarY = hasHpBar ? enemy.pos.y - R - 36 : enemy.pos.y - R - 22;
-      const awareness = enemy.awareness;
-      // Background
+    // ── ENEMY BARS — always show awareness above HP, stacked cleanly ──
+    const hasHpBar = enemy.hp < enemy.maxHp && enemy.type !== 'boss';
+    const barW = 30;
+    
+    // HP bar first (closer to enemy)
+    if (hasHpBar) {
+      const hpBarY = enemy.pos.y - R - 20;
+      const ratio = enemy.hp / enemy.maxHp;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(enemy.pos.x - aBarW / 2 - 1, aBarY - 1, aBarW + 2, aBarH + 2);
-      // Color: green → yellow → orange → red
+      ctx.fillRect(enemy.pos.x - barW / 2 - 1, hpBarY - 1, barW + 2, 6);
+      ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#cc3a3a';
+      ctx.fillRect(enemy.pos.x - barW / 2, hpBarY, barW * ratio, 4);
+    }
+
+    // Awareness bar above HP bar (or alone if full HP)
+    if (enemy.awareness > 0.02 && enemy.awareness < 1.0) {
+      const aBarH = 3;
+      const aBarY = hasHpBar ? enemy.pos.y - R - 30 : enemy.pos.y - R - 20;
+      const awareness = enemy.awareness;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(enemy.pos.x - barW / 2 - 1, aBarY - 1, barW + 2, aBarH + 2);
       const aColor = awareness < 0.3 ? '#66cc44' : awareness < 0.65 ? '#ccaa33' : awareness < 0.9 ? '#cc6622' : '#cc2222';
       ctx.fillStyle = aColor;
-      ctx.fillRect(enemy.pos.x - aBarW / 2, aBarY, aBarW * awareness, aBarH);
+      ctx.fillRect(enemy.pos.x - barW / 2, aBarY, barW * awareness, aBarH);
       // Eye icon
       ctx.font = '8px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = aColor;
-      ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 8, aBarY + aBarH + 1);
-    }
-
-    // HP bar — bosses get a big cinematic bar drawn later in screen-space
-    if (enemy.hp < enemy.maxHp && enemy.type !== 'boss') {
-      const barW = 28;
-      const ratio = enemy.hp / enemy.maxHp;
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(enemy.pos.x - barW / 2 - 1, enemy.pos.y - R - 24, barW + 2, 6);
-      ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#cc3a3a';
-      ctx.fillRect(enemy.pos.x - barW / 2, enemy.pos.y - R - 23, barW * ratio, 4);
+      ctx.fillText('👁', enemy.pos.x - barW / 2 - 8, aBarY + aBarH + 1);
     }
 
     // Speech bubble
