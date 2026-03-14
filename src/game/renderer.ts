@@ -3473,24 +3473,25 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
 
     // Awareness bar — shows detection progress (stealth meter above enemy)
-    if (enemy.awareness > 0.02 && enemy.awareness < 1.0 && enemy.state !== 'chase' && enemy.state !== 'attack') {
+    if (enemy.awareness > 0.02 && enemy.awareness < 1.0 && enemy.state !== 'dead') {
       const aBarW = 32;
-      const aBarH = 3;
-      // Place awareness bar well above the HP bar to avoid overlap
-      const aBarY = enemy.hp < enemy.maxHp ? enemy.pos.y - R - 38 : enemy.pos.y - R - 28;
+      const aBarH = 4;
+      // Place awareness bar above the HP bar with clear separation
+      const hasHpBar = enemy.hp < enemy.maxHp && enemy.type !== 'boss';
+      const aBarY = hasHpBar ? enemy.pos.y - R - 36 : enemy.pos.y - R - 22;
       const awareness = enemy.awareness;
       // Background
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(enemy.pos.x - aBarW / 2 - 1, aBarY - 1, aBarW + 2, aBarH + 2);
       // Color: green → yellow → orange → red
       const aColor = awareness < 0.3 ? '#66cc44' : awareness < 0.65 ? '#ccaa33' : awareness < 0.9 ? '#cc6622' : '#cc2222';
       ctx.fillStyle = aColor;
       ctx.fillRect(enemy.pos.x - aBarW / 2, aBarY, aBarW * awareness, aBarH);
       // Eye icon
-      ctx.font = '7px sans-serif';
+      ctx.font = '8px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = aColor;
-      ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 7, aBarY + aBarH);
+      ctx.fillText('👁', enemy.pos.x - aBarW / 2 - 8, aBarY + aBarH + 1);
     }
 
     // HP bar — bosses get a big cinematic bar drawn later in screen-space
