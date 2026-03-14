@@ -2111,7 +2111,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const spread = (Math.random() - 0.5) * totalSpread;
       const angle = state.player.angle + spread;
       state.bullets.push({
-        pos: { x: state.player.pos.x + Math.cos(angle) * 28, y: state.player.pos.y + Math.sin(angle) * 28 },
+        pos: { x: state.player.pos.x + Math.cos(angle) * 28 - Math.sin(angle) * 5, y: state.player.pos.y + Math.sin(angle) * 28 + Math.cos(angle) * 5 },
         vel: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
         damage: wpn?.damage || 10,
         damageType: 'bullet',
