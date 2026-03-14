@@ -2,6 +2,7 @@ import { GameState, Prop, LightSource, WindowDef, Vec2, TerrainZone } from './ty
 import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier, getDarknessFactor, getTimeOfDay, getFlashlightParams, getHitMarkers, clearOldHitMarkers } from './graphics';
+import spriteConscriptUrl from '../assets/sprite-conscript.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
@@ -1458,6 +1459,52 @@ export const PLAYER_SKINS: SkinInfo[] = [
 
 let _playerSkin: PlayerSkin = 'anonymous';
 export function setPlayerSkin(skin: PlayerSkin) { _playerSkin = skin; }
+
+// ── SPRITE LOADING ──
+const _spriteCache: Record<string, HTMLImageElement> = {};
+let _spritesLoading = false;
+
+function loadSprite(id: string, url: string): HTMLImageElement | null {
+  if (_spriteCache[id]) return _spriteCache[id].complete ? _spriteCache[id] : null;
+  if (_spritesLoading) return null;
+  const img = new Image();
+  img.src = url;
+  _spriteCache[id] = img;
+  return null;
+}
+
+// Pre-load conscript sprite
+(function preloadSprites() {
+  const img = new Image();
+  img.src = spriteConscriptUrl;
+  _spriteCache['anonymous'] = img;
+})();
+
+/** Draw a sprite rotated to face `angle`. The sprite's default facing is to the right (angle=0).
+ *  Size is the rendered radius (character will be drawSize*2 pixels wide). */
+function drawSpriteCharacter(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, angle: number,
+  sprite: HTMLImageElement,
+  size: number = R,
+) {
+  const drawSize = size * 2.2; // sprite covers ~2.2x the collision radius
+  ctx.save();
+  ctx.translate(x, y);
+  
+  // Drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(2, size * 0.7, size * 0.5, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Rotate to face angle. Sprite faces right (angle=0), but the image
+  // is top-down with gun pointing bottom-right, so we add an offset.
+  // The sprite's natural facing direction needs calibration:
+  ctx.rotate(angle + Math.PI * 0.15); // slight offset to align gun barrel with aim direction
+  ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+  ctx.restore();
+}
 
 function getPlayerColors(): { body: string; outline: string; eye: string; hat: 'ushanka' | 'helmet' | 'beret' | 'bandana' | 'none'; hatColor: string } {
   switch (_playerSkin) {
@@ -4170,12 +4217,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerMoving = Math.abs(state.player.pos.x - (state as any)._prevPx || 0) > 0.1 || Math.abs(state.player.pos.y - (state as any)._prevPy || 0) > 0.1;
   (state as any)._prevPx = state.player.pos.x;
   (state as any)._prevPy = state.player.pos.y;
-  const pc = getPlayerColors();
-  drawCuteCharacter(
-    ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
-    pc.body, pc.outline, pc.eye, playerBlink,
-    pc.hat, pc.hatColor, true, state.player.inCover && !state.player.peeking ? R - 2 : R + 2, playerMoving
-  );
+  // Try sprite rendering first, fall back to procedural
+  const playerSprite = _spriteCache[_playerSkin];
+  const playerSize = state.player.inCover && !state.player.peeking ? R - 2 : R + 2;
+  if (playerSprite && playerSprite.complete && playerSprite.naturalWidth > 0 && hasDetailedCharacters()) {
+    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize);
+  } else {
+    const pc = getPlayerColors();
+    drawCuteCharacter(
+      ctx, state.player.pos.x, state.player.pos.y, state.player.angle,
+      pc.body, pc.outline, pc.eye, playerBlink,
+      pc.hat, pc.hatColor, true, playerSize, playerMoving
+    );
+  }
 
   // (player label removed)
 
