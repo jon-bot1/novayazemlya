@@ -186,6 +186,14 @@ function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
+/** Return an approximate position — simulates imprecise radio communication.
+ *  Offset is random 40-120px in a random direction. */
+function approximatePos(pos: Vec2, inaccuracy = 80): Vec2 {
+  const angle = Math.random() * Math.PI * 2;
+  const offset = 40 + Math.random() * inaccuracy;
+  return { x: pos.x + Math.cos(angle) * offset, y: pos.y + Math.sin(angle) * offset };
+}
+
 // ── CONDITIONAL EXFIL HELPERS ──
 function checkExfilRequirements(state: GameState, req: string): boolean {
   switch (req) {
@@ -3653,7 +3661,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             if (ally.state === 'dead') continue;
             if (ally.state !== 'chase' && ally.state !== 'attack') {
               ally.state = 'investigate';
-              ally.investigateTarget = { ...state.player.pos };
+              ally.investigateTarget = approximatePos(state.player.pos, 120);
               ally.radioAlert = 2;
             }
           }
@@ -3986,16 +3994,16 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       if (enemy.callForHelpTimer <= 0 && enemy.type !== 'turret' && enemy.type !== 'scav') {
         enemy.callForHelpTimer = 5 + Math.random() * 3;
         addMessage(state, `🗣️ ${enemy.type.toUpperCase()} calls for help!`, 'warning');
-        // Alert all allies in group + nearby — directly set state, no reaction delay
+        // Alert all allies in group + nearby — radio gives approximate position only
         for (const ally of state.enemies) {
           if (ally === enemy || ally.state === 'dead') continue;
           if (ally.state === 'chase' || ally.state === 'attack' || ally.state === 'flank' || ally.state === 'suppress') continue;
           const sameGroup = ally.radioGroup === enemy.radioGroup;
           const closeEnough = distSq(ally.pos, enemy.pos) < 250000; // 500²
           if (sameGroup || closeEnough) {
-            ally.state = 'chase';
-            ally.investigateTarget = { ...state.player.pos };
-            ally.awareness = Math.max(ally.awareness, 0.9);
+            ally.state = 'investigate';
+            ally.investigateTarget = approximatePos(state.player.pos);
+            ally.awareness = Math.max(ally.awareness, 0.7);
             assignTacticalRole(state, ally);
             ally.radioAlert = 2;
           }
@@ -4016,15 +4024,15 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
           const alarmWide = state.alarmActive; // alarm = base-wide awareness
           if (sameGroup || closeEnough || alarmWide) {
             if (ally.state === 'idle' || ally.state === 'patrol' || ally.state === 'investigate') {
-              // Directly activate — no reaction delay (was causing infinite freeze loop)
-              ally.state = 'chase';
-              ally.investigateTarget = { ...state.player.pos };
-              ally.awareness = Math.max(ally.awareness, 0.8);
+              // Radio gives approximate position — investigate, not chase
+              ally.state = 'investigate';
+              ally.investigateTarget = approximatePos(state.player.pos);
+              ally.awareness = Math.max(ally.awareness, 0.6);
               assignTacticalRole(state, ally);
               ally.radioAlert = 1.5;
             } else if (ally.state === 'chase' || ally.state === 'flank') {
-              // Update known player position for already-chasing allies
-              ally.investigateTarget = { ...state.player.pos };
+              // Already chasing — give approximate update, not exact
+              ally.investigateTarget = approximatePos(state.player.pos, 50);
             }
           }
         }
@@ -4108,7 +4116,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             const closeEnough = distSq(ally.pos, enemy.pos) < 160000; // 400²
             if ((sameGroup || closeEnough) && (ally.state === 'idle' || ally.state === 'patrol')) {
               ally.state = 'investigate';
-              ally.investigateTarget = { ...state.player.pos };
+              ally.investigateTarget = approximatePos(state.player.pos);
               ally.radioAlert = 1.2;
             }
           }
