@@ -1105,6 +1105,40 @@ let _groundMapW = 0;
 let _groundMapH = 0;
 let _groundMapId = '';
 
+// Film grain noise canvas — regenerated periodically
+let _grainCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
+let _grainFrame = 0;
+let _grainW = 0;
+let _grainH = 0;
+
+function ensureGrainCanvas(w: number, h: number) {
+  // Use a smaller canvas for perf (quarter res), stretched when drawn
+  const gw = Math.ceil(w / 4);
+  const gh = Math.ceil(h / 4);
+  if (!_grainCanvas || _grainW !== gw || _grainH !== gh) {
+    try {
+      _grainCanvas = new OffscreenCanvas(gw, gh);
+    } catch {
+      _grainCanvas = document.createElement('canvas');
+      (_grainCanvas as HTMLCanvasElement).width = gw;
+      (_grainCanvas as HTMLCanvasElement).height = gh;
+    }
+    _grainW = gw;
+    _grainH = gh;
+  }
+  const gctx = (_grainCanvas as any).getContext('2d') as CanvasRenderingContext2D;
+  const imgData = gctx.createImageData(gw, gh);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const v = Math.random() * 255;
+    data[i] = v;
+    data[i + 1] = v;
+    data[i + 2] = v;
+    data[i + 3] = 255;
+  }
+  gctx.putImageData(imgData, 0, 0);
+}
+
 function ensureGroundCanvas(state: GameState) {
   const mapId = (state as any)._mapId || 'objekt47';
   if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
@@ -1138,6 +1172,37 @@ function ensureGroundCanvas(state: GameState) {
       
       const hash = (tx * 7 + ty * 13) % 100;
       const hash2 = (tx * 11 + ty * 3) % 100;
+      
+      // === LARGE-SCALE NOISE — breaks up flat tiled look ===
+      // Perlin-like large patches using overlapping ellipses
+      const lHash = ((tx * 3 + ty * 17) % 157);
+      if (lHash < 40) {
+        // Darken patch — organic soil/shadow variation
+        gctx.fillStyle = terrain === 'water' ? 'rgba(0,10,20,0.06)' : 'rgba(0,0,0,0.04)';
+        gctx.beginPath();
+        gctx.ellipse(
+          tx + tileSize * 0.5 + (lHash % 20) - 10,
+          ty + tileSize * 0.5 + (lHash % 15) - 7,
+          tileSize * 0.6 + (lHash % 10),
+          tileSize * 0.4 + (lHash % 8),
+          lHash * 0.1,
+          0, Math.PI * 2
+        );
+        gctx.fill();
+      } else if (lHash > 120) {
+        // Lighten patch — sun-bleached / worn areas
+        gctx.fillStyle = terrain === 'water' ? 'rgba(60,100,120,0.04)' : 'rgba(255,255,255,0.025)';
+        gctx.beginPath();
+        gctx.ellipse(
+          tx + tileSize * 0.3 + (lHash % 18),
+          ty + tileSize * 0.4 + (lHash % 14),
+          tileSize * 0.5 + (lHash % 12),
+          tileSize * 0.35 + (lHash % 6),
+          lHash * 0.15,
+          0, Math.PI * 2
+        );
+        gctx.fill();
+      }
       
       // === GRASS & FOREST — varied grass tufts, fallen leaves, undergrowth ===
       if (terrain === 'grass' || terrain === 'forest') {
@@ -4402,21 +4467,50 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.fillStyle = pal.ambientOverlay;
       ctx.fillRect(0, 0, w, h);
     }
-    // Hospital: subtle vignette effect for horror feel
-    if ((state as any)._mapId === 'hospital') {
-      // Edge darkening — simple rects at edges (perf-friendly vs radial gradient)
-      const vignetteA = 0.08;
-      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA})`;
-      ctx.fillRect(0, 0, w, 40);           // top
-      ctx.fillRect(0, h - 40, w, 40);      // bottom
-      ctx.fillRect(0, 0, 40, h);           // left
-      ctx.fillRect(w - 40, 0, 40, h);     // right
-      // Corners slightly darker
-      ctx.fillStyle = `rgba(0, 0, 0, ${vignetteA * 1.5})`;
-      ctx.fillRect(0, 0, 60, 60);
-      ctx.fillRect(w - 60, 0, 60, 60);
-      ctx.fillRect(0, h - 60, 60, 60);
-      ctx.fillRect(w - 60, h - 60, 60, 60);
+    // ── GLOBAL CINEMATIC VIGNETTE — all maps ──
+    {
+      const mapId = (state as any)._mapId || 'objekt47';
+      // Hospital gets heavier vignette for horror, others get subtle cinematic edge darkening
+      const vigBase = mapId === 'hospital' ? 0.12 : 0.06;
+      const edgeW = Math.min(w * 0.12, 80);
+      const edgeH = Math.min(h * 0.1, 60);
+      // Edges
+      ctx.fillStyle = `rgba(0, 0, 0, ${vigBase})`;
+      ctx.fillRect(0, 0, w, edgeH);           // top
+      ctx.fillRect(0, h - edgeH, w, edgeH);   // bottom
+      ctx.fillRect(0, 0, edgeW, h);            // left
+      ctx.fillRect(w - edgeW, 0, edgeW, h);   // right
+      // Corners darker
+      const cornerW = edgeW * 1.5;
+      const cornerH = edgeH * 1.5;
+      ctx.fillStyle = `rgba(0, 0, 0, ${vigBase * 2})`;
+      ctx.fillRect(0, 0, cornerW, cornerH);
+      ctx.fillRect(w - cornerW, 0, cornerW, cornerH);
+      ctx.fillRect(0, h - cornerH, cornerW, cornerH);
+      ctx.fillRect(w - cornerW, h - cornerH, cornerW, cornerH);
+      // Soft radial vignette (only on high quality — uses gradient)
+      if (hasDetailedCharacters()) {
+        const vigGrad = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.72);
+        vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        vigGrad.addColorStop(1, `rgba(0, 0, 0, ${vigBase * 2.5})`);
+        ctx.fillStyle = vigGrad;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+
+    // ── FILM GRAIN — subtle noise overlay for cinematic look ──
+    if (hasDetailedCharacters()) {
+      _grainFrame = (_grainFrame + 1) % 3; // update grain every 3rd frame for perf
+      if (_grainFrame === 0) {
+        ensureGrainCanvas(w, h);
+      }
+      if (_grainCanvas) {
+        ctx.save();
+        ctx.globalAlpha = 0.035;
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.drawImage(_grainCanvas as any, 0, 0, _grainW, _grainH, 0, 0, w, h);
+        ctx.restore();
+      }
     }
   }
 
