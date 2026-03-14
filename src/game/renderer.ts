@@ -3470,7 +3470,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     if (enemy.awareness > 0.02 && enemy.awareness < 1.0 && enemy.state !== 'chase' && enemy.state !== 'attack') {
       const aBarW = 32;
       const aBarH = 3;
-      const aBarY = enemy.hp < enemy.maxHp ? enemy.pos.y - R - 30 : enemy.pos.y - R - 24;
+      // Place awareness bar well above the HP bar to avoid overlap
+      const aBarY = enemy.hp < enemy.maxHp ? enemy.pos.y - R - 38 : enemy.pos.y - R - 28;
       const awareness = enemy.awareness;
       // Background
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
