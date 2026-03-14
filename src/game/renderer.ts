@@ -1579,8 +1579,27 @@ function drawSpriteCharacter(
   ctx.restore();
 
   // ── UPPER BODY (sprite) ── rotates to aim direction
+  ctx.save();
   ctx.rotate(angle - Math.PI / 2);
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+  ctx.restore();
+
+  // ── WEAPON BARREL ── drawn on top, pointing at aim angle
+  ctx.save();
+  ctx.rotate(angle);
+  const barrelLen = size * 0.9;
+  const barrelW = size * 0.14;
+  const barrelStart = size * 0.25;
+  // Gun body
+  ctx.fillStyle = '#4a4a44';
+  ctx.fillRect(barrelStart, -barrelW / 2, barrelLen, barrelW);
+  // Muzzle tip
+  ctx.fillStyle = '#2a2a28';
+  ctx.fillRect(barrelStart + barrelLen - 3, -barrelW * 0.4, 4, barrelW * 0.8);
+  // Hand grip
+  ctx.fillStyle = '#3a3a30';
+  ctx.fillRect(barrelStart - 2, -barrelW * 0.6, 5, barrelW * 1.2);
+  ctx.restore();
 
   ctx.restore();
 }
