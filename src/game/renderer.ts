@@ -1485,7 +1485,12 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
 // Pre-load all sprites
 (function preloadSprites() {
   const entries: [string, string][] = [
-    ['anonymous', spriteConscriptUrl],
+    ['anonymous', spritePlayerUrl],
+    ['operative', spritePlayerUrl],
+    ['arctic', spritePlayerUrl],
+    ['shadow', spritePlayerUrl],
+    ['admin', spritePlayerUrl],
+    ['donator', spritePlayerUrl],
     ['soldier', spriteSoldierUrl],
     ['scav', spriteScavUrl],
     ['heavy', spriteHeavyUrl],
