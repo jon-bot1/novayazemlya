@@ -2743,7 +2743,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
     const needsHeal = player.hp < player.maxHp;
     const isBleeding = player.bleedRate > 0;
 
-    // Priority: bandage if bleeding, then medkit, then morphine
+    // Priority: bandage if bleeding, then medkit, then bandage for HP, then morphine, then any medical
     let medIdx = -1;
     if (isBleeding) {
       medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'bandage');
@@ -2752,9 +2752,12 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'medkit');
     }
     if (medIdx < 0 && needsHeal) {
+      medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'bandage');
+    }
+    if (medIdx < 0 && needsHeal) {
       medIdx = player.inventory.findIndex(i => i.category === 'medical' && i.medicalType === 'morphine');
     }
-    if (medIdx < 0 && isBleeding) {
+    if (medIdx < 0 && (isBleeding || needsHeal)) {
       medIdx = player.inventory.findIndex(i => i.category === 'medical');
     }
 
