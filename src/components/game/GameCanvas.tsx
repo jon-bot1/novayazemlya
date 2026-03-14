@@ -781,9 +781,10 @@ export const GameCanvas: React.FC = () => {
 
     const onWheel = (e: WheelEvent) => {
       if (gamePhaseRef.current !== 'playing') return; // allow normal scroll in menus
-      // Allow scroll on death/extraction screen
       const st = stateRef.current;
-      if (st && (st.gameOver || st.extracted)) return;
+      if (!st) return;
+      // Allow scroll on death/extraction screen
+      if (st.gameOver || st.extracted) return;
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
       if (e.ctrlKey) {
@@ -791,7 +792,6 @@ export const GameCanvas: React.FC = () => {
         inputRef.current.cycleThrowable = true;
       } else {
         // Scroll = cycle weapons
-        const st = stateRef.current;
         const slots: Array<1 | 2 | 3> = [1, 2, 3];
         const cur = slots.indexOf(st.player.activeSlot);
         const next = slots[(cur + dir + slots.length) % slots.length];
