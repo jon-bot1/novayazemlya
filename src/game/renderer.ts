@@ -1105,6 +1105,40 @@ let _groundMapW = 0;
 let _groundMapH = 0;
 let _groundMapId = '';
 
+// Film grain noise canvas — regenerated periodically
+let _grainCanvas: OffscreenCanvas | HTMLCanvasElement | null = null;
+let _grainFrame = 0;
+let _grainW = 0;
+let _grainH = 0;
+
+function ensureGrainCanvas(w: number, h: number) {
+  // Use a smaller canvas for perf (quarter res), stretched when drawn
+  const gw = Math.ceil(w / 4);
+  const gh = Math.ceil(h / 4);
+  if (!_grainCanvas || _grainW !== gw || _grainH !== gh) {
+    try {
+      _grainCanvas = new OffscreenCanvas(gw, gh);
+    } catch {
+      _grainCanvas = document.createElement('canvas');
+      (_grainCanvas as HTMLCanvasElement).width = gw;
+      (_grainCanvas as HTMLCanvasElement).height = gh;
+    }
+    _grainW = gw;
+    _grainH = gh;
+  }
+  const gctx = (_grainCanvas as any).getContext('2d') as CanvasRenderingContext2D;
+  const imgData = gctx.createImageData(gw, gh);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const v = Math.random() * 255;
+    data[i] = v;
+    data[i + 1] = v;
+    data[i + 2] = v;
+    data[i + 3] = 255;
+  }
+  gctx.putImageData(imgData, 0, 0);
+}
+
 function ensureGroundCanvas(state: GameState) {
   const mapId = (state as any)._mapId || 'objekt47';
   if (_groundCanvas && _groundMapW === state.mapWidth && _groundMapH === state.mapHeight && _groundMapId === mapId) return;
