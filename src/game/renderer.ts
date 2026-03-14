@@ -1530,6 +1530,7 @@ function drawSpriteCharacter(
   size: number = R,
   entityId: string = 'player',
   time: number = 0,
+  sprinting: boolean = false,
 ) {
   const { isMoving, moveAngle } = getMovementInfo(entityId, x, y);
   const drawSize = size * 2.2;
@@ -1547,9 +1548,11 @@ function drawSpriteCharacter(
   const legLen = size * 0.55;
   const legW = size * 0.22;
   const legSpread = size * 0.28;
-  // Walk cycle: legs swing forward/back
-  const walkCycle = isMoving ? Math.sin(time * 10) : 0;
-  const legSwing = walkCycle * legLen * 0.5;
+  // Walk cycle: legs swing forward/back — faster when sprinting
+  const legSpeed = sprinting ? 18 : 10;
+  const legAmplitude = sprinting ? 0.7 : 0.5;
+  const walkCycle = isMoving ? Math.sin(time * legSpeed) : 0;
+  const legSwing = walkCycle * legLen * legAmplitude;
 
   ctx.save();
   ctx.rotate(moveAngle);
@@ -3146,7 +3149,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
-        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time);
+        const isSprinting = enemy.state === 'chase' || enemy.state === 'flank' || !!(enemy as any)._berserkTimer;
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time, isSprinting);
       } else if (useLOD) {
         drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
       } else {
@@ -4303,7 +4307,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerSprite = _spriteCache[_playerSkin];
   const playerSize = state.player.inCover && !state.player.peeking ? R - 2 : R + 2;
   if (playerSprite && playerSprite.complete && playerSprite.naturalWidth > 0 && hasDetailedCharacters()) {
-    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize, 'player', state.time);
+    const playerSprinting = (state as any)._movementMode === 'sprint';
+    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize, 'player', state.time, playerSprinting);
   } else {
     const pc = getPlayerColors();
     drawCuteCharacter(

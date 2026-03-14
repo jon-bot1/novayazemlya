@@ -2096,7 +2096,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         const a = baseAngle + pelletSpread;
         const pelletSpeed = bulletSpeed * (0.85 + Math.random() * 0.3);
         state.bullets.push({
-          pos: { x: state.player.pos.x + Math.cos(a) * 16, y: state.player.pos.y + Math.sin(a) * 16 },
+          pos: { x: state.player.pos.x + Math.cos(a) * 28, y: state.player.pos.y + Math.sin(a) * 28 },
           vel: { x: Math.cos(a) * pelletSpeed, y: Math.sin(a) * pelletSpeed },
           damage: wpn.damage || 10,
           damageType: 'bullet',
@@ -2110,7 +2110,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const spread = (Math.random() - 0.5) * totalSpread;
       const angle = state.player.angle + spread;
       state.bullets.push({
-        pos: { x: state.player.pos.x + Math.cos(angle) * 16, y: state.player.pos.y + Math.sin(angle) * 16 },
+        pos: { x: state.player.pos.x + Math.cos(angle) * 28, y: state.player.pos.y + Math.sin(angle) * 28 },
         vel: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
         damage: wpn?.damage || 10,
         damageType: 'bullet',
@@ -5782,7 +5782,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.awarenessDecay = Math.max(0.02, enemy.awarenessDecay * 0.3); // much slower decay
             (enemy as any)._combatAlert = true; // permanently heightened after taking fire
             // Panic or Berserk chance on taking damage (not boss, sniper, bodyguard, turret)
-            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
+            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && enemy.type !== 'dog' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
               const hpPct = enemy.hp / enemy.maxHp;
               const panicChance = hpPct < 0.3 ? 0.25 : hpPct < 0.5 ? 0.12 : 0.05;
               const berserkChance = hpPct < 0.3 ? 0.15 : hpPct < 0.5 ? 0.08 : 0.02;
