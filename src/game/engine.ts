@@ -186,6 +186,14 @@ function dist(a: Vec2, b: Vec2) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
+/** Return an approximate position — simulates imprecise radio communication.
+ *  Offset is random 40-120px in a random direction. */
+function approximatePos(pos: Vec2, inaccuracy = 80): Vec2 {
+  const angle = Math.random() * Math.PI * 2;
+  const offset = 40 + Math.random() * inaccuracy;
+  return { x: pos.x + Math.cos(angle) * offset, y: pos.y + Math.sin(angle) * offset };
+}
+
 // ── CONDITIONAL EXFIL HELPERS ──
 function checkExfilRequirements(state: GameState, req: string): boolean {
   switch (req) {
