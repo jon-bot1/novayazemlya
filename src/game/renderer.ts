@@ -4820,7 +4820,27 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     ctx.restore();
   }
 
-  // EMPTY MAGAZINE — big on-screen text
+  // RELOAD COMPLETE — brief green flash + text
+  const reloadFlash = (state as any)._reloadCompleteFlash || 0;
+  if (reloadFlash > 0) {
+    const alpha = Math.min(1, reloadFlash);
+    // Green edge flash
+    ctx.fillStyle = `rgba(40, 200, 80, ${alpha * 0.08})`;
+    ctx.fillRect(0, 0, w, h);
+    // "READY" text near crosshair
+    ctx.save();
+    ctx.fillStyle = `rgba(80, 255, 120, ${alpha * 0.9})`;
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓ READY', w / 2, h / 2 + 35);
+    // Ammo count
+    ctx.font = 'bold 14px monospace';
+    ctx.fillStyle = `rgba(200, 255, 200, ${alpha * 0.7})`;
+    ctx.fillText(`${state.player.currentAmmo}/${state.player.maxAmmo}`, w / 2, h / 2 + 55);
+    ctx.restore();
+  }
+
   if (state.emptyMagTimer > 0) {
     const alpha = Math.min(1, state.emptyMagTimer);
     ctx.save();

@@ -1645,15 +1645,16 @@ export const GameCanvas: React.FC = () => {
             setRerollCount(0);
           }}
           onRevengeRun={() => {
-            setStarted(false);
             // Reroll objectives for fresh raid on same map
             const nextObjectives = generateMissionObjectives(selectedMapId);
             objectivesByMapRef.current[selectedMapId] = nextObjectives;
             rerollsByMapRef.current[selectedMapId] = 0;
             setObjectives(nextObjectives);
             setRerollCount(0);
-            // Go straight to deploying on same map
+            // Reset game state and go straight to deploying on same map
+            setStarted(true);
             setGamePhase('deploying');
+            setHudState(h => ({ ...h, gameOver: false, extracted: false }));
           }}
         />
 
