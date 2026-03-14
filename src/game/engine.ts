@@ -572,6 +572,7 @@ function isInFiringArc(enemy: Enemy, targetX: number, targetY: number): boolean 
     boss: Math.PI * 0.77,
     sniper: Math.PI * 0.165,
     shocker: Math.PI * 0.55,
+    redneck: Math.PI * 0.55, // wide arc — shotgun
     cultist: Math.PI * 0.44,
     miner_cult: Math.PI * 0.385,
     svarta_sol: Math.PI * 0.55,
