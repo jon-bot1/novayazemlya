@@ -1501,28 +1501,84 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
   }
 })();
 
-/** Draw a sprite rotated to face `angle`. The sprite's default facing is to the right (angle=0).
- *  Size is the rendered radius (character will be drawSize*2 pixels wide). */
+// ── Previous position tracking for movement direction ──
+const _prevPositions = new Map<string, { x: number; y: number; moveAngle: number }>();
+
+function getMovementInfo(entityId: string, x: number, y: number): { isMoving: boolean; moveAngle: number } {
+  const prev = _prevPositions.get(entityId);
+  if (!prev) {
+    _prevPositions.set(entityId, { x, y, moveAngle: Math.PI / 2 }); // default facing down
+    return { isMoving: false, moveAngle: Math.PI / 2 };
+  }
+  const dx = x - prev.x;
+  const dy = y - prev.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const isMoving = dist > 0.3;
+  const moveAngle = isMoving ? Math.atan2(dy, dx) : prev.moveAngle;
+  prev.x = x;
+  prev.y = y;
+  if (isMoving) prev.moveAngle = moveAngle;
+  return { isMoving, moveAngle };
+}
+
+/** Draw a sprite character with separate animated legs (facing movement direction)
+ *  and upper body sprite (rotated to aim angle). */
 function drawSpriteCharacter(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, angle: number,
   sprite: HTMLImageElement,
   size: number = R,
+  entityId: string = 'player',
+  time: number = 0,
 ) {
-  const drawSize = size * 2.2; // sprite covers ~2.2x the collision radius
+  const { isMoving, moveAngle } = getMovementInfo(entityId, x, y);
+  const drawSize = size * 2.2;
+
   ctx.save();
   ctx.translate(x, y);
-  
+
   // Drop shadow
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
-  ctx.ellipse(2, size * 0.7, size * 0.5, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.ellipse(2, size * 0.7, size * 0.6, size * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Rotate to face angle. The sprite's natural facing is downward (gun pointing down = Math.PI/2).
-  // Subtract that so angle=0 → facing right.
+
+  // ── LEGS ── face movement direction, animate when walking
+  const legLen = size * 0.55;
+  const legW = size * 0.22;
+  const legSpread = size * 0.28;
+  // Walk cycle: legs swing forward/back
+  const walkCycle = isMoving ? Math.sin(time * 10) : 0;
+  const legSwing = walkCycle * legLen * 0.5;
+
+  ctx.save();
+  ctx.rotate(moveAngle);
+  // Two legs offset sideways, swinging along movement axis
+  for (const side of [-1, 1]) {
+    const swing = side * legSwing; // opposite legs swing opposite
+    ctx.save();
+    ctx.translate(swing, side * legSpread);
+    // Leg as a rounded rectangle
+    ctx.fillStyle = '#2a2a2a';
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(-legLen * 0.3, -legW / 2, legLen * 0.6, legW, legW * 0.4);
+    ctx.fill();
+    ctx.stroke();
+    // Boot at the end
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.55, legW * 0.7, 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // ── UPPER BODY (sprite) ── rotates to aim direction
   ctx.rotate(angle - Math.PI / 2);
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+
   ctx.restore();
 }
 
@@ -3090,7 +3146,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
-        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize);
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time);
       } else if (useLOD) {
         drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
       } else {
@@ -4247,7 +4303,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   const playerSprite = _spriteCache[_playerSkin];
   const playerSize = state.player.inCover && !state.player.peeking ? R - 2 : R + 2;
   if (playerSprite && playerSprite.complete && playerSprite.naturalWidth > 0 && hasDetailedCharacters()) {
-    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize);
+    drawSpriteCharacter(ctx, state.player.pos.x, state.player.pos.y, state.player.angle, playerSprite, playerSize, 'player', state.time);
   } else {
     const pc = getPlayerColors();
     drawCuteCharacter(
