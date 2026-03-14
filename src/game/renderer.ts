@@ -4477,7 +4477,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.save();
         ctx.globalAlpha = 0.035;
         ctx.globalCompositeOperation = 'overlay';
-        ctx.drawImage(_grainCanvas as any, 0, 0);
+        ctx.drawImage(_grainCanvas as any, 0, 0, _grainW, _grainH, 0, 0, w, h);
         ctx.restore();
       }
     }
