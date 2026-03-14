@@ -3,6 +3,14 @@ import { isSecondaryWeapon } from './items';
 import { SpatialGrid, buildSpatialGrid, collidesWithWallsGrid, TerrainGrid, buildTerrainGrid, getTerrainFast } from './spatial';
 import { hasWeatherEffects, hasMuzzleFlash, hasTracerLines, hasBloodStains, hasDetailedCharacters, getRenderDistMultiplier, getDarknessFactor, getTimeOfDay, getFlashlightParams, getHitMarkers, clearOldHitMarkers } from './graphics';
 import spriteConscriptUrl from '../assets/sprite-conscript.png';
+import spriteSoldierUrl from '../assets/sprite-soldier.png';
+import spriteScavUrl from '../assets/sprite-scav.png';
+import spriteHeavyUrl from '../assets/sprite-heavy.png';
+import spriteShockerUrl from '../assets/sprite-shocker.png';
+import spriteRedneckUrl from '../assets/sprite-redneck.png';
+import spriteCultistUrl from '../assets/sprite-cultist.png';
+import spriteMinerUrl from '../assets/sprite-miner.png';
+import spriteSvartaSolUrl from '../assets/sprite-svarta-sol.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
