@@ -1530,6 +1530,7 @@ function drawSpriteCharacter(
   size: number = R,
   entityId: string = 'player',
   time: number = 0,
+  sprinting: boolean = false,
 ) {
   const { isMoving, moveAngle } = getMovementInfo(entityId, x, y);
   const drawSize = size * 2.2;
@@ -1547,9 +1548,11 @@ function drawSpriteCharacter(
   const legLen = size * 0.55;
   const legW = size * 0.22;
   const legSpread = size * 0.28;
-  // Walk cycle: legs swing forward/back
-  const walkCycle = isMoving ? Math.sin(time * 10) : 0;
-  const legSwing = walkCycle * legLen * 0.5;
+  // Walk cycle: legs swing forward/back — faster when sprinting
+  const legSpeed = sprinting ? 18 : 10;
+  const legAmplitude = sprinting ? 0.7 : 0.5;
+  const walkCycle = isMoving ? Math.sin(time * legSpeed) : 0;
+  const legSwing = walkCycle * legLen * legAmplitude;
 
   ctx.save();
   ctx.rotate(moveAngle);
