@@ -1481,11 +1481,24 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
   return null;
 }
 
-// Pre-load conscript sprite
+// Pre-load all sprites
 (function preloadSprites() {
-  const img = new Image();
-  img.src = spriteConscriptUrl;
-  _spriteCache['anonymous'] = img;
+  const entries: [string, string][] = [
+    ['anonymous', spriteConscriptUrl],
+    ['soldier', spriteSoldierUrl],
+    ['scav', spriteScavUrl],
+    ['heavy', spriteHeavyUrl],
+    ['shocker', spriteShockerUrl],
+    ['redneck', spriteRedneckUrl],
+    ['cultist', spriteCultistUrl],
+    ['miner_cult', spriteMinerUrl],
+    ['svarta_sol', spriteSvartaSolUrl],
+  ];
+  for (const [id, url] of entries) {
+    const img = new Image();
+    img.src = url;
+    _spriteCache[id] = img;
+  }
 })();
 
 /** Draw a sprite rotated to face `angle`. The sprite's default facing is to the right (angle=0).
