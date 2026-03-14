@@ -5782,7 +5782,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
             enemy.awarenessDecay = Math.max(0.02, enemy.awarenessDecay * 0.3); // much slower decay
             (enemy as any)._combatAlert = true; // permanently heightened after taking fire
             // Panic or Berserk chance on taking damage (not boss, sniper, bodyguard, turret)
-            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
+            if (enemy.type !== 'boss' && enemy.type !== 'sniper' && enemy.type !== 'turret' && enemy.type !== 'dog' && !(enemy as any)._isBodyguard && !(enemy as any)._panicTimer && !(enemy as any)._berserkTimer) {
               const hpPct = enemy.hp / enemy.maxHp;
               const panicChance = hpPct < 0.3 ? 0.25 : hpPct < 0.5 ? 0.12 : 0.05;
               const berserkChance = hpPct < 0.3 ? 0.15 : hpPct < 0.5 ? 0.08 : 0.02;
