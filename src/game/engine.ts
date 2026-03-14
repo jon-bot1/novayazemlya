@@ -4930,6 +4930,11 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         } else {
           enemy.angle = chaseTargetAngle;
         }
+        // Transition to attack when in range with LOS
+        if (distToPlayer <= enemy.shootRange && los && isInFiringArc(enemy, state.player.pos.x, state.player.pos.y)) {
+          enemy.state = 'attack';
+          break;
+        }
         const newPos = tryMoveEnemy(state, enemy.pos, dir.x * speed, dir.y * speed, 10);
         if (dist(newPos, enemy.pos) < 0.1) {
           if (!(enemy as any)._stuckCounter) (enemy as any)._stuckCounter = 0;
