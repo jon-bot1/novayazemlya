@@ -3473,7 +3473,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
 
     // Awareness bar — shows detection progress (stealth meter above enemy)
-    if (enemy.awareness > 0.02 && enemy.awareness < 1.0 && enemy.state !== 'dead') {
+    if (enemy.awareness > 0.02 && enemy.awareness < 1.0) {
       const aBarW = 32;
       const aBarH = 4;
       // Place awareness bar above the HP bar with clear separation
