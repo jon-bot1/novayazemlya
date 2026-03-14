@@ -1596,7 +1596,7 @@ function drawSpriteCharacter(
   const barrelLen = size * 0.9;
   const barrelW = size * 0.14;
   const barrelStart = size * 0.25;
-  const lateralOffset = size * 0.3; // shift weapon to the right side of the body
+  const lateralOffset = -size * 0.3; // negative Y = right side in rotated coords
   ctx.translate(0, -lateralOffset);
   // Gun body
   ctx.fillStyle = '#4a4a44';
