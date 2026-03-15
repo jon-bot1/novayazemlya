@@ -3127,56 +3127,40 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         ctx.fillText('🔭 SNIPER', enemy.pos.x, enemy.pos.y - 14);
       }
     } else if (enemy.type === 'dog') {
-      // Dog — small, low to ground, simple animal shape
-      ctx.save();
-      ctx.translate(enemy.pos.x, enemy.pos.y);
-      ctx.rotate(enemy.angle);
-      // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
-      ctx.beginPath();
-      ctx.ellipse(0, 4, 10, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Body
-      const dogColor = enemy.neutralized ? '#aa9977' : enemy.friendly ? '#77cc55' : '#6a4a2a';
-      ctx.fillStyle = dogColor;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#4a3020';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      // Head
-      ctx.fillStyle = dogColor;
-      ctx.beginPath();
-      ctx.arc(10, -2, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Ears
-      ctx.fillStyle = '#5a3a1a';
-      ctx.beginPath();
-      ctx.ellipse(12, -6, 3, 2, -0.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(8, -6, 3, 2, 0.3, 0, Math.PI * 2);
-      ctx.fill();
-      // Eye
-      ctx.fillStyle = enemy.neutralized ? '#999' : '#111';
-      ctx.beginPath();
-      ctx.arc(12, -2, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      // Tail
-      ctx.strokeStyle = dogColor;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-10, -1);
-      ctx.quadraticCurveTo(-14, -6 + Math.sin(state.time * 8) * 3, -12, -8);
-      ctx.stroke();
-      // Legs (simple)
-      ctx.fillStyle = '#5a3a1a';
-      for (const lx of [-6, -2, 4, 8]) {
-        ctx.fillRect(lx - 1, 4, 2, 4);
+      // Dog — use sprite with four-legged animation
+      const dogSprite = _spriteCache['dog'];
+      const dogSize = R - 4; // slightly smaller than humans
+      if (dogSprite && dogSprite.complete && dogSprite.naturalWidth > 0 && hasDetailedCharacters()) {
+        const isSprinting = enemy.state === 'chase' || enemy.state === 'flank';
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, dogSprite, dogSize, enemy.id, state.time, isSprinting, true);
+      } else {
+        // Fallback: simple procedural dog
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath();
+        ctx.ellipse(0, 4, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        const dogColor = enemy.neutralized ? '#aa9977' : enemy.friendly ? '#77cc55' : '#6a4a2a';
+        ctx.fillStyle = dogColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#4a3020';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = dogColor;
+        ctx.beginPath();
+        ctx.arc(10, -2, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#5a3a1a';
+        for (const lx of [-6, -2, 4, 8]) {
+          ctx.fillRect(lx - 1, 4, 2, 4);
+        }
+        ctx.restore();
       }
-      ctx.restore();
       // Label with name
       if (!enemy.neutralized) {
         const dogName = (enemy as any)._dogName || 'DOG';
