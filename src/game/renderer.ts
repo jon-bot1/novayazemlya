@@ -12,6 +12,9 @@ import spriteCultistUrl from '../assets/sprite-cultist.png';
 import spriteMinerUrl from '../assets/sprite-miner.png';
 import spriteSvartaSolUrl from '../assets/sprite-svarta-sol.png';
 import spritePlayerUrl from '../assets/sprite-player.png';
+import spriteBossUrl from '../assets/sprite-boss.png';
+import spriteSniperUrl from '../assets/sprite-sniper.png';
+import spriteDogUrl from '../assets/sprite-dog.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
