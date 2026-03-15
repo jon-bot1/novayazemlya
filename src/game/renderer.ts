@@ -1502,6 +1502,9 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
     ['cultist', spriteCultistUrl],
     ['miner_cult', spriteMinerUrl],
     ['svarta_sol', spriteSvartaSolUrl],
+    ['boss', spriteBossUrl],
+    ['sniper', spriteSniperUrl],
+    ['dog', spriteDogUrl],
   ];
   for (const [id, url] of entries) {
     const img = new Image();
