@@ -1606,6 +1606,37 @@ function drawSpriteCharacter(
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
   ctx.restore();
 
+  // ── HUMANOID LEGS (front layer for visibility) ──
+  if (!isDog) {
+    const legLen = size * 0.72;
+    const legW = size * 0.24;
+    const legSpread = size * 0.42;
+    const legSwing = walkCycle * legLen * legAmplitude;
+
+    ctx.save();
+    ctx.rotate(moveAngle);
+    for (const side of [-1, 1]) {
+      const swing = side * legSwing;
+      ctx.save();
+      // place feet slightly outside body silhouette so animation is clearly visible
+      ctx.translate(swing - size * 0.08, side * legSpread);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-legLen * 0.26, -legW / 2, legLen * 0.52, legW, legW * 0.45);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#0f0f0f';
+      ctx.beginPath();
+      ctx.roundRect(legLen * 0.12, -legW * 0.38, legW * 0.7, legW * 0.76, 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
   // ── WEAPON BARREL ── (skip for dogs)
   if (!isDog) {
     ctx.save();
