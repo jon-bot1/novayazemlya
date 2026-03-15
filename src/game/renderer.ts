@@ -3202,8 +3202,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
-      // Try sprite first (skip for sleepers/bodyguards/officers — they use procedural)
-      const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
+      // Try sprite first (skip for sleepers — they use procedural; bodyguards/officers use soldier sprite)
+      const enemySpriteId = isSleeper ? null : (isBodyguard || isOfficer) ? 'soldier' : enemy.type;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
         const isSprinting = enemy.state === 'chase' || enemy.state === 'flank' || !!(enemy as any)._berserkTimer;
