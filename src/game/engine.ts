@@ -4889,6 +4889,21 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
               // Fire from cover
               if (distToPlayer < enemy.shootRange && los && state.time - enemy.lastShot > enemy.fireRate / 1000) {
                 enemy.state = 'attack';
+                (enemy as any)._coverNoLosTimer = 0;
+              } else if (!los) {
+                // No LOS from cover — track how long and abandon if too long
+                if (!(enemy as any)._coverNoLosTimer) (enemy as any)._coverNoLosTimer = 0;
+                (enemy as any)._coverNoLosTimer += dt;
+                if ((enemy as any)._coverNoLosTimer > 2.0) {
+                  // Abandon cover and chase directly
+                  (enemy as any)._seekCover = false;
+                  (enemy as any)._coverPos = null;
+                  (enemy as any)._coverDecided = false;
+                  (enemy as any)._coverNoLosTimer = 0;
+                  // Fall through to normal chase
+                }
+              } else {
+                (enemy as any)._coverNoLosTimer = 0;
               }
             }
             // After 30s, randomly pick new behavior
