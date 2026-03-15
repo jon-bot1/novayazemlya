@@ -1597,33 +1597,7 @@ function drawSpriteCharacter(
     }
     ctx.restore();
   } else {
-    // ── TWO LEGS for humanoids — extend well beyond sprite ──
-    const legLen = size * 0.75;
-    const legW = size * 0.24;
-    const legSpread = size * 0.38;
-    const legSwing = walkCycle * legLen * legAmplitude;
-
-    ctx.save();
-    ctx.rotate(moveAngle);
-    for (const side of [-1, 1]) {
-      const swing = side * legSwing;
-      ctx.save();
-      ctx.translate(swing, side * legSpread);
-      ctx.fillStyle = '#2a2a2a';
-      ctx.strokeStyle = '#1a1a1a';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(-legLen * 0.3, -legW / 2, legLen * 0.6, legW, legW * 0.4);
-      ctx.fill();
-      ctx.stroke();
-      // Boot
-      ctx.fillStyle = '#1a1a1a';
-      ctx.beginPath();
-      ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.6, legW * 0.7, 2);
-      ctx.fill();
-      ctx.restore();
-    }
-    ctx.restore();
+    // Humanoid legs rendereras efter spriten så de inte döljs helt
   }
 
   // ── UPPER BODY (sprite) ── rotates to aim direction
@@ -1631,6 +1605,37 @@ function drawSpriteCharacter(
   ctx.rotate(angle - Math.PI / 2);
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
   ctx.restore();
+
+  // ── HUMANOID LEGS (front layer for visibility) ──
+  if (!isDog) {
+    const legLen = size * 0.72;
+    const legW = size * 0.24;
+    const legSpread = size * 0.42;
+    const legSwing = walkCycle * legLen * legAmplitude;
+
+    ctx.save();
+    ctx.rotate(moveAngle);
+    for (const side of [-1, 1]) {
+      const swing = side * legSwing;
+      ctx.save();
+      // place feet slightly outside body silhouette so animation is clearly visible
+      ctx.translate(swing - size * 0.08, side * legSpread);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-legLen * 0.26, -legW / 2, legLen * 0.52, legW, legW * 0.45);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#0f0f0f';
+      ctx.beginPath();
+      ctx.roundRect(legLen * 0.12, -legW * 0.38, legW * 0.7, legW * 0.76, 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
 
   // ── WEAPON BARREL ── (skip for dogs)
   if (!isDog) {
