@@ -15,6 +15,7 @@ import spritePlayerUrl from '../assets/sprite-player.png';
 import spriteBossUrl from '../assets/sprite-boss.png';
 import spriteSniperUrl from '../assets/sprite-sniper.png';
 import spriteDogUrl from '../assets/sprite-dog.png';
+import spriteSleeperUrl from '../assets/sprite-sleeper.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
@@ -1505,6 +1506,7 @@ function loadSprite(id: string, url: string): HTMLImageElement | null {
     ['boss', spriteBossUrl],
     ['sniper', spriteSniperUrl],
     ['dog', spriteDogUrl],
+    ['sleeper', spriteSleeperUrl],
   ];
   for (const [id, url] of entries) {
     const img = new Image();
@@ -3218,7 +3220,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
       // Try sprite first (skip for sleepers — they use soldier sprite with different tint; bodyguards/officers use soldier sprite)
-      const enemySpriteId = (isSleeper || isBodyguard || isOfficer) ? 'soldier' : enemy.type;
+      const enemySpriteId = isSleeper ? 'sleeper' : (isBodyguard || isOfficer) ? 'soldier' : enemy.type;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
         const isSprinting = enemy.state === 'chase' || enemy.state === 'flank' || !!(enemy as any)._berserkTimer;
