@@ -1603,11 +1603,14 @@ function drawSpriteCharacter(
     const legW = size * 0.18;
     const legSpread = size * 0.2;
     const legSwing = walkCycle * legLen * legAmplitude;
-    // Anchor legs at the bottom edge of the sprite
-    const legAnchorY = drawSize * 0.32;
+    // Anchor legs at the "back" of the sprite (opposite aim direction)
+    // Sprite feet are at angle+PI from center (head faces aim direction)
+    const legAnchorDist = drawSize * 0.28;
+    const legAnchorX = Math.cos(angle + Math.PI) * legAnchorDist;
+    const legAnchorY_offset = Math.sin(angle + Math.PI) * legAnchorDist;
 
     ctx.save();
-    ctx.translate(0, legAnchorY);
+    ctx.translate(legAnchorX, legAnchorY_offset);
     ctx.save();
     ctx.rotate(moveAngle);
     for (const side of [-1, 1]) {
