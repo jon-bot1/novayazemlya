@@ -3099,33 +3099,44 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
         }
       }
     } else if (enemy.type === 'sniper') {
-      // Sniper — camouflaged, prone, with scope glint
+      // Sniper — use sprite if available
+      const sniperSprite = _spriteCache['sniper'];
+      const sniperSize = R - 2;
       const isAiming = enemy.state === 'attack' || enemy.state === 'chase';
-      ctx.save();
-      ctx.translate(enemy.pos.x, enemy.pos.y);
-      ctx.rotate(enemy.angle);
-      // Ghillie suit body (prone, elongated)
-      ctx.fillStyle = '#4a5a3a';
-      ctx.fillRect(-6, -4, 18, 8); // prone body
-      // Ghillie texture
-      ctx.fillStyle = '#3a4a2a';
-      for (let g = 0; g < 5; g++) {
-        const gx = -4 + g * 4;
-        const gy = -3 + Math.sin(g * 1.5) * 2;
-        ctx.fillRect(gx, gy, 3, 2);
+      if (sniperSprite && sniperSprite.complete && sniperSprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
+        const isSprinting = enemy.state === 'chase' || enemy.state === 'flank';
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, sniperSprite, sniperSize, enemy.id, state.time, isSprinting);
+      } else if (useLOD) {
+        drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, '#4a5a3a', '#3a4a2a', sniperSize);
+      } else {
+        // Fallback: procedural ghillie
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle);
+        ctx.fillStyle = '#4a5a3a';
+        ctx.fillRect(-6, -4, 18, 8);
+        ctx.fillStyle = '#3a4a2a';
+        for (let g = 0; g < 5; g++) {
+          const gx = -4 + g * 4;
+          const gy = -3 + Math.sin(g * 1.5) * 2;
+          ctx.fillRect(gx, gy, 3, 2);
+        }
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(12, -1, 10, 2);
+        ctx.restore();
       }
-      // Rifle barrel
-      ctx.fillStyle = '#2a2a2a';
-      ctx.fillRect(12, -1, 10, 2);
       // Scope glint when aiming
       if (isAiming) {
+        ctx.save();
+        ctx.translate(enemy.pos.x, enemy.pos.y);
+        ctx.rotate(enemy.angle);
         const glint = 0.5 + Math.sin(state.time * 3) * 0.5;
         ctx.fillStyle = `rgba(255, 255, 200, ${glint * 0.8})`;
         ctx.beginPath();
         ctx.arc(22, 0, 2, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       }
-      ctx.restore();
       // "SNIPER" label only when spotted
       if (isAiming) {
         ctx.fillStyle = '#ff4444';
