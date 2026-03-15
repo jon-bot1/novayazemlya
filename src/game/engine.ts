@@ -1319,7 +1319,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
   
   // Movement speed based on mode
   const sneakBonus = (state as any)._sneakSpeedBonus || 0;
-  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.35 * (1 + sneakBonus), walk: 0.85, sprint: 1.815 }; // sprint +10%
+  const speedMultipliers: Record<MovementMode, number> = { sneak: 0.35 * (1 + sneakBonus), walk: 0.85, sprint: 2.087 }; // sprint +15% from 1.815
   // Weight penalty: every 5kg over 3kg = 5% speed loss
   const totalWeight = state.player.inventory.reduce((s, i) => s + i.weight, 0);
   const weightPenalty = Math.max(0, (totalWeight - 3) / 5) * 0.05;
