@@ -820,7 +820,7 @@ export const GameCanvas: React.FC = () => {
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('contextmenu', onContextMenu);
-    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
     window.addEventListener('blur', onWindowBlur);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
