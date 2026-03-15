@@ -780,12 +780,14 @@ export const GameCanvas: React.FC = () => {
     };
 
     const onWheel = (e: WheelEvent) => {
+      console.log('[WHEEL] event fired, phase:', gamePhaseRef.current, 'deltaY:', e.deltaY);
       if (gamePhaseRef.current !== 'playing') return; // allow normal scroll in menus
       const st = stateRef.current;
-      if (!st) return;
+      if (!st) { console.log('[WHEEL] no state'); return; }
       // Allow scroll on death/extraction screen
-      if (st.gameOver || st.extracted) return;
+      if (st.gameOver || st.extracted) { console.log('[WHEEL] game over/extracted'); return; }
       e.preventDefault();
+      e.stopPropagation();
       const dir = e.deltaY > 0 ? 1 : -1;
       if (e.ctrlKey) {
         // Ctrl+scroll = cycle grenades
@@ -795,6 +797,7 @@ export const GameCanvas: React.FC = () => {
         const slots: Array<1 | 2 | 3> = [1, 2, 3];
         const cur = slots.indexOf(st.player.activeSlot);
         const next = slots[(cur + dir + slots.length) % slots.length];
+        console.log('[WHEEL] switching from slot', st.player.activeSlot, 'to', next);
         inputRef.current.switchWeapon = next;
       }
     };
