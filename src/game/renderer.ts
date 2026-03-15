@@ -3202,8 +3202,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
-      // Try sprite first (skip for sleepers/bodyguards/officers — they use procedural)
-      const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
+      // Try sprite first (skip for sleepers — they use procedural; bodyguards/officers use soldier sprite)
+      const enemySpriteId = isSleeper ? null : (isBodyguard || isOfficer) ? 'soldier' : enemy.type;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
         const isSprinting = enemy.state === 'chase' || enemy.state === 'flank' || !!(enemy as any)._berserkTimer;
@@ -4625,7 +4625,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     }
   }
 
-  // ── HIT MARKERS — crosshair X feedback ──
+  // ── HIT MARKERS — draw at enemy world position ──
   {
     clearOldHitMarkers(state.time);
     const markers = getHitMarkers();
@@ -4636,9 +4636,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       const expandSize = size + age * 15;
       const color = hm.isKill ? `rgba(255, 50, 30, ${alpha})` : hm.isHeadshot ? `rgba(255, 200, 50, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
       
-      // Draw X at screen center (crosshair hit marker)
+      // Draw X at the enemy's world position (converted to screen coords)
+      const screenX = hm.x - cx;
+      const screenY = hm.y - cy;
       ctx.save();
-      ctx.translate(w / 2, h / 2);
+      ctx.translate(screenX, screenY);
       ctx.strokeStyle = color;
       ctx.lineWidth = hm.isKill ? 3 : 2;
       ctx.beginPath();
