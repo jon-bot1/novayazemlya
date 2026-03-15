@@ -3474,25 +3474,23 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       ctx.restore();
     }
 
-    // ── ENEMY BARS — always show awareness above HP, stacked cleanly ──
-    const hasHpBar = enemy.hp < enemy.maxHp && enemy.type !== 'boss';
+    // ── ENEMY BARS — always render both HP + awareness (except boss) ──
+    const showEnemyBars = enemy.type !== 'boss';
     const barW = 30;
-    
-    // HP bar first (closer to enemy)
-    if (hasHpBar) {
+
+    if (showEnemyBars) {
+      // HP bar (closer to enemy)
       const hpBarY = enemy.pos.y - R - 20;
-      const ratio = enemy.hp / enemy.maxHp;
+      const hpRatio = Math.max(0, Math.min(1, enemy.hp / Math.max(1, enemy.maxHp)));
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(enemy.pos.x - barW / 2 - 1, hpBarY - 1, barW + 2, 6);
-      ctx.fillStyle = ratio > 0.5 ? '#7aaa5a' : ratio > 0.25 ? '#aa8a3a' : '#cc3a3a';
-      ctx.fillRect(enemy.pos.x - barW / 2, hpBarY, barW * ratio, 4);
-    }
+      ctx.fillStyle = hpRatio > 0.5 ? '#7aaa5a' : hpRatio > 0.25 ? '#aa8a3a' : '#cc3a3a';
+      ctx.fillRect(enemy.pos.x - barW / 2, hpBarY, barW * hpRatio, 4);
 
-    // Awareness bar above HP bar (or alone if full HP)
-    if (enemy.awareness > 0.02 && enemy.awareness < 1.0) {
+      // Awareness bar (always above HP)
       const aBarH = 3;
-      const aBarY = hasHpBar ? enemy.pos.y - R - 30 : enemy.pos.y - R - 20;
-      const awareness = enemy.awareness;
+      const aBarY = enemy.pos.y - R - 30;
+      const awareness = Math.max(0, Math.min(1, enemy.awareness));
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(enemy.pos.x - barW / 2 - 1, aBarY - 1, barW + 2, aBarH + 2);
       const aColor = awareness < 0.3 ? '#66cc44' : awareness < 0.65 ? '#ccaa33' : awareness < 0.9 ? '#cc6622' : '#cc2222';
