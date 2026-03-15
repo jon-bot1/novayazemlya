@@ -1608,18 +1608,23 @@ function drawSpriteCharacter(
 
   // ── HUMANOID LEGS (front layer for visibility) ──
   if (!isDog) {
-    const legLen = size * 0.72;
-    const legW = size * 0.24;
-    const legSpread = size * 0.42;
+    const legLen = size * 0.55;
+    const legW = size * 0.2;
+    const legSpread = size * 0.22;
     const legSwing = walkCycle * legLen * legAmplitude;
+    // Offset legs to the bottom of the character (positive Y = down on screen)
+    const legOffsetY = size * 0.55;
 
-    ctx.save();
-    ctx.rotate(moveAngle);
     for (const side of [-1, 1]) {
       const swing = side * legSwing;
+      // Calculate leg position in world space: offset downward from center, spread left/right
+      const legX = Math.cos(moveAngle) * swing - Math.sin(moveAngle) * (side * legSpread) + Math.sin(moveAngle + Math.PI) * (-legOffsetY) * 0;
+      const legY = Math.sin(moveAngle) * swing + Math.cos(moveAngle) * (side * legSpread);
       ctx.save();
-      // place feet slightly outside body silhouette so animation is clearly visible
-      ctx.translate(swing - size * 0.08, side * legSpread);
+      ctx.translate(0, legOffsetY);
+      ctx.save();
+      ctx.rotate(moveAngle);
+      ctx.translate(swing, side * legSpread);
       ctx.fillStyle = '#2a2a2a';
       ctx.strokeStyle = '#111';
       ctx.lineWidth = 1;
@@ -1633,8 +1638,8 @@ function drawSpriteCharacter(
       ctx.roundRect(legLen * 0.12, -legW * 0.38, legW * 0.7, legW * 0.76, 2);
       ctx.fill();
       ctx.restore();
+      ctx.restore();
     }
-    ctx.restore();
   }
 
   // ── WEAPON BARREL ── (skip for dogs)
