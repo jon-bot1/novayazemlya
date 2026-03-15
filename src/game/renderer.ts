@@ -1564,15 +1564,14 @@ function drawSpriteCharacter(
 
   if (isDog) {
     // ── FOUR LEGS for dogs ──
-    const legLen = size * 0.4;
-    const legW = size * 0.16;
-    const bodyHalfLen = size * 0.35; // front/back offset along movement
-    const legSpread = size * 0.22;   // sideways offset
+    const legLen = size * 0.5;
+    const legW = size * 0.18;
+    const bodyHalfLen = size * 0.45;
+    const legSpread = size * 0.28;
     const legSwing = walkCycle * legLen * legAmplitude;
 
     ctx.save();
     ctx.rotate(moveAngle);
-    // Front-left, front-right, back-left, back-right
     const legs = [
       { along: bodyHalfLen, side: -1, phase: 1 },
       { along: bodyHalfLen, side: 1, phase: -1 },
@@ -1590,7 +1589,6 @@ function drawSpriteCharacter(
       ctx.roundRect(-legLen * 0.25, -legW / 2, legLen * 0.5, legW, legW * 0.4);
       ctx.fill();
       ctx.stroke();
-      // Paw
       ctx.fillStyle = '#1a1a1a';
       ctx.beginPath();
       ctx.roundRect(legLen * 0.12, -legW * 0.3, legW * 0.45, legW * 0.6, 2);
@@ -1599,10 +1597,10 @@ function drawSpriteCharacter(
     }
     ctx.restore();
   } else {
-    // ── TWO LEGS for humanoids ──
-    const legLen = size * 0.55;
-    const legW = size * 0.22;
-    const legSpread = size * 0.28;
+    // ── TWO LEGS for humanoids — extend well beyond sprite ──
+    const legLen = size * 0.75;
+    const legW = size * 0.24;
+    const legSpread = size * 0.38;
     const legSwing = walkCycle * legLen * legAmplitude;
 
     ctx.save();
@@ -1621,7 +1619,7 @@ function drawSpriteCharacter(
       // Boot
       ctx.fillStyle = '#1a1a1a';
       ctx.beginPath();
-      ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.55, legW * 0.7, 2);
+      ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.6, legW * 0.7, 2);
       ctx.fill();
       ctx.restore();
     }
