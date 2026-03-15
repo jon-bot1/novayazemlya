@@ -3186,9 +3186,9 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       const pAngle = (enemy as any)._panicAngle || 0;
       const panicSpeed = enemy.speed * dt * 60 * 2.0;
       enemy.pos = tryMoveEnemy(state, enemy.pos, Math.cos(pAngle) * panicSpeed, Math.sin(pAngle) * panicSpeed, 10);
-      // Panic fire — random bullets in all directions (friendly fire!)
+      // Panic fire — random bullets in completely random directions (friendly fire!)
       if (Math.random() < 0.18) {
-        const panicAngle = enemy.angle + Math.PI + (Math.random() - 0.5) * 2.5; // mostly AWAY from where they're facing (toward player)
+        const panicAngle = Math.random() * Math.PI * 2; // truly random direction
         state.bullets.push({
           pos: { x: enemy.pos.x + Math.cos(panicAngle) * 14, y: enemy.pos.y + Math.sin(panicAngle) * 14 },
           vel: { x: Math.cos(panicAngle) * 7.5, y: Math.sin(panicAngle) * 7.5 },
