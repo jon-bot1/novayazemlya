@@ -3215,12 +3215,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
       const enemyMoving = enemy.state === 'patrol' || enemy.state === 'chase' || enemy.state === 'investigate' || enemy.state === 'flank';
       const eSize = isBodyguard ? R + 2 : (enemy.type === 'heavy' ? R + 4 : R);
+      const isDogEnemy = enemy.type === 'dog';
       // Try sprite first (skip for sleepers/bodyguards/officers — they use procedural)
       const enemySpriteId = (!isSleeper && !isBodyguard && !isOfficer) ? enemy.type : null;
       const enemySprite = enemySpriteId ? _spriteCache[enemySpriteId] : null;
       if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
         const isSprinting = enemy.state === 'chase' || enemy.state === 'flank' || !!(enemy as any)._berserkTimer;
-        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time, isSprinting, enemy.type === 'dog');
+        drawSpriteCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, enemySprite, eSize, enemy.id, state.time, isSprinting, isDogEnemy);
       } else if (useLOD) {
         drawSimpleCharacter(ctx, enemy.pos.x, enemy.pos.y, enemy.angle, cfg.body, cfg.outline, eSize);
       } else {
