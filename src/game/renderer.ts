@@ -1561,6 +1561,7 @@ function drawSpriteCharacter(
   const legSpeed = sprinting ? 18 : 10;
   const legAmplitude = sprinting ? 0.7 : 0.5;
   const walkCycle = isMoving ? Math.sin(time * legSpeed) : 0;
+  const bodyBob = isMoving ? Math.abs(Math.sin(time * legSpeed * 2)) * size * 0.04 : 0;
 
   if (isDog) {
     // ── FOUR LEGS for dogs ──
@@ -1597,33 +1598,21 @@ function drawSpriteCharacter(
     }
     ctx.restore();
   } else {
-    // Humanoid legs rendereras efter spriten så de inte döljs helt
-  }
-
-  // ── UPPER BODY (sprite) ── rotates to aim direction
-  ctx.save();
-  ctx.rotate(angle - Math.PI / 2);
-  ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
-  ctx.restore();
-
-  // ── HUMANOID LEGS (front layer for visibility) ──
-  if (!isDog) {
-    const legLen = size * 0.55;
-    const legW = size * 0.2;
-    const legSpread = size * 0.22;
+    // ── HUMANOID LEGS (drawn BEFORE sprite so they appear behind the body) ──
+    const legLen = size * 0.45;
+    const legW = size * 0.18;
+    const legSpread = size * 0.2;
     const legSwing = walkCycle * legLen * legAmplitude;
-    // Offset legs to the bottom of the character (positive Y = down on screen)
-    const legOffsetY = size * 0.55;
+    // Anchor legs at the bottom edge of the sprite
+    const legAnchorY = drawSize * 0.32;
 
+    ctx.save();
+    ctx.translate(0, legAnchorY);
+    ctx.save();
+    ctx.rotate(moveAngle);
     for (const side of [-1, 1]) {
       const swing = side * legSwing;
-      // Calculate leg position in world space: offset downward from center, spread left/right
-      const legX = Math.cos(moveAngle) * swing - Math.sin(moveAngle) * (side * legSpread) + Math.sin(moveAngle + Math.PI) * (-legOffsetY) * 0;
-      const legY = Math.sin(moveAngle) * swing + Math.cos(moveAngle) * (side * legSpread);
       ctx.save();
-      ctx.translate(0, legOffsetY);
-      ctx.save();
-      ctx.rotate(moveAngle);
       ctx.translate(swing, side * legSpread);
       ctx.fillStyle = '#2a2a2a';
       ctx.strokeStyle = '#111';
@@ -1632,15 +1621,22 @@ function drawSpriteCharacter(
       ctx.roundRect(-legLen * 0.26, -legW / 2, legLen * 0.52, legW, legW * 0.45);
       ctx.fill();
       ctx.stroke();
-
       ctx.fillStyle = '#0f0f0f';
       ctx.beginPath();
       ctx.roundRect(legLen * 0.12, -legW * 0.38, legW * 0.7, legW * 0.76, 2);
       ctx.fill();
       ctx.restore();
-      ctx.restore();
     }
+    ctx.restore();
+    ctx.restore();
   }
+
+  // ── UPPER BODY (sprite) ── rotates to aim direction, bobs when walking
+  ctx.save();
+  ctx.translate(0, -bodyBob);
+  ctx.rotate(angle - Math.PI / 2);
+  ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+  ctx.restore();
 
   // ── WEAPON BARREL ── (skip for dogs)
   if (!isDog) {
