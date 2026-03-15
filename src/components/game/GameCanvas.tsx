@@ -832,7 +832,7 @@ export const GameCanvas: React.FC = () => {
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('contextmenu', onContextMenu);
-      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('wheel', onWheel, { capture: true });
       window.removeEventListener('blur', onWindowBlur);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
