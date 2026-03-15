@@ -1543,6 +1543,7 @@ function drawSpriteCharacter(
   entityId: string = 'player',
   time: number = 0,
   sprinting: boolean = false,
+  isDog: boolean = false,
 ) {
   const { isMoving, moveAngle } = getMovementInfo(entityId, x, y);
   const drawSize = size * 2.2;
@@ -1557,38 +1558,75 @@ function drawSpriteCharacter(
   ctx.fill();
 
   // ── LEGS ── face movement direction, animate when walking
-  const legLen = size * 0.55;
-  const legW = size * 0.22;
-  const legSpread = size * 0.28;
-  // Walk cycle: legs swing forward/back — faster when sprinting
   const legSpeed = sprinting ? 18 : 10;
   const legAmplitude = sprinting ? 0.7 : 0.5;
   const walkCycle = isMoving ? Math.sin(time * legSpeed) : 0;
-  const legSwing = walkCycle * legLen * legAmplitude;
 
-  ctx.save();
-  ctx.rotate(moveAngle);
-  // Two legs offset sideways, swinging along movement axis
-  for (const side of [-1, 1]) {
-    const swing = side * legSwing; // opposite legs swing opposite
+  if (isDog) {
+    // ── FOUR LEGS for dogs ──
+    const legLen = size * 0.4;
+    const legW = size * 0.16;
+    const bodyHalfLen = size * 0.35; // front/back offset along movement
+    const legSpread = size * 0.22;   // sideways offset
+    const legSwing = walkCycle * legLen * legAmplitude;
+
     ctx.save();
-    ctx.translate(swing, side * legSpread);
-    // Leg as a rounded rectangle
-    ctx.fillStyle = '#2a2a2a';
-    ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(-legLen * 0.3, -legW / 2, legLen * 0.6, legW, legW * 0.4);
-    ctx.fill();
-    ctx.stroke();
-    // Boot at the end
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.55, legW * 0.7, 2);
-    ctx.fill();
+    ctx.rotate(moveAngle);
+    // Front-left, front-right, back-left, back-right
+    const legs = [
+      { along: bodyHalfLen, side: -1, phase: 1 },
+      { along: bodyHalfLen, side: 1, phase: -1 },
+      { along: -bodyHalfLen, side: -1, phase: -1 },
+      { along: -bodyHalfLen, side: 1, phase: 1 },
+    ];
+    for (const leg of legs) {
+      const swing = leg.phase * legSwing;
+      ctx.save();
+      ctx.translate(leg.along + swing, leg.side * legSpread);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-legLen * 0.25, -legW / 2, legLen * 0.5, legW, legW * 0.4);
+      ctx.fill();
+      ctx.stroke();
+      // Paw
+      ctx.fillStyle = '#1a1a1a';
+      ctx.beginPath();
+      ctx.roundRect(legLen * 0.12, -legW * 0.3, legW * 0.45, legW * 0.6, 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  } else {
+    // ── TWO LEGS for humanoids ──
+    const legLen = size * 0.55;
+    const legW = size * 0.22;
+    const legSpread = size * 0.28;
+    const legSwing = walkCycle * legLen * legAmplitude;
+
+    ctx.save();
+    ctx.rotate(moveAngle);
+    for (const side of [-1, 1]) {
+      const swing = side * legSwing;
+      ctx.save();
+      ctx.translate(swing, side * legSpread);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-legLen * 0.3, -legW / 2, legLen * 0.6, legW, legW * 0.4);
+      ctx.fill();
+      ctx.stroke();
+      // Boot
+      ctx.fillStyle = '#1a1a1a';
+      ctx.beginPath();
+      ctx.roundRect(legLen * 0.15, -legW * 0.35, legW * 0.55, legW * 0.7, 2);
+      ctx.fill();
+      ctx.restore();
+    }
     ctx.restore();
   }
-  ctx.restore();
 
   // ── UPPER BODY (sprite) ── rotates to aim direction
   ctx.save();
@@ -1596,24 +1634,23 @@ function drawSpriteCharacter(
   ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
   ctx.restore();
 
-  // ── WEAPON BARREL ── drawn on top, pointing at aim angle, offset to right side
-  ctx.save();
-  ctx.rotate(angle);
-  const barrelLen = size * 0.9;
-  const barrelW = size * 0.14;
-  const barrelStart = size * 0.25;
-  const lateralOffset = -size * 0.3; // negative Y = right side in rotated coords
-  ctx.translate(0, -lateralOffset);
-  // Gun body
-  ctx.fillStyle = '#4a4a44';
-  ctx.fillRect(barrelStart, -barrelW / 2, barrelLen, barrelW);
-  // Muzzle tip
-  ctx.fillStyle = '#2a2a28';
-  ctx.fillRect(barrelStart + barrelLen - 3, -barrelW * 0.4, 4, barrelW * 0.8);
-  // Hand grip
-  ctx.fillStyle = '#3a3a30';
-  ctx.fillRect(barrelStart - 2, -barrelW * 0.6, 5, barrelW * 1.2);
-  ctx.restore();
+  // ── WEAPON BARREL ── (skip for dogs)
+  if (!isDog) {
+    ctx.save();
+    ctx.rotate(angle);
+    const barrelLen = size * 0.9;
+    const barrelW = size * 0.14;
+    const barrelStart = size * 0.25;
+    const lateralOffset = -size * 0.3;
+    ctx.translate(0, -lateralOffset);
+    ctx.fillStyle = '#4a4a44';
+    ctx.fillRect(barrelStart, -barrelW / 2, barrelLen, barrelW);
+    ctx.fillStyle = '#2a2a28';
+    ctx.fillRect(barrelStart + barrelLen - 3, -barrelW * 0.4, 4, barrelW * 0.8);
+    ctx.fillStyle = '#3a3a30';
+    ctx.fillRect(barrelStart - 2, -barrelW * 0.6, 5, barrelW * 1.2);
+    ctx.restore();
+  }
 
   ctx.restore();
 }
