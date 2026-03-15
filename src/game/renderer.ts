@@ -15,6 +15,7 @@ import spritePlayerUrl from '../assets/sprite-player.png';
 import spriteBossUrl from '../assets/sprite-boss.png';
 import spriteSniperUrl from '../assets/sprite-sniper.png';
 import spriteDogUrl from '../assets/sprite-dog.png';
+import spriteSleeperUrl from '../assets/sprite-sleeper.png';
 
 // Render distance factor — applied to isOnScreen margins
 let _rdm = 1.0;
