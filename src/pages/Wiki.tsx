@@ -769,7 +769,7 @@ function MapsSection() {
       <div className="border border-border rounded p-3 mb-2">
         <div className="text-sm font-display text-foreground mb-1">🏭 Objekt 47 — <span className="text-muted-foreground text-[10px]">3200×2400</span></div>
         <Tag>Starting Map</Tag><Tag color="danger">Snipers</Tag>
-        <P>Arctic military base on Novaya Zemlya. Hangars, offices, watchtowers, minefield. Heavy enemy presence with professional soldiers. The only map with Sniper Tuman.</P>
+        <P>Arctic military base on Novaya Zemlya. Hangars, offices, watchtowers, minefield. Heavy enemy presence with professional soldiers. The only map with Sniper Tuman — a rogue female marksman who stalks the perimeter.</P>
         <P>Boss: Commandant Osipovitj. Exfil points around the perimeter.</P>
       </div>
 
