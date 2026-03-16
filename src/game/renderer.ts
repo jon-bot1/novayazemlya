@@ -3103,7 +3103,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
     } else if (enemy.type === 'sniper') {
       // Sniper — use sprite if available
       const sniperSprite = _spriteCache['sniper'];
-      const sniperSize = R - 2;
+      const sniperSize = R + 2;
       const isAiming = enemy.state === 'attack' || enemy.state === 'chase';
       if (sniperSprite && sniperSprite.complete && sniperSprite.naturalWidth > 0 && hasDetailedCharacters() && !useLOD) {
         const isSprinting = enemy.state === 'chase' || enemy.state === 'flank';
