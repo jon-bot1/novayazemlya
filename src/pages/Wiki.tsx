@@ -682,9 +682,9 @@ function EnemiesSection() {
       <EnemyRow name="Shocker" icon="⚡" hp="55-90" speed="Very High" dmg="38-55" range="32-42 (melee)"
         personality="Fearless (0-15% cowardice). Rushes straight at you. Melee electric damage."
         notes="Close-range terror. Causes bleeding. Strongest in the hospital. Stun-locks you." />
-      <EnemyRow name="Sniper Tuman" icon="🎯" hp="75-90" speed="Very Low" dmg="70-85" range="200-330"
-        personality="Cowardly if found (50%). Perfect accuracy (95%). Teleports when threatened."
-        notes="Only on Objekt 47. Invisible until revealed. Fires high-damage single shots." />
+      <EnemyRow name="Sniper Tuman (Туман)" icon="🎯" hp="75-90" speed="Very Low" dmg="70-85" range="200-330"
+        personality="Cowardly if found (50%). Perfect accuracy (95%). Teleports when threatened. Female operative — former GRU marksman who went rogue."
+        notes="Only on Objekt 47. Ghost sniper. She watches, repositions, and vanishes like fog. One of the deadliest operatives on the island." />
       <EnemyRow name="Redneck" icon="🤠" hp="65-85" speed="Medium" dmg="16-22" range="55-75"
         personality="Territorial. Low-medium cowardice. Carries shotgun + dog food."
         notes="Always paired with a dog. Swedish-speaking on Gruvsamhället. Drops TOZ shotgun." />
