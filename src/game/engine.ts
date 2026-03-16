@@ -92,7 +92,7 @@ function getDamageSourceLabel(state: GameState, sourceType?: string, sourceId?: 
     const sourceBoss = state.enemies.find(e => e.id === sourceId && e.type === 'boss');
     return sourceBoss ? getBossTitle(sourceBoss) : 'BOSS';
   }
-  if (sourceType === 'sniper') return 'Sniper Tuman';
+  if (sourceType === 'sniper') return 'Sniper Tuman (Туман)';
   return sourceType ? sourceType.toUpperCase() : 'unknown';
 }
 
