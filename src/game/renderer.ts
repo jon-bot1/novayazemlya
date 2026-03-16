@@ -1033,27 +1033,57 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop, gameState?: GameSta
       break;
     }
     case 'ammo_dump': {
-      // Ammo stockpile — stacked crates with markings
+      const isDestroyed = !!(gameState as any)?._ammoDestroyed;
       ctx.save();
       ctx.translate(x, y);
-      // Bottom crates
-      ctx.fillStyle = '#4a5a3a';
-      ctx.fillRect(-18, -8, 16, 12);
-      ctx.fillRect(2, -8, 16, 12);
-      // Top crate
-      ctx.fillStyle = '#5a6a4a';
-      ctx.fillRect(-8, -18, 16, 12);
-      // Markings
-      ctx.strokeStyle = '#3a4a2a';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-18, -8, 16, 12);
-      ctx.strokeRect(2, -8, 16, 12);
-      ctx.strokeRect(-8, -18, 16, 12);
-      // Ammo symbol
-      ctx.fillStyle = '#ffaa33';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('💥 AMMO', 0, 16);
+      if (isDestroyed) {
+        // Destroyed: shattered crates, scattered debris
+        ctx.fillStyle = '#2a2a1a';
+        ctx.fillRect(-16, -6, 12, 8);
+        ctx.fillRect(4, -4, 10, 6);
+        ctx.fillStyle = '#1a1a0a';
+        ctx.fillRect(-6, -14, 10, 7);
+        // Splinters
+        ctx.strokeStyle = '#3a3a2a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(-14, 4); ctx.lineTo(-20, 10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(12, -2); ctx.lineTo(18, -8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-2, -12); ctx.lineTo(-6, -20); ctx.stroke();
+        // Scattered ammo
+        ctx.fillStyle = '#8a7a3a';
+        for (let i = 0; i < 5; i++) {
+          const ax = -12 + Math.sin(i * 3.1) * 18;
+          const ay = -4 + Math.cos(i * 2.7) * 12;
+          ctx.fillRect(ax, ay, 3, 1.5);
+        }
+        // Smoke
+        const smokeT = _frameTime * 1.2;
+        ctx.fillStyle = `rgba(60, 60, 50, ${0.25 + Math.sin(smokeT) * 0.1})`;
+        ctx.beginPath(); ctx.arc(0, -16, 5, 0, Math.PI * 2); ctx.fill();
+        // Label
+        ctx.fillStyle = '#ff6633';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💥 DESTROYED', 0, 16);
+      } else {
+        // Bottom crates
+        ctx.fillStyle = '#4a5a3a';
+        ctx.fillRect(-18, -8, 16, 12);
+        ctx.fillRect(2, -8, 16, 12);
+        // Top crate
+        ctx.fillStyle = '#5a6a4a';
+        ctx.fillRect(-8, -18, 16, 12);
+        // Markings
+        ctx.strokeStyle = '#3a4a2a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-18, -8, 16, 12);
+        ctx.strokeRect(2, -8, 16, 12);
+        ctx.strokeRect(-8, -18, 16, 12);
+        // Ammo symbol
+        ctx.fillStyle = '#ffaa33';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💥 AMMO', 0, 16);
+      }
       ctx.restore();
       break;
     }
