@@ -92,7 +92,7 @@ function getDamageSourceLabel(state: GameState, sourceType?: string, sourceId?: 
     const sourceBoss = state.enemies.find(e => e.id === sourceId && e.type === 'boss');
     return sourceBoss ? getBossTitle(sourceBoss) : 'BOSS';
   }
-  if (sourceType === 'sniper') return 'Sniper Tuman';
+  if (sourceType === 'sniper') return 'Sniper Tuman (Туман)';
   return sourceType ? sourceType.toUpperCase() : 'unknown';
 }
 
@@ -4444,7 +4444,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if ((enemy as any)._sniperObserveTimer <= 0 && obsLos) {
           delete (enemy as any)._sniperObserving;
           delete (enemy as any)._sniperObserveTimer;
-          addMessage(state, '🎯 Sniper Tuman has spotted you!', 'warning');
+          addMessage(state, '🎯 Sniper Tuman has you in her sights!', 'warning');
           enemy.state = 'attack';
         } else if ((enemy as any)._sniperObserveTimer <= 0 && !obsLos) {
           // Timer done but no LOS — teleport to a better vantage point
@@ -4454,7 +4454,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (obsDist < 120) {
           delete (enemy as any)._sniperObserving;
           delete (enemy as any)._sniperObserveTimer;
-          addMessage(state, '🎯 Sniper Tuman detected at close range!', 'warning');
+          addMessage(state, '🎯 Sniper Tuman — too close!', 'warning');
         }
         // If sniper takes a hit during observation, break out and flee immediately
         if ((enemy as any)._sniperShouldFlee) {

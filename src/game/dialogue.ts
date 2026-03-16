@@ -130,7 +130,7 @@ export const DEATH_LINES: Record<string, string[]> = {
   heavy:   ['Невозможно...', 'Как...', 'Нет... я...'],
   redneck: ['Tell... my dog...', 'Not like this...', 'Dang...', 'Ugh...'],
   shocker: ['Кор... откаж...', 'Систе... ма...', 'Zzzt...'],
-  sniper:  ['...тум...ан...'],
+  sniper:  ['...тум...ан...', '...мама...'],
   boss:    [], // Boss has special death sequence
   dog:     ['*whimper*'],
   cultist: ['Вещество... прими меня...', 'Бореалис... вижу свет...', 'Братья...', 'Алтарь... зовёт...'],
