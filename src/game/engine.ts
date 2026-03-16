@@ -4444,7 +4444,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if ((enemy as any)._sniperObserveTimer <= 0 && obsLos) {
           delete (enemy as any)._sniperObserving;
           delete (enemy as any)._sniperObserveTimer;
-          addMessage(state, '🎯 Sniper Tuman has spotted you!', 'warning');
+          addMessage(state, '🎯 Sniper Tuman has you in her sights!', 'warning');
           enemy.state = 'attack';
         } else if ((enemy as any)._sniperObserveTimer <= 0 && !obsLos) {
           // Timer done but no LOS — teleport to a better vantage point
