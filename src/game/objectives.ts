@@ -26,7 +26,7 @@ const OBJEKT47_MAIN: ObjectiveTemplate[] = [
   { id: 'kill_boss', name: 'Eliminate Commandant', icon: '💀', description: 'Kill Commandant Osipovitj and retrieve his USB drive', reward: 500, isMain: true },
   { id: 'hack_terminals', name: 'Hack Intel Terminal', icon: '💻', description: 'Hack the nuclear codebook terminal', reward: 400, isMain: true },
   { id: 'plant_bomb', name: 'Sabotage Aircraft', icon: '✈️', description: 'Destroy the airplane with TNT, grenades, or melee', reward: 450, isMain: true },
-  { id: 'kill_sniper', name: 'Neutralize Sniper Tuman', icon: '🎯', description: 'Hunt down and eliminate the deadly Sniper Tuman', reward: 400, isMain: true },
+  { id: 'kill_sniper', name: 'Neutralize Sniper Tuman', icon: '🎯', description: 'Hunt down and eliminate the ghost sniper known as Tuman — she never misses twice', reward: 400, isMain: true },
   { id: 'collect_all_docs', name: 'Recover All Intel', icon: '📚', description: 'Collect every classified document on the map', reward: 450, isMain: true },
   { id: 'breach_and_clear', name: 'Breach & Clear HQ', icon: '🧨', description: 'Breach 2 walls with TNT and kill 5 enemies inside', reward: 500, isMain: true },
   { id: 'wipe_garrison', name: 'Wipe the Garrison', icon: '☠️', description: 'Eliminate at least 15 enemies before extracting', reward: 500, isMain: true },
