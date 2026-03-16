@@ -4454,7 +4454,7 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
         if (obsDist < 120) {
           delete (enemy as any)._sniperObserving;
           delete (enemy as any)._sniperObserveTimer;
-          addMessage(state, '🎯 Sniper Tuman detected at close range!', 'warning');
+          addMessage(state, '🎯 Sniper Tuman — too close!', 'warning');
         }
         // If sniper takes a hit during observation, break out and flee immediately
         if ((enemy as any)._sniperShouldFlee) {
