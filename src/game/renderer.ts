@@ -492,7 +492,7 @@ function shadeColor(hex: string, percent: number): string {
 }
 
 // Draw decorative prop with 3/4 perspective
-function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
+function drawProp(ctx: CanvasRenderingContext2D, prop: Prop, gameState?: GameState) {
   const { x, y } = prop.pos;
   const { w, h } = prop;
   const left = x - w / 2;
@@ -943,26 +943,56 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       break;
     }
     case 'fuel_depot': {
-      // Fuel storage tanks — cylindrical top-down
+      const isDestroyed = !!(gameState as any)?._fuelDestroyed;
       ctx.save();
       ctx.translate(x, y);
-      // Tank 1
-      ctx.fillStyle = '#6a4a3a';
-      ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5;
-      ctx.stroke();
-      // Tank 2
-      ctx.fillStyle = '#7a5a4a';
-      ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.stroke();
-      // Fuel label
-      ctx.fillStyle = '#ffcc33';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('FUEL', 0, -16);
-      // Hazard stripe
-      ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
-      ctx.fillRect(-w * 0.5, h * 0.4, w, 4);
+      if (isDestroyed) {
+        // Destroyed: charred wreckage with fire glow
+        ctx.fillStyle = '#2a1a0a';
+        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1a1008';
+        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        // Scorch marks
+        ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.stroke();
+        // Smoke wisps
+        const smokeT = _frameTime * 1.5;
+        for (let i = 0; i < 3; i++) {
+          const sx = -10 + i * 10 + Math.sin(smokeT + i * 2) * 3;
+          const sy = -12 - Math.abs(Math.sin(smokeT * 0.7 + i)) * 8;
+          ctx.fillStyle = `rgba(80, 70, 60, ${0.3 - i * 0.08})`;
+          ctx.beginPath(); ctx.arc(sx, sy, 4 + i, 0, Math.PI * 2); ctx.fill();
+        }
+        // Embers
+        const emberGlow = 0.3 + Math.sin(_frameTime * 3) * 0.2;
+        ctx.fillStyle = `rgba(255, 100, 20, ${emberGlow})`;
+        ctx.beginPath(); ctx.arc(-8, -2, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(10, 4, 2, 0, Math.PI * 2); ctx.fill();
+        // Label
+        ctx.fillStyle = '#ff4422';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔥 DESTROYED', 0, -20);
+      } else {
+        // Tank 1
+        ctx.fillStyle = '#6a4a3a';
+        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Tank 2
+        ctx.fillStyle = '#7a5a4a';
+        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.stroke();
+        // Fuel label
+        ctx.fillStyle = '#ffcc33';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('FUEL', 0, -16);
+        // Hazard stripe
+        ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
+        ctx.fillRect(-w * 0.5, h * 0.4, w, 4);
+      }
       ctx.restore();
       break;
     }
@@ -1003,27 +1033,57 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
       break;
     }
     case 'ammo_dump': {
-      // Ammo stockpile — stacked crates with markings
+      const isDestroyed = !!(gameState as any)?._ammoDestroyed;
       ctx.save();
       ctx.translate(x, y);
-      // Bottom crates
-      ctx.fillStyle = '#4a5a3a';
-      ctx.fillRect(-18, -8, 16, 12);
-      ctx.fillRect(2, -8, 16, 12);
-      // Top crate
-      ctx.fillStyle = '#5a6a4a';
-      ctx.fillRect(-8, -18, 16, 12);
-      // Markings
-      ctx.strokeStyle = '#3a4a2a';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-18, -8, 16, 12);
-      ctx.strokeRect(2, -8, 16, 12);
-      ctx.strokeRect(-8, -18, 16, 12);
-      // Ammo symbol
-      ctx.fillStyle = '#ffaa33';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('💥 AMMO', 0, 16);
+      if (isDestroyed) {
+        // Destroyed: shattered crates, scattered debris
+        ctx.fillStyle = '#2a2a1a';
+        ctx.fillRect(-16, -6, 12, 8);
+        ctx.fillRect(4, -4, 10, 6);
+        ctx.fillStyle = '#1a1a0a';
+        ctx.fillRect(-6, -14, 10, 7);
+        // Splinters
+        ctx.strokeStyle = '#3a3a2a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(-14, 4); ctx.lineTo(-20, 10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(12, -2); ctx.lineTo(18, -8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-2, -12); ctx.lineTo(-6, -20); ctx.stroke();
+        // Scattered ammo
+        ctx.fillStyle = '#8a7a3a';
+        for (let i = 0; i < 5; i++) {
+          const ax = -12 + Math.sin(i * 3.1) * 18;
+          const ay = -4 + Math.cos(i * 2.7) * 12;
+          ctx.fillRect(ax, ay, 3, 1.5);
+        }
+        // Smoke
+        const smokeT = _frameTime * 1.2;
+        ctx.fillStyle = `rgba(60, 60, 50, ${0.25 + Math.sin(smokeT) * 0.1})`;
+        ctx.beginPath(); ctx.arc(0, -16, 5, 0, Math.PI * 2); ctx.fill();
+        // Label
+        ctx.fillStyle = '#ff6633';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💥 DESTROYED', 0, 16);
+      } else {
+        // Bottom crates
+        ctx.fillStyle = '#4a5a3a';
+        ctx.fillRect(-18, -8, 16, 12);
+        ctx.fillRect(2, -8, 16, 12);
+        // Top crate
+        ctx.fillStyle = '#5a6a4a';
+        ctx.fillRect(-8, -18, 16, 12);
+        // Markings
+        ctx.strokeStyle = '#3a4a2a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-18, -8, 16, 12);
+        ctx.strokeRect(2, -8, 16, 12);
+        ctx.strokeRect(-8, -18, 16, 12);
+        // Ammo symbol
+        ctx.fillStyle = '#ffaa33';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💥 AMMO', 0, 16);
+      }
       ctx.restore();
       break;
     }
@@ -1985,7 +2045,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
   for (const prop of _sortedProps) {
     if (!isOnScreen(prop.pos.x, prop.pos.y, cx, cy, w, h, 60)) continue;
-    drawProp(ctx, prop);
+    drawProp(ctx, prop, state);
   }
 
   // ── ALARM PANELS — viewport culled ──
