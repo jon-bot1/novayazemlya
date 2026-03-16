@@ -492,7 +492,7 @@ function shadeColor(hex: string, percent: number): string {
 }
 
 // Draw decorative prop with 3/4 perspective
-function drawProp(ctx: CanvasRenderingContext2D, prop: Prop) {
+function drawProp(ctx: CanvasRenderingContext2D, prop: Prop, gameState?: GameState) {
   const { x, y } = prop.pos;
   const { w, h } = prop;
   const left = x - w / 2;
