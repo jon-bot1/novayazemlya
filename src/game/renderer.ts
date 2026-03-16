@@ -1985,7 +1985,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   }
   for (const prop of _sortedProps) {
     if (!isOnScreen(prop.pos.x, prop.pos.y, cx, cy, w, h, 60)) continue;
-    drawProp(ctx, prop);
+    drawProp(ctx, prop, state);
   }
 
   // ── ALARM PANELS — viewport culled ──
