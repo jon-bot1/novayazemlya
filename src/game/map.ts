@@ -875,7 +875,7 @@ export function generateMap() {
     { pos: { x: HX + HW + 160, y: HY + 200 }, w: 120, h: 80, type: 'airplane' as Prop['type'] },
 
     // === FUEL DEPOT (west yard — cluster of fuel tanks) ===
-    { pos: { x: 520, y: 1150 }, w: 60, h: 40, type: 'fuel_depot' as Prop['type'] },
+    { pos: { x: 520, y: 1150 }, w: 100, h: 70, type: 'fuel_depot' as Prop['type'] },
 
     // === RADIO TOWER (north compound) ===
     { pos: { x: 1600, y: 380 }, w: 40, h: 40, type: 'radio_tower' as Prop['type'] },
