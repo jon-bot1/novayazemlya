@@ -4542,6 +4542,30 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
       }
     }
   }
+  // Sabotage target interaction prompts (fuel depot, ammo dump)
+  for (const prop of state.props) {
+    if (prop.type === 'fuel_depot' && !(state as any)._fuelDestroyed && dist2d(state.player.pos, prop.pos) < 90) {
+      ctx.fillStyle = 'rgba(255, 120, 30, 0.95)';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('[E] 🔥 SABOTAGE FUEL DEPOT', prop.pos.x, prop.pos.y - prop.h * 0.55 - 8);
+      // Pulsing outline
+      const pa = 0.4 + Math.sin(_frameTime * 4) * 0.3;
+      ctx.strokeStyle = `rgba(255, 150, 30, ${pa})`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(prop.pos.x - prop.w * 0.55, prop.pos.y - prop.h * 0.55, prop.w * 1.1, prop.h * 1.1);
+    }
+    if (prop.type === 'ammo_dump' && !(state as any)._ammoDestroyed && dist2d(state.player.pos, prop.pos) < 90) {
+      ctx.fillStyle = 'rgba(255, 120, 30, 0.95)';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('[E] 💥 SABOTAGE AMMO DUMP', prop.pos.x, prop.pos.y - prop.h * 0.55 - 8);
+      const pa = 0.4 + Math.sin(_frameTime * 4) * 0.3;
+      ctx.strokeStyle = `rgba(255, 150, 30, ${pa})`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(prop.pos.x - prop.w * 0.55, prop.pos.y - prop.h * 0.55, prop.w * 1.1, prop.h * 1.1);
+    }
+  }
   for (const dp of state.documentPickups) {
     if (!dp.collected && dist2d(state.player.pos, dp.pos) < 70) {
       ctx.fillStyle = 'rgba(100, 200, 255, 0.9)';
