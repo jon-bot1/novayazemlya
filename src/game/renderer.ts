@@ -947,51 +947,89 @@ function drawProp(ctx: CanvasRenderingContext2D, prop: Prop, gameState?: GameSta
       ctx.save();
       ctx.translate(x, y);
       if (isDestroyed) {
-        // Destroyed: charred wreckage with fire glow
+        // Destroyed: large charred wreckage
+        // Charred ground
+        ctx.fillStyle = '#1a0e05';
+        ctx.beginPath(); ctx.ellipse(0, 0, w * 0.5, h * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+        // Wrecked tank 1
         ctx.fillStyle = '#2a1a0a';
-        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-w * 0.2, -h * 0.15, 22, 16, 0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
+        // Wrecked tank 2
         ctx.fillStyle = '#1a1008';
-        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
-        // Scorch marks
-        ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.stroke();
-        // Smoke wisps
+        ctx.beginPath(); ctx.ellipse(w * 0.18, h * 0.12, 20, 14, -0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.stroke();
+        // Scattered debris
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(-w * 0.35, h * 0.1, 8, 4);
+        ctx.fillRect(w * 0.25, -h * 0.2, 6, 5);
+        ctx.fillRect(-w * 0.1, h * 0.25, 7, 3);
+        // Smoke wisps (bigger)
         const smokeT = _frameTime * 1.5;
-        for (let i = 0; i < 3; i++) {
-          const sx = -10 + i * 10 + Math.sin(smokeT + i * 2) * 3;
-          const sy = -12 - Math.abs(Math.sin(smokeT * 0.7 + i)) * 8;
-          ctx.fillStyle = `rgba(80, 70, 60, ${0.3 - i * 0.08})`;
-          ctx.beginPath(); ctx.arc(sx, sy, 4 + i, 0, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 5; i++) {
+          const sx = -20 + i * 10 + Math.sin(smokeT + i * 2) * 5;
+          const sy = -h * 0.3 - Math.abs(Math.sin(smokeT * 0.7 + i)) * 14;
+          ctx.fillStyle = `rgba(80, 70, 60, ${0.35 - i * 0.06})`;
+          ctx.beginPath(); ctx.arc(sx, sy, 6 + i * 1.5, 0, Math.PI * 2); ctx.fill();
         }
-        // Embers
+        // Embers glow
         const emberGlow = 0.3 + Math.sin(_frameTime * 3) * 0.2;
         ctx.fillStyle = `rgba(255, 100, 20, ${emberGlow})`;
-        ctx.beginPath(); ctx.arc(-8, -2, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(10, 4, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-12, -4, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(14, 6, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-2, 10, 3, 0, Math.PI * 2); ctx.fill();
         // Label
         ctx.fillStyle = '#ff4422';
-        ctx.font = 'bold 8px monospace';
+        ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🔥 DESTROYED', 0, -20);
+        ctx.fillText('🔥 DESTROYED', 0, -h * 0.45);
       } else {
-        // Tank 1
-        ctx.fillStyle = '#6a4a3a';
-        ctx.beginPath(); ctx.ellipse(-12, -6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5;
-        ctx.stroke();
-        // Tank 2
+        // === Big fuel depot — 3 tanks, pipes, hazard markings ===
+        // Concrete pad
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(-w * 0.48, -h * 0.45, w * 0.96, h * 0.9);
+        ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(-w * 0.48, -h * 0.45, w * 0.96, h * 0.9);
+        // Hazard stripes (yellow/black) along edge
+        ctx.fillStyle = 'rgba(255, 200, 0, 0.5)';
+        for (let i = 0; i < 8; i++) {
+          ctx.fillRect(-w * 0.48 + i * (w * 0.12), -h * 0.45, w * 0.06, 3);
+          ctx.fillRect(-w * 0.48 + i * (w * 0.12), h * 0.42, w * 0.06, 3);
+        }
+        // Tank 1 (large, left)
         ctx.fillStyle = '#7a5a4a';
-        ctx.beginPath(); ctx.ellipse(12, 6, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-w * 0.22, -h * 0.08, 22, 16, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#5a3a2a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#6a4a3a';
+        ctx.fillRect(-w * 0.22 - 4, -h * 0.08 - 18, 8, 10); // valve
+        // Tank 2 (large, right)
+        ctx.fillStyle = '#8a6a5a';
+        ctx.beginPath(); ctx.ellipse(w * 0.18, h * 0.05, 20, 14, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#5a3a2a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#7a5a4a';
+        ctx.fillRect(w * 0.18 - 4, h * 0.05 - 16, 8, 10); // valve
+        // Tank 3 (small reserve, center-back)
+        ctx.fillStyle = '#6a5a4a';
+        ctx.beginPath(); ctx.ellipse(0, h * 0.25, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5; ctx.stroke();
+        // Connecting pipes
+        ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.22, -h * 0.08); ctx.lineTo(w * 0.18, h * 0.05);
+        ctx.moveTo(w * 0.18, h * 0.05); ctx.lineTo(0, h * 0.25);
         ctx.stroke();
-        // Fuel label
+        // Hazard symbols on tanks
+        ctx.fillStyle = '#ffcc33'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('⚠', -w * 0.22, -h * 0.04);
+        ctx.fillText('⚠', w * 0.18, h * 0.1);
+        // Big FUEL label
         ctx.fillStyle = '#ffcc33';
-        ctx.font = 'bold 8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('FUEL', 0, -16);
-        // Hazard stripe
-        ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
-        ctx.fillRect(-w * 0.5, h * 0.4, w, 4);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('⛽ FUEL DEPOT', 0, -h * 0.42);
+        // Pulsing glow to draw attention
+        const glowAlpha = 0.08 + Math.sin(_frameTime * 2) * 0.05;
+        ctx.fillStyle = `rgba(255, 180, 0, ${glowAlpha})`;
+        ctx.beginPath(); ctx.ellipse(0, 0, w * 0.55, h * 0.5, 0, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
       break;
