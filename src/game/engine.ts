@@ -2298,6 +2298,29 @@ export function updateGame(state: GameState, input: InputState, dt: number, canv
       }
     }
 
+    // Sabotage fuel depot / ammo dump with [E] (no TNT needed — manual sabotage)
+    for (const prop of state.props) {
+      const d = dist(state.player.pos, prop.pos);
+      if (prop.type === 'fuel_depot' && d < 90 && !(state as any)._fuelDestroyed) {
+        (state as any)._fuelDestroyed = true;
+        state.placedTNTs.push({ pos: { ...prop.pos }, timer: 4.0, maxTimer: 4.0 });
+        addMessage(state, '🔥 SABOTAGING FUEL DEPOT... GET CLEAR!', 'warning');
+        state.soundEvents.push({ pos: { ...prop.pos }, radius: 200, time: state.time });
+        spawnParticles(state, prop.pos.x, prop.pos.y, '#ff8833', 12);
+        input.interact = false;
+        break;
+      }
+      if (prop.type === 'ammo_dump' && d < 90 && !(state as any)._ammoDestroyed) {
+        (state as any)._ammoDestroyed = true;
+        state.placedTNTs.push({ pos: { ...prop.pos }, timer: 4.0, maxTimer: 4.0 });
+        addMessage(state, '💥 SABOTAGING AMMO DUMP... GET CLEAR!', 'warning');
+        state.soundEvents.push({ pos: { ...prop.pos }, radius: 250, time: state.time });
+        spawnParticles(state, prop.pos.x, prop.pos.y, '#ffaa33', 12);
+        input.interact = false;
+        break;
+      }
+    }
+
   }
 
   // TNT wall breach — place charge with 5s fuse (also works on airplane)
